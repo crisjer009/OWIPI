@@ -34,6 +34,13 @@ namespace CasioScannerApp
             {
                 this.txtLocator.KeyDown += new KeyEventHandler(txtLocator_KeyDown);
             }
+
+            // Trust all SSL certificates for HTTPS Cloud support (crucial for legacy devices with old root certificates)
+            try
+            {
+                System.Net.ServicePointManager.CertificatePolicy = new MyCertificatePolicy();
+            }
+            catch { }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -853,6 +860,15 @@ namespace CasioScannerApp
                 System.Media.SystemSounds.Hand.Play();
             }
             catch { }
+        }
+    }
+
+    // Custom certificate policy to accept all SSL certificates (crucial for legacy devices with old root certs)
+    public class MyCertificatePolicy : System.Net.ICertificatePolicy
+    {
+        public bool CheckValidationResult(System.Net.ServicePoint srvPoint, System.Security.Cryptography.X509Certificates.X509Certificate certificate, System.Net.WebRequest request, int certificateProblem)
+        {
+            return true; // Always trust the certificate
         }
     }
 }
