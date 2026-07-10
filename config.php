@@ -238,7 +238,8 @@ class OWI_DB {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 store_code VARCHAR(50) UNIQUE NOT NULL,
                 created_by INT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                synced TINYINT(1) NOT NULL DEFAULT 0
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
 
@@ -268,6 +269,13 @@ class OWI_DB {
         $this->execute($sqlStoresTable);
         $this->execute($sqlGlobalItemsTable);
         $this->execute($sqlAuditLogsTable);
+
+        // Dynamically add synced column to stores table for existing installations
+        try {
+            $this->execute("ALTER TABLE stores ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");
+        } catch (Exception $ex) {
+            // Column already exists
+        }
 
         // Seed default global items
         $sqlSeedCheck = "SELECT COUNT(*) as count FROM items";
@@ -343,7 +351,9 @@ class OWI_DB {
                 Posted TINYINT(1) NOT NULL DEFAULT 0,
                 Added TINYINT(1) NOT NULL DEFAULT 0,
                 Edited TINYINT(1) NOT NULL DEFAULT 0,
-                ScannedBy VARCHAR(100) NULL DEFAULT 'Handheld'
+                ScannedBy VARCHAR(100) NULL DEFAULT 'Handheld',
+                synced TINYINT(1) NOT NULL DEFAULT 0,
+                INDEX idx_slotno (SlotNo)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
         
@@ -355,6 +365,20 @@ class OWI_DB {
         } catch (Exception $ex) {
             // Table doesn't exist yet or already altered
         }
+
+        // Dynamically add index for existing tables
+        try {
+            $this->execute("ALTER TABLE `{$cleanStore}_countsheet` ADD INDEX idx_slotno (SlotNo)");
+        } catch (Exception $ex) {
+            // Already indexed or error
+        }
+
+        // Dynamically add synced column for existing tables
+        try {
+            $this->execute("ALTER TABLE `{$cleanStore}_countsheet` ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");
+        } catch (Exception $ex) {
+            // Already exists or error
+        }
         
         // Construct the store-specific locators table
         $sqlLocatorsTable = "
@@ -362,10 +386,18 @@ class OWI_DB {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 locator_name VARCHAR(50) UNIQUE NOT NULL,
                 status VARCHAR(20) DEFAULT 'open',
-                assigned_operator VARCHAR(100) DEFAULT NULL
+                assigned_operator VARCHAR(100) DEFAULT NULL,
+                synced TINYINT(1) NOT NULL DEFAULT 0
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
         $this->execute($sqlLocatorsTable);
+
+        // Dynamically add synced column for existing locators tables
+        try {
+            $this->execute("ALTER TABLE `{$cleanStore}_locators` ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");
+        } catch (Exception $ex) {
+            // Already exists or error
+        }
         
         // Seed default Slots if table is empty
         $sqlLocatorCheck = "SELECT COUNT(*) as count FROM `{$cleanStore}_locators`";

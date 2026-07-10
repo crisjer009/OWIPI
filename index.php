@@ -1414,6 +1414,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <input type="password" id="db_password" class="form-control"
                             value="<?= htmlspecialchars($config['password']) ?>" placeholder="Leave blank if none">
                     </div>
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="sync_secret_token">Secret Sync Token (Cloud & Local Authorization)</label>
+                        <input type="text" id="sync_secret_token" class="form-control"
+                            value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>" placeholder="e.g. my_secure_token_123">
+                        <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.</small>
+                    </div>
 
                     <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                         <button type="submit" class="btn">Save & Verify Connection</button>
@@ -1813,11 +1819,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
             const database = document.getElementById('db_database').value;
             const username = document.getElementById('db_username').value;
             const password = document.getElementById('db_password').value;
+            const sync_secret_token = document.getElementById('sync_secret_token').value;
 
             const print_margin_top = document.getElementById('print_margin_top').value;
             const print_margin_left = document.getElementById('print_margin_left').value;
 
-            const payload = { server, port, database, username, password, print_margin_top, print_margin_left };
+            const payload = { server, port, database, username, password, print_margin_top, print_margin_left, sync_secret_token };
 
             showToast("Saving MySQL config...", "info");
 
@@ -1852,11 +1859,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
             const database = document.getElementById('db_database').value;
             const username = document.getElementById('db_username').value;
             const password = document.getElementById('db_password').value;
+            const sync_secret_token = document.getElementById('sync_secret_token').value;
 
             const print_margin_top = document.getElementById('print_margin_top').value;
             const print_margin_left = document.getElementById('print_margin_left').value;
 
-            const payload = { server, port, database, username, password, print_margin_top, print_margin_left };
+            const payload = { server, port, database, username, password, print_margin_top, print_margin_left, sync_secret_token };
 
             showToast("Saving print spacing configuration...", "info");
 

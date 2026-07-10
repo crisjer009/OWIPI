@@ -526,15 +526,18 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             #host-dashboard {
                 height: auto !important;
             }
+
             .host-top-grid {
                 grid-template-columns: 1fr;
                 height: auto;
                 min-height: 0;
             }
+
             .host-sub-grid {
                 grid-template-columns: 1fr;
                 height: auto;
             }
+
             .host-bottom-grid {
                 grid-template-columns: 1fr;
                 height: auto;
@@ -1181,8 +1184,13 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
                     <span>Count Sheet & Locators</span>
                     <div style="display: flex; gap: 8px;">
+                        <button class="btn" onclick="openCloudSyncModal()"
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
+                            ☁️ Sync to Cloud
+                        </button>
                         <button id="btn-print-summary" class="btn btn-success" onclick="printStoreSummary()"
-                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print Summary</button>
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
+                            Summary</button>
                         <button class="btn btn-primary" onclick="autoAddNextLocator()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer;">+
                             Add Locator</button>
@@ -1203,7 +1211,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 <th style="padding: 8px 6px;">Locator</th>
                                 <th style="padding: 8px 6px;">Status</th>
                                 <th style="padding: 8px 6px;">Operator</th>
-                                <th style="padding: 8px 6px; text-align: right;">Action</th>
+                                <th style="padding: 8px 6px; text-align: center;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="host-locators-tbody">
@@ -1233,6 +1241,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     <thead>
                         <tr
                             style="border-bottom: 2px solid rgba(255,255,255,0.08); color: var(--text-white); font-weight: 600; position: sticky; top: 0; background: #161b22; z-index: 1;">
+                            <th style="padding: 10px 8px; text-align: center; width: 40px;">#</th>
                             <th style="padding: 10px 8px;">Barcode</th>
                             <th style="padding: 10px 8px;">Description</th>
                             <th style="padding: 10px 8px; text-align: center;">Qty</th>
@@ -1314,6 +1323,39 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 <button type="button" class="btn btn-secondary" id="custom-dialog-btn-secondary"
                     style="width: auto; height: 38px; padding: 0 20px; margin: 0; font-weight:600; cursor:pointer;">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Cloud Synchronization Modal -->
+    <div class="modal-overlay" id="cloud-sync-modal-overlay">
+        <div class="modal" style="max-width: 500px; width: 95%; padding: 25px;">
+            <h3 class="modal-title" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
+                ☁️ Cloud Synchronization
+            </h3>
+            
+            <form id="cloud-sync-form" onsubmit="saveSyncConfig(event)">
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="sync_cloud_url" style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Cloud Server API URL</label>
+                    <input type="url" id="sync_cloud_url" class="form-control" placeholder="https://example.com/api.php" style="width:100%; box-sizing:border-box;" required>
+                    <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">The full URL of your cloud server instance, e.g. <code>https://yourdomain.com/api.php</code></span>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="sync_secret_token" style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Secret Sync Token</label>
+                    <input type="password" id="sync_secret_token" class="form-control" placeholder="Enter secure sync token" style="width:100%; box-sizing:border-box;" required>
+                    <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">Security token defined in the server's db_config.json to authorize uploads.</span>
+                </div>
+
+                <div id="sync-status-msg" style="padding: 10px; border-radius: 6px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 20px;"></div>
+
+                <div class="form-row" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                    <button type="submit" class="btn btn-secondary" style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Save Config</button>
+                    <button type="button" id="btn-run-sync" onclick="runCloudSync()" class="btn btn-primary" style="width: auto; height: 38px; padding: 0 15px; margin: 0; background:#388bfd; border-color:#388bfd; font-weight:600; cursor:pointer; display: flex; align-items: center; gap: 4px;">
+                        <span>Start Sync</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCloudSyncModal()" style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Close</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2289,10 +2331,12 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                                 html += `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                        <td style="padding: 6px; font-weight:600; color:var(--text-white); font-size:0.8rem;">${displayName}</td>
+                                        <td style="padding: 6px; font-weight:600; color:var(--text-white); font-size:0.8rem;">
+                                            ${displayName} <span style="font-weight:normal; color:var(--text-muted); font-size:0.75rem; margin-left: 20px;">( ${parseInt(loc.total_scans || 0)} - items scanned )</span>
+                                        </td>
                                         <td style="padding: 6px;">${statusBadge}</td>
                                         <td style="padding: 6px; color:#c9d1d9; font-size:0.8rem;">${loc.assigned_operator || '-'}</td>
-                                        <td style="padding: 6px; text-align: right; display:flex; gap:4px; justify-content:flex-end;">${viewBtn} ${actionBtn}</td>
+                                        <td style="padding: 6px; text-align: center; display:flex; gap:4px; justify-content:center;">${viewBtn} ${actionBtn}</td>
                                     </tr>
                                 `;
                             });
@@ -2500,7 +2544,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             document.getElementById('view-scans-locator-title').innerText = `Items in Locator: ${locatorName}`;
 
             const tbody = document.getElementById('view-scans-tbody');
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">Loading scans...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Loading scans...</td></tr>`;
             document.getElementById('host-view-locator-scans-modal-overlay').classList.add('active');
 
             loadLocatorScansTable(locatorName);
@@ -2764,7 +2808,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         const grandTotalLabel = "GRAND TOTAL : ";
                         const spacesNeeded = 72 - totalInfStr.length - grandTotalLabel.length;
                         const spacing = ' '.repeat(Math.max(0, spacesNeeded));
-                        
+
                         text += totalInfStr + spacing + grandTotalLabel + padQtyCenter(grandTotal.toFixed(0), 9) + '\r\n';
 
                         // Open print frame window
@@ -3009,9 +3053,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                         if (scans.length > 0) {
                             let html = '';
-                            scans.forEach(scan => {
+                            scans.forEach((scan, index) => {
                                 html += `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                        <td style="padding: 10px 8px; color:var(--text-muted); text-align: center;">${index + 1}</td>
                                         <td style="padding: 10px 8px; font-family:monospace; color:#58a6ff; font-weight:600;">${scan.barcode}</td>
                                         <td style="padding: 10px 8px; color:var(--text-white);">${scan.product_name || '<span style="color:var(--text-muted);">Item Not in Catalog</span>'}</td>
                                         <td style="padding: 10px 8px; text-align: center; color:var(--text-white); font-weight:700;">${parseFloat(scan.quantity).toFixed(0)}</td>
@@ -3023,7 +3068,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             });
                             tbody.innerHTML = html;
                         } else {
-                            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">No items scanned in this locator yet.</td></tr>`;
+                            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">No items scanned in this locator yet.</td></tr>`;
                         }
                     }
                 })
@@ -3151,6 +3196,104 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 })
                 .catch(err => {
                     alert("Failed to save spacing: " + err);
+                });
+        }
+
+        // Cloud Sync Modal functions
+        function openCloudSyncModal() {
+            document.getElementById('cloud-sync-modal-overlay').classList.add('active');
+            
+            // Fetch existing sync settings
+            fetch('api.php?action=get_sync_config')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        document.getElementById('sync_cloud_url').value = data.cloud_sync_url || '';
+                        document.getElementById('sync_secret_token').value = data.sync_secret_token || '';
+                    }
+                })
+                .catch(err => console.error("Failed to load sync settings:", err));
+        }
+
+        function closeCloudSyncModal() {
+            document.getElementById('cloud-sync-modal-overlay').classList.remove('active');
+            const statusMsg = document.getElementById('sync-status-msg');
+            statusMsg.style.display = 'none';
+            statusMsg.innerText = '';
+        }
+
+        function saveSyncConfig(event) {
+            event.preventDefault();
+            const cloudUrl = document.getElementById('sync_cloud_url').value.trim();
+            const secretToken = document.getElementById('sync_secret_token').value.trim();
+
+            const statusMsg = document.getElementById('sync-status-msg');
+            statusMsg.style.display = 'block';
+            statusMsg.style.background = 'rgba(255,255,255,0.05)';
+            statusMsg.style.color = '#8b949e';
+            statusMsg.innerText = 'Saving configuration...';
+
+            fetch('api.php?action=save_sync_config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cloud_sync_url: cloudUrl, sync_secret_token: secretToken })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        statusMsg.style.background = 'rgba(46,164,79,0.15)';
+                        statusMsg.style.color = '#2ea44f';
+                        statusMsg.innerText = data.message;
+                    } else {
+                        statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                        statusMsg.style.color = '#f85149';
+                        statusMsg.innerText = data.message;
+                    }
+                })
+                .catch(err => {
+                    statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                    statusMsg.style.color = '#f85149';
+                    statusMsg.innerText = 'Failed to save config: ' + err;
+                });
+        }
+
+        function runCloudSync() {
+            const btn = document.getElementById('btn-run-sync');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>Syncing...</span>';
+
+            const statusMsg = document.getElementById('sync-status-msg');
+            statusMsg.style.display = 'block';
+            statusMsg.style.background = 'rgba(255,255,255,0.05)';
+            statusMsg.style.color = '#8b949e';
+            statusMsg.innerText = 'Connecting to cloud and uploading unsynced data...';
+
+            fetch('api.php?action=trigger_cloud_sync')
+                .then(res => res.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+
+                    if (data.status === 'success') {
+                        statusMsg.style.background = 'rgba(46,164,79,0.15)';
+                        statusMsg.style.color = '#2ea44f';
+                        statusMsg.innerText = data.message;
+                        
+                        // Reload dashboard/locators to reflect status
+                        loadHostLocators();
+                    } else {
+                        statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                        statusMsg.style.color = '#f85149';
+                        statusMsg.innerText = data.message;
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                    statusMsg.style.color = '#f85149';
+                    statusMsg.innerText = 'Sync failed: ' + err;
                 });
         }
     </script>
