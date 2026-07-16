@@ -49,7 +49,7 @@ $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 if ($driverLoaded && $dbStatus === 'connected') {
     try {
         $db = new OWI_DB();
-        $sql = "SELECT id, store_code FROM stores ORDER BY store_code ASC";
+        $sql = "SELECT id, store_code, closed FROM stores ORDER BY store_code ASC";
         $storeRows = $db->query($sql);
 
         foreach ($storeRows as $row) {
@@ -61,29 +61,45 @@ if ($driverLoaded && $dbStatus === 'connected') {
             $percent = 0;
             $status = 'Not Initialized';
 
-            try {
-                $checkTbl = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
-                if (!empty($checkTbl)) {
-                    $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators`");
-                    $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
-
-                    if ($totalLocators > 0) {
-                        $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators` WHERE status = 'closed'");
-                        $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
-
-                        $percent = round(($closedLocators / $totalLocators) * 100);
-
-                        if ($closedLocators === $totalLocators) {
-                            $status = 'Finished';
-                        } else {
-                            $status = 'Ongoing';
+            if (isset($row['closed']) && (int)$row['closed'] === 1) {
+                $status = 'Closed';
+                try {
+                    $checkTbl = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
+                    if (!empty($checkTbl)) {
+                        $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators`");
+                        $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
+                        if ($totalLocators > 0) {
+                            $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators` WHERE status = 'closed'");
+                            $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
+                            $percent = round(($closedLocators / $totalLocators) * 100);
                         }
-                    } else {
-                        $status = 'Empty';
                     }
+                } catch (Exception $ex) {}
+            } else {
+                try {
+                    $checkTbl = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
+                    if (!empty($checkTbl)) {
+                        $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators`");
+                        $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
+
+                        if ($totalLocators > 0) {
+                            $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators` WHERE status = 'closed'");
+                            $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
+
+                            $percent = round(($closedLocators / $totalLocators) * 100);
+
+                            if ($closedLocators === $totalLocators) {
+                                $status = 'Finished';
+                            } else {
+                                $status = 'Ongoing';
+                            }
+                        } else {
+                            $status = 'Empty';
+                        }
+                    }
+                } catch (Exception $ex) {
+                    // Table doesn't exist yet
                 }
-            } catch (Exception $ex) {
-                // Table doesn't exist yet
             }
 
             $storesData[] = [
@@ -1318,7 +1334,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <?php
                         $statusColor = 'var(--text-secondary)';
                         $statusBg = 'rgba(255,255,255,0.05)';
-                        if ($s['status'] === 'Finished') {
+                        if ($s['status'] === 'Closed') {
+                            $statusColor = '#f85149';
+                            $statusBg = 'rgba(248, 81, 73, 0.1)';
+                        } elseif ($s['status'] === 'Finished') {
                             $statusColor = 'var(--success-color)';
                             $statusBg = 'rgba(16, 185, 129, 0.1)';
                         } elseif ($s['status'] === 'Ongoing') {

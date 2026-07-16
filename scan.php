@@ -500,8 +500,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             grid-template-columns: 1.3fr 0.7fr;
             gap: 15px;
             align-items: stretch;
-            height: 280px;
-            min-height: 280px;
+            height: 320px;
+            min-height: 320px;
         }
 
         .host-sub-grid {
@@ -818,16 +818,20 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             <h1
                 style="font-size: 1.1rem; line-height: 1.2; margin: 0; display:flex; align-items:center; gap:6px; text-transform: uppercase;">
                 OWI PHYSICAL INVENTORY STORE CODE : <?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>
-                <?php if (isset($_SESSION['store_code'])): ?>
-                    <a href="javascript:void(0)" id="switch-btn" onclick="logoutStore()"
-                        style="color: #3b82f6; font-size: 0.7rem; font-weight:600; text-decoration:none;">[Switch]</a>
-                <?php endif; ?>
             </h1>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">User:
                 <?= htmlspecialchars($_SESSION['username'] ?? 'Operator') ?>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="btn-sync-cloud" class="btn" onclick="openCloudSyncModal()"
+                style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
+                ☁️ Sync to Cloud
+            </button>
+            <button id="btn-close-store" class="btn btn-danger" onclick="closeStoreSession()"
+                style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#da3633; border-color:#da3633; color:white; font-weight:600;">
+                🔒 Close Store
+            </button>
             <div id="connection-status" class="connection-status" style="margin-left: 0; position: static;">Online</div>
             <a href="logout.php" id="logout-btn"
                 style="color: #fca5a5; font-size: 0.8rem; font-weight: 600; text-decoration: none; padding: 4px 8px; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; background: rgba(239,68,68,0.1);">Log
@@ -1062,14 +1066,45 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             to enable direct "Allow" camera prompts on phones!
                         </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
                         <div id="qrcode"
                             style="background: white; padding: 6px; border-radius: 6px; width: fit-content; display: inline-block;">
                         </div>
                         <p
-                            style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; margin: 5px 0 0 0; text-align: left;">
+                            style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; margin: 5px 0 0 0; text-align: center;">
                             Scan QR code with phone to connect. Ensure same Wi-Fi.
                         </p>
+
+                        <?php
+                        $detectedLocalIPs = getServerLocalIPs();
+                        if (count($detectedLocalIPs) > 1):
+                            ?>
+                            <div style="margin-top: 8px; width: 100%; max-width: 210px; text-align: left;">
+                                <label for="qr-ip-select"
+                                    style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 2px; text-align: center;">Host
+                                    Network IP (Local or Wi-Fi):</label>
+                                <select id="qr-ip-select"
+                                    style="font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
+                                    onchange="updateQRCodeIP(this.value)">
+                                    <?php foreach ($detectedLocalIPs as $ipItem): 
+                                        $adapterName = $ipItem['adapter'];
+                                        $lower = strtolower($adapterName);
+                                        $typeLabel = 'LOCAL';
+                                        if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
+                                            $typeLabel = 'WIFI';
+                                        }
+                                        $displayName = $adapterName;
+                                        $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
+                                        $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
+                                        $displayName = str_ireplace('adapter ', '', $displayName);
+                                    ?>
+                                        <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>: <?= htmlspecialchars($displayName) ?>)<?= $ipItem['has_gateway'] ? ' 🌐' : '' ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -1184,10 +1219,6 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
                     <span>Count Sheet & Locators</span>
                     <div style="display: flex; gap: 8px;">
-                        <button class="btn" onclick="openCloudSyncModal()"
-                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
-                            ☁️ Sync to Cloud
-                        </button>
                         <button id="btn-print-summary" class="btn btn-success" onclick="printStoreSummary()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
                             Summary</button>
@@ -1329,31 +1360,46 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
     <!-- Cloud Synchronization Modal -->
     <div class="modal-overlay" id="cloud-sync-modal-overlay">
         <div class="modal" style="max-width: 500px; width: 95%; padding: 25px;">
-            <h3 class="modal-title" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 class="modal-title"
+                style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
                 ☁️ Cloud Synchronization
             </h3>
-            
+
             <form id="cloud-sync-form" onsubmit="saveSyncConfig(event)">
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label for="sync_cloud_url" style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Cloud Server API URL</label>
-                    <input type="url" id="sync_cloud_url" class="form-control" placeholder="https://example.com/api.php" style="width:100%; box-sizing:border-box;" required>
-                    <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">The full URL of your cloud server instance, e.g. <code>https://yourdomain.com/api.php</code></span>
-                </div>
-                
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label for="sync_secret_token" style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Secret Sync Token</label>
-                    <input type="password" id="sync_secret_token" class="form-control" placeholder="Enter secure sync token" style="width:100%; box-sizing:border-box;" required>
-                    <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">Security token defined in the server's db_config.json to authorize uploads.</span>
+                    <label for="sync_cloud_url"
+                        style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Cloud
+                        Server API URL</label>
+                    <input type="url" id="sync_cloud_url" class="form-control" placeholder="https://pginv.officewarehouse.com.ph/OWIPI/"
+                        style="width:100%; box-sizing:border-box;" required>
+                    <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">The full URL
+                        of your cloud server instance, e.g. <code>https://pginv.officewarehouse.com.ph/OWIPI/</code></span>
                 </div>
 
-                <div id="sync-status-msg" style="padding: 10px; border-radius: 6px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 20px;"></div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label for="sync_secret_token"
+                        style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Secret
+                        Sync Token</label>
+                    <input type="password" id="sync_secret_token" class="form-control"
+                        placeholder="Enter secure sync token" style="width:100%; box-sizing:border-box;" required>
+                    <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">Security
+                        token defined in the server's db_config.json to authorize uploads.</span>
+                </div>
+
+                <div id="sync-status-msg"
+                    style="padding: 10px; border-radius: 6px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 20px;">
+                </div>
 
                 <div class="form-row" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
-                    <button type="submit" class="btn btn-secondary" style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Save Config</button>
-                    <button type="button" id="btn-run-sync" onclick="runCloudSync()" class="btn btn-primary" style="width: auto; height: 38px; padding: 0 15px; margin: 0; background:#388bfd; border-color:#388bfd; font-weight:600; cursor:pointer; display: flex; align-items: center; gap: 4px;">
+                    <button type="submit" class="btn btn-secondary"
+                        style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Save
+                        Config</button>
+                    <button type="button" id="btn-run-sync" onclick="runCloudSync()" class="btn btn-primary"
+                        style="width: auto; height: 38px; padding: 0 15px; margin: 0; background:#388bfd; border-color:#388bfd; font-weight:600; cursor:pointer; display: flex; align-items: center; gap: 4px;">
                         <span>Start Sync</span>
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeCloudSyncModal()" style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Close</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeCloudSyncModal()"
+                        style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Close</button>
                 </div>
             </form>
         </div>
@@ -1463,6 +1509,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         let isScannerRunning = false;
         let currentScanSession = [];
         let scanningLock = false; // Prevent multiple triggers during network upload
+        let qrCodeInstance = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             // Fill instructions flag text
@@ -1496,7 +1543,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 }
 
                 if (qrContainer) {
-                    new QRCode(qrContainer, {
+                    qrCodeInstance = new QRCode(qrContainer, {
                         text: "<?= $scanUrl ?>",
                         width: 150,
                         height: 150,
@@ -1557,11 +1604,15 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 });
 
 
-                // Hide logout and switch buttons on mobile
+                // Hide logout, switch, and host-only admin buttons on mobile
                 const logoutBtn = document.getElementById('logout-btn');
                 if (logoutBtn) logoutBtn.style.display = 'none';
                 const switchBtn = document.getElementById('switch-btn');
                 if (switchBtn) switchBtn.style.display = 'none';
+                const syncBtn = document.getElementById('btn-sync-cloud');
+                if (syncBtn) syncBtn.style.display = 'none';
+                const closeBtn = document.getElementById('btn-close-store');
+                if (closeBtn) closeBtn.style.display = 'none';
 
                 // Load mobile locators searchable list
                 loadMobileLocators();
@@ -2610,12 +2661,12 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const recNo = index + 1;
                             const barcode = scan.barcode || '';
                             const sku = scan.sku || '';
-                            const descr = scan.product_name || 'Unknown Product';
+                            const descr = scan.product_name || 'Item Not Found';
                             const qtyVal = parseFloat(scan.quantity || 0);
                             const qtyStr = qtyVal.toFixed(0);
 
                             grandTotal += qtyVal;
-                            if (!scan.sku || scan.sku === '' || scan.product_name === 'Unknown Product') {
+                            if (!scan.sku || scan.sku === '' || scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product') {
                                 infCount++;
                             }
 
@@ -2734,7 +2785,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 summaryMap[barcode] = {
                                     barcode: barcode,
                                     sku: scan.sku || 'N/A',
-                                    description: scan.product_name || 'Unknown Product',
+                                    description: scan.product_name || 'Item Not Found',
                                     totalQty: 0
                                 };
                             }
@@ -2747,7 +2798,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                         let infCount = 0;
                         items.forEach(item => {
-                            if (!item.sku || item.sku === 'N/A' || item.sku === '' || item.description === 'Unknown Product') {
+                            if (!item.sku || item.sku === 'N/A' || item.sku === '' || item.description === 'Item Not Found' || item.description === 'Unknown Product') {
                                 infCount++;
                             }
                         });
@@ -2789,7 +2840,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const recNo = index + 1;
                             const barcode = item.barcode || '';
                             const sku = item.sku || '';
-                            const descr = item.description || 'Unknown Product';
+                            const descr = item.description || 'Item Not Found';
                             const qtyVal = item.totalQty;
                             const qtyStr = qtyVal.toFixed(0);
 
@@ -2862,12 +2913,59 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             </html>
                         `);
                         printWin.document.close();
+                        sessionStorage.setItem('summary_printed_' + storeCode, 'true');
                     }
                 })
                 .catch(err => {
                     console.error("Print summary error:", err);
                     alert("Failed to load scans for summary print: " + err);
                 });
+        }
+
+        // Close the entire store session after validations
+        function closeStoreSession() {
+            // 1. Get locator completion percent
+            const progressText = document.getElementById('widget-progress-text');
+            let percent = 0;
+            if (progressText) {
+                percent = parseInt(progressText.querySelector('span').innerText) || 0;
+            }
+
+            if (percent < 100) {
+                customAlert(`Cannot close the store. Locator completion progress must be 100% (currently ${percent}%). All locators must be closed first.`, "Error");
+                return;
+            }
+
+            // 2. Check if Print Summary was printed in this browser session
+            const wasPrinted = sessionStorage.getItem('summary_printed_' + storeCode) === 'true';
+            if (!wasPrinted) {
+                customAlert("Cannot close the store. You must click 'Print Summary' to print the completion sheet first.", "Print Required");
+                return;
+            }
+
+            // 3. Confirm closure using customConfirm
+            customConfirm(
+                `Are you sure you want to CLOSE the store session "${storeCode}"?\n\nThis will lock all count sheets, set the store status to closed, and return you to the Store Selector.\nThis action cannot be undone.`,
+                () => {
+                    fetch('api.php?action=close_store', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ store_code: storeCode })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                customAlert(data.message, "Success", () => {
+                                    window.location.href = 'index.php';
+                                });
+                            } else {
+                                customAlert("Error: " + data.message, "Failure");
+                            }
+                        })
+                        .catch(err => customAlert("Request failed to close store: " + err, "Error"));
+                },
+                "Close Store Session"
+            );
         }
 
         // Print edited count sheet for dynamic locator
@@ -2940,7 +3038,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         allScans.forEach(scan => {
                             const qtyVal = parseFloat(scan.quantity || 0);
                             grandTotal += qtyVal;
-                            if (!scan.sku || scan.sku === '' || scan.product_name === 'Unknown Product') {
+                            if (!scan.sku || scan.sku === '' || scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product') {
                                 infCount++;
                             }
                         });
@@ -2949,7 +3047,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const recNo = scan.id; // RecNo from database
                             const barcode = scan.barcode || '';
                             const sku = scan.sku || '';
-                            const descr = scan.product_name || 'Unknown Product';
+                            const descr = scan.product_name || 'Item Not Found';
 
                             const oldQtyVal = parseFloat(scan.original_qty || 0);
                             const oldQtyStr = oldQtyVal.toFixed(0);
@@ -3202,13 +3300,13 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         // Cloud Sync Modal functions
         function openCloudSyncModal() {
             document.getElementById('cloud-sync-modal-overlay').classList.add('active');
-            
+
             // Fetch existing sync settings
             fetch('api.php?action=get_sync_config')
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        document.getElementById('sync_cloud_url').value = data.cloud_sync_url || '';
+                        document.getElementById('sync_cloud_url').value = data.cloud_sync_url || 'https://pginv.officewarehouse.com.ph/OWIPI/';
                         document.getElementById('sync_secret_token').value = data.sync_secret_token || '';
                     }
                 })
@@ -3279,7 +3377,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         statusMsg.style.background = 'rgba(46,164,79,0.15)';
                         statusMsg.style.color = '#2ea44f';
                         statusMsg.innerText = data.message;
-                        
+
                         // Reload dashboard/locators to reflect status
                         loadHostLocators();
                     } else {
@@ -3295,6 +3393,15 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     statusMsg.style.color = '#f85149';
                     statusMsg.innerText = 'Sync failed: ' + err;
                 });
+        }
+
+        function updateQRCodeIP(newIp) {
+            if (!qrCodeInstance) return;
+            const currentUrl = "<?= $scanUrl ?>";
+            const oldIp = "<?= $localIP ?>";
+            const newUrl = currentUrl.replace(oldIp, newIp);
+            qrCodeInstance.clear();
+            qrCodeInstance.makeCode(newUrl);
         }
     </script>
 

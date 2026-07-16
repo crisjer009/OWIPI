@@ -19,6 +19,8 @@ namespace CasioScannerApp
         {
             this.panelHeader = new System.Windows.Forms.Panel();
             this.lblHeader = new System.Windows.Forms.Label();
+            this.lblInputMode = new System.Windows.Forms.Label();
+            this.btnF1Exit = new System.Windows.Forms.Button();
             this.panelConfig = new System.Windows.Forms.Panel();
             this.txtHost = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -40,18 +42,30 @@ namespace CasioScannerApp
             this.txtQty = new System.Windows.Forms.TextBox();
             this.btnSend = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
+            this.btnViewScans = new System.Windows.Forms.Button();
             this.btnFinish = new System.Windows.Forms.Button();
             this.lblStatus = new System.Windows.Forms.Label();
             this.lblItemInfo = new System.Windows.Forms.Label();
+
+            this.panelViewScans = new System.Windows.Forms.Panel();
+            this.lstScans = new System.Windows.Forms.ListView();
+            this.colBarcode = new System.Windows.Forms.ColumnHeader();
+            this.colQty = new System.Windows.Forms.ColumnHeader();
+            this.colName = new System.Windows.Forms.ColumnHeader();
+            this.btnEditScan = new System.Windows.Forms.Button();
+            this.btnDeleteScan = new System.Windows.Forms.Button();
+            this.btnBackFromView = new System.Windows.Forms.Button();
             
             this.panelHeader.SuspendLayout();
             this.panelConfig.SuspendLayout();
             this.panelScan.SuspendLayout();
+            this.panelViewScans.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelHeader
             // 
             this.panelHeader.BackColor = System.Drawing.Color.MidnightBlue;
+            this.panelHeader.Controls.Add(this.lblInputMode);
             this.panelHeader.Controls.Add(this.lblHeader);
             this.panelHeader.Location = new System.Drawing.Point(0, 0);
             this.panelHeader.Name = "panelHeader";
@@ -61,14 +75,24 @@ namespace CasioScannerApp
             // 
             this.lblHeader.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
             this.lblHeader.ForeColor = System.Drawing.Color.White;
-            this.lblHeader.Location = new System.Drawing.Point(0, 0);
-            this.lblHeader.Size = new System.Drawing.Size(238, 26);
+            this.lblHeader.Location = new System.Drawing.Point(5, 5);
+            this.lblHeader.Size = new System.Drawing.Size(185, 18);
             this.lblHeader.Text = "OWI PHYSICAL INVENTORY";
-            this.lblHeader.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.lblHeader.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            // 
+            // lblInputMode
+            // 
+            this.lblInputMode.Font = new System.Drawing.Font("Tahoma", 8F, System.Drawing.FontStyle.Bold);
+            this.lblInputMode.ForeColor = System.Drawing.Color.Gold;
+            this.lblInputMode.Location = new System.Drawing.Point(192, 5);
+            this.lblInputMode.Size = new System.Drawing.Size(43, 16);
+            this.lblInputMode.Text = "[abc]";
+            this.lblInputMode.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // panelConfig
             // 
             this.panelConfig.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.panelConfig.Controls.Add(this.btnF1Exit);
             this.panelConfig.Controls.Add(this.btnSaveConfig);
             this.panelConfig.Controls.Add(this.txtLocator);
             this.panelConfig.Controls.Add(this.label4);
@@ -152,8 +176,17 @@ namespace CasioScannerApp
             this.btnSaveConfig.Text = "Save Setting";
             this.btnSaveConfig.Click += new System.EventHandler(this.btnSaveConfig_Click);
             // 
+            // 
+            // btnF1Exit
+            // 
+            this.btnF1Exit.Font = new System.Drawing.Font("Tahoma", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnF1Exit.Location = new System.Drawing.Point(5, 185);
+            this.btnF1Exit.Size = new System.Drawing.Size(228, 30);
+            this.btnF1Exit.Text = "F1: EXIT SYSTEM";
+            // 
             // panelScan
             // 
+            this.panelScan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
             this.panelScan.Controls.Add(this.lblScannedCount);
             this.panelScan.Controls.Add(this.lblActiveLoc);
             this.panelScan.Controls.Add(this.btnBackToConfig);
@@ -163,6 +196,7 @@ namespace CasioScannerApp
             this.panelScan.Controls.Add(this.txtQty);
             this.panelScan.Controls.Add(this.btnSend);
             this.panelScan.Controls.Add(this.btnClear);
+            this.panelScan.Controls.Add(this.btnViewScans);
             this.panelScan.Controls.Add(this.btnFinish);
             this.panelScan.Controls.Add(this.lblStatus);
             this.panelScan.Controls.Add(this.lblItemInfo);
@@ -176,7 +210,7 @@ namespace CasioScannerApp
             this.btnBackToConfig.Location = new System.Drawing.Point(5, 5);
             this.btnBackToConfig.Size = new System.Drawing.Size(100, 22);
             this.btnBackToConfig.TabIndex = 0;
-            this.btnBackToConfig.Text = "Change Config";
+            this.btnBackToConfig.Text = "F1: Change Config";
             this.btnBackToConfig.Click += new System.EventHandler(this.btnBackToConfig_Click);
             // 
             // lblActiveLoc
@@ -242,22 +276,31 @@ namespace CasioScannerApp
             // 
             // btnClear
             // 
-            this.btnClear.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Regular);
+            this.btnClear.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
             this.btnClear.Location = new System.Drawing.Point(120, 120);
             this.btnClear.Size = new System.Drawing.Size(113, 30);
             this.btnClear.TabIndex = 4;
-            this.btnClear.Text = "Clear";
+            this.btnClear.Text = "F7: Clear";
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // btnViewScans
+            // 
+            this.btnViewScans.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
+            this.btnViewScans.Location = new System.Drawing.Point(5, 155);
+            this.btnViewScans.Size = new System.Drawing.Size(110, 30);
+            this.btnViewScans.TabIndex = 5;
+            this.btnViewScans.Text = "F6: View Scan";
+            this.btnViewScans.Click += new System.EventHandler(this.btnViewScans_Click);
             // 
             // btnFinish
             // 
             this.btnFinish.BackColor = System.Drawing.Color.Gold;
-            this.btnFinish.Font = new System.Drawing.Font("Tahoma", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnFinish.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
             this.btnFinish.ForeColor = System.Drawing.Color.Black;
-            this.btnFinish.Location = new System.Drawing.Point(5, 155);
-            this.btnFinish.Size = new System.Drawing.Size(228, 30);
-            this.btnFinish.TabIndex = 5;
-            this.btnFinish.Text = "F4: Finish Locator";
+            this.btnFinish.Location = new System.Drawing.Point(120, 155);
+            this.btnFinish.Size = new System.Drawing.Size(113, 30);
+            this.btnFinish.TabIndex = 6;
+            this.btnFinish.Text = "F4: Finish";
             this.btnFinish.Click += new System.EventHandler(this.btnFinish_Click);
             // 
             // lblStatus
@@ -277,12 +320,81 @@ namespace CasioScannerApp
             this.lblItemInfo.Text = "";
             this.lblItemInfo.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
+            // panelViewScans
+            // 
+            this.panelViewScans.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(240)))), ((int)(((byte)(240)))), ((int)(((byte)(240)))));
+            this.panelViewScans.Controls.Add(this.lstScans);
+            this.panelViewScans.Controls.Add(this.btnEditScan);
+            this.panelViewScans.Controls.Add(this.btnDeleteScan);
+            this.panelViewScans.Controls.Add(this.btnBackFromView);
+            this.panelViewScans.Location = new System.Drawing.Point(0, 26);
+            this.panelViewScans.Name = "panelViewScans";
+            this.panelViewScans.Size = new System.Drawing.Size(238, 269);
+            this.panelViewScans.Visible = false;
+            // 
+            // lstScans
+            // 
+            this.lstScans.Columns.Add(this.colBarcode);
+            this.lstScans.Columns.Add(this.colQty);
+            this.lstScans.Columns.Add(this.colName);
+            this.lstScans.Font = new System.Drawing.Font("Tahoma", 8F, System.Drawing.FontStyle.Regular);
+            this.lstScans.FullRowSelect = true;
+            this.lstScans.Location = new System.Drawing.Point(5, 5);
+            this.lstScans.Name = "lstScans";
+            this.lstScans.Size = new System.Drawing.Size(228, 175);
+            this.lstScans.TabIndex = 0;
+            this.lstScans.View = System.Windows.Forms.View.Details;
+            this.lstScans.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            // 
+            // colBarcode
+            // 
+            this.colBarcode.Text = "Barcode";
+            this.colBarcode.Width = 95;
+            // 
+            // colQty
+            // 
+            this.colQty.Text = "Qty";
+            this.colQty.Width = 35;
+            // 
+            // colName
+            // 
+            this.colName.Text = "Description";
+            this.colName.Width = 140;
+            // 
+            // btnEditScan
+            // 
+            this.btnEditScan.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
+            this.btnEditScan.Location = new System.Drawing.Point(5, 190);
+            this.btnEditScan.Size = new System.Drawing.Size(110, 30);
+            this.btnEditScan.TabIndex = 1;
+            this.btnEditScan.Text = "Edit";
+            this.btnEditScan.Click += new System.EventHandler(this.btnEditScan_Click);
+            // 
+            // btnDeleteScan
+            // 
+            this.btnDeleteScan.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold);
+            this.btnDeleteScan.Location = new System.Drawing.Point(120, 190);
+            this.btnDeleteScan.Size = new System.Drawing.Size(113, 30);
+            this.btnDeleteScan.TabIndex = 2;
+            this.btnDeleteScan.Text = "F7: Delete";
+            this.btnDeleteScan.Click += new System.EventHandler(this.btnDeleteScan_Click);
+            // 
+            // btnBackFromView
+            // 
+            this.btnBackFromView.Font = new System.Drawing.Font("Tahoma", 9.5F, System.Drawing.FontStyle.Bold);
+            this.btnBackFromView.Location = new System.Drawing.Point(5, 226);
+            this.btnBackFromView.Size = new System.Drawing.Size(228, 30);
+            this.btnBackFromView.TabIndex = 3;
+            this.btnBackFromView.Text = "F4: Back to Scan";
+            this.btnBackFromView.Click += new System.EventHandler(this.btnBackFromView_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.AutoScroll = true;
+            this.AutoScroll = false;
             this.ClientSize = new System.Drawing.Size(238, 295);
+            this.Controls.Add(this.panelViewScans);
             this.Controls.Add(this.panelScan);
             this.Controls.Add(this.panelConfig);
             this.Controls.Add(this.panelHeader);
@@ -290,10 +402,12 @@ namespace CasioScannerApp
             this.MinimizeBox = false;
             this.Name = "Form1";
             this.Text = "OWI PI Scanner App";
+            this.WindowState = System.Windows.Forms.FormWindowState.Normal;
             this.Load += new System.EventHandler(this.Form1_Load);
             this.panelHeader.ResumeLayout(false);
             this.panelConfig.ResumeLayout(false);
             this.panelScan.ResumeLayout(false);
+            this.panelViewScans.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -302,6 +416,8 @@ namespace CasioScannerApp
 
         private System.Windows.Forms.Panel panelHeader;
         private System.Windows.Forms.Label lblHeader;
+        private System.Windows.Forms.Label lblInputMode;
+        private System.Windows.Forms.Button btnF1Exit;
         private System.Windows.Forms.Panel panelConfig;
         private System.Windows.Forms.TextBox txtHost;
         private System.Windows.Forms.Label label1;
@@ -323,8 +439,18 @@ namespace CasioScannerApp
         private System.Windows.Forms.TextBox txtQty;
         private System.Windows.Forms.Button btnSend;
         private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.Button btnViewScans;
         private System.Windows.Forms.Button btnFinish;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Label lblItemInfo;
+
+        private System.Windows.Forms.Panel panelViewScans;
+        private System.Windows.Forms.ListView lstScans;
+        private System.Windows.Forms.ColumnHeader colBarcode;
+        private System.Windows.Forms.ColumnHeader colQty;
+        private System.Windows.Forms.ColumnHeader colName;
+        private System.Windows.Forms.Button btnEditScan;
+        private System.Windows.Forms.Button btnDeleteScan;
+        private System.Windows.Forms.Button btnBackFromView;
     }
 }
