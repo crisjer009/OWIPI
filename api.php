@@ -1,4 +1,24 @@
 <?php
+// Custom error handler for debugging
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    $msg = "[" . date('Y-m-d H:i:s') . "] Error ($errno): $errstr in $errfile on line $errline\n";
+    file_put_contents(__DIR__ . '/php_debug.log', $msg, FILE_APPEND);
+    return false;
+});
+
+// Custom exception handler
+set_exception_handler(function($exception) {
+    $msg = "[" . date('Y-m-d H:i:s') . "] Uncaught Exception: " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
+    file_put_contents(__DIR__ . '/php_debug.log', $msg, FILE_APPEND);
+    
+    http_response_code(500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => $exception->getMessage()
+    ]);
+    exit;
+});
+
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
