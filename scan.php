@@ -1381,7 +1381,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Secret
                         Sync Token</label>
                     <input type="password" id="sync_secret_token" class="form-control"
-                        placeholder="Enter secure sync token" style="width:100%; box-sizing:border-box;" required>
+                        placeholder="Enter secure sync token" style="width:100%; box-sizing:border-box;">
                     <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">Security
                         token defined in the server's db_config.json to authorize uploads.</span>
                 </div>

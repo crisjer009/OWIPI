@@ -1294,7 +1294,7 @@ function handleReceiveSync() {
         $config = loadConfig();
         $expectedToken = $config['sync_secret_token'] ?? '';
 
-        if (empty($expectedToken) || $secretToken !== $expectedToken) {
+        if (!empty($expectedToken) && $secretToken !== $expectedToken) {
             http_response_code(401);
             sendResponse(['status' => 'error', 'message' => 'Unauthorized sync token.']);
         }
