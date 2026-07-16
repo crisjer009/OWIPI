@@ -3356,43 +3356,65 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         }
 
         function runCloudSync() {
-            const btn = document.getElementById('btn-run-sync');
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span>Syncing...</span>';
+            const cloudUrl = document.getElementById('sync_cloud_url').value.trim();
+            const secretToken = document.getElementById('sync_secret_token').value.trim();
 
             const statusMsg = document.getElementById('sync-status-msg');
             statusMsg.style.display = 'block';
             statusMsg.style.background = 'rgba(255,255,255,0.05)';
             statusMsg.style.color = '#8b949e';
-            statusMsg.innerText = 'Connecting to cloud and uploading unsynced data...';
 
-            fetch('api.php?action=trigger_cloud_sync')
-                .then(res => res.json())
-                .then(data => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
+            if (!cloudUrl) {
+                statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                statusMsg.style.color = '#f85149';
+                statusMsg.innerText = 'Please enter a valid Cloud Server API URL.';
+                return;
+            }
 
-                    if (data.status === 'success') {
-                        statusMsg.style.background = 'rgba(46,164,79,0.15)';
-                        statusMsg.style.color = '#2ea44f';
-                        statusMsg.innerText = data.message;
+            const btn = document.getElementById('btn-run-sync');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span>Syncing...</span>';
+            statusMsg.innerText = 'Saving configuration and starting synchronization...';
 
-                        // Reload dashboard/locators to reflect status
-                        loadHostLocators();
-                    } else {
-                        statusMsg.style.background = 'rgba(248,81,73,0.15)';
-                        statusMsg.style.color = '#f85149';
-                        statusMsg.innerText = data.message;
-                    }
-                })
-                .catch(err => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
+            // Automatically save settings first
+            fetch('api.php?action=save_sync_config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cloud_sync_url: cloudUrl, sync_secret_token: secretToken })
+            })
+            .then(res => res.json())
+            .then(saveData => {
+                if (saveData.status !== 'success') {
+                    throw new Error(saveData.message || 'Failed to save configuration.');
+                }
+                // Trigger sync execution
+                return fetch('api.php?action=trigger_cloud_sync').then(res => res.json());
+            })
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+
+                if (data.status === 'success') {
+                    statusMsg.style.background = 'rgba(46,164,79,0.15)';
+                    statusMsg.style.color = '#2ea44f';
+                    statusMsg.innerText = data.message;
+
+                    // Reload dashboard/locators to reflect status
+                    loadHostLocators();
+                } else {
                     statusMsg.style.background = 'rgba(248,81,73,0.15)';
                     statusMsg.style.color = '#f85149';
-                    statusMsg.innerText = 'Sync failed: ' + err;
-                });
+                    statusMsg.innerText = data.message;
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                statusMsg.style.color = '#f85149';
+                statusMsg.innerText = 'Sync failed: ' + err.message;
+            });
         }
 
         function updateQRCodeIP(newIp) {
