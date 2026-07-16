@@ -87,7 +87,7 @@ function formatProductDescription($descr, $attr, $size)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product'];
 $userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
@@ -197,6 +197,23 @@ try {
                         'connection_failed' => true
                     ]);
                 }
+            } else {
+                throw new Exception("Failed to write config file.");
+            }
+            break;
+
+        case 'save_sync_token':
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                throw new Exception("Invalid JSON inputs.");
+            }
+            $config = loadConfig();
+            $config['sync_secret_token'] = isset($input['sync_secret_token']) ? trim($input['sync_secret_token']) : '';
+            if (saveConfig($config)) {
+                sendResponse([
+                    'status' => 'success',
+                    'message' => 'Secret Sync Token saved successfully!'
+                ]);
             } else {
                 throw new Exception("Failed to write config file.");
             }

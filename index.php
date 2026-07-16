@@ -1438,6 +1438,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <input type="text" id="sync_secret_token" class="form-control"
                             value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>" placeholder="e.g. my_secure_token_123">
                         <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.</small>
+                        <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary" style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save Token Only</button>
                     </div>
 
                     <div style="display: flex; gap: 1rem; margin-top: 2rem;">
@@ -1867,6 +1868,30 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => {
                     showToast("Failed to save configuration: " + err, "error");
                 });
+        }
+
+        // Save Secret Sync Token Only
+        function saveTokenOnly() {
+            const token = document.getElementById('sync_secret_token').value.trim();
+            showToast("Saving Secret Sync Token...", "info");
+            
+            fetch('api.php?action=save_sync_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sync_secret_token: token })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast(data.message, "success");
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(data.message, "error");
+                }
+            })
+            .catch(err => {
+                showToast("Failed to save token: " + err, "error");
+            });
         }
 
         // Save Print Config Spacing Settings
