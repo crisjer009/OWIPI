@@ -179,6 +179,7 @@ function checkAuth($requireAdmin = false) {
 class OWI_DB {
     private $config;
     private $pdo = null;
+    private static $isInitializing = false;
     
     public function __construct() {
         $this->config = loadConfig();
@@ -226,10 +227,11 @@ class OWI_DB {
             $this->pdo = new PDO($dsn, $username, $password, $options);
             
             // Self-healing check: if database was selected, verify if 'stores' table exists and has all columns
-            if ($selectDatabase) {
+            if ($selectDatabase && !self::$isInitializing) {
                 static $dbChecked = false;
                 if (!$dbChecked) {
                     $dbChecked = true;
+                    self::$isInitializing = true;
                     try {
                         $stmt = $this->pdo->query("SHOW TABLES LIKE 'stores'");
                         if ($stmt->rowCount() == 0) {
@@ -244,6 +246,8 @@ class OWI_DB {
                         }
                     } catch (PDOException $tblEx) {
                         $this->initializeDatabase();
+                    } finally {
+                        self::$isInitializing = false;
                     }
                 }
             }
@@ -251,11 +255,14 @@ class OWI_DB {
             return true;
         } catch (PDOException $e) {
             // Self-healing: If database doesn't exist, auto-create & initialize it
-            if ($selectDatabase) {
+            if ($selectDatabase && !self::$isInitializing) {
+                self::$isInitializing = true;
                 try {
                     $this->initializeDatabase();
+                    self::$isInitializing = false;
                     return true;
                 } catch (Exception $initEx) {
+                    self::$isInitializing = false;
                     // Fall back to original error
                 }
             }
