@@ -1211,7 +1211,7 @@ namespace CasioScannerApp
             {
                 if (isSuccess)
                 {
-                    UpdateStatus("SUCCESS: Saved!", System.Drawing.Color.Green);
+                    UpdateStatus("SUCCESS: " + message, System.Drawing.Color.Green);
 
                     lblItemInfo.Text = ""; // Clear description after successfully saved
 

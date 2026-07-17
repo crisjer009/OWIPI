@@ -1836,10 +1836,17 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         statusCard.style.borderColor = 'rgba(46, 164, 79, 0.4)';
                         statusCard.style.background = 'rgba(46, 164, 79, 0.08)';
 
+                        let varianceHtml = '';
+                        if (info.master_qty !== undefined) {
+                            let varianceColor = info.variance < 0 ? '#ff7b72' : (info.variance > 0 ? '#58a6ff' : '#3fb950');
+                            let sign = info.variance > 0 ? '+' : '';
+                            varianceHtml = `<br>Masterfile Qty: <strong>${info.master_qty}</strong> | Total Scanned: <strong>${info.total_scanned}</strong><br>Variance: <strong style="color:${varianceColor};">${sign}${info.variance}</strong>`;
+                        }
+
                         statusText.innerHTML = `
                         Barcode: <strong style="font-family:monospace;color:white;">${info.barcode}</strong><br>
                         Product: <strong>${info.product_name}</strong> Qty: <strong>${info.quantity}</strong><br>
-                        Location: <strong>${info.location}</strong>
+                        Location: <strong>${info.location}</strong>${varianceHtml}
                     `;
 
                         // Refresh session log from server database

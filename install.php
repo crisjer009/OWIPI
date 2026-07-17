@@ -360,18 +360,19 @@ $step = $_GET['step'] ?? 'form';
                         $chunks = array_chunk($products, $chunkSize);
                         
                         foreach ($chunks as $chunk) {
-                            $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size) VALUES ";
+                            $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) VALUES ";
                             $placeholders = [];
                             $params = [];
                             
                             foreach ($chunk as $p) {
-                                $placeholders[] = "(?, ?, ?, ?, ?, ?)";
+                                $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
                                 $params[] = $p['UPC'];
                                 $params[] = $p['SKU'];
                                 $params[] = $p['Descr'];
                                 $params[] = $p['Type'] ?? 'GENERAL';
                                 $params[] = $p['Attr'] ?? null;
                                 $params[] = $p['Size'] ?? null;
+                                $params[] = isset($p['Qty']) ? (float)$p['Qty'] : 0.00;
                             }
                             
                             $sqlInsert .= implode(', ', $placeholders);

@@ -483,7 +483,7 @@ try {
             }
 
             // Check if product exists in global items catalog (resolving by UPC or SKU)
-            $sqlFindProduct = "SELECT UPC, SKU, Descr, Type, Attr, Size FROM items WHERE UPC = ? OR SKU = ?";
+            $sqlFindProduct = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items WHERE UPC = ? OR SKU = ?";
             $productRows = $db->query($sqlFindProduct, [$barcode, $barcode]);
 
             $product_found = false;
@@ -491,6 +491,7 @@ try {
             $product_type = '';
             $sku = '';
             $real_barcode = $barcode;
+            $masterQty = 0.00;
 
             if (!empty($productRows)) {
                 $product_found = true;
@@ -502,6 +503,7 @@ try {
                 $product_type = $productRows[0]['Type'];
                 $sku = $productRows[0]['SKU'];
                 $real_barcode = $productRows[0]['UPC'];
+                $masterQty = (float)($productRows[0]['Qty'] ?? 0.00);
             }
 
             // Insert scan log into dynamic store countsheet table
@@ -515,9 +517,17 @@ try {
             $countRows = $db->query("SELECT COUNT(*) as count FROM `{$store}_countsheet` WHERE SlotNo = ?", [$location]);
             $scanned_count = !empty($countRows) ? (int)$countRows[0]['count'] : 0;
 
+            // Compute total quantity scanned so far for this product in the entire store
+            $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ?", [$real_barcode]);
+            $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+            $variance = $totalScanned - $masterQty;
+
+            // Format custom message including variance info for both Casio and mobile view
+            $successMsg = "Saved! Var: " . ($variance > 0 ? "+" : "") . $variance;
+
             sendResponse([
                 'status' => 'success',
-                'message' => 'Scan logged successfully!',
+                'message' => $successMsg,
                 'data' => [
                     'barcode' => $barcode,
                     'quantity' => $qty,
@@ -527,7 +537,10 @@ try {
                     'product_name' => $product_name,
                     'product_type' => $product_type,
                     'sku' => $sku,
-                    'scanned_count' => $scanned_count
+                    'scanned_count' => $scanned_count,
+                    'master_qty' => $masterQty,
+                    'total_scanned' => $totalScanned,
+                    'variance' => $variance
                 ]
             ]);
             break;
@@ -686,12 +699,20 @@ try {
                 throw new Exception("Barcode is required.");
             }
             $db = new OWI_DB();
-            $sqlFindProduct = "SELECT UPC, SKU, Descr, Type, Attr, Size FROM items WHERE UPC = ? OR SKU = ?";
+            
+            // Get store code to query scanned counts
+            $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
+            
+            $sqlFindProduct = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items WHERE UPC = ? OR SKU = ?";
             $productRows = $db->query($sqlFindProduct, [$barcode, $barcode]);
             
             $product_found = false;
             $product_name = 'Item Not Found';
             $product_type = '';
+            $masterQty = 0.00;
+            $totalScanned = 0.00;
+            $variance = 0.00;
             
             if (!empty($productRows)) {
                 $product_found = true;
@@ -700,14 +721,31 @@ try {
                 $size = $productRows[0]['Size'] ?? '';
                 
                 $product_name = formatProductDescription($descr, $attr, $size);
-                $product_type = $productRows[0]['Type'];
+                $masterQty = (float)($productRows[0]['Qty'] ?? 0.00);
+                
+                if (!empty($store)) {
+                    $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
+                    if (!empty($tableCheck)) {
+                        $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ?", [$productRows[0]['UPC']]);
+                        $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+                    }
+                }
+                
+                $variance = $totalScanned - $masterQty;
+                
+                // Embed variance into type/desc2 so Casio scanner prints it on screen immediately!
+                $typeStr = trim($productRows[0]['Type'] ?? '');
+                $product_type = $typeStr . "\nMst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . ($variance > 0 ? "+" : "") . $variance;
             }
             
             sendResponse([
                 'status' => 'success',
                 'product_found' => $product_found,
                 'product_name' => $product_name,
-                'product_type' => $product_type
+                'product_type' => $product_type,
+                'master_qty' => $masterQty,
+                'total_scanned' => $totalScanned,
+                'variance' => $variance
             ]);
             break;
 
@@ -800,58 +838,66 @@ try {
 
             // Map header indexes
             $aluIdx = -1;
+            $upcIdx = -1;
+            $qtyIdx = -1;
             $desc1Idx = -1;
             $desc2Idx = -1;
             $attrIdx = -1;
             $sizeIdx = -1;
-
+ 
             // Start transaction for speed
             $db->execute("START TRANSACTION");
-
+ 
             try {
                 // Clear existing database catalog table first (Option 1)
                 $db->execute("TRUNCATE TABLE items");
-
+ 
                 $sqlInsert = "
-                    INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size) 
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE 
                         SKU = VALUES(SKU), 
                         Descr = VALUES(Descr), 
                         Type = VALUES(Type),
                         Attr = VALUES(Attr),
-                        Size = VALUES(Size)
+                        Size = VALUES(Size),
+                        Qty = VALUES(Qty)
                 ";
-
+ 
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if ($line === '') {
                         continue;
                     }
-
+ 
                     // Split by tab
                     $cols = explode("\t", $line);
                     if (empty($cols)) {
                         continue;
                     }
-
+ 
                     if (!$headerChecked) {
                         // Header check: find indexes
                         foreach ($cols as $idx => $headerName) {
                             $headerName = trim(strtolower($headerName));
+                            $headerName = trim($headerName, '"\'');
                             if ($headerName === 'alu') {
                                 $aluIdx = $idx;
-                            } elseif ($headerName === 'desc1') {
+                            } elseif ($headerName === 'local_upc' || $headerName === 'upc') {
+                                $upcIdx = $idx;
+                            } elseif ($headerName === 'qty' || $headerName === 'quantity') {
+                                $qtyIdx = $idx;
+                            } elseif ($headerName === 'description1' || $headerName === 'desc1') {
                                 $desc1Idx = $idx;
-                            } elseif ($headerName === 'desc2') {
+                            } elseif ($headerName === 'description2' || $headerName === 'desc2') {
                                 $desc2Idx = $idx;
                             } elseif ($headerName === 'attr') {
                                 $attrIdx = $idx;
-                            } elseif ($headerName === 'size') {
+                            } elseif ($headerName === 'siz' || $headerName === 'size') {
                                 $sizeIdx = $idx;
                             }
                         }
-
+ 
                         // If headers were missing or not matched, default to standard legacy layout
                         if ($aluIdx === -1)
                             $aluIdx = 0;
@@ -859,13 +905,15 @@ try {
                             $desc1Idx = 3;
                         if ($desc2Idx === -1)
                             $desc2Idx = 4;
-
+ 
                         $headerChecked = true;
-
+ 
                         // Check if this line is the header line itself, and skip importing it
                         $isHeaderRow = false;
                         foreach ($cols as $colVal) {
-                            if (trim(strtolower($colVal)) === 'alu') {
+                            $cleanColVal = trim(strtolower($colVal));
+                            $cleanColVal = trim($cleanColVal, '"\'');
+                            if ($cleanColVal === 'alu') {
                                 $isHeaderRow = true;
                                 break;
                             }
@@ -874,24 +922,28 @@ try {
                             continue;
                         }
                     }
-
-                    $alu = isset($cols[$aluIdx]) ? trim($cols[$aluIdx]) : '';
-                    $desc1 = isset($cols[$desc1Idx]) ? trim($cols[$desc1Idx]) : '';
-                    $desc2 = isset($cols[$desc2Idx]) ? trim($cols[$desc2Idx]) : '';
-                    $attr = ($attrIdx !== -1 && isset($cols[$attrIdx])) ? trim($cols[$attrIdx]) : '';
-                    $size = ($sizeIdx !== -1 && isset($cols[$sizeIdx])) ? trim($cols[$sizeIdx]) : '';
-
+ 
+                    $alu = isset($cols[$aluIdx]) ? trim($cols[$aluIdx], "\t\n\r\0\x0B\"'") : '';
+                    $localUpc = ($upcIdx !== -1 && isset($cols[$upcIdx])) ? trim($cols[$upcIdx], "\t\n\r\0\x0B\"'") : '';
+                    $qty = ($qtyIdx !== -1 && isset($cols[$qtyIdx])) ? (float)trim($cols[$qtyIdx], "\t\n\r\0\x0B\"'") : 0.00;
+                    $desc1 = isset($cols[$desc1Idx]) ? trim($cols[$desc1Idx], "\t\n\r\0\x0B\"'") : '';
+                    $desc2 = isset($cols[$desc2Idx]) ? trim($cols[$desc2Idx], "\t\n\r\0\x0B\"'") : '';
+                    $attr = ($attrIdx !== -1 && isset($cols[$attrIdx])) ? trim($cols[$attrIdx], "\t\n\r\0\x0B\"'") : '';
+                    $size = ($sizeIdx !== -1 && isset($cols[$sizeIdx])) ? trim($cols[$sizeIdx], "\t\n\r\0\x0B\"'") : '';
+ 
                     if ($alu === '') {
                         continue;
                     }
-
-                    // Pad ALU to 13 digits to form UPC
-                    $upc = str_pad($alu, 13, '0', STR_PAD_LEFT);
+ 
+                    // Pad ALU to 13 digits to form UPC fallback
+                    $fallbackUpc = str_pad($alu, 13, '0', STR_PAD_LEFT);
+                    // Use LOCAL_UPC if present, otherwise fallback to padded ALU
+                    $upc = (!empty($localUpc)) ? $localUpc : $fallbackUpc;
                     $sku = $alu;
                     $descr = $desc1;
                     $type = $desc2;
-
-                    $db->execute($sqlInsert, [$upc, $sku, $descr, $type, $attr, $size]);
+ 
+                    $db->execute($sqlInsert, [$upc, $sku, $descr, $type, $attr, $size, $qty]);
                     $importedCount++;
                 }
 
@@ -1490,18 +1542,19 @@ try {
             $chunks = array_chunk($products, $chunkSize);
             
             foreach ($chunks as $chunk) {
-                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size) VALUES ";
+                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) VALUES ";
                 $placeholders = [];
                 $params = [];
                 
                 foreach ($chunk as $p) {
-                    $placeholders[] = "(?, ?, ?, ?, ?, ?)";
+                    $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
                     $params[] = $p['UPC'];
                     $params[] = $p['SKU'];
                     $params[] = $p['Descr'];
                     $params[] = $p['Type'] ?? 'GENERAL';
                     $params[] = $p['Attr'] ?? null;
                     $params[] = $p['Size'] ?? null;
+                    $params[] = isset($p['Qty']) ? (float)$p['Qty'] : 0.00;
                 }
                 
                 $sqlInsert .= implode(', ', $placeholders);
@@ -1546,7 +1599,7 @@ try {
         case 'get_cloud_products':
             verifySyncToken();
             $db = new OWI_DB();
-            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size FROM items");
+            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items");
             sendResponse([
                 'status' => 'success',
                 'products' => $products

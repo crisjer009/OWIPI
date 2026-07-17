@@ -194,7 +194,7 @@ if (!empty($store) && !empty($operator) && !empty($locator) && $mode === 'setup'
                         var descr = getJSONParam(responseText, "product_name");
 
                         if (status === "success") {
-                            var successMsg = descr !== "" ? descr : "Count saved successfully.";
+                            var successMsg = (descr !== "" ? descr : "Count saved successfully.") + " (" + message + ")";
                             updateStatusBox(successMsg, "status-success");
                             barcodeEl.value = "";
                             loadRecentScans();

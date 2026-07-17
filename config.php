@@ -352,10 +352,11 @@ class OWI_DB {
                 Descr VARCHAR(255) NOT NULL,
                 Type VARCHAR(100) NULL,
                 Attr VARCHAR(100) NULL,
-                Size VARCHAR(100) NULL
+                Size VARCHAR(100) NULL,
+                Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
-
+ 
         // Create global audit logs table
         $sqlAuditLogsTable = "
             CREATE TABLE IF NOT EXISTS audit_logs (
@@ -372,20 +373,23 @@ class OWI_DB {
         $this->execute($sqlStoresTable);
         $this->execute($sqlGlobalItemsTable);
         $this->execute($sqlAuditLogsTable);
-
+ 
         // Dynamically add synced column to stores table for existing installations
         try {
             $this->execute("ALTER TABLE stores ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");
         } catch (Exception $ex) {
             // Column already exists
         }
-
-        // Dynamically add Attr and Size columns to items table for existing installations
+ 
+        // Dynamically add Attr, Size, and Qty columns to items table for existing installations
         try {
             $this->execute("ALTER TABLE items ADD COLUMN Attr VARCHAR(100) NULL AFTER Type");
         } catch (Exception $ex) {}
         try {
             $this->execute("ALTER TABLE items ADD COLUMN Size VARCHAR(100) NULL AFTER Attr");
+        } catch (Exception $ex) {}
+        try {
+            $this->execute("ALTER TABLE items ADD COLUMN Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER Size");
         } catch (Exception $ex) {}
 
         // Seed default global items
