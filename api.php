@@ -1183,12 +1183,16 @@ try {
                 throw new Exception("Cloud Synchronization URL is not configured in settings.");
             }
 
-            // Retrieve store details
             $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
             if (empty($storeRows)) {
                 throw new Exception("Store code does not exist in master stores table.");
             }
             $storeDetails = $storeRows[0];
+            
+            // Check if store is 100% completed and closed
+            if (empty($storeDetails['closed']) || (int)$storeDetails['closed'] !== 1) {
+                throw new Exception("Synchronization failed: The store session '{$_SESSION['store_code']}' is still ongoing. It must be 100% completed and CLOSED before syncing to the cloud.");
+            }
 
             // Fetch unsynced locators
             $locators = $db->query("SELECT * FROM `{$store}_locators` WHERE synced = 0");
@@ -1346,6 +1350,11 @@ function handleReceiveSync() {
         $storeDetails = $input['store_details'] ?? [];
         $createdBy = $storeDetails['created_by'] ?? null;
         $db->createStoreTables($storeCode, $createdBy);
+        
+        // Sync the closed status from the local payload to the cloud
+        if (isset($storeDetails['closed'])) {
+            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int)$storeDetails['closed'], $storeCode]);
+        }
 
         $locators = $input['locators'] ?? [];
         foreach ($locators as $loc) {
