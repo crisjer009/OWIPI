@@ -1205,6 +1205,49 @@ namespace CasioScannerApp
                     string countStr = rawResponse.Substring(start, end - start).Trim().Replace("}", "").Replace("]", "");
                     try { countVal = Convert.ToInt32(countStr); } catch { }
                 }
+            double masterQtyVal = 0;
+            int mqIdx = rawResponse.IndexOf("\"master_qty\":");
+            if (mqIdx != -1)
+            {
+                int start = mqIdx + 13;
+                int endComma = rawResponse.IndexOf(",", start);
+                int endBrace = rawResponse.IndexOf("}", start);
+                int end = (endComma != -1 && endComma < endBrace) ? endComma : endBrace;
+                if (end != -1)
+                {
+                    string valStr = rawResponse.Substring(start, end - start).Trim().Replace("}", "").Replace("]", "").Replace("\"", "").Replace("'", "");
+                    try { masterQtyVal = Convert.ToDouble(valStr); } catch { }
+                }
+            }
+
+            double totalScannedVal = 0;
+            int tsIdx = rawResponse.IndexOf("\"total_scanned\":");
+            if (tsIdx != -1)
+            {
+                int start = tsIdx + 16;
+                int endComma = rawResponse.IndexOf(",", start);
+                int endBrace = rawResponse.IndexOf("}", start);
+                int end = (endComma != -1 && endComma < endBrace) ? endComma : endBrace;
+                if (end != -1)
+                {
+                    string valStr = rawResponse.Substring(start, end - start).Trim().Replace("}", "").Replace("]", "").Replace("\"", "").Replace("'", "");
+                    try { totalScannedVal = Convert.ToDouble(valStr); } catch { }
+                }
+            }
+
+            double varianceVal = 0;
+            int varIdx = rawResponse.IndexOf("\"variance\":");
+            if (varIdx != -1)
+            {
+                int start = varIdx + 11;
+                int endComma = rawResponse.IndexOf(",", start);
+                int endBrace = rawResponse.IndexOf("}", start);
+                int end = (endComma != -1 && endComma < endBrace) ? endComma : endBrace;
+                if (end != -1)
+                {
+                    string valStr = rawResponse.Substring(start, end - start).Trim().Replace("}", "").Replace("]", "").Replace("\"", "").Replace("'", "");
+                    try { varianceVal = Convert.ToDouble(valStr); } catch { }
+                }
             }
 
             this.Invoke(new Action(delegate ()
@@ -1213,7 +1256,9 @@ namespace CasioScannerApp
                 {
                     UpdateStatus("SUCCESS: " + message, System.Drawing.Color.Green);
 
-                    lblItemInfo.Text = ""; // Clear description after successfully saved
+                    // Update label with final quantities and variance
+                    string finalVarStr = (varianceVal >= 0 ? "+" : "") + varianceVal;
+                    lblItemInfo.Text = descr + "\nMst Qty: " + masterQtyVal + " | Scan: " + totalScannedVal + "\nVar: " + finalVarStr;
 
                     if (countVal != -1)
                     {

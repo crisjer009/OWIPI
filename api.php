@@ -523,7 +523,8 @@ try {
             $variance = $totalScanned - $masterQty;
 
             // Format custom message including variance info for both Casio and mobile view
-            $successMsg = "Saved! Var: " . ($variance > 0 ? "+" : "") . $variance;
+            $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
+            $successMsg = "Saved! Var: " . $varianceStr;
 
             sendResponse([
                 'status' => 'success',
@@ -731,9 +732,8 @@ try {
                     }
                 }
                 
-                $variance = $totalScanned - $masterQty;
-                
-                $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . ($variance > 0 ? "+" : "") . $variance;
+                $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
+                $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . $varianceStr;
             }
             
             sendResponse([
