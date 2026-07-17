@@ -995,6 +995,45 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         for now ✕</a>
                 </div>
             </form>
+            <div style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem; text-align: center;">
+                <a href="javascript:void(0)" onclick="openCloudStoreDownloader()" 
+                   style="font-size:0.85rem; color:var(--success-color); text-decoration:none; font-weight:700; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                    ☁️ Download Store from Cloud
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cloud Store Downloader Overlay -->
+    <div class="store-selector-overlay" id="cloud-store-download-overlay" style="display: none;">
+        <div class="store-selector-card">
+            <div style="text-align:center; margin-bottom: 2rem;">
+                <div
+                    style="width:50px; height:50px; background:linear-gradient(135deg, var(--success-color), #059669); border-radius:14px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(16, 185, 129, 0.35); margin-bottom:1rem;">
+                    <svg viewBox="0 0 24 24" style="width:26px;height:26px;fill:white;">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
+                    </svg>
+                </div>
+                <h2 style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:700; margin-bottom:0.25rem;">
+                    Download Store from Cloud</h2>
+                <p style="color:var(--text-secondary); font-size:0.85rem;">Fetch active store sessions and templates configured on the cloud server.</p>
+            </div>
+
+            <form onsubmit="handleImportCloudStore(event)" id="cloud-store-download-form">
+                <div class="form-group" id="cloud-stores-select-container">
+                    <label for="cloud_store_select">Select Cloud Store Session</label>
+                    <select id="cloud_store_select" class="form-control" style="margin-bottom: 1rem;" required>
+                        <option value="">Loading active stores from cloud...</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn" id="btn-import-cloud-store" style="width:100%; margin-top: 1rem; background: var(--success-color); border-color: var(--success-color);">Download & Import Store</button>
+
+                <div style="text-align:center; margin-top: 1.25rem;">
+                    <a href="javascript:void(0)" onclick="closeCloudStoreDownloader()"
+                        style="font-size:0.8rem; color:var(--text-secondary); text-decoration:none; font-weight:600;">Cancel ✕</a>
+                </div>
+            </form>
         </div>
     </div>
     <script>
@@ -1024,6 +1063,80 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     }
                 })
                 .catch(err => console.error("Error loading stores:", err));
+        }
+
+        function openCloudStoreDownloader() {
+            // Close the main selector first if it is open
+            closeStoreSelector();
+            
+            // Show our download overlay
+            document.getElementById('cloud-store-download-overlay').style.display = 'flex';
+            
+            const selectEl = document.getElementById('cloud_store_select');
+            selectEl.innerHTML = '<option value="">Loading active stores from cloud...</option>';
+            
+            fetch('api.php?action=fetch_cloud_stores')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (data.stores && data.stores.length > 0) {
+                            let html = '<option value="">-- Choose a store --</option>';
+                            data.stores.forEach(s => {
+                                const statusTxt = parseInt(s.closed) === 1 ? 'CLOSED' : 'ONGOING';
+                                html += `<option value="${s.store_code}">${s.store_code.toUpperCase()} (${statusTxt})</option>`;
+                            });
+                            selectEl.innerHTML = html;
+                        } else {
+                            selectEl.innerHTML = '<option value="">No store sessions found on cloud.</option>';
+                        }
+                    } else {
+                        showToast(data.message || 'Failed to fetch cloud stores.', 'error');
+                        selectEl.innerHTML = `<option value="">Error: ${data.message || 'Failed to fetch'}</option>`;
+                    }
+                })
+                .catch(err => {
+                    showToast('Failed to fetch stores: ' + err, 'error');
+                    selectEl.innerHTML = `<option value="">Error: Connection failed</option>`;
+                });
+        }
+
+        function closeCloudStoreDownloader() {
+            document.getElementById('cloud-store-download-overlay').style.display = 'none';
+        }
+
+        function handleImportCloudStore(event) {
+            event.preventDefault();
+            const storeCode = document.getElementById('cloud_store_select').value;
+            if (!storeCode) {
+                alert('Please select a store to download.');
+                return;
+            }
+            
+            const btn = document.getElementById('btn-import-cloud-store');
+            btn.disabled = true;
+            btn.innerText = 'Downloading store...';
+            
+            showToast(`Downloading '${storeCode.toUpperCase()}' from cloud...`, 'info');
+            
+            fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerText = 'Download & Import Store';
+                    
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        closeCloudStoreDownloader();
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerText = 'Download & Import Store';
+                    showToast('Import failed: ' + err, 'error');
+                });
         }
 
         function setStoreMode(mode) {
@@ -1291,12 +1404,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                        <div style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1rem;">
                             <button onclick="switchView('database')" class="btn btn-secondary btn-sm"
                                 style="padding: 0.5rem 1rem; font-size: 0.85rem;">Modify Config</button>
                             <?php if ($driverLoaded): ?>
                                 <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
                                     style="padding: 0.5rem 1rem; font-size: 0.85rem;">Initialize DB Tables</button>
+                            <?php endif; ?>
+                            <?php if ($dbStatus === 'connected'): ?>
+                                <button onclick="openCloudStoreDownloader()" class="btn btn-secondary btn-sm"
+                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: rgba(16, 185, 129, 0.15); color: var(--success-color); border: 1px solid var(--success-color);">☁️ Download Store from Cloud</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -1329,6 +1446,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <button onclick="openStoreSelector()" class="btn"
                         style="width: auto; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 600;">
                         Create / Select Store Session
+                    </button>
+                    <button onclick="openCloudStoreDownloader()" class="btn btn-secondary"
+                        style="width: auto; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 600; margin-left: 10px; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.1);">
+                        ☁️ Download Store from Cloud
                     </button>
                 </div>
             <?php else: ?>
