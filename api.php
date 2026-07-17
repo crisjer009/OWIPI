@@ -506,21 +506,25 @@ try {
                 $masterQty = (float)($productRows[0]['Qty'] ?? 0.00);
             }
 
+            // Compute total quantity scanned so far for this product in the current locator/slot
+            $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $location]);
+            $existingScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+            $totalScanned = $existingScanned + $qty;
+            $variance = $masterQty - $totalScanned;
+
             // Insert scan log into dynamic store countsheet table
             $sqlInsertScan = "
-                INSERT INTO `{$store}_countsheet` (SlotNo, UPC, SKU, Descr, Qty, ScannedBy, CountDate) 
-                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                INSERT INTO `{$store}_countsheet` (SlotNo, UPC, SKU, Descr, Qty, ScannedBy, Variance, CountDate) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             ";
-            $db->execute($sqlInsertScan, [$location, $real_barcode, $sku, $product_name, $qty, $scanned_by]);
+            $db->execute($sqlInsertScan, [$location, $real_barcode, $sku, $product_name, $qty, $scanned_by, $variance]);
+
+            // Sync variance column for all records of this product in this slot
+            $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$variance, $real_barcode, $location]);
 
             // Retrieve updated scanned count (total number of scans/rows) for this locator
             $countRows = $db->query("SELECT COUNT(*) as count FROM `{$store}_countsheet` WHERE SlotNo = ?", [$location]);
             $scanned_count = !empty($countRows) ? (int)$countRows[0]['count'] : 0;
-
-            // Compute total quantity scanned so far for this product in the entire store
-            $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ?", [$real_barcode]);
-            $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
-            $variance = $masterQty - $totalScanned;
 
             // Format custom message including variance info for both Casio and mobile view
             $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
@@ -553,23 +557,26 @@ try {
 
             // Fetch scans from dynamic store countsheet table
             $sqlScans = "
-                SELECT RecNo as id, UPC as barcode, Qty as original_qty, 
-                       IF(Edited = 1, EditedQty, Qty) as quantity, 
-                       SlotNo as location, ScannedBy as scanned_by, 
-                       DATE_FORMAT(CountDate, '%Y-%m-%d %H:%i:%s') as scanned_at,
-                       Descr as product_name, SKU as sku,
-                       Added as added, Edited as edited, EditedQty as edited_qty
-                FROM `{$store}_countsheet`
+                SELECT c.RecNo as id, c.UPC as barcode, c.Qty as original_qty, 
+                       IF(c.Edited = 1, c.EditedQty, c.Qty) as quantity, 
+                       c.SlotNo as location, c.ScannedBy as scanned_by, 
+                       DATE_FORMAT(c.CountDate, '%Y-%m-%d %H:%i:%s') as scanned_at,
+                       c.Descr as product_name, c.SKU as sku,
+                       c.Added as added, c.Edited as edited, c.EditedQty as edited_qty,
+                       c.Variance as variance,
+                       COALESCE(i.Qty, 0.00) as master_qty
+                FROM `{$store}_countsheet` c
+                LEFT JOIN items i ON i.UPC = c.UPC
             ";
 
             if ($location !== '') {
                 // Remove dynamic "Slot " prefix if passed from local mobile views
                 $cleanLoc = str_replace('Slot ', '', $location);
-                $sqlScans .= " WHERE TRIM(SlotNo) = ? OR TRIM(SlotNo) = ? ";
-                $sqlScans .= " ORDER BY RecNo DESC";
+                $sqlScans .= " WHERE TRIM(c.SlotNo) = ? OR TRIM(c.SlotNo) = ? ";
+                $sqlScans .= " ORDER BY c.RecNo DESC";
                 $scans = $db->query($sqlScans, [$location, "Slot " . $cleanLoc]);
             } else {
-                $sqlScans .= " ORDER BY RecNo DESC";
+                $sqlScans .= " ORDER BY c.RecNo DESC";
                 $scans = $db->query($sqlScans);
             }
 
@@ -641,6 +648,18 @@ try {
             ";
             $db->execute($sqlUpdateScan, [$real_barcode, $sku, $product_name, $qty, $id]);
 
+            // Recalculate variance for this product in this slot/locator
+            $slotNo = !empty($oldScanRows) ? $oldScanRows[0]['SlotNo'] : '1';
+            $masterQty = 0.00;
+            $productCheck = $db->query("SELECT Qty FROM items WHERE UPC = ?", [$real_barcode]);
+            if (!empty($productCheck)) {
+                $masterQty = (float)($productCheck[0]['Qty'] ?? 0.00);
+            }
+            $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
+            $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+            $newVariance = $masterQty - $totalScanned;
+            $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
+
             logAudit('Edit Scanned Item', "Updated item in {$oldDetails} -> New UPC: {$real_barcode}, New Qty: {$qty}");
 
             sendResponse([
@@ -671,8 +690,22 @@ try {
             $scanCheck = $db->query("SELECT SlotNo, UPC, Qty, Descr FROM `{$store}_countsheet` WHERE RecNo = ?", [$id]);
             if (!empty($scanCheck)) {
                 $details = "Locator: {$scanCheck[0]['SlotNo']}, UPC: {$scanCheck[0]['UPC']}, Qty: {$scanCheck[0]['Qty']}, Descr: {$scanCheck[0]['Descr']}";
+                $real_barcode = $scanCheck[0]['UPC'];
+                $slotNo = $scanCheck[0]['SlotNo'];
+
                 $db->execute("DELETE FROM `{$store}_countsheet` WHERE RecNo = ?", [$id]);
                 logAudit('Delete Scanned Item', "Deleted scan row: {$details}");
+
+                // Recalculate variance for remaining scans of this product in this slot/locator
+                $masterQty = 0.00;
+                $productCheck = $db->query("SELECT Qty FROM items WHERE UPC = ?", [$real_barcode]);
+                if (!empty($productCheck)) {
+                    $masterQty = (float)($productCheck[0]['Qty'] ?? 0.00);
+                }
+                $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
+                $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+                $newVariance = $masterQty - $totalScanned;
+                $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
             }
             
             sendResponse([
@@ -699,6 +732,7 @@ try {
             if (empty($barcode)) {
                 throw new Exception("Barcode is required.");
             }
+            $location = isset($_GET['location']) ? trim($_GET['location']) : '';
             $db = new OWI_DB();
             
             // Get store code to query scanned counts
@@ -727,7 +761,7 @@ try {
                 if (!empty($store)) {
                     $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
                     if (!empty($tableCheck)) {
-                        $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ?", [$productRows[0]['UPC']]);
+                        $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$productRows[0]['UPC'], $location]);
                         $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
                     }
                 }
@@ -1313,7 +1347,7 @@ try {
                        DATE_FORMAT(CountDate, '%Y-%m-%d %H:%i:%s') as scanned_at,
                        Descr as product_name, SKU as sku,
                        Added as added, Edited as edited, EditedQty as edited_qty,
-                       Posted as posted
+                       Posted as posted, Variance as variance
                 FROM `{$store}_countsheet`
                 WHERE synced = 0
             ");
@@ -1814,21 +1848,22 @@ function handleReceiveSync() {
             $scannedBy = $scan['scanned_by'] ?? 'Handheld';
             $countDate = $scan['scanned_at'] ?? date('Y-m-d H:i:s');
             $location = $scan['location'];
+            $variance = isset($scan['variance']) ? (float)$scan['variance'] : 0.00;
 
             $check = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE RecNo = ?", [$recNo]);
             if (!empty($check)) {
                 $db->execute(
                     "UPDATE `{$storeCode}_countsheet` 
-                     SET SlotNo = ?, CountDate = ?, UPC = ?, SKU = ?, Descr = ?, Qty = ?, EditedQty = ?, Posted = ?, Added = ?, Edited = ?, ScannedBy = ?, synced = 1
+                     SET SlotNo = ?, CountDate = ?, UPC = ?, SKU = ?, Descr = ?, Qty = ?, EditedQty = ?, Posted = ?, Added = ?, Edited = ?, ScannedBy = ?, synced = 1, Variance = ?
                      WHERE RecNo = ?",
-                    [$location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $recNo]
+                    [$location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance, $recNo]
                 );
             } else {
                 $db->execute(
                     "INSERT INTO `{$storeCode}_countsheet` 
-                     (RecNo, SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, synced)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-                    [$recNo, $location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy]
+                     (RecNo, SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                    [$recNo, $location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
                 );
             }
         }

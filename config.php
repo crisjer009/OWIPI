@@ -474,13 +474,18 @@ class OWI_DB {
                 Edited TINYINT(1) NOT NULL DEFAULT 0,
                 ScannedBy VARCHAR(100) NULL DEFAULT 'Handheld',
                 synced TINYINT(1) NOT NULL DEFAULT 0,
+                Variance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
                 INDEX idx_slotno (SlotNo)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
         
-        $this->execute($sqlCountSheetTable);
+        try {
+            $this->execute($sqlCountSheetTable);
+        } catch (Exception $e) {
+            // Already exists or syntax error (unlikely)
+        }
         
-        // Dynamically alter SlotNo column for existing tables to support varchar names
+        // Dynamically adjust SlotNo column
         try {
             $this->execute("ALTER TABLE `{$cleanStore}_countsheet` MODIFY COLUMN SlotNo VARCHAR(50) NOT NULL DEFAULT '1'");
         } catch (Exception $ex) {
@@ -497,6 +502,13 @@ class OWI_DB {
         // Dynamically add synced column for existing tables
         try {
             $this->execute("ALTER TABLE `{$cleanStore}_countsheet` ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");
+        } catch (Exception $ex) {
+            // Already exists or error
+        }
+
+        // Dynamically add Variance column for existing tables
+        try {
+            $this->execute("ALTER TABLE `{$cleanStore}_countsheet` ADD COLUMN Variance DECIMAL(10,2) NOT NULL DEFAULT 0.00");
         } catch (Exception $ex) {
             // Already exists or error
         }

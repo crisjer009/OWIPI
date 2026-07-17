@@ -694,6 +694,7 @@ namespace CasioScannerApp
         {
             string host = txtHost.Text.Trim();
             string store = txtStoreCode.Text.Trim();
+            string locator = txtLocator.Text.Trim();
 
             // Clear display first or show loading
             lblItemInfo.Text = "Loading details...";
@@ -707,7 +708,7 @@ namespace CasioScannerApp
                     {
                         url = url.TrimEnd('/') + "/api.php";
                     }
-                    url += "?action=get_product_info&barcode=" + Uri.EscapeDataString(barcode) + "&store_code=" + Uri.EscapeDataString(store);
+                    url += "?action=get_product_info&barcode=" + Uri.EscapeDataString(barcode) + "&store_code=" + Uri.EscapeDataString(store) + "&location=" + Uri.EscapeDataString(locator);
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                     request.Method = "GET";

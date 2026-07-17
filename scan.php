@@ -2787,6 +2787,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         }
 
                         // Group scans by Barcode/UPC
+                        // Group scans by Barcode/UPC
                         const summaryMap = {};
                         scans.forEach(scan => {
                             const barcode = scan.barcode;
@@ -2795,6 +2796,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                     barcode: barcode,
                                     sku: scan.sku || 'N/A',
                                     description: scan.product_name || 'Item Not Found',
+                                    masterQty: parseFloat(scan.master_qty || 0),
                                     totalQty: 0
                                 };
                             }
@@ -2812,7 +2814,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             }
                         });
 
-                        const padQtyCenter = (str, len = 9) => {
+                        const padQtyCenter = (str, len = 10) => {
                             str = String(str || '').trim();
                             if (str.length >= len) return str;
                             const padLeft = Math.floor((len - str.length) / 2);
@@ -2826,7 +2828,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             str = String(str || '');
                             return str + ' '.repeat(Math.max(0, len - str.length));
                         };
-                        const centerText = (str, len = 84) => {
+                        const centerText = (str, len = 97) => {
                             str = String(str || '').trim();
                             if (str.length >= len) return str;
                             const padLeft = Math.floor((len - str.length) / 2);
@@ -2840,7 +2842,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
                         // Header columns row
-                        text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 40) + 'Total Qty\r\n';
+                        text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Mst Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
                         text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
                         let grandTotal = 0;
@@ -2850,26 +2852,33 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const barcode = item.barcode || '';
                             const sku = item.sku || '';
                             const descr = item.description || 'Item Not Found';
+                            const mstQtyVal = item.masterQty;
                             const qtyVal = item.totalQty;
+                            const varianceVal = mstQtyVal - qtyVal;
+                            
+                            const mstQtyStr = mstQtyVal.toFixed(0);
                             const qtyStr = qtyVal.toFixed(0);
+                            const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
 
                             grandTotal += qtyVal;
 
                             text += padRight(recNo, 8) +
                                 padRight(barcode, 16) +
                                 padRight(sku, 8) +
-                                padRight(descr, 40) +
-                                padQtyCenter(qtyStr, 9) + '\r\n';
+                                padRight(descr, 35) +
+                                padQtyCenter(mstQtyStr, 10) +
+                                padQtyCenter(qtyStr, 10) +
+                                padQtyCenter(varianceStr, 10) + '\r\n';
                             text += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
                         });
 
                         text += '\r\n';
                         const totalInfStr = `Total INF items: ${infCount}`;
                         const grandTotalLabel = "GRAND TOTAL : ";
-                        const spacesNeeded = 72 - totalInfStr.length - grandTotalLabel.length;
+                        const spacesNeeded = 85 - totalInfStr.length - grandTotalLabel.length;
                         const spacing = ' '.repeat(Math.max(0, spacesNeeded));
 
-                        text += totalInfStr + spacing + grandTotalLabel + padQtyCenter(grandTotal.toFixed(0), 9) + '\r\n';
+                        text += totalInfStr + spacing + grandTotalLabel + padQtyCenter(grandTotal.toFixed(0), 10) + '\r\n';
 
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
