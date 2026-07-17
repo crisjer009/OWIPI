@@ -87,13 +87,17 @@ function formatProductDescription($descr, $attr, $size)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
 
 try {
     $bypassAuth = false;
+    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync') {
+        $bypassAuth = true;
+    }
+    
     $incomingStoreCode = $rawInput['store_code'] ?? ($_GET['store_code'] ?? '');
     if (($action === 'submit_scan' || $action === 'claim_locator' || $action === 'close_locator' || $action === 'get_product_info' || $action === 'get_scans' || $action === 'edit_scan' || $action === 'delete_scan' || $action === 'get_scans_html') && !empty($incomingStoreCode)) {
         $bypassAuth = true;
@@ -1291,6 +1295,225 @@ try {
             ]);
             break;
 
+        case 'fetch_cloud_stores':
+            $config = loadConfig();
+            $cloudUrl = trim($config['cloud_sync_url'] ?? '');
+            $secretToken = trim($config['sync_secret_token'] ?? '');
+            if (empty($cloudUrl)) {
+                throw new Exception("Cloud Sync URL is not configured.");
+            }
+            
+            $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_stores&secret_token=' . urlencode($secretToken);
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $targetUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            
+            $result = curl_exec($ch);
+            $err = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($err) {
+                throw new Exception("cURL Error: " . $err);
+            }
+            
+            $resData = json_decode($result, true);
+            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                $msg = $resData['message'] ?? 'Connection to cloud failed.';
+                throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
+            }
+            
+            sendResponse([
+                'status' => 'success',
+                'stores' => $resData['stores']
+            ]);
+            break;
+
+        case 'import_cloud_store':
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
+            if (empty($store)) {
+                throw new Exception("Invalid store code.");
+            }
+            
+            $config = loadConfig();
+            $cloudUrl = trim($config['cloud_sync_url'] ?? '');
+            $secretToken = trim($config['sync_secret_token'] ?? '');
+            if (empty($cloudUrl)) {
+                throw new Exception("Cloud Sync URL is not configured.");
+            }
+            
+            $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_store_details&store_code=' . urlencode($store) . '&secret_token=' . urlencode($secretToken);
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $targetUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            
+            $result = curl_exec($ch);
+            $err = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($err) {
+                throw new Exception("cURL Error: " . $err);
+            }
+            
+            $resData = json_decode($result, true);
+            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                $msg = $resData['message'] ?? 'Download from cloud failed.';
+                throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
+            }
+            
+            $cloudStore = $resData['store'];
+            $locators = $resData['locators'];
+            
+            $db = new OWI_DB();
+            
+            // Create the local store and tables
+            $db->createStoreTables($store, $cloudStore['created_by'] ?? null);
+            
+            // Sync the closed status
+            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int)$cloudStore['closed'], $store]);
+            
+            // Insert locators
+            foreach ($locators as $loc) {
+                $locName = $loc['locator_name'];
+                $status = $loc['status'] ?? 'open';
+                $operator = $loc['assigned_operator'] ?? null;
+                
+                $check = $db->query("SELECT id FROM `{$store}_locators` WHERE locator_name = ?", [$locName]);
+                if (empty($check)) {
+                    $db->execute(
+                        "INSERT INTO `{$store}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)",
+                        [$locName, $status, $operator]
+                    );
+                } else {
+                    $db->execute(
+                        "UPDATE `{$store}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?",
+                        [$status, $operator, $locName]
+                    );
+                }
+            }
+            
+            sendResponse([
+                'status' => 'success',
+                'message' => "Successfully imported store session '" . strtoupper($store) . "' from cloud with " . count($locators) . " locators!"
+            ]);
+            break;
+
+        case 'import_cloud_products':
+            $config = loadConfig();
+            $cloudUrl = trim($config['cloud_sync_url'] ?? '');
+            $secretToken = trim($config['sync_secret_token'] ?? '');
+            if (empty($cloudUrl)) {
+                throw new Exception("Cloud Sync URL is not configured.");
+            }
+            
+            $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $targetUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            
+            $result = curl_exec($ch);
+            $err = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($err) {
+                throw new Exception("cURL Error: " . $err);
+            }
+            
+            $resData = json_decode($result, true);
+            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                $msg = $resData['message'] ?? 'Connection to cloud failed.';
+                throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
+            }
+            
+            $products = $resData['products'] ?? [];
+            if (empty($products)) {
+                throw new Exception("No products found in cloud database catalog.");
+            }
+            
+            $db = new OWI_DB();
+            
+            // Truncate local items table
+            $db->execute("TRUNCATE TABLE items");
+            
+            // Insert in chunks of 500
+            $chunkSize = 500;
+            $chunks = array_chunk($products, $chunkSize);
+            
+            foreach ($chunks as $chunk) {
+                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size) VALUES ";
+                $placeholders = [];
+                $params = [];
+                
+                foreach ($chunk as $p) {
+                    $placeholders[] = "(?, ?, ?, ?, ?, ?)";
+                    $params[] = $p['UPC'];
+                    $params[] = $p['SKU'];
+                    $params[] = $p['Descr'];
+                    $params[] = $p['Type'] ?? 'GENERAL';
+                    $params[] = $p['Attr'] ?? null;
+                    $params[] = $p['Size'] ?? null;
+                }
+                
+                $sqlInsert .= implode(', ', $placeholders);
+                $db->execute($sqlInsert, $params);
+            }
+            
+            sendResponse([
+                'status' => 'success',
+                'message' => "Successfully imported " . count($products) . " products from cloud masterfile!"
+            ]);
+            break;
+
+        case 'get_cloud_stores':
+            verifySyncToken();
+            $db = new OWI_DB();
+            $stores = $db->query("SELECT id, store_code, closed FROM stores ORDER BY store_code ASC");
+            sendResponse([
+                'status' => 'success',
+                'stores' => $stores
+            ]);
+            break;
+
+        case 'get_cloud_store_details':
+            verifySyncToken();
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
+            if (empty($store)) {
+                throw new Exception("Invalid store code.");
+            }
+            $db = new OWI_DB();
+            $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
+            if (empty($storeRows)) {
+                throw new Exception("Store does not exist on cloud.");
+            }
+            $locators = $db->query("SELECT * FROM `{$store}_locators`");
+            sendResponse([
+                'status' => 'success',
+                'store' => $storeRows[0],
+                'locators' => $locators
+            ]);
+            break;
+
+        case 'get_cloud_products':
+            verifySyncToken();
+            $db = new OWI_DB();
+            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size FROM items");
+            sendResponse([
+                'status' => 'success',
+                'products' => $products
+            ]);
+            break;
+
         case 'get_scans_html':
             $db = new OWI_DB();
             $store = strtolower($input['store_code'] ?? ($_GET['store_code'] ?? ''));
@@ -1341,18 +1564,10 @@ try {
 
 function handleReceiveSync() {
     try {
+        verifySyncToken();
         $input = json_decode(file_get_contents('php://input'), true);
         if (!$input) {
             throw new Exception("Invalid JSON sync payload.");
-        }
-
-        $secretToken = $input['secret_token'] ?? '';
-        $config = loadConfig();
-        $expectedToken = $config['sync_secret_token'] ?? '';
-
-        if (!empty($expectedToken) && $secretToken !== $expectedToken) {
-            http_response_code(401);
-            sendResponse(['status' => 'error', 'message' => 'Unauthorized sync token.']);
         }
 
         $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($input['store_code'] ?? ''));
@@ -1433,5 +1648,20 @@ function handleReceiveSync() {
 
     } catch (Exception $e) {
         sendResponse(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+}
+
+// Verify sync token authentication helper
+function verifySyncToken() {
+    $rawInput = json_decode(file_get_contents('php://input'), true);
+    $secretToken = $rawInput['secret_token'] ?? ($_GET['secret_token'] ?? '');
+    
+    $config = loadConfig();
+    $expectedToken = $config['sync_secret_token'] ?? '';
+    
+    if (!empty($expectedToken) && $secretToken !== $expectedToken) {
+        http_response_code(401);
+        sendResponse(['status' => 'error', 'message' => 'Unauthorized sync token.']);
+        exit;
     }
 }

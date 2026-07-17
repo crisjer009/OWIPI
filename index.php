@@ -1735,6 +1735,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             style="width:100%; margin-top: 0.5rem; background:linear-gradient(135deg, var(--accent-color), #2563eb);">Upload
                             & Import</button>
                     </form>
+                    <div style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
+                        <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                            Or fetch the latest catalog directly from your cloud server database.
+                        </div>
+                        <button type="button" onclick="syncMasterfileFromCloud()" id="btn-sync-master-cloud" class="btn btn-secondary"
+                            style="width:100%; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); font-weight: 600; cursor: pointer;">
+                            ☁️ Sync Masterfile from Cloud
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1944,6 +1953,37 @@ if ($driverLoaded && $dbStatus === 'connected') {
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 4000);
+        }
+
+        // Sync Items Masterfile from Cloud
+        function syncMasterfileFromCloud() {
+            if (!confirm("Are you sure you want to download and sync the entire Items Masterfile from the cloud? This will overwrite the local product catalog.")) {
+                return;
+            }
+            
+            const btn = document.getElementById('btn-sync-master-cloud');
+            btn.disabled = true;
+            btn.innerText = 'Syncing catalog from cloud...';
+            
+            showToast("Fetching masterfile from cloud...", "info");
+            
+            fetch('api.php?action=import_cloud_products')
+                .then(res => res.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerText = '☁️ Sync Masterfile from Cloud';
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        loadProducts(); // Reload local product list
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerText = '☁️ Sync Masterfile from Cloud';
+                    showToast("Failed to sync masterfile: " + err, "error");
+                });
         }
 
         // Test Database Connection
