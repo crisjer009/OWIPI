@@ -749,7 +749,7 @@ try {
 
         case 'get_products':
             $db = new OWI_DB();
-            $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type FROM items ORDER BY Descr ASC";
+            $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type, Qty as master_qty FROM items ORDER BY Descr ASC";
             $products = $db->query($sqlProducts);
             sendResponse([
                 'status' => 'success',

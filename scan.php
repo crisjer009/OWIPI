@@ -1897,7 +1897,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
             if (preResolvedProduct) {
                 document.getElementById('modal-prod-name').innerText = preResolvedProduct.product_name;
-                document.getElementById('modal-prod-desc').innerText = `SKU: ${preResolvedProduct.sku || 'N/A'}`;
+                const mQty = preResolvedProduct.master_qty !== undefined && preResolvedProduct.master_qty !== null ? preResolvedProduct.master_qty : '0';
+                document.getElementById('modal-prod-desc').innerText = `SKU: ${preResolvedProduct.sku || 'N/A'} | Master Qty: ${mQty}`;
                 document.getElementById('confirm-modal-overlay').classList.add('active');
             } else {
                 document.getElementById('modal-prod-name').innerText = "Checking Catalog...";
@@ -1913,7 +1914,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             if (matched) {
                                 document.getElementById('modal-barcode').value = matched.barcode;
                                 document.getElementById('modal-prod-name').innerText = matched.product_name;
-                                document.getElementById('modal-prod-desc').innerText = `SKU: ${matched.sku || 'N/A'}`;
+                                const mQty = matched.master_qty !== undefined && matched.master_qty !== null ? matched.master_qty : '0';
+                                document.getElementById('modal-prod-desc').innerText = `SKU: ${matched.sku || 'N/A'} | Master Qty: ${mQty}`;
                             } else {
                                 document.getElementById('modal-prod-name').innerText = "INF";
                                 document.getElementById('modal-prod-desc').innerText = "Item not found.";
