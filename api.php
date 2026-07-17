@@ -1006,13 +1006,28 @@ try {
 
         case 'get_locators':
             $db = new OWI_DB();
-            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_SESSION['store_code']));
+            $storeCode = $_SESSION['store_code'] ?? '';
+            if (empty($storeCode)) {
+                sendResponse(['status' => 'error', 'message' => 'No active store selected.']);
+            }
+            
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+
+            // Validate that store code exists in stores table
+            $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
+            if (empty($storeCheck) || (int)$storeCheck[0]['count'] === 0) {
+                unset($_SESSION['store_code']);
+                sendResponse([
+                    'status' => 'store_required',
+                    'message' => 'The active store session was deleted or closed.'
+                ]);
+            }
 
             // Self-healing: Ensure locators table is dynamically provisioned if session was already active
             try {
                 $checkTbl = $db->query("SHOW TABLES LIKE '{$store}_locators'");
                 if (empty($checkTbl)) {
-                    $db->createStoreTables($_SESSION['store_code']);
+                    $db->createStoreTables($storeCode);
                 }
             } catch (Exception $ex) {
                 // Fallback silently
@@ -1766,6 +1781,8 @@ function handleReceiveSync() {
                 );
             }
         }
+
+        logAudit('RECEIVE_SYNC', "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators and " . count($scans) . " scan records.", strtoupper($storeCode));
 
         sendResponse([
             'status' => 'success',
