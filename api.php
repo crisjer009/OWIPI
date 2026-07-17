@@ -198,7 +198,7 @@ try {
                     ]);
                 }
             } else {
-                throw new Exception("Failed to write config file.");
+                throw new Exception("Failed to write to db_config.json on the server. Please check file permissions (run: chmod 666 db_config.json on the cloud server).");
             }
             break;
 
@@ -215,7 +215,7 @@ try {
                     'message' => 'Secret Sync Token saved successfully!'
                 ]);
             } else {
-                throw new Exception("Failed to write config file.");
+                throw new Exception("Failed to write to db_config.json on the server. Please check file permissions (run: chmod 666 db_config.json on the cloud server).");
             }
             break;
 

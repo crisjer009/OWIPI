@@ -34,7 +34,11 @@ function loadConfig() {
 // Save database configuration
 function saveConfig($config) {
     $data = array_merge(getDefaultConfig(), $config);
-    return file_put_contents(CONFIG_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    if (file_exists(CONFIG_FILE) && !is_writable(CONFIG_FILE)) {
+        @chmod(CONFIG_FILE, 0666);
+    }
+    $result = @file_put_contents(CONFIG_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    return $result !== false;
 }
 
 // Detect server local IP address
