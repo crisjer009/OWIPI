@@ -519,7 +519,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             align-items: stretch;
             margin-top: 15px;
             flex-grow: 1;
-            min-height: 0;
+            min-height: 320px;
         }
 
         @media (max-width: 1024px) {
@@ -1002,7 +1002,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         </div>
     </div> <!-- Close mobile-scanner-view --> <!-- Host Dashboard View (Desktop Host Mode Only) -->
     <div id="host-dashboard"
-        style="display: none; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; height: calc(100vh - 90px); flex-direction: column;">
+        style="display: none; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; height: calc(100vh - 90px); flex-direction: column; overflow-y: auto;">
 
         <!-- Top Section Grid: equal height log and connect/spacing cards -->
         <div class="host-top-grid">
