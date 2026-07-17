@@ -1509,6 +1509,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <span style="font-size: 0.8rem; color: var(--text-secondary);">
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
+                                <?php if ($isSysAdmin): ?>
+                                    <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
+                                        style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
+                                        Delete
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -2024,6 +2030,27 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     btn.innerText = '☁️ Sync Users from Cloud';
                     showToast("Failed to sync users: " + err, "error");
                 });
+        }
+
+        // Delete Store Session
+        function confirmDeleteStore(storeCode) {
+            if (!confirm(`WARNING: Are you sure you want to permanently delete the store session '${storeCode.toUpperCase()}'? This will DROP all locators, scans, and configs, and cannot be undone.`)) {
+                return;
+            }
+            
+            showToast(`Deleting store ${storeCode.toUpperCase()}...`, "info");
+            
+            fetch(`api.php?action=delete_store&store_code=${encodeURIComponent(storeCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => showToast("Failed to delete store: " + err, "error"));
         }
 
         // Test Database Connection

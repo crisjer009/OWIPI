@@ -87,8 +87,8 @@ function formatProductDescription($descr, $attr, $size)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products', 'import_cloud_users', 'delete_store'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
 
@@ -364,6 +364,30 @@ try {
             sendResponse([
                 'status' => 'success',
                 'message' => "Store session '" . strtoupper($cleanStore) . "' closed successfully!"
+            ]);
+            break;
+
+        case 'delete_store':
+            checkAuth(true); // Requires system_admin
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
+            if (empty($store)) {
+                throw new Exception("Invalid store code.");
+            }
+            
+            $db = new OWI_DB();
+            
+            // Delete from stores table
+            $db->execute("DELETE FROM stores WHERE LOWER(store_code) = ?", [$store]);
+            
+            // Drop related dynamic tables
+            $db->execute("DROP TABLE IF EXISTS `{$store}_locators`");
+            $db->execute("DROP TABLE IF EXISTS `{$store}_countsheet`");
+            
+            logAudit('DELETE_STORE', "Permanently deleted store session '" . strtoupper($store) . "' and dropped all its tables.");
+            
+            sendResponse([
+                'status' => 'success',
+                'message' => "Successfully and permanently deleted store session '" . strtoupper($store) . "'!"
             ]);
             break;
 
