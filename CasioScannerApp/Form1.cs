@@ -1205,6 +1205,8 @@ namespace CasioScannerApp
                     string countStr = rawResponse.Substring(start, end - start).Trim().Replace("}", "").Replace("]", "");
                     try { countVal = Convert.ToInt32(countStr); } catch { }
                 }
+            }
+ 
             double masterQtyVal = 0;
             int mqIdx = rawResponse.IndexOf("\"master_qty\":");
             if (mqIdx != -1)
