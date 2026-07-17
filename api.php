@@ -1514,6 +1514,110 @@ try {
             ]);
             break;
 
+        case 'import_cloud_users':
+            $config = loadConfig();
+            $cloudUrl = trim($config['cloud_sync_url'] ?? '');
+            $secretToken = trim($config['sync_secret_token'] ?? '');
+            if (empty($cloudUrl)) {
+                throw new Exception("Cloud Sync URL is not configured.");
+            }
+            
+            $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_users&secret_token=' . urlencode($secretToken);
+            
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $targetUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            
+            $result = curl_exec($ch);
+            $err = curl_error($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            
+            if ($err) {
+                throw new Exception("cURL Error: " . $err);
+            }
+            
+            $resData = json_decode($result, true);
+            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                $msg = $resData['message'] ?? 'Connection to cloud failed.';
+                throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
+            }
+            
+            $users = $resData['users'] ?? [];
+            if (empty($users)) {
+                throw new Exception("No users found in cloud database.");
+            }
+            
+            $db = new OWI_DB();
+            
+            // Truncate local users table
+            $db->execute("TRUNCATE TABLE users");
+            
+            // Insert users
+            foreach ($users as $u) {
+                $db->execute(
+                    "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                    [$u['username'], $u['password'], $u['role']]
+                );
+            }
+            
+            sendResponse([
+                'status' => 'success',
+                'message' => "Successfully imported " . count($users) . " user accounts from cloud!"
+            ]);
+            break;
+
+        case 'get_cloud_users':
+            verifySyncToken();
+            $db = new OWI_DB();
+            $users = $db->query("SELECT username, password, role FROM users");
+            sendResponse([
+                'status' => 'success',
+                'users' => $users
+            ]);
+            break;
+
+        case 'download_system_zip':
+            verifySyncToken();
+            
+            $zipFile = tempnam(sys_get_temp_dir(), 'owipi_') . '.zip';
+            $zip = new ZipArchive();
+            
+            if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+                throw new Exception("Cannot create temporary zip archive.");
+            }
+            
+            $sourcePath = realpath(__DIR__);
+            $files = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($sourcePath),
+                RecursiveIteratorIterator::LEAVES_ONLY
+            );
+            
+            foreach ($files as $name => $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = substr($filePath, strlen($sourcePath) + 1);
+                    
+                    // Exclude config, zip, and git files
+                    if (basename($filePath) === 'db_config.json' || pathinfo($filePath, PATHINFO_EXTENSION) === 'zip' || strpos($relativePath, '.git') !== false) {
+                        continue;
+                    }
+                    
+                    $zip->addFile($filePath, $relativePath);
+                }
+            }
+            
+            $zip->close();
+            
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="owipi.zip"');
+            header('Content-Length: ' . filesize($zipFile));
+            readfile($zipFile);
+            unlink($zipFile);
+            exit;
+
         case 'get_scans_html':
             $db = new OWI_DB();
             $store = strtolower($input['store_code'] ?? ($_GET['store_code'] ?? ''));
