@@ -733,9 +733,7 @@ try {
                 
                 $variance = $totalScanned - $masterQty;
                 
-                // Embed variance into type/desc2 so Casio scanner prints it on screen immediately!
-                $typeStr = trim($productRows[0]['Type'] ?? '');
-                $product_type = $typeStr . "\nMst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . ($variance > 0 ? "+" : "") . $variance;
+                $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . ($variance > 0 ? "+" : "") . $variance;
             }
             
             sendResponse([

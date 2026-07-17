@@ -315,8 +315,8 @@ namespace CasioScannerApp
             // 
             this.lblItemInfo.Font = new System.Drawing.Font("Tahoma", 9.5F, System.Drawing.FontStyle.Bold);
             this.lblItemInfo.ForeColor = System.Drawing.Color.Navy;
-            this.lblItemInfo.Location = new System.Drawing.Point(5, 226);
-            this.lblItemInfo.Size = new System.Drawing.Size(228, 40);
+            this.lblItemInfo.Location = new System.Drawing.Point(5, 218);
+            this.lblItemInfo.Size = new System.Drawing.Size(228, 60);
             this.lblItemInfo.Text = "";
             this.lblItemInfo.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
