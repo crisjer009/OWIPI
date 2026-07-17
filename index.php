@@ -49,7 +49,10 @@ $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 if ($driverLoaded && $dbStatus === 'connected') {
     try {
         $db = new OWI_DB();
-        $sql = "SELECT id, store_code, closed FROM stores ORDER BY store_code ASC";
+        $sql = "SELECT s.id, s.store_code, s.closed, u.username as creator 
+                FROM stores s 
+                LEFT JOIN users u ON s.created_by = u.id 
+                ORDER BY s.store_code ASC";
         $storeRows = $db->query($sql);
 
         foreach ($storeRows as $row) {
@@ -107,7 +110,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 'total' => $totalLocators,
                 'closed' => $closedLocators,
                 'percent' => $percent,
-                'status' => $status
+                'status' => $status,
+                'creator' => !empty($row['creator']) ? $row['creator'] : 'System'
             ];
         }
     } catch (Exception $e) {
@@ -1351,8 +1355,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <div
                                     style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                                     <h3
-                                        style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary);">
+                                        style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); margin: 0;">
                                         <?= htmlspecialchars($s['store_code']) ?>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; letter-spacing: 0;">
+                                            Created by: <span style="color: var(--accent-color); font-weight: 600;"><?= htmlspecialchars($s['creator']) ?></span>
+                                        </div>
                                     </h3>
                                     <span class="badge"
                                         style="color: <?= $statusColor ?>; background: <?= $statusBg ?>; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 0.2rem 0.5rem; border-radius: 4px;">
