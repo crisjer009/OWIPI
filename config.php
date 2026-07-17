@@ -544,4 +544,82 @@ class OWI_DB {
         
         return true;
     }
+
+    // Export full database structure and data to a SQL file
+    public function exportDatabaseToSql($filePath) {
+        $this->connect(true); // Make sure we are connected to the database
+        
+        $tables = [];
+        $result = $this->pdo->query("SHOW TABLES");
+        while ($row = $result->fetch(PDO::FETCH_NUM)) {
+            $tables[] = $row[0];
+        }
+        
+        $sqlContent = "-- OWIPI Database Backup\r\n";
+        $sqlContent .= "-- Generated: " . date('Y-m-d H:i:s') . "\r\n\r\n";
+        $sqlContent .= "SET FOREIGN_KEY_CHECKS=0;\r\n\r\n";
+        
+        foreach ($tables as $table) {
+            // Drop table if exists
+            $sqlContent .= "DROP TABLE IF EXISTS `$table`;\r\n";
+            
+            // Create table structure
+            $createTableStmt = $this->pdo->query("SHOW CREATE TABLE `$table`")->fetch(PDO::FETCH_ASSOC);
+            $sqlContent .= $createTableStmt['Create Table'] . ";\r\n\r\n";
+            
+            // Get table data
+            $rows = $this->query("SELECT * FROM `$table`");
+            if (!empty($rows)) {
+                $sqlContent .= "INSERT INTO `$table` VALUES\r\n";
+                $inserts = [];
+                foreach ($rows as $row) {
+                    $cleanRow = [];
+                    foreach ($row as $key => $val) {
+                        if (!is_numeric($key)) {
+                            if ($val === null) {
+                                $cleanRow[] = "NULL";
+                            } else {
+                                $cleanRow[] = $this->pdo->quote($val);
+                            }
+                        }
+                    }
+                    $inserts[] = "(" . implode(", ", $cleanRow) . ")";
+                }
+                $sqlContent .= implode(",\r\n", $inserts) . ";\r\n\r\n";
+            }
+        }
+        
+        $sqlContent .= "SET FOREIGN_KEY_CHECKS=1;\r\n";
+        
+        if (file_put_contents($filePath, $sqlContent) === false) {
+            throw new Exception("Failed to write database backup file to: " . $filePath);
+        }
+        return true;
+    }
+
+    // Import SQL file into the database
+    public function importSqlFile($filePath) {
+        $this->connect(true);
+        if (!file_exists($filePath)) {
+            throw new Exception("SQL file not found at: {$filePath}");
+        }
+        
+        $sql = file_get_contents($filePath);
+        
+        // Remove comments
+        $sql = preg_replace('/--.*\n/', '', $sql);
+        $sql = preg_replace('/\/\*.*?\*\//s', '', $sql);
+        
+        $queries = explode(';', $sql);
+        foreach ($queries as $query) {
+            $query = trim($query);
+            if ($query !== '') {
+                try {
+                    $this->pdo->exec($query);
+                } catch (PDOException $e) {
+                    // Ignore errors on specific queries (like drops if not exist)
+                }
+            }
+        }
+    }
 }

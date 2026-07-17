@@ -332,90 +332,104 @@ $step = $_GET['step'] ?? 'form';
                     // Connect and run database setup
                     require_once $targetDir . '/config.php';
                     $db = new OWI_DB();
-                    $db->initializeDatabase();
-                    echo "<div class='log-item' style='color: #10b981;'>✓ Database tables created (Audit Logs & Stores are empty).</div>";
+                    
+                    $sqlFile = $targetDir . "/database.sql";
+                    $importedBackup = false;
+                    if (file_exists($sqlFile)) {
+                        echo "<div class='log-item'>- Found default database.sql backup. Importing structure & data...</div>";
+                        $db->importSqlFile($sqlFile);
+                        echo "<div class='log-item' style='color: #10b981;'>✓ Database imported successfully from default database.sql backup.</div>";
+                        $importedBackup = true;
+                    } else {
+                        $db->initializeDatabase();
+                        echo "<div class='log-item' style='color: #10b981;'>✓ Database tables created (Audit Logs & Stores are empty).</div>";
+                    }
                 } catch (Exception $e) {
                     die("<div class='log-item' style='color: #ef4444;'>❌ Database Error: " . $e->getMessage() . "</div>");
                 }
 
-                // 5. Fetch Products from Cloud
-                echo "<div class='log-item'>5. Downloading products masterfile from cloud...</div>";
-                $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
-                
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $targetUrl);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                $result = curl_exec($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
+                if (!$importedBackup) {
+                    // 5. Fetch Products from Cloud
+                    echo "<div class='log-item'>5. Downloading products masterfile from cloud...</div>";
+                    $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
+                    
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $targetUrl);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    $result = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
 
-                $resData = json_decode($result, true);
-                if ($httpCode === 200 && $resData && ($resData['status'] ?? '') === 'success') {
-                    $products = $resData['products'] ?? [];
-                    if (!empty($products)) {
-                        $db->execute("TRUNCATE TABLE items");
-                        $chunkSize = 500;
-                        $chunks = array_chunk($products, $chunkSize);
-                        
-                        foreach ($chunks as $chunk) {
-                            $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) VALUES ";
-                            $placeholders = [];
-                            $params = [];
+                    $resData = json_decode($result, true);
+                    if ($httpCode === 200 && $resData && ($resData['status'] ?? '') === 'success') {
+                        $products = $resData['products'] ?? [];
+                        if (!empty($products)) {
+                            $db->execute("TRUNCATE TABLE items");
+                            $chunkSize = 500;
+                            $chunks = array_chunk($products, $chunkSize);
                             
-                            foreach ($chunk as $p) {
-                                $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
-                                $params[] = $p['UPC'];
-                                $params[] = $p['SKU'];
-                                $params[] = $p['Descr'];
-                                $params[] = $p['Type'] ?? 'GENERAL';
-                                $params[] = $p['Attr'] ?? null;
-                                $params[] = $p['Size'] ?? null;
-                                $params[] = isset($p['Qty']) ? (float)$p['Qty'] : 0.00;
+                            foreach ($chunks as $chunk) {
+                                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) VALUES ";
+                                $placeholders = [];
+                                $params = [];
+                                
+                                foreach ($chunk as $p) {
+                                    $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
+                                    $params[] = $p['UPC'];
+                                    $params[] = $p['SKU'];
+                                    $params[] = $p['Descr'];
+                                    $params[] = $p['Type'] ?? 'GENERAL';
+                                    $params[] = $p['Attr'] ?? null;
+                                    $params[] = $p['Size'] ?? null;
+                                    $params[] = isset($p['Qty']) ? (float)$p['Qty'] : 0.00;
+                                }
+                                
+                                $sqlInsert .= implode(', ', $placeholders);
+                                $db->execute($sqlInsert, $params);
                             }
-                            
-                            $sqlInsert .= implode(', ', $placeholders);
-                            $db->execute($sqlInsert, $params);
+                            echo "<div class='log-item' style='color: #10b981;'>✓ Successfully imported " . count($products) . " items into local product master catalog!</div>";
+                        } else {
+                            echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Cloud returned an empty product catalog.</div>";
                         }
-                        echo "<div class='log-item' style='color: #10b981;'>✓ Successfully imported " . count($products) . " items into local product master catalog!</div>";
                     } else {
-                        echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Cloud returned an empty product catalog.</div>";
+                        echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Failed to fetch products automatically (" . ($resData['message'] ?? 'API unreachable') . ").</div>";
+                    }
+
+                    // 6. Fetch User Accounts from Cloud
+                    echo "<div class='log-item'>6. Syncing user profiles and scanner accounts from cloud...</div>";
+                    $usersUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_users&secret_token=' . urlencode($secretToken);
+                    
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $usersUrl);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    $resultUsers = curl_exec($ch);
+                    $httpCodeUsers = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+
+                    $resDataUsers = json_decode($resultUsers, true);
+                    if ($httpCodeUsers === 200 && $resDataUsers && ($resDataUsers['status'] ?? '') === 'success') {
+                        $users = $resDataUsers['users'] ?? [];
+                        if (!empty($users)) {
+                            $db->execute("TRUNCATE TABLE users");
+                            foreach ($users as $u) {
+                                $db->execute(
+                                    "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                                    [$u['username'], $u['password'], $u['role']]
+                                );
+                            }
+                            echo "<div class='log-item' style='color: #10b981;'>✓ Successfully imported " . count($users) . " user accounts from cloud!</div>";
+                        } else {
+                            echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Cloud returned empty users list.</div>";
+                        }
+                    } else {
+                        echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Failed to fetch user accounts automatically (" . ($resDataUsers['message'] ?? 'API unreachable') . "). Default accounts (sys_admin / operator) initialized.</div>";
                     }
                 } else {
-                    echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Failed to fetch products automatically (" . ($resData['message'] ?? 'API unreachable') . ").</div>";
-                }
-
-                // 6. Fetch User Accounts from Cloud
-                echo "<div class='log-item'>6. Syncing user profiles and scanner accounts from cloud...</div>";
-                $usersUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_users&secret_token=' . urlencode($secretToken);
-                
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $usersUrl);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                $resultUsers = curl_exec($ch);
-                $httpCodeUsers = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-
-                $resDataUsers = json_decode($resultUsers, true);
-                if ($httpCodeUsers === 200 && $resDataUsers && ($resDataUsers['status'] ?? '') === 'success') {
-                    $users = $resDataUsers['users'] ?? [];
-                    if (!empty($users)) {
-                        $db->execute("TRUNCATE TABLE users");
-                        foreach ($users as $u) {
-                            $db->execute(
-                                "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-                                [$u['username'], $u['password'], $u['role']]
-                            );
-                        }
-                        echo "<div class='log-item' style='color: #10b981;'>✓ Successfully imported " . count($users) . " user accounts from cloud!</div>";
-                    } else {
-                        echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Cloud returned empty users list.</div>";
-                    }
-                } else {
-                    echo "<div class='log-item' style='color: #eab308;'>⚠ Warning: Failed to fetch user accounts automatically (" . ($resDataUsers['message'] ?? 'API unreachable') . "). Default accounts (sys_admin / operator) initialized.</div>";
+                    echo "<div class='log-item' style='color: #10b981;'>✓ Step 5 & 6 Skipped: Default users, stores, and products catalog were successfully loaded from your local database.sql backup!</div>";
                 }
 
                 echo "<br><hr style='border: 1px solid rgba(255,255,255,0.1);'><br>";

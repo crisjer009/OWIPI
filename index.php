@@ -1546,8 +1546,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
 
                 <div id="db-connected-status-summary" style="display: <?php echo ($dbStatus === 'connected') ? 'block' : 'none'; ?>; padding: 0.5rem 0;">
-                    <div style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
-                        <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected Successfully.
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                            <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected Successfully.
+                        </div>
+                        <button type="button" onclick="backupDatabaseLocal()" class="btn btn-secondary" style="width: auto; font-size: 0.8rem; padding: 6px 14px; border: 1px solid var(--accent-color); color: var(--accent-color); background: rgba(59, 130, 246, 0.08); font-weight: 600; cursor: pointer; border-radius: 6px;">
+                            💾 Set Current DB as Default
+                        </button>
                     </div>
                     <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">
                         Host: <code><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></code> | Database: <code><?= htmlspecialchars($config['database']) ?></code>
@@ -2090,6 +2095,26 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 })
                 .catch(err => {
                     showToast("Database initialisation failed: " + err, "error");
+                });
+        }
+
+        // Save current database as default backup
+        function backupDatabaseLocal() {
+            if (!confirm("Are you sure you want to save your current database (schema and data) as the default data for future installations? This will write a database.sql file in your repository.")) {
+                return;
+            }
+            showToast("Generating default database backup file...", "info");
+            fetch('api.php?action=backup_db')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                    } else {
+                        showToast("Backup failed: " + data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    showToast("Backup failed: " + err, "error");
                 });
         }
 
