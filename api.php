@@ -1188,10 +1188,25 @@ try {
                 throw new Exception("Store code does not exist in master stores table.");
             }
             $storeDetails = $storeRows[0];
+            // Check if store is 100% completed (all locators are closed)
+            $locatorsTable = "{$store}_locators";
+            $checkTbl = $db->query("SHOW TABLES LIKE ?", [$locatorsTable]);
+            if (empty($checkTbl)) {
+                throw new Exception("Synchronization failed: Locators table for '{$_SESSION['store_code']}' does not exist.");
+            }
             
-            // Check if store is 100% completed and closed
-            if (empty($storeDetails['closed']) || (int)$storeDetails['closed'] !== 1) {
-                throw new Exception("Synchronization failed: The store session '{$_SESSION['store_code']}' is still ongoing. It must be 100% completed and CLOSED before syncing to the cloud.");
+            $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$locatorsTable}`");
+            $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
+            if ($totalLocators === 0) {
+                throw new Exception("Synchronization failed: Store '{$_SESSION['store_code']}' has no locators configured.");
+            }
+            
+            $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$locatorsTable}` WHERE status = 'closed'");
+            $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
+            
+            if ($closedLocators < $totalLocators) {
+                $percent = round(($closedLocators / $totalLocators) * 100);
+                throw new Exception("Synchronization failed: Store '{$_SESSION['store_code']}' is only at {$percent}% completion ({$closedLocators} of {$totalLocators} locators closed). All locators must be closed before syncing to the cloud.");
             }
 
             // Fetch unsynced locators
