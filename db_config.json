@@ -5,7 +5,5 @@
     "username": "root",
     "password": "",
     "print_margin_top": 0,
-    "print_margin_left": 10,
-    "cloud_sync_url": "https:\/\/pginv.officewarehouse.com.ph\/OWIPI\/",
-    "sync_secret_token": "OWIPI2026"
+    "print_margin_left": 10
 }

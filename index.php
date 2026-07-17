@@ -1788,6 +1788,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
                         <button type="submit" class="btn" style="margin-top: 1rem; width: 100%;">Create Account</button>
                     </form>
+                    <div style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
+                        <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                            Or sync and download all existing accounts from your cloud server.
+                        </div>
+                        <button type="button" onclick="syncUsersFromCloud()" id="btn-sync-users-cloud" class="btn btn-secondary"
+                            style="width:100%; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); font-weight: 600; cursor: pointer;">
+                            ☁️ Sync Users from Cloud
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Users List Table -->
@@ -1983,6 +1992,37 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     btn.disabled = false;
                     btn.innerText = '☁️ Sync Masterfile from Cloud';
                     showToast("Failed to sync masterfile: " + err, "error");
+                });
+        }
+
+        // Sync User Accounts from Cloud
+        function syncUsersFromCloud() {
+            if (!confirm("Are you sure you want to download and sync all user accounts from the cloud? This will overwrite local user accounts.")) {
+                return;
+            }
+            
+            const btn = document.getElementById('btn-sync-users-cloud');
+            btn.disabled = true;
+            btn.innerText = 'Syncing user accounts...';
+            
+            showToast("Fetching user accounts from cloud...", "info");
+            
+            fetch('api.php?action=import_cloud_users')
+                .then(res => res.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerText = '☁️ Sync Users from Cloud';
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        loadUsers(); // Reload local users list
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerText = '☁️ Sync Users from Cloud';
+                    showToast("Failed to sync users: " + err, "error");
                 });
         }
 
