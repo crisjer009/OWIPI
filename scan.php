@@ -1014,6 +1014,11 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
                     <span>Live Incoming Scans Log</span>
                 </div>
+                <div style="margin-top: 10px; margin-bottom: 5px;">
+                    <input type="text" id="host-scans-search" placeholder="🔍 Search live incoming scans..."
+                        style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); color: white; box-sizing: border-box; outline:none;"
+                        oninput="filterHostScans()">
+                </div>
                 <div
                     style="overflow-x: auto; overflow-y: auto; margin-top: 10px; padding-right: 5px; flex-grow: 1; min-height: 0;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;"
@@ -1917,8 +1922,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 const mQty = matched.master_qty !== undefined && matched.master_qty !== null ? matched.master_qty : '0';
                                 document.getElementById('modal-prod-desc').innerText = `SKU: ${matched.sku || 'N/A'} | Master Qty: ${mQty}`;
                             } else {
-                                document.getElementById('modal-prod-name').innerText = "INF";
-                                document.getElementById('modal-prod-desc').innerText = "Item not found.";
+                                document.getElementById('modal-prod-name').innerText = "Item Not Found";
+                                document.getElementById('modal-prod-desc').innerText = "Item not found in catalog.";
                             }
                         }
                     })
@@ -2154,6 +2159,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 `;
                             });
                             tbody.innerHTML = html;
+                            filterHostScans();
                         } else {
                             tbody.innerHTML = `
                                 <tr>
@@ -2166,6 +2172,25 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     }
                 })
                 .catch(err => console.error("Error loading host scans:", err));
+        }
+
+        // Live incoming scans search filter function
+        function filterHostScans() {
+            const tbody = document.getElementById('host-scans-tbody');
+            const searchInput = document.getElementById('host-scans-search');
+            if (tbody && searchInput) {
+                const q = searchInput.value.toLowerCase().trim();
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    if (row.cells.length === 1) return; // skip feedback rows
+                    const text = row.innerText.toLowerCase();
+                    if (q === '' || text.indexOf(q) > -1) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
         }
 
         // Load mobile locators searchable list for modal datalist
@@ -2675,7 +2700,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const qtyStr = qtyVal.toFixed(0);
 
                             grandTotal += qtyVal;
-                            if (!scan.sku || scan.sku === '' || scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product') {
+                            if (scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product') {
                                 infCount++;
                             }
 
@@ -2809,7 +2834,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                         let infCount = 0;
                         items.forEach(item => {
-                            if (!item.sku || item.sku === 'N/A' || item.sku === '' || item.description === 'Item Not Found' || item.description === 'Unknown Product') {
+                            if (item.description === 'Item Not Found' || item.description === 'Unknown Product') {
                                 infCount++;
                             }
                         });
@@ -3056,7 +3081,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         allScans.forEach(scan => {
                             const qtyVal = parseFloat(scan.quantity || 0);
                             grandTotal += qtyVal;
-                            if (!scan.sku || scan.sku === '' || scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product') {
+                            if (scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product') {
                                 infCount++;
                             }
                         });
@@ -3209,7 +3234,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         // Fetch description live when typing barcode inside Edit Scan modal
         function updateEditScanProductInfo(barcode) {
             if (barcode === '') {
-                document.getElementById('edit-scan-prod-name').innerText = "INF";
+                document.getElementById('edit-scan-prod-name').innerText = "Item Not Found";
                 document.getElementById('edit-scan-prod-desc').innerText = "No barcode entered.";
                 return;
             }
@@ -3222,7 +3247,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             document.getElementById('edit-scan-prod-name').innerText = matched.product_name;
                             document.getElementById('edit-scan-prod-desc').innerText = `SKU: ${matched.sku || 'N/A'}`;
                         } else {
-                            document.getElementById('edit-scan-prod-name').innerText = "INF";
+                            document.getElementById('edit-scan-prod-name').innerText = "Item Not Found";
                             document.getElementById('edit-scan-prod-desc').innerText = "Item not found in catalog.";
                         }
                     }
