@@ -520,7 +520,7 @@ try {
             // Compute total quantity scanned so far for this product in the entire store
             $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ?", [$real_barcode]);
             $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
-            $variance = $totalScanned - $masterQty;
+            $variance = $masterQty - $totalScanned;
 
             // Format custom message including variance info for both Casio and mobile view
             $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
@@ -731,7 +731,7 @@ try {
                         $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
                     }
                 }
-                
+                $variance = $masterQty - $totalScanned;
                 $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
                 $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . $varianceStr;
             }
