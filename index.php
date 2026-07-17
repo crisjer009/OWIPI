@@ -1404,13 +1404,30 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
             </header>
 
+            <!-- MySQL Server Connection Settings Card -->
             <div class="card" style="max-width: 600px;">
-                <div class="card-header">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="card-title">
-                        Connection Parameters
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
+                        </svg>
+                        MySQL Database Connection
                     </h2>
+                    <?php if ($dbStatus === 'connected'): ?>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-db-form" onclick="toggleDbForm()" style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Show Fields</button>
+                    <?php endif; ?>
                 </div>
-                <form id="config-form" onsubmit="saveDbConfig(event)">
+
+                <div id="db-connected-status-summary" style="display: <?php echo ($dbStatus === 'connected') ? 'block' : 'none'; ?>; padding: 0.5rem 0;">
+                    <div style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                        <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected Successfully.
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">
+                        Host: <code><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></code> | Database: <code><?= htmlspecialchars($config['database']) ?></code>
+                    </p>
+                </div>
+
+                <form id="config-form" onsubmit="saveDbConfig(event)" style="display: <?php echo ($dbStatus === 'connected') ? 'none' : 'block'; ?>; margin-top: 1rem;">
                     <div class="form-group" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
                         <div>
                             <label for="db_server">MySQL Server Host</label>
@@ -1440,20 +1457,31 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <input type="password" id="db_password" class="form-control"
                             value="<?= htmlspecialchars($config['password']) ?>" placeholder="Leave blank if none">
                     </div>
-                    <div class="form-group" style="margin-top: 1rem;">
-                        <label for="sync_secret_token">Secret Sync Token (Cloud & Local Authorization)</label>
-                        <input type="text" id="sync_secret_token" class="form-control"
-                            value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>" placeholder="e.g. my_secure_token_123">
-                        <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.</small>
-                        <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary" style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save Token Only</button>
-                    </div>
 
                     <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                         <button type="submit" class="btn">Save & Verify Connection</button>
-                        <button type="button" onclick="testConnection()" class="btn btn-secondary">Test Connection
-                            Only</button>
+                        <button type="button" onclick="testConnection()" class="btn btn-secondary">Test Connection Only</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Sync Token Configuration Card -->
+            <div class="card" style="max-width: 600px; margin-top: 2rem;">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                        </svg>
+                        Security & Synchronization Token
+                    </h2>
+                </div>
+                <div class="form-group">
+                    <label for="sync_secret_token">Secret Sync Token (Cloud & Local Authorization)</label>
+                    <input type="text" id="sync_secret_token" class="form-control"
+                        value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>" placeholder="e.g. my_secure_token_123">
+                    <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.</small>
+                    <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary" style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save Token Only</button>
+                </div>
             </div>
 
             <!-- Print Spacing Settings -->
@@ -1899,6 +1927,22 @@ if ($driverLoaded && $dbStatus === 'connected') {
             .catch(err => {
                 showToast("Failed to save token: " + err, "error");
             });
+        }
+
+        // Toggle MySQL Connection form visibility
+        function toggleDbForm() {
+            const form = document.getElementById('config-form');
+            const btn = document.getElementById('btn-toggle-db-form');
+            const summary = document.getElementById('db-connected-status-summary');
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                if (summary) summary.style.display = 'none';
+                if (btn) btn.innerText = 'Hide Fields';
+            } else {
+                form.style.display = 'none';
+                if (summary) summary.style.display = 'block';
+                if (btn) btn.innerText = 'Show Fields';
+            }
         }
 
         // Save Print Config Spacing Settings
