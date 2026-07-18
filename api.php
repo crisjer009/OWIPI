@@ -118,7 +118,7 @@ function findCatalogProduct($barcode) {
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db'];
 $userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
@@ -275,6 +275,20 @@ try {
             sendResponse([
                 'status' => 'success',
                 'message' => 'Master database and tables checked/initialized!'
+            ]);
+            break;
+
+        case 'restore_default_db':
+            $db = new OWI_DB();
+            $sqlFile = __DIR__ . "/database.sql";
+            if (!file_exists($sqlFile)) {
+                throw new Exception("Default database backup file (database.sql) not found in directory.");
+            }
+            $db->importSqlFile($sqlFile);
+            logAudit('Restore Database Backup', "Imported database.sql backup file to restore structure & data.");
+            sendResponse([
+                'status' => 'success',
+                'message' => 'Database successfully restored and catalog items imported from database.sql!'
             ]);
             break;
 

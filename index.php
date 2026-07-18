@@ -1416,6 +1416,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             <?php if ($driverLoaded): ?>
                                 <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
                                     style="padding: 0.5rem 1rem; font-size: 0.85rem;">Initialize DB Tables</button>
+                                <button onclick="restoreDatabaseBackup()" class="btn btn-danger btn-sm"
+                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #d73a49; border-color: #cb2431;">Import database.sql Backup</button>
                             <?php endif; ?>
                             <?php if ($dbStatus === 'connected'): ?>
                                 <button onclick="openCloudStoreDownloader()" class="btn btn-secondary btn-sm"
@@ -2196,6 +2198,29 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 })
                 .catch(err => {
                     showToast("Database initialisation failed: " + err, "error");
+                });
+        }
+
+        // Restore database tables and catalog from database.sql
+        function restoreDatabaseBackup() {
+            if (!confirm("WARNING: This will drop and reset all database tables (users, items, stores) back to the default state using database.sql. Any un-synced scans will be cleared. Do you want to proceed?")) {
+                return;
+            }
+            showToast("Restoring database structure and importing catalog from database.sql...", "info");
+            fetch('api.php?action=restore_default_db')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    showToast("Database restoration failed: " + err, "error");
                 });
         }
 
