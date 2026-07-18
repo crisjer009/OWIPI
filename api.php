@@ -86,6 +86,37 @@ function formatProductDescription($descr, $attr, $size)
     return trim($finalDesc);
 }
 
+// Helper function to find a product in items catalog with flexible padding/unpadding support
+function findCatalogProduct($barcode) {
+    $db = new OWI_DB();
+    $barcodeClean = trim($barcode);
+    if ($barcodeClean === '') {
+        return [];
+    }
+
+    $params = [$barcodeClean, $barcodeClean];
+    $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items WHERE UPC = ? OR SKU = ?";
+    
+    if (ctype_digit($barcodeClean)) {
+        // 1. Padded SKU (6 digits)
+        if (strlen($barcodeClean) < 6) {
+            $paddedSku = str_pad($barcodeClean, 6, '0', STR_PAD_LEFT);
+            $sql .= " OR SKU = ?";
+            $params[] = $paddedSku;
+        }
+        // 2. Unpadded SKU (remove leading zeros)
+        $unpaddedSku = ltrim($barcodeClean, '0');
+        if ($unpaddedSku !== '' && $unpaddedSku !== $barcodeClean) {
+            $sql .= " OR SKU = ? OR UPC = ?";
+            $params[] = $unpaddedSku;
+            $params[] = $unpaddedSku;
+        }
+    }
+
+    $rows = $db->query($sql, $params);
+    return !empty($rows) ? $rows : [];
+}
+
 // Enforce Authentication
 $adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db'];
 $userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users'];
@@ -499,9 +530,8 @@ try {
                 }
             }
 
-            // Check if product exists in global items catalog (resolving by UPC or SKU)
-            $sqlFindProduct = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items WHERE UPC = ? OR SKU = ?";
-            $productRows = $db->query($sqlFindProduct, [$barcode, $barcode]);
+            // Check if product exists in global items catalog (resolving by UPC or SKU with flexible padding)
+            $productRows = findCatalogProduct($barcode);
 
             $product_found = false;
             $product_name = 'Item Not Found';
@@ -631,9 +661,8 @@ try {
             $db = new OWI_DB();
             $store = strtolower($_SESSION['store_code']);
 
-            // Look up product in catalog (resolving by UPC or SKU)
-            $sqlFindProduct = "SELECT UPC, SKU, Descr, Attr, Size FROM items WHERE UPC = ? OR SKU = ?";
-            $productRows = $db->query($sqlFindProduct, [$barcode, $barcode]);
+            // Look up product in catalog (resolving by UPC or SKU with flexible padding)
+            $productRows = findCatalogProduct($barcode);
 
             $product_name = 'Item Not Found';
             $sku = '';
@@ -756,8 +785,8 @@ try {
             $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
             
-            $sqlFindProduct = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items WHERE UPC = ? OR SKU = ?";
-            $productRows = $db->query($sqlFindProduct, [$barcode, $barcode]);
+            // Look up product in catalog (resolving by UPC or SKU with flexible padding)
+            $productRows = findCatalogProduct($barcode);
             
             $product_found = false;
             $product_name = 'Item Not Found';
