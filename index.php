@@ -1244,7 +1244,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         MySQL Setup
                     </div>
                 <?php endif; ?>
-                <div class="nav-item" onclick="switchView('products', this)">
+                 <div class="nav-item" onclick="switchView('checker', this)">
+                     <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;">
+                         <path d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h3v14h-3zm-9 16h12v2H7z"/>
+                     </svg>
+                     Test Scan Checker
+                 </div>
+                 <div class="nav-item" onclick="switchView('products', this)">
                     <svg viewBox="0 0 24 24">
                         <path
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" />
@@ -1869,6 +1875,92 @@ if ($driverLoaded && $dbStatus === 'connected') {
             </div>
         </div>
 
+        <!-- View: Test Scan Checker Simulator -->
+        <div id="view-checker" class="view-content">
+            <header>
+                <div>
+                    <h1>Test Scan Checker Simulator</h1>
+                    <div class="header-desc">Simulate a barcode scan or look up a SKU to instantly verify if it exists in the master database.</div>
+                </div>
+            </header>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+                <!-- Simulator Input Card -->
+                <div class="card" style="margin: 0; padding: 2rem;">
+                    <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2 class="card-title">Barcode Simulator</h2>
+                    </div>
+
+                    <form id="checker-form" onsubmit="runTestScanCheck(event)">
+                        <div class="form-group">
+                            <label for="checker_barcode" style="color: var(--accent-color); font-weight: 700;">Scan / Enter Barcode or SKU</label>
+                            <input type="text" id="checker_barcode" class="form-control" 
+                                placeholder="Type or scan item barcode / SKU code..." 
+                                style="height: 48px; font-size: 1.1rem; border-color: rgba(59, 130, 246, 0.4); text-align: center; font-family: monospace; outline: none; background: rgba(0,0,0,0.25);" 
+                                required autocomplete="off">
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                            <button type="submit" class="btn" style="flex: 2; height: 44px; font-weight: 700;">🔍 Test Lookup</button>
+                            <button type="button" onclick="resetChecker()" class="btn btn-secondary" style="flex: 1; height: 44px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Simulation Response Display Card -->
+                <div class="card" id="checker-response-card" style="margin: 0; padding: 2rem; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.1);">
+                    <div id="checker-empty-state" style="text-align: center; color: var(--text-secondary);">
+                        <svg viewBox="0 0 24 24" style="width: 64px; height: 64px; fill: rgba(255,255,255,0.15); margin-bottom: 1rem;">
+                            <path d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h3v14h-3zm-9 16h12v2H7z"/>
+                        </svg>
+                        <p style="font-size: 0.95rem; font-weight: 500;">Ready to test. Input or scan a code on the left to verify.</p>
+                    </div>
+
+                    <div id="checker-result-found" style="display: none; width: 100%;">
+                        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.5rem; color: #10b981; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px;">
+                            <span>🟢 MATCH FOUND IN DATABASE</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; line-height: 1.6;">
+                            <div style="margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                                <strong style="color: var(--text-secondary);">Product Name:</strong> 
+                                <br><span id="checker-res-name" style="color: white; font-size: 1.15rem; font-weight: 700; display: block; margin-top: 4px;">-</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0.5rem;">
+                                <div>
+                                    <strong style="color: var(--text-secondary);">Barcode (UPC):</strong>
+                                    <div id="checker-res-barcode" style="font-family: monospace; color: var(--accent-color); font-weight: 700; font-size: 1rem;">-</div>
+                                </div>
+                                <div>
+                                    <strong style="color: var(--text-secondary);">SKU Code:</strong>
+                                    <div id="checker-res-sku" style="font-family: monospace; color: white; font-weight: 600;">-</div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <strong style="color: var(--text-secondary);">Masterfile Qty:</strong>
+                                    <div id="checker-res-qty" style="color: #10b981; font-weight: 800; font-size: 1.2rem;">-</div>
+                                </div>
+                                <div>
+                                    <strong style="color: var(--text-secondary);">Attributes:</strong>
+                                    <div id="checker-res-attr" style="color: white;">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="checker-result-notfound" style="display: none; width: 100%; text-align: center;">
+                        <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.5rem; color: #ef4444; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px;">
+                            <span>🔴 ITEM NOT FOUND (INF)</span>
+                        </div>
+                        <svg viewBox="0 0 24 24" style="width: 56px; height: 56px; fill: #ef4444; margin-bottom: 1rem;">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <p style="color: white; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.5rem;">Scanned barcode/SKU does not exist in master catalog.</p>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 280px; margin: 0 auto;">When scanned, this item will save as an <strong>Item Not Found (INF)</strong> record with 0.00 master quantity.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Toast Notification Banner -->
@@ -1951,6 +2043,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
             }
             if (viewId === 'audit') {
                 loadAuditLogs();
+            }
+            if (viewId === 'checker') {
+                setTimeout(() => {
+                    const inp = document.getElementById('checker_barcode');
+                    if (inp) {
+                        inp.value = '';
+                        inp.focus();
+                    }
+                }, 50);
             }
         }
 
@@ -2698,6 +2799,72 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     })
                     .catch(err => showToast("Failed to delete user: " + err, "error"));
             }
+        }
+
+        // Catalog Simulator Check
+        function runTestScanCheck(event) {
+            event.preventDefault();
+            const inputEl = document.getElementById('checker_barcode');
+            const barcode = inputEl.value.trim();
+            if (barcode === '') return;
+
+            showToast("Verifying barcode in database...", "info");
+
+            const emptyCard = document.getElementById('checker-empty-state');
+            const foundCard = document.getElementById('checker-result-found');
+            const notFoundCard = document.getElementById('checker-result-notfound');
+            const responseCard = document.getElementById('checker-response-card');
+
+            // Fetch product info from API
+            fetch('api.php?action=get_product_info&barcode=' + encodeURIComponent(barcode))
+                .then(res => res.json())
+                .then(data => {
+                    emptyCard.style.display = 'none';
+                    responseCard.style.borderStyle = 'solid';
+                    
+                    if (data.status === 'success' && data.product_found) {
+                        foundCard.style.display = 'block';
+                        notFoundCard.style.display = 'none';
+
+                        document.getElementById('checker-res-name').innerText = data.product_name;
+                        document.getElementById('checker-res-barcode').innerText = data.barcode || barcode;
+                        document.getElementById('checker-res-sku').innerText = data.sku || 'N/A';
+                        document.getElementById('checker-res-qty').innerText = parseFloat(data.master_qty || 0).toFixed(0);
+                        document.getElementById('checker-res-attr').innerText = (data.sku ? 'MASTERFILE ITEM' : 'GENERAL');
+                        
+                        responseCard.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                        responseCard.style.background = 'rgba(16, 185, 129, 0.08)';
+                        showToast("Match found in database!", "success");
+                    } else {
+                        foundCard.style.display = 'none';
+                        notFoundCard.style.display = 'block';
+                        
+                        responseCard.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                        responseCard.style.background = 'rgba(239, 68, 68, 0.08)';
+                        showToast("Item not found in database.", "error");
+                    }
+                    
+                    // Highlight input to scan again quickly
+                    inputEl.select();
+                })
+                .catch(err => {
+                    showToast("Error checking database: " + err, "error");
+                });
+        }
+
+        function resetChecker() {
+            document.getElementById('checker-form').reset();
+            document.getElementById('checker-empty-state').style.display = 'block';
+            document.getElementById('checker-result-found').style.display = 'none';
+            document.getElementById('checker-result-notfound').style.display = 'none';
+            
+            const responseCard = document.getElementById('checker-response-card');
+            responseCard.style.borderStyle = 'dashed';
+            responseCard.style.borderColor = 'rgba(255,255,255,0.1)';
+            responseCard.style.background = 'rgba(0,0,0,0.1)';
+            
+            const inputEl = document.getElementById('checker_barcode');
+            inputEl.focus();
         }
 
         // Exit Store Session

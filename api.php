@@ -765,12 +765,16 @@ try {
             $masterQty = 0.00;
             $totalScanned = 0.00;
             $variance = 0.00;
+            $resolvedBarcode = '';
+            $resolvedSku = '';
             
             if (!empty($productRows)) {
                 $product_found = true;
                 $descr = $productRows[0]['Descr'];
                 $attr = $productRows[0]['Attr'] ?? '';
                 $size = $productRows[0]['Size'] ?? '';
+                $resolvedBarcode = $productRows[0]['UPC'];
+                $resolvedSku = $productRows[0]['SKU'];
                 
                 $product_name = formatProductDescription($descr, $attr, $size);
                 $masterQty = (float)($productRows[0]['Qty'] ?? 0.00);
@@ -794,7 +798,9 @@ try {
                 'product_type' => $product_type,
                 'master_qty' => $masterQty,
                 'total_scanned' => $totalScanned,
-                'variance' => $variance
+                'variance' => $variance,
+                'barcode' => $resolvedBarcode,
+                'sku' => $resolvedSku
             ]);
             break;
 
