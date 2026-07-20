@@ -946,6 +946,9 @@ try {
             break;
 
         case 'import_masterfile':
+            @set_time_limit(300);
+            @ini_set('memory_limit', '512M');
+
             if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
                 throw new Exception("No file uploaded or file upload error.");
             }
@@ -964,7 +967,7 @@ try {
 
             $db = new OWI_DB();
 
-            $importedCount = 0;
+            $recordsToInsert = [];
             $headerChecked = false;
 
             // Map header indexes
@@ -993,18 +996,6 @@ try {
                 foreach ($targetTables as $targetTbl) {
                     $db->execute("TRUNCATE TABLE `{$targetTbl}`");
                 }
- 
-                $sqlInsert = "
-                    INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE 
-                        SKU = VALUES(SKU), 
-                        Descr = VALUES(Descr), 
-                        Type = VALUES(Type),
-                        Attr = VALUES(Attr),
-                        Size = VALUES(Size),
-                        Qty = VALUES(Qty)
-                ";
  
                 foreach ($lines as $line) {
                     $line = trim($line);
@@ -1086,10 +1077,37 @@ try {
                     $descr = $desc1;
                     $type = $desc2;
  
+                    $recordsToInsert[] = [
+                        'upc' => $upc,
+                        'sku' => $sku,
+                        'descr' => $descr,
+                        'type' => $type,
+                        'attr' => $attr,
+                        'size' => $size,
+                        'qty' => $qty
+                    ];
+                }
+
+                // Batch insert records in 500-item chunks for extreme speed
+                $chunkSize = 500;
+                $chunks = array_chunk($recordsToInsert, $chunkSize);
+                foreach ($chunks as $chunk) {
                     foreach ($targetTables as $targetTbl) {
-                        $sqlInsert = "
+                        $placeholders = [];
+                        $params = [];
+                        foreach ($chunk as $row) {
+                            $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
+                            $params[] = $row['upc'];
+                            $params[] = $row['sku'];
+                            $params[] = $row['descr'];
+                            $params[] = $row['type'];
+                            $params[] = $row['attr'];
+                            $params[] = $row['size'];
+                            $params[] = $row['qty'];
+                        }
+                        $sqlChunk = "
                             INSERT INTO `{$targetTbl}` (UPC, SKU, Descr, Type, Attr, Size, Qty) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            VALUES " . implode(', ', $placeholders) . "
                             ON DUPLICATE KEY UPDATE 
                                 SKU = VALUES(SKU), 
                                 Descr = VALUES(Descr), 
@@ -1098,10 +1116,10 @@ try {
                                 Size = VALUES(Size),
                                 Qty = VALUES(Qty)
                         ";
-                        $db->execute($sqlInsert, [$upc, $sku, $descr, $type, $attr, $size, $qty]);
+                        $db->execute($sqlChunk, $params);
                     }
-                    $importedCount++;
                 }
+                $importedCount = count($recordsToInsert);
 
                 $db->execute("COMMIT");
             } catch (Exception $e) {
