@@ -1083,7 +1083,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
                         <div id="qrcode"
-                            style="background: white; padding: 6px; border-radius: 6px; width: fit-content; display: inline-block;">
+                            style="background: white; padding: 6px; border-radius: 6px; min-width: 150px; min-height: 150px; display: inline-flex; align-items: center; justify-content: center;">
                         </div>
                         <p
                             style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; margin: 5px 0 0 0; text-align: center;">
@@ -1573,22 +1573,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                     // Render Connection QR Code after layout paint
                     setTimeout(() => {
-                        const qrContainer = document.getElementById("qrcode");
-                        if (qrContainer && typeof QRCode !== 'undefined') {
-                            qrContainer.innerHTML = '';
-                            try {
-                                qrCodeInstance = new QRCode(qrContainer, {
-                                    text: "<?= $scanUrl ?>",
-                                    width: 150,
-                                    height: 150,
-                                    colorDark: "#0b0f19",
-                                    colorLight: "#ffffff",
-                                    correctLevel: QRCode.CorrectLevel.H
-                                });
-                            } catch (e) {
-                                console.error("QR Code generation error:", e);
-                            }
-                        }
+                        renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
                 // Continuous scans polling for Host Console
@@ -3561,23 +3546,50 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     btn.innerText = originalText;
                     alert("Import failed: " + err);
                 });
-        function updateQRCodeIP(newIp) {
+        function renderHostQRCode(url) {
             const qrContainer = document.getElementById("qrcode");
             if (!qrContainer) return;
+            qrContainer.innerHTML = '';
+
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    qrCodeInstance = new QRCode(qrContainer, {
+                        text: url,
+                        width: 150,
+                        height: 150,
+                        colorDark: "#0b0f19",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } catch (e) {
+                    console.error("Local QRCode error:", e);
+                }
+            }
+
+            // Fallback check: If container is empty or canvas/image rendered 0 height, fallback to image API
+            setTimeout(() => {
+                const img = qrContainer.querySelector('img');
+                const canvas = qrContainer.querySelector('canvas');
+                const hasValidOutput = (img && img.offsetHeight > 10) || (canvas && canvas.offsetHeight > 10);
+                
+                if (!hasValidOutput) {
+                    qrContainer.innerHTML = '';
+                    const fallbackImg = document.createElement('img');
+                    fallbackImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(url);
+                    fallbackImg.width = 150;
+                    fallbackImg.height = 150;
+                    fallbackImg.style.borderRadius = '4px';
+                    fallbackImg.style.display = 'block';
+                    qrContainer.appendChild(fallbackImg);
+                }
+            }, 120);
+        }
+
+        function updateQRCodeIP(newIp) {
             const currentUrl = "<?= $scanUrl ?>";
             const oldIp = "<?= $localIP ?>";
             const newUrl = currentUrl.replace(oldIp, newIp);
-            qrContainer.innerHTML = '';
-            if (typeof QRCode !== 'undefined') {
-                qrCodeInstance = new QRCode(qrContainer, {
-                    text: newUrl,
-                    width: 150,
-                    height: 150,
-                    colorDark: "#0b0f19",
-                    colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
-                });
-            }
+            renderHostQRCode(newUrl);
         }
     </script>
 
