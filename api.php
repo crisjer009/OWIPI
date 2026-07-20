@@ -588,7 +588,7 @@ try {
             $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $location]);
             $existingScanned = (float)($sumQuery[0]['total'] ?? 0.00);
             $totalScanned = $existingScanned + $qty;
-            $variance = $masterQty - $totalScanned;
+            $variance = $totalScanned - $masterQty;
 
             // Insert scan log into dynamic store countsheet table
             $sqlInsertScan = "
@@ -728,13 +728,13 @@ try {
             // Recalculate variance for this product in this slot/locator
             $slotNo = !empty($oldScanRows) ? $oldScanRows[0]['SlotNo'] : '1';
             $masterQty = 0.00;
-            $productCheck = $db->query("SELECT Qty FROM items WHERE UPC = ?", [$real_barcode]);
+            $productCheck = findCatalogProduct($real_barcode, $store);
             if (!empty($productCheck)) {
                 $masterQty = (float)($productCheck[0]['Qty'] ?? 0.00);
             }
             $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
             $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
-            $newVariance = $masterQty - $totalScanned;
+            $newVariance = $totalScanned - $masterQty;
             $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
 
             logAudit('Edit Scanned Item', "Updated item in {$oldDetails} -> New UPC: {$real_barcode}, New Qty: {$qty}");
@@ -775,13 +775,13 @@ try {
 
                 // Recalculate variance for remaining scans of this product in this slot/locator
                 $masterQty = 0.00;
-                $productCheck = $db->query("SELECT Qty FROM items WHERE UPC = ?", [$real_barcode]);
+                $productCheck = findCatalogProduct($real_barcode, $store);
                 if (!empty($productCheck)) {
                     $masterQty = (float)($productCheck[0]['Qty'] ?? 0.00);
                 }
                 $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
                 $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
-                $newVariance = $masterQty - $totalScanned;
+                $newVariance = $totalScanned - $masterQty;
                 $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
             }
             
@@ -846,7 +846,7 @@ try {
                         $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
                     }
                 }
-                $variance = $masterQty - $totalScanned;
+                $variance = $totalScanned - $masterQty;
                 $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
                 $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . $varianceStr;
             }

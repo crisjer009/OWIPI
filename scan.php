@@ -2879,7 +2879,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const descr = item.description || 'Item Not Found';
                             const mstQtyVal = item.masterQty;
                             const qtyVal = item.totalQty;
-                            const varianceVal = mstQtyVal - qtyVal;
+                            const varianceVal = qtyVal - mstQtyVal;
                             
                             const mstQtyStr = mstQtyVal.toFixed(0);
                             const qtyStr = qtyVal.toFixed(0);
