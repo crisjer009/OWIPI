@@ -450,9 +450,17 @@ if ($driverLoaded && $dbStatus === 'connected') {
             background: rgba(255, 255, 255, 0.05);
         }
 
+        select.form-control {
+            background-color: #1e293b;
+            color: #ffffff;
+            min-height: 42px;
+            cursor: pointer;
+        }
+
         select.form-control option {
-            background-color: var(--bg-color);
-            color: white;
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 8px 12px;
         }
 
         .btn {
@@ -1756,16 +1764,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <strong>MASTERFILE...txt</strong> files.
                     </div>
                     <form id="import-form" onsubmit="uploadMasterfile(event)">
-                        <div class="form-group">
+                        <div class="form-group" style="margin-bottom: 1rem;">
                             <label for="masterfile_target_store">Target Masterfile Database</label>
-                            <select id="masterfile_target_store" class="form-control" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+                            <select id="masterfile_target_store" class="form-control" style="height: 42px; font-size: 0.85rem; padding: 0.4rem 0.75rem;">
                                 <option value="">Global Master Catalog (Default items table)</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="margin-bottom: 1rem;">
                             <label for="masterfile_input">Select CSV / TSV File</label>
                             <input type="file" id="masterfile_input" class="form-control" accept=".txt,.csv,.tsv"
-                                required style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+                                required style="height: 42px; font-size: 0.85rem; padding: 0.4rem 0.75rem;">
                         </div>
                         <button type="submit" id="upload-btn" class="btn"
                             style="width:100%; margin-top: 0.5rem; background:linear-gradient(135deg, var(--accent-color), #2563eb);">Upload
