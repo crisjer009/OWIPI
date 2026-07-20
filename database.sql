@@ -1,5 +1,5 @@
 -- OWIPI Database Backup
--- Generated: 2026-07-20 10:25:13
+-- Generated: 2026-07-20 10:51:18
 
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -8601,7 +8601,10 @@ CREATE TABLE `lbs_countsheet` (
   `Variance` decimal(10,2) NOT NULL DEFAULT 0.00,
   PRIMARY KEY (`RecNo`),
   KEY `idx_slotno` (`SlotNo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `lbs_countsheet` VALUES
+('1', 'Slot 1', '2026-07-20 16:29:48', '0000000002997', '2997', 'BALLPEN CLASSIQUE RED', '55.00', NULL, '0', '0', '0', 'RAYMART', '0', '4.00');
 
 DROP TABLE IF EXISTS `lbs_items`;
 CREATE TABLE `lbs_items` (
@@ -8627,7 +8630,7 @@ CREATE TABLE `lbs_locators` (
 ) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `lbs_locators` VALUES
-('1', 'Slot 1', 'open', NULL, '0'),
+('1', 'Slot 1', 'in_use', 'RAYMART', '0'),
 ('2', 'Slot 2', 'open', NULL, '0'),
 ('3', 'Slot 3', 'open', NULL, '0'),
 ('4', 'Slot 4', 'open', NULL, '0'),

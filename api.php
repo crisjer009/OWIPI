@@ -111,27 +111,34 @@ function findCatalogProduct($barcode, $storeCode = null) {
         } catch (Exception $e) {}
     }
 
-    $params = [$barcodeClean, $barcodeClean];
-    $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?";
-    
+    // 1. Direct exact match check (fastest)
+    $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
+    if (!empty($rows)) {
+        return $rows;
+    }
+
+    // 2. Flexible numeric matching (handles leading zeros like 016965 <-> 16965)
     if (ctype_digit($barcodeClean)) {
-        // 1. Padded SKU (6 digits)
-        if (strlen($barcodeClean) < 6) {
-            $paddedSku = str_pad($barcodeClean, 6, '0', STR_PAD_LEFT);
-            $sql .= " OR SKU = ?";
-            $params[] = $paddedSku;
+        $unpadded = ltrim($barcodeClean, '0');
+        if ($unpadded === '') {
+            $unpadded = '0';
         }
-        // 2. Unpadded SKU (remove leading zeros)
-        $unpaddedSku = ltrim($barcodeClean, '0');
-        if ($unpaddedSku !== '' && $unpaddedSku !== $barcodeClean) {
-            $sql .= " OR SKU = ? OR UPC = ?";
-            $params[] = $unpaddedSku;
-            $params[] = $unpaddedSku;
+        $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
+        
+        $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` 
+                WHERE UPC = ? OR SKU = ? 
+                   OR UPC = ? OR SKU = ?
+                   OR TRIM(LEADING '0' FROM UPC) = ? 
+                   OR TRIM(LEADING '0' FROM SKU) = ?";
+        
+        $params = [$barcodeClean, $barcodeClean, $padded6, $padded6, $unpadded, $unpadded];
+        $rows = $db->query($sql, $params);
+        if (!empty($rows)) {
+            return $rows;
         }
     }
 
-    $rows = $db->query($sql, $params);
-    return !empty($rows) ? $rows : [];
+    return [];
 }
 
 // Enforce Authentication
