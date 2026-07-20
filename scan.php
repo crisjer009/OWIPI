@@ -9,6 +9,7 @@ if (isset($_GET['autologin']) && isset($_GET['store'])) {
     $_SESSION['user_id'] = (int) $_GET['autologin'];
     $_SESSION['username'] = isset($_GET['user']) ? urldecode($_GET['user']) : 'Mobile Scanner';
     $_SESSION['store_code'] = strtoupper($_GET['store']);
+    $_SESSION['is_mobile_scanner'] = true;
 
     // Redirect to clean scan.php URL to hide credentials in browser history
     header('Location: scan.php');
@@ -824,6 +825,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="switch-view-btn" class="btn" onclick="toggleHostMobileView()"
+                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(139, 148, 158, 0.15); border: 1px solid rgba(255,255,255,0.2); color: #c9d1d9; font-weight:600;">
+                🖥️ Host Console
+            </button>
             <button id="btn-upload-masterfile" class="btn btn-secondary" onclick="openHostMasterfileModal()"
                 style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
                 📁 Upload Masterfile
@@ -1530,11 +1535,11 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 // Detect Secure Context & Camera capabilities
                 const isSecure = window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-                // Detect Mobile device vs PC Host (Only actual mobile phone User-Agents trigger Mobile Camera Scanner view)
-                const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                // Detect Mobile session (QR autologin) vs PC Host
+                const isMobileSession = <?= json_encode(!empty($_SESSION['is_mobile_scanner'])) ?>;
                 const urlParams = new URLSearchParams(window.location.search);
                 const forcedView = urlParams.get('view');
-                const isMobile = (forcedView === 'mobile') || (isMobileUA && forcedView !== 'host');
+                const isMobile = (forcedView === 'mobile') || (isMobileSession && forcedView !== 'host');
 
                 if (!isMobile) {
                     // On Desktop/PC (Host Mode)
@@ -3479,6 +3484,23 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 statusMsg.style.color = '#f85149';
                 statusMsg.innerText = 'Sync failed: ' + err.message;
             });
+        }
+
+        function toggleHostMobileView() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentView = urlParams.get('view');
+            if (currentView === 'mobile') {
+                window.location.href = 'scan.php?view=host';
+            } else if (currentView === 'host') {
+                window.location.href = 'scan.php?view=mobile';
+            } else {
+                const hostDash = document.getElementById('host-dashboard');
+                if (hostDash && hostDash.style.display !== 'none') {
+                    window.location.href = 'scan.php?view=mobile';
+                } else {
+                    window.location.href = 'scan.php?view=host';
+                }
+            }
         }
 
         function openHostMasterfileModal() {

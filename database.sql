@@ -1,5 +1,5 @@
 -- OWIPI Database Backup
--- Generated: 2026-07-20 10:05:35
+-- Generated: 2026-07-20 10:11:37
 
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -12,7 +12,10 @@ CREATE TABLE `audit_logs` (
   `details` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `audit_logs` VALUES
+('1', NULL, 'sys_admin', 'DELETE_STORE', 'Permanently deleted store session \'LBS\' and dropped all its tables.', '2026-07-20 16:09:04');
 
 DROP TABLE IF EXISTS `items`;
 CREATE TABLE `items` (
@@ -8660,10 +8663,10 @@ CREATE TABLE `stores` (
   `closed` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `store_code` (`store_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `stores` VALUES
-('5', 'LBS', '10', '2026-07-20 15:59:56', '0', '0');
+('9', 'LBS', '10', '2026-07-20 16:09:17', '0', '0');
 
 DROP TABLE IF EXISTS `stores_id`;
 CREATE TABLE `stores_id` (
