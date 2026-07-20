@@ -2028,9 +2028,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     text: scanUrl,
                     width: 150,
                     height: 150,
-                    colorDark: "#0b0f19",
+                    colorDark: "#000000",
                     colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H
+                    correctLevel: QRCode.CorrectLevel.L
                 });
             }
 

@@ -3551,28 +3551,30 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             if (!qrContainer) return;
             qrContainer.innerHTML = '';
 
+            let success = false;
             if (typeof QRCode !== 'undefined') {
                 try {
                     qrCodeInstance = new QRCode(qrContainer, {
                         text: url,
                         width: 150,
                         height: 150,
-                        colorDark: "#0b0f19",
+                        colorDark: "#000000",
                         colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
+                        correctLevel: QRCode.CorrectLevel.L
                     });
+                    success = true;
                 } catch (e) {
                     console.error("Local QRCode error:", e);
                 }
             }
 
-            // Fallback check: If container is empty or canvas/image rendered 0 height, fallback to image API
+            // Fallback check: If container is empty or canvas/image rendered 0 height/data, fallback to image API
             setTimeout(() => {
                 const img = qrContainer.querySelector('img');
                 const canvas = qrContainer.querySelector('canvas');
-                const hasValidOutput = (img && img.offsetHeight > 10) || (canvas && canvas.offsetHeight > 10);
+                const isValidImg = (img && img.src && img.src.length > 100 && img.offsetHeight > 10) || (canvas && canvas.offsetHeight > 10);
                 
-                if (!hasValidOutput) {
+                if (!isValidImg) {
                     qrContainer.innerHTML = '';
                     const fallbackImg = document.createElement('img');
                     fallbackImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(url);
@@ -3582,7 +3584,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     fallbackImg.style.display = 'block';
                     qrContainer.appendChild(fallbackImg);
                 }
-            }, 120);
+            }, 100);
         }
 
         function updateQRCodeIP(newIp) {
