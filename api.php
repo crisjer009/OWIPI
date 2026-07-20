@@ -1022,23 +1022,23 @@ try {
                     }
  
                     if (!$headerChecked) {
-                        // Header check: find indexes
+                        // Header check: find indexes flexibly for any format (including Local UPC Filter, Str OH Qty, etc.)
                         foreach ($cols as $idx => $headerName) {
-                            $headerName = trim(strtolower($headerName));
-                            $headerName = trim($headerName, '"\'');
-                            if ($headerName === 'alu') {
+                            $cleanHeader = strtolower(trim(str_replace(['_', ' '], '', $headerName)));
+                            $cleanHeader = trim($cleanHeader, '"\'');
+                            if ($cleanHeader === 'alu' || $cleanHeader === 'sku') {
                                 $aluIdx = $idx;
-                            } elseif ($headerName === 'local_upc' || $headerName === 'upc') {
+                            } elseif ($upcIdx === -1 && (strpos($cleanHeader, 'upc') !== false || strpos($cleanHeader, 'barcode') !== false)) {
                                 $upcIdx = $idx;
-                            } elseif ($headerName === 'qty' || $headerName === 'quantity') {
+                            } elseif ($qtyIdx === -1 && (strpos($cleanHeader, 'qty') !== false || strpos($cleanHeader, 'quantity') !== false || strpos($cleanHeader, 'stroh') !== false)) {
                                 $qtyIdx = $idx;
-                            } elseif ($headerName === 'description1' || $headerName === 'desc1') {
+                            } elseif ($cleanHeader === 'description1' || $cleanHeader === 'desc1' || $cleanHeader === 'description') {
                                 $desc1Idx = $idx;
-                            } elseif ($headerName === 'description2' || $headerName === 'desc2') {
+                            } elseif ($cleanHeader === 'description2' || $cleanHeader === 'desc2') {
                                 $desc2Idx = $idx;
-                            } elseif ($headerName === 'attr') {
+                            } elseif ($cleanHeader === 'attr' || $cleanHeader === 'attribute') {
                                 $attrIdx = $idx;
-                            } elseif ($headerName === 'siz' || $headerName === 'size') {
+                            } elseif ($cleanHeader === 'siz' || $cleanHeader === 'size') {
                                 $sizeIdx = $idx;
                             }
                         }
