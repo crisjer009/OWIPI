@@ -1571,16 +1571,25 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         if (hostHttpsTip) hostHttpsTip.style.display = 'block';
                     }
 
-                if (qrContainer) {
-                    qrCodeInstance = new QRCode(qrContainer, {
-                        text: "<?= $scanUrl ?>",
-                        width: 150,
-                        height: 150,
-                        colorDark: "#0b0f19",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-                }
+                    // Render Connection QR Code after layout paint
+                    setTimeout(() => {
+                        const qrContainer = document.getElementById("qrcode");
+                        if (qrContainer && typeof QRCode !== 'undefined') {
+                            qrContainer.innerHTML = '';
+                            try {
+                                qrCodeInstance = new QRCode(qrContainer, {
+                                    text: "<?= $scanUrl ?>",
+                                    width: 150,
+                                    height: 150,
+                                    colorDark: "#0b0f19",
+                                    colorLight: "#ffffff",
+                                    correctLevel: QRCode.CorrectLevel.H
+                                });
+                            } catch (e) {
+                                console.error("QR Code generation error:", e);
+                            }
+                        }
+                    }, 150);
 
                 // Continuous scans polling for Host Console
                 loadHostScans();
@@ -3553,12 +3562,22 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     alert("Import failed: " + err);
                 });
         function updateQRCodeIP(newIp) {
-            if (!qrCodeInstance) return;
+            const qrContainer = document.getElementById("qrcode");
+            if (!qrContainer) return;
             const currentUrl = "<?= $scanUrl ?>";
             const oldIp = "<?= $localIP ?>";
             const newUrl = currentUrl.replace(oldIp, newIp);
-            qrCodeInstance.clear();
-            qrCodeInstance.makeCode(newUrl);
+            qrContainer.innerHTML = '';
+            if (typeof QRCode !== 'undefined') {
+                qrCodeInstance = new QRCode(qrContainer, {
+                    text: newUrl,
+                    width: 150,
+                    height: 150,
+                    colorDark: "#0b0f19",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
         }
     </script>
 
