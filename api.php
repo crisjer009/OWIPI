@@ -87,6 +87,7 @@ function formatProductDescription($descr, $attr, $size)
 }
 
 // Helper function to find a product in items catalog with flexible padding/unpadding support
+// Helper function to find a product in items catalog with flexible padding/unpadding and fallback support
 function findCatalogProduct($barcode, $storeCode = null) {
     $db = new OWI_DB();
     $barcodeClean = trim($barcode);
@@ -97,44 +98,47 @@ function findCatalogProduct($barcode, $storeCode = null) {
     $storeInput = $storeCode ?? ($_GET['store_code'] ?? ($_SESSION['store_code'] ?? ''));
     $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
     
-    // Check if store-specific items table exists and has records
-    $tableName = 'items';
+    $tablesToSearch = [];
     if (!empty($cleanStore)) {
         try {
             $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
             if (!empty($tableCheck)) {
                 $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
                 if (!empty($countCheck) && (int)$countCheck[0]['count'] > 0) {
-                    $tableName = "{$cleanStore}_items";
+                    $tablesToSearch[] = "{$cleanStore}_items";
                 }
             }
         } catch (Exception $e) {}
     }
+    // Always include central items table as fallback
+    $tablesToSearch[] = 'items';
 
-    // 1. Direct exact match check (fastest)
-    $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
-    if (!empty($rows)) {
-        return $rows;
-    }
-
-    // 2. Flexible numeric matching (handles leading zeros like 016965 <-> 16965)
-    if (ctype_digit($barcodeClean)) {
-        $unpadded = ltrim($barcodeClean, '0');
-        if ($unpadded === '') {
-            $unpadded = '0';
-        }
-        $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
-        
-        $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` 
-                WHERE UPC = ? OR SKU = ? 
-                   OR UPC = ? OR SKU = ?
-                   OR TRIM(LEADING '0' FROM UPC) = ? 
-                   OR TRIM(LEADING '0' FROM SKU) = ?";
-        
-        $params = [$barcodeClean, $barcodeClean, $padded6, $padded6, $unpadded, $unpadded];
-        $rows = $db->query($sql, $params);
+    foreach ($tablesToSearch as $tableName) {
+        // 1. Direct exact match check (fastest)
+        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
         if (!empty($rows)) {
             return $rows;
+        }
+
+        // 2. Flexible numeric matching (handles leading zeros like 016965 <-> 16965)
+        if (ctype_digit($barcodeClean)) {
+            $unpadded = ltrim($barcodeClean, '0');
+            if ($unpadded === '') {
+                $unpadded = '0';
+            }
+            $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
+            
+            $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` 
+                    WHERE UPC = ? OR SKU = ? 
+                       OR UPC = ? OR SKU = ?
+                       OR TRIM(LEADING '0' FROM UPC) = ? 
+                       OR TRIM(LEADING '0' FROM SKU) = ?";
+            
+            $params = [$barcodeClean, $barcodeClean, $padded6, $padded6, $unpadded, $unpadded];
+            $rows = $db->query($sql, $params);
+            if (!empty($rows)) {
+                return $rows;
+            }
         }
     }
 
