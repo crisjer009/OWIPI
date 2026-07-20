@@ -87,15 +87,32 @@ function formatProductDescription($descr, $attr, $size)
 }
 
 // Helper function to find a product in items catalog with flexible padding/unpadding support
-function findCatalogProduct($barcode) {
+function findCatalogProduct($barcode, $storeCode = null) {
     $db = new OWI_DB();
     $barcodeClean = trim($barcode);
     if ($barcodeClean === '') {
         return [];
     }
 
+    $storeInput = $storeCode ?? ($_GET['store_code'] ?? ($_SESSION['store_code'] ?? ''));
+    $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
+    
+    // Check if store-specific items table exists and has records
+    $tableName = 'items';
+    if (!empty($cleanStore)) {
+        try {
+            $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
+            if (!empty($tableCheck)) {
+                $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
+                if (!empty($countCheck) && (int)$countCheck[0]['count'] > 0) {
+                    $tableName = "{$cleanStore}_items";
+                }
+            }
+        } catch (Exception $e) {}
+    }
+
     $params = [$barcodeClean, $barcodeClean];
-    $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items WHERE UPC = ? OR SKU = ?";
+    $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?";
     
     if (ctype_digit($barcodeClean)) {
         // 1. Padded SKU (6 digits)
@@ -849,7 +866,23 @@ try {
 
         case 'get_products':
             $db = new OWI_DB();
-            $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type, Qty as master_qty FROM items ORDER BY Descr ASC";
+            $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
+            $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
+            
+            $tableName = 'items';
+            if (!empty($cleanStore)) {
+                try {
+                    $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
+                    if (!empty($tableCheck)) {
+                        $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
+                        if (!empty($countCheck) && (int)$countCheck[0]['count'] > 0) {
+                            $tableName = "{$cleanStore}_items";
+                        }
+                    }
+                } catch (Exception $e) {}
+            }
+
+            $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type, Qty as master_qty FROM `{$tableName}` ORDER BY Descr ASC";
             $products = $db->query($sqlProducts);
             sendResponse([
                 'status' => 'success',
@@ -943,12 +976,23 @@ try {
             $attrIdx = -1;
             $sizeIdx = -1;
  
+            $storeInput = $_POST['store_code'] ?? ($_GET['store_code'] ?? ($_SESSION['store_code'] ?? ''));
+            $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
+
+            $targetTables = ['items'];
+            if (!empty($cleanStore)) {
+                $db->createStoreTables($cleanStore);
+                $targetTables[] = "{$cleanStore}_items";
+            }
+
             // Start transaction for speed
             $db->execute("START TRANSACTION");
  
             try {
-                // Clear existing database catalog table first (Option 1)
-                $db->execute("TRUNCATE TABLE items");
+                // Clear existing catalog table for current target tables
+                foreach ($targetTables as $targetTbl) {
+                    $db->execute("TRUNCATE TABLE `{$targetTbl}`");
+                }
  
                 $sqlInsert = "
                     INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) 
@@ -1042,7 +1086,20 @@ try {
                     $descr = $desc1;
                     $type = $desc2;
  
-                    $db->execute($sqlInsert, [$upc, $sku, $descr, $type, $attr, $size, $qty]);
+                    foreach ($targetTables as $targetTbl) {
+                        $sqlInsert = "
+                            INSERT INTO `{$targetTbl}` (UPC, SKU, Descr, Type, Attr, Size, Qty) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                            ON DUPLICATE KEY UPDATE 
+                                SKU = VALUES(SKU), 
+                                Descr = VALUES(Descr), 
+                                Type = VALUES(Type),
+                                Attr = VALUES(Attr),
+                                Size = VALUES(Size),
+                                Qty = VALUES(Qty)
+                        ";
+                        $db->execute($sqlInsert, [$upc, $sku, $descr, $type, $attr, $size, $qty]);
+                    }
                     $importedCount++;
                 }
 

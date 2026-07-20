@@ -531,6 +531,22 @@ class OWI_DB {
         } catch (Exception $ex) {
             // Already exists or error
         }
+
+        // Construct the store-specific items table
+        $sqlStoreItemsTable = "
+            CREATE TABLE IF NOT EXISTS `{$cleanStore}_items` (
+                UPC VARCHAR(100) NOT NULL PRIMARY KEY,
+                SKU VARCHAR(100) NOT NULL,
+                Descr VARCHAR(255) NOT NULL,
+                Type VARCHAR(100) NULL,
+                Attr VARCHAR(100) NULL,
+                Size VARCHAR(100) NULL,
+                Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+        try {
+            $this->execute($sqlStoreItemsTable);
+        } catch (Exception $e) {}
         
         // Seed default Slots if table is empty
         $sqlLocatorCheck = "SELECT COUNT(*) as count FROM `{$cleanStore}_locators`";
