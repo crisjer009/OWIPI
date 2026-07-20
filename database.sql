@@ -1,5 +1,5 @@
 -- OWIPI Database Backup
--- Generated: 2026-07-20 10:55:38
+-- Generated: 2026-07-20 11:00:05
 
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -8631,7 +8631,7 @@ CREATE TABLE `lbs_locators` (
 
 INSERT INTO `lbs_locators` VALUES
 ('1', 'Slot 1', 'in_use', 'RAYMART', '0'),
-('2', 'Slot 2', 'open', NULL, '0'),
+('2', 'Slot 2', 'in_use', 'TEST', '0'),
 ('3', 'Slot 3', 'open', NULL, '0'),
 ('4', 'Slot 4', 'open', NULL, '0'),
 ('5', 'Slot 5', 'open', NULL, '0'),

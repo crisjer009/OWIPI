@@ -1899,22 +1899,57 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 });
         }
 
+        // Flexible JS matching for barcode/SKU supporting leading zeros (e.g. 16965 <-> 016965)
+        function matchBarcodeOrSku(p, inputVal) {
+            if (!p || !inputVal) return false;
+            const cleanInput = String(inputVal).trim();
+            const lowerInput = cleanInput.toLowerCase();
+
+            if (p.barcode === cleanInput || (p.sku && p.sku.toLowerCase() === lowerInput)) {
+                return true;
+            }
+            if (/^\d+$/.test(cleanInput)) {
+                const unpaddedInput = cleanInput.replace(/^0+/, '');
+                if (p.barcode && /^\d+$/.test(p.barcode)) {
+                    const unpaddedBarcode = p.barcode.replace(/^0+/, '');
+                    if (unpaddedBarcode === unpaddedInput && unpaddedInput !== '') return true;
+                }
+                if (p.sku && /^\d+$/.test(p.sku)) {
+                    const unpaddedSku = p.sku.replace(/^0+/, '');
+                    if (unpaddedSku === unpaddedInput && unpaddedInput !== '') return true;
+                }
+            }
+            return false;
+        }
+
         // Resolve scanned/typed code to catalog barcode if it matches a SKU
         function resolveBarcodeOrSku(inputVal, callback) {
             fetch('api.php?action=get_products')
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success' && data.products) {
-                        const matched = data.products.find(p =>
-                            p.barcode === inputVal ||
-                            (p.sku && p.sku.toLowerCase() === inputVal.toLowerCase())
-                        );
+                        const matched = data.products.find(p => matchBarcodeOrSku(p, inputVal));
                         if (matched) {
                             callback(matched.barcode, matched);
                             return;
                         }
                     }
-                    callback(inputVal, null);
+                    // Fallback to get_product_info server API query
+                    fetch('api.php?action=get_product_info&barcode=' + encodeURIComponent(inputVal))
+                        .then(res => res.json())
+                        .then(info => {
+                            if (info.status === 'success' && info.product_found) {
+                                callback(info.barcode, {
+                                    barcode: info.barcode,
+                                    sku: info.sku,
+                                    product_name: info.product_name,
+                                    master_qty: info.master_qty
+                                });
+                            } else {
+                                callback(inputVal, null);
+                            }
+                        })
+                        .catch(() => callback(inputVal, null));
                 })
                 .catch(err => {
                     console.error("Resolve barcode/sku error:", err);
@@ -1928,30 +1963,27 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             document.getElementById('modal-qty').value = "1";
 
             if (preResolvedProduct) {
+                document.getElementById('modal-barcode').value = preResolvedProduct.barcode || barcode;
                 document.getElementById('modal-prod-name').innerText = preResolvedProduct.product_name;
                 const mQty = preResolvedProduct.master_qty !== undefined && preResolvedProduct.master_qty !== null ? preResolvedProduct.master_qty : '0';
                 document.getElementById('modal-prod-desc').innerText = `SKU: ${preResolvedProduct.sku || 'N/A'} | Master Qty: ${mQty}`;
                 document.getElementById('confirm-modal-overlay').classList.add('active');
             } else {
                 document.getElementById('modal-prod-name').innerText = "Checking Catalog...";
-                document.getElementById('modal-prod-desc').innerText = "Querying MySQL database owi_physical_inventory...";
+                document.getElementById('modal-prod-desc').innerText = "Querying MySQL database...";
                 document.getElementById('confirm-modal-overlay').classList.add('active');
 
-                // Pre-check product details from database
-                fetch('api.php?action=get_products')
+                // Pre-check product details from server API
+                fetch('api.php?action=get_product_info&barcode=' + encodeURIComponent(barcode))
                     .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success' && data.products) {
-                            const matched = data.products.find(p => p.barcode === barcode || (p.sku && p.sku.toLowerCase() === barcode.toLowerCase()));
-                            if (matched) {
-                                document.getElementById('modal-barcode').value = matched.barcode;
-                                document.getElementById('modal-prod-name').innerText = matched.product_name;
-                                const mQty = matched.master_qty !== undefined && matched.master_qty !== null ? matched.master_qty : '0';
-                                document.getElementById('modal-prod-desc').innerText = `SKU: ${matched.sku || 'N/A'} | Master Qty: ${mQty}`;
-                            } else {
-                                document.getElementById('modal-prod-name').innerText = "Item Not Found";
-                                document.getElementById('modal-prod-desc').innerText = "Item not found in catalog.";
-                            }
+                    .then(info => {
+                        if (info.status === 'success' && info.product_found) {
+                            document.getElementById('modal-barcode').value = info.barcode;
+                            document.getElementById('modal-prod-name').innerText = info.product_name;
+                            document.getElementById('modal-prod-desc').innerText = `SKU: ${info.sku || 'N/A'} | Master Qty: ${info.master_qty}`;
+                        } else {
+                            document.getElementById('modal-prod-name').innerText = "Item Not Found";
+                            document.getElementById('modal-prod-desc').innerText = "Item not found in catalog.";
                         }
                     })
                     .catch(err => {
