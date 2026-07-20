@@ -1521,38 +1521,49 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         let qrCodeInstance = null;
 
         window.addEventListener('DOMContentLoaded', () => {
-            // Fill instructions flag text
-            const currentOrigin = window.location.origin;
-            document.getElementById('insecure-url-disp').innerText = currentOrigin;
+            try {
+                // Fill instructions flag text
+                const currentOrigin = window.location.origin;
+                const insecureDisp = document.getElementById('insecure-url-disp');
+                if (insecureDisp) insecureDisp.innerText = currentOrigin;
 
-            // Detect Secure Context & Camera capabilities
-            const isSecure = window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                // Detect Secure Context & Camera capabilities
+                const isSecure = window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            // Detect Mobile device vs PC Host (Only actual mobile phone User-Agents trigger Mobile Camera Scanner view)
-            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const urlParams = new URLSearchParams(window.location.search);
-            const forcedView = urlParams.get('view');
-            const isMobile = (forcedView === 'mobile') || (isMobileUA && forcedView !== 'host');
+                // Detect Mobile device vs PC Host (Only actual mobile phone User-Agents trigger Mobile Camera Scanner view)
+                const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const urlParams = new URLSearchParams(window.location.search);
+                const forcedView = urlParams.get('view');
+                const isMobile = (forcedView === 'mobile') || (isMobileUA && forcedView !== 'host');
 
-            if (!isMobile) {
-                // On Desktop/PC (Host Mode)
-                document.body.style.overflow = 'auto';
-                document.getElementById('host-connect-card').style.display = 'block';
-                document.getElementById('host-dashboard').style.display = 'flex';
-                document.getElementById('mobile-scanner-view').style.display = 'none';
-                document.getElementById('secure-warning').style.display = 'none';
+                if (!isMobile) {
+                    // On Desktop/PC (Host Mode)
+                    document.body.style.overflow = 'auto';
 
-                // Render Connection QR Code
-                const qrContainer = document.getElementById("qrcode");
+                    const hostConnectCard = document.getElementById('host-connect-card');
+                    if (hostConnectCard) hostConnectCard.style.display = 'block';
 
-                // Configure Host HTTPS tip if loaded via HTTP
-                if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                    const hostLink = document.getElementById('host-https-link');
-                    if (hostLink) {
-                        hostLink.href = window.location.href.replace('http://', 'https://');
+                    const hostDashboard = document.getElementById('host-dashboard');
+                    if (hostDashboard) hostDashboard.style.display = 'flex';
+
+                    const mobileScannerView = document.getElementById('mobile-scanner-view');
+                    if (mobileScannerView) mobileScannerView.style.display = 'none';
+
+                    const secureWarning = document.getElementById('secure-warning');
+                    if (secureWarning) secureWarning.style.display = 'none';
+
+                    // Render Connection QR Code
+                    const qrContainer = document.getElementById("qrcode");
+
+                    // Configure Host HTTPS tip if loaded via HTTP
+                    if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+                        const hostLink = document.getElementById('host-https-link');
+                        if (hostLink) {
+                            hostLink.href = window.location.href.replace('http://', 'https://');
+                        }
+                        const hostHttpsTip = document.getElementById('host-https-tip');
+                        if (hostHttpsTip) hostHttpsTip.style.display = 'block';
                     }
-                    document.getElementById('host-https-tip').style.display = 'block';
-                }
 
                 if (qrContainer) {
                     qrCodeInstance = new QRCode(qrContainer, {
@@ -1656,6 +1667,9 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 } else {
                     showConnectModal();
                 }
+                }
+            } catch (e) {
+                console.error("Initialization error:", e);
             }
 
             // Listen for window online/offline
