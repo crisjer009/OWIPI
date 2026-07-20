@@ -34,6 +34,7 @@ if ($hostOnly === 'localhost' || $hostOnly === '127.0.0.1' || $hostOnly === '::1
 
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $scriptDir = rtrim($scriptDir, '/');
+$isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '');
 ?>
 <!DOCTYPE html>
@@ -889,7 +890,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
 
 
-    <div id="mobile-scanner-view">
+    <div id="mobile-scanner-view" style="<?= $isMobileScanner ? '' : 'display: none;' ?>">
         <!-- Hidden inputs for scanner submission -->
         <input type="hidden" id="scanned_by" value="">
         <input type="hidden" id="location" value="">
@@ -1011,7 +1012,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         </div>
     </div> <!-- Close mobile-scanner-view --> <!-- Host Dashboard View (Desktop Host Mode Only) -->
     <div id="host-dashboard"
-        style="display: none; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; height: calc(100vh - 90px); flex-direction: column; overflow-y: auto;">
+        style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; height: calc(100vh - 90px); flex-direction: column; overflow-y: auto;">
 
         <!-- Top Section Grid: equal height log and connect/spacing cards -->
         <div class="host-top-grid">
