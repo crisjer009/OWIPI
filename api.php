@@ -968,8 +968,9 @@ try {
                         continue;
                     }
  
-                    // Split by tab
-                    $cols = explode("\t", $line);
+                    // Auto-detect delimiter: tab (\t) or comma (,) and parse quoted/unquoted fields natively
+                    $delimiter = (strpos($line, "\t") !== false) ? "\t" : ",";
+                    $cols = str_getcsv($line, $delimiter);
                     if (empty($cols)) {
                         continue;
                     }
