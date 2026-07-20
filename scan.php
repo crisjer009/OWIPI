@@ -1528,12 +1528,15 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             // Detect Secure Context & Camera capabilities
             const isSecure = window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
-            // Detect Mobile device vs PC Host
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            // Detect Mobile device vs PC Host (Only actual mobile phone User-Agents trigger Mobile Camera Scanner view)
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const urlParams = new URLSearchParams(window.location.search);
+            const forcedView = urlParams.get('view');
+            const isMobile = (forcedView === 'mobile') || (isMobileUA && forcedView !== 'host');
 
             if (!isMobile) {
                 // On Desktop/PC (Host Mode)
-                document.body.style.overflow = 'hidden';
+                document.body.style.overflow = 'auto';
                 document.getElementById('host-connect-card').style.display = 'block';
                 document.getElementById('host-dashboard').style.display = 'flex';
                 document.getElementById('mobile-scanner-view').style.display = 'none';
