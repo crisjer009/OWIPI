@@ -3546,6 +3546,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     btn.innerText = originalText;
                     alert("Import failed: " + err);
                 });
+        }
+
         function renderHostQRCode(url) {
             const qrContainer = document.getElementById("qrcode");
             if (!qrContainer) return;
