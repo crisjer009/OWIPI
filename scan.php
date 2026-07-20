@@ -826,6 +826,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <?php if (!$isMobileScanner): ?>
             <button id="switch-view-btn" class="btn" onclick="toggleHostMobileView()"
                 style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(139, 148, 158, 0.15); border: 1px solid rgba(255,255,255,0.2); color: #c9d1d9; font-weight:600;">
                 🖥️ Host Console
@@ -842,6 +843,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#da3633; border-color:#da3633; color:white; font-weight:600;">
                 🔒 Close Store
             </button>
+            <?php endif; ?>
             <div id="connection-status" class="connection-status" style="margin-left: 0; position: static;">Online</div>
             <a href="logout.php" id="logout-btn"
                 style="color: #fca5a5; font-size: 0.8rem; font-weight: 600; text-decoration: none; padding: 4px 8px; border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; background: rgba(239,68,68,0.1);">Log
@@ -1632,6 +1634,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 if (logoutBtn) logoutBtn.style.display = 'none';
                 const switchBtn = document.getElementById('switch-btn');
                 if (switchBtn) switchBtn.style.display = 'none';
+                const switchViewBtn = document.getElementById('switch-view-btn');
+                if (switchViewBtn) switchViewBtn.style.display = 'none';
+                const uploadMasterBtn = document.getElementById('btn-upload-masterfile');
+                if (uploadMasterBtn) uploadMasterBtn.style.display = 'none';
                 const syncBtn = document.getElementById('btn-sync-cloud');
                 if (syncBtn) syncBtn.style.display = 'none';
                 const closeBtn = document.getElementById('btn-close-store');
