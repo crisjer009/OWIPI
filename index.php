@@ -1049,12 +1049,23 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .then(data => {
                     if (data.status === 'success' && data.stores && data.stores.length > 0) {
                         const select = document.getElementById('active_store_select');
+                        const targetSelect = document.getElementById('masterfile_target_store');
                         select.innerHTML = '';
+                        if (targetSelect) {
+                            targetSelect.innerHTML = '<option value="">Global Master Catalog (Default items table)</option>';
+                        }
                         data.stores.forEach(store => {
                             const opt = document.createElement('option');
                             opt.value = store.store_code;
                             opt.innerText = `Store: ${store.store_code}`;
                             select.appendChild(opt);
+
+                            if (targetSelect) {
+                                const targetOpt = document.createElement('option');
+                                targetOpt.value = store.store_code;
+                                targetOpt.innerText = `Store: ${store.store_code} (${store.store_code.toLowerCase()}_items)`;
+                                targetSelect.appendChild(targetOpt);
+                            }
                         });
                         setStoreMode('select');
                     } else {
@@ -1745,6 +1756,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <strong>MASTERFILE...txt</strong> files.
                     </div>
                     <form id="import-form" onsubmit="uploadMasterfile(event)">
+                        <div class="form-group">
+                            <label for="masterfile_target_store">Target Masterfile Database</label>
+                            <select id="masterfile_target_store" class="form-control" style="padding: 0.5rem 0.85rem; font-size: 0.85rem;">
+                                <option value="">Global Master Catalog (Default items table)</option>
+                            </select>
+                        </div>
                         <div class="form-group">
                             <label for="masterfile_input">Select CSV / TSV File</label>
                             <input type="file" id="masterfile_input" class="form-control" accept=".txt,.csv,.tsv"
@@ -2663,16 +2680,23 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 return;
             }
 
+            const targetStoreSelect = document.getElementById('masterfile_target_store');
+            const targetStore = targetStoreSelect ? targetStoreSelect.value : '';
+
             const file = fileInput.files[0];
             const formData = new FormData();
             formData.append('file', file);
+            if (targetStore) {
+                formData.append('store_code', targetStore);
+            }
 
             const uploadBtn = document.getElementById('upload-btn');
             const originalText = uploadBtn.innerText;
             uploadBtn.disabled = true;
             uploadBtn.innerText = "Importing masterfile...";
 
-            showToast("Parsing & importing masterfile into MySQL...", "info");
+            const targetLabel = targetStore ? `Store ${targetStore} (${targetStore.toLowerCase()}_items)` : 'Global Master Catalog (items)';
+            showToast(`Parsing & importing masterfile into ${targetLabel}...`, "info");
 
             fetch('api.php?action=import_masterfile', {
                 method: 'POST',
