@@ -453,7 +453,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
         select.form-control {
             background-color: #1e293b;
             color: #ffffff;
-            min-height: 42px;
+            height: 42px !important;
+            line-height: 42px !important;
+            padding: 0 12px !important;
+            box-sizing: border-box;
             cursor: pointer;
         }
 
@@ -1766,7 +1769,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <form id="import-form" onsubmit="uploadMasterfile(event)">
                         <div class="form-group" style="margin-bottom: 1rem;">
                             <label for="masterfile_target_store">Target Masterfile Database</label>
-                            <select id="masterfile_target_store" class="form-control" style="height: 42px; font-size: 0.85rem; padding: 0.4rem 0.75rem;">
+                            <select id="masterfile_target_store" class="form-control" style="font-size: 0.85rem;">
                                 <option value="">Global Master Catalog (Default items table)</option>
                             </select>
                         </div>
