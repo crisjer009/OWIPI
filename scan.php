@@ -824,6 +824,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
+            <button id="btn-upload-masterfile" class="btn btn-secondary" onclick="openHostMasterfileModal()"
+                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
+                📁 Upload Masterfile
+            </button>
             <button id="btn-sync-cloud" class="btn" onclick="openCloudSyncModal()"
                 style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
                 ☁️ Sync to Cloud
@@ -3460,6 +3464,54 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             });
         }
 
+        function openHostMasterfileModal() {
+            document.getElementById('host-masterfile-modal').style.display = 'flex';
+        }
+
+        function closeHostMasterfileModal() {
+            document.getElementById('host-masterfile-modal').style.display = 'none';
+        }
+
+        function uploadHostMasterfile(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('host_masterfile_input');
+            if (fileInput.files.length === 0) {
+                alert("Please select a file to import.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('store_code', '<?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>');
+
+            const btn = document.getElementById('host-upload-btn');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Importing...";
+
+            fetch('api.php?action=import_masterfile', {
+                method: 'POST',
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        closeHostMasterfileModal();
+                        document.getElementById('host-masterfile-form').reset();
+                        if (typeof loadHostLocators === 'function') loadHostLocators();
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    alert("Import failed: " + err);
+                });
         function updateQRCodeIP(newIp) {
             if (!qrCodeInstance) return;
             const currentUrl = "<?= $scanUrl ?>";
@@ -3469,6 +3521,31 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             qrCodeInstance.makeCode(newUrl);
         }
     </script>
+
+    <!-- Host Upload Store Masterfile Modal -->
+    <div id="host-masterfile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+        <div class="card" style="width: 100%; max-width: 480px; padding: 1.5rem; margin: 0; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.75rem;">
+                <h3 style="margin: 0; font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px;">
+                    📁 Upload Store Masterfile
+                </h3>
+                <button onclick="closeHostMasterfileModal()" style="background: none; border: none; color: #8b949e; font-size: 1.4rem; cursor: pointer;">&times;</button>
+            </div>
+            <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 1.25rem; line-height: 1.5;">
+                Import item masterfile for active store <strong><?= htmlspecialchars($_SESSION['store_code'] ?? '') ?></strong> (table: <code><?= strtolower(htmlspecialchars($_SESSION['store_code'] ?? '')) ?>_items</code>). Supports <strong>.txt</strong> / <strong>.csv</strong> format.
+            </p>
+            <form id="host-masterfile-form" onsubmit="uploadHostMasterfile(event)">
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label for="host_masterfile_input" style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 0.5rem; font-weight: 500;">Select Masterfile (.txt / .csv / .tsv)</label>
+                    <input type="file" id="host_masterfile_input" class="form-control" accept=".txt,.csv,.tsv" required style="height: 42px; padding: 0.4rem 0.75rem; font-size: 0.85rem; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; width: 100%; box-sizing: border-box;">
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeHostMasterfileModal()" class="btn btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.85rem; border-radius: 6px;">Cancel</button>
+                    <button type="submit" id="host-upload-btn" class="btn btn-primary" style="width: auto; padding: 6px 18px; font-size: 0.85rem; background: #2563eb; font-weight: 600; border-radius: 6px;">Upload & Import</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Mobile Connect Setup Modal -->
     <div id="mobile-connect-modal"

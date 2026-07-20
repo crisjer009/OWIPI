@@ -1,5 +1,5 @@
 -- OWIPI Database Backup
--- Generated: 2026-07-20 09:43:44
+-- Generated: 2026-07-20 10:02:23
 
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -8580,6 +8580,76 @@ INSERT INTO `items` VALUES
 ('9850', '9850', 'ENV CATALOG W/STRING KFT 9X12', 'CLICK', 'KFT', '9X12IN', '5782.00'),
 ('9851', '9851', 'ENV CATALOG W/STRING KFT 7X10', 'CLICK', 'KFT', '7X10IN', '15.00');
 
+DROP TABLE IF EXISTS `lbs_countsheet`;
+CREATE TABLE `lbs_countsheet` (
+  `RecNo` int(11) NOT NULL AUTO_INCREMENT,
+  `SlotNo` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '1',
+  `CountDate` datetime NOT NULL DEFAULT current_timestamp(),
+  `UPC` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SKU` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Descr` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Qty` decimal(10,2) NOT NULL DEFAULT 1.00,
+  `EditedQty` decimal(10,2) DEFAULT NULL,
+  `Posted` tinyint(1) NOT NULL DEFAULT 0,
+  `Added` tinyint(1) NOT NULL DEFAULT 0,
+  `Edited` tinyint(1) NOT NULL DEFAULT 0,
+  `ScannedBy` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT 'Handheld',
+  `synced` tinyint(1) NOT NULL DEFAULT 0,
+  `Variance` decimal(10,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`RecNo`),
+  KEY `idx_slotno` (`SlotNo`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `lbs_items`;
+CREATE TABLE `lbs_items` (
+  `UPC` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SKU` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Descr` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Type` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Attr` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Size` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Qty` decimal(10,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`UPC`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS `lbs_locators`;
+CREATE TABLE `lbs_locators` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `locator_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'open',
+  `assigned_operator` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `synced` tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `locator_name` (`locator_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `lbs_locators` VALUES
+('1', 'Slot 1', 'open', NULL, '0'),
+('2', 'Slot 2', 'open', NULL, '0'),
+('3', 'Slot 3', 'open', NULL, '0'),
+('4', 'Slot 4', 'open', NULL, '0'),
+('5', 'Slot 5', 'open', NULL, '0'),
+('6', 'Slot 6', 'open', NULL, '0'),
+('7', 'Slot 7', 'open', NULL, '0'),
+('8', 'Slot 8', 'open', NULL, '0'),
+('9', 'Slot 9', 'open', NULL, '0'),
+('10', 'Slot 10', 'open', NULL, '0'),
+('11', 'Slot 11', 'open', NULL, '0'),
+('12', 'Slot 12', 'open', NULL, '0'),
+('13', 'Slot 13', 'open', NULL, '0'),
+('14', 'Slot 14', 'open', NULL, '0'),
+('15', 'Slot 15', 'open', NULL, '0'),
+('16', 'Slot 16', 'open', NULL, '0'),
+('17', 'Slot 17', 'open', NULL, '0'),
+('18', 'Slot 18', 'open', NULL, '0'),
+('19', 'Slot 19', 'open', NULL, '0'),
+('20', 'Slot 20', 'open', NULL, '0'),
+('21', 'Slot 21', 'open', NULL, '0'),
+('22', 'Slot 22', 'open', NULL, '0'),
+('23', 'Slot 23', 'open', NULL, '0'),
+('24', 'Slot 24', 'open', NULL, '0'),
+('25', 'Slot 25', 'open', NULL, '0');
+
 DROP TABLE IF EXISTS `stores`;
 CREATE TABLE `stores` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -8590,7 +8660,10 @@ CREATE TABLE `stores` (
   `closed` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `store_code` (`store_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `stores` VALUES
+('5', 'LBS', '10', '2026-07-20 15:59:56', '0', '0');
 
 DROP TABLE IF EXISTS `stores_id`;
 CREATE TABLE `stores_id` (
@@ -8732,11 +8805,12 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `users` VALUES
 ('3', 'sys_admin', '$2y$10$ReIpJPolwosleL5s.J/N1udZ47GdBzQfOwNN3vnMvh0sT/gE.N4.W', 'system_admin', '2026-07-02 11:35:06'),
 ('6', 'BETH', '$2y$10$ol1u9.BFxD5VSgZDbAdK/.uZWh8PaDomE2mc5LsK25zffsJCZ/Ddy', 'admin', '2026-07-06 15:17:13'),
-('9', 'operator', '$2y$10$QXA/VOJf31vm721fBv.bgu21aC74UJFaynpNM2CToznv/CQWe8V7a', 'user', '2026-07-07 13:41:13');
+('9', 'operator', '$2y$10$QXA/VOJf31vm721fBv.bgu21aC74UJFaynpNM2CToznv/CQWe8V7a', 'user', '2026-07-07 13:41:13'),
+('10', 'ALLAN', '$2y$10$gGpFAMOZ3MM1.GI6oIIYou/PkKAPeQvogNaEJktBuUvVvtTIAZWqW', 'user', '2026-07-20 15:59:15');
 
 SET FOREIGN_KEY_CHECKS=1;
