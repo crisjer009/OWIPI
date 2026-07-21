@@ -993,13 +993,16 @@ try {
             $attrIdx = -1;
             $sizeIdx = -1;
 
-            $storeInput = $_POST['store_code'] ?? ($_GET['store_code'] ?? ($_SESSION['store_code'] ?? ''));
+            $storeInput = $_POST['store_code'] ?? ($_GET['store_code'] ?? '');
             $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
 
-            $targetTables = ['items'];
+            // System Admin General Masterfile targets central 'items' table only.
+            // Store Host upload targets '[store]_items' table only.
             if (!empty($cleanStore)) {
                 $db->createStoreTables($cleanStore);
-                $targetTables[] = "{$cleanStore}_items";
+                $targetTables = ["{$cleanStore}_items"];
+            } else {
+                $targetTables = ['items'];
             }
 
             // Start transaction for speed
