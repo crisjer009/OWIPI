@@ -1,16 +1,16 @@
 <?php
 // Custom error handler for debugging
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
+set_error_handler(function ($errno, $errstr, $errfile, $errline) {
     $msg = "[" . date('Y-m-d H:i:s') . "] Error ($errno): $errstr in $errfile on line $errline\n";
     file_put_contents(__DIR__ . '/php_debug.log', $msg, FILE_APPEND);
     return false;
 });
 
 // Custom exception handler
-set_exception_handler(function($exception) {
+set_exception_handler(function ($exception) {
     $msg = "[" . date('Y-m-d H:i:s') . "] Uncaught Exception: " . $exception->getMessage() . "\n" . $exception->getTraceAsString() . "\n";
     file_put_contents(__DIR__ . '/php_debug.log', $msg, FILE_APPEND);
-    
+
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
@@ -68,27 +68,28 @@ function formatProductDescription($descr, $attr, $size)
 {
     $finalDesc = $descr;
     $lowerDesc = strtolower($descr);
-    
+
     if (!empty($attr)) {
         $cleanAttr = trim($attr);
         if ($cleanAttr !== '' && strpos($lowerDesc, strtolower($cleanAttr)) === false) {
             $finalDesc .= " " . $cleanAttr;
         }
     }
-    
+
     if (!empty($size)) {
         $cleanSize = trim($size);
         if ($cleanSize !== '' && strpos($lowerDesc, strtolower($cleanSize)) === false) {
             $finalDesc .= " " . $cleanSize;
         }
     }
-    
+
     return trim($finalDesc);
 }
 
 // Helper function to find a product in items catalog with flexible padding/unpadding support
 // Helper function to find a product in items catalog with flexible padding/unpadding and fallback support
-function findCatalogProduct($barcode, $storeCode = null) {
+function findCatalogProduct($barcode, $storeCode = null)
+{
     $db = new OWI_DB();
     $barcodeClean = trim($barcode);
     if ($barcodeClean === '') {
@@ -97,18 +98,19 @@ function findCatalogProduct($barcode, $storeCode = null) {
 
     $storeInput = $storeCode ?? ($_GET['store_code'] ?? ($_SESSION['store_code'] ?? ''));
     $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
-    
+
     $tablesToSearch = [];
     if (!empty($cleanStore)) {
         try {
             $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
             if (!empty($tableCheck)) {
                 $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
-                if (!empty($countCheck) && (int)$countCheck[0]['count'] > 0) {
+                if (!empty($countCheck) && (int) $countCheck[0]['count'] > 0) {
                     $tablesToSearch[] = "{$cleanStore}_items";
                 }
             }
-        } catch (Exception $e) {}
+        } catch (Exception $e) {
+        }
     }
     // Always include central items table as fallback
     $tablesToSearch[] = 'items';
@@ -127,13 +129,13 @@ function findCatalogProduct($barcode, $storeCode = null) {
                 $unpadded = '0';
             }
             $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
-            
+
             $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` 
                     WHERE UPC = ? OR SKU = ? 
                        OR UPC = ? OR SKU = ?
                        OR TRIM(LEADING '0' FROM UPC) = ? 
                        OR TRIM(LEADING '0' FROM SKU) = ?";
-            
+
             $params = [$barcodeClean, $barcodeClean, $padded6, $padded6, $unpadded, $unpadded];
             $rows = $db->query($sql, $params);
             if (!empty($rows)) {
@@ -156,7 +158,7 @@ try {
     if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync') {
         $bypassAuth = true;
     }
-    
+
     $incomingStoreCode = $rawInput['store_code'] ?? ($_GET['store_code'] ?? '');
     if (($action === 'submit_scan' || $action === 'claim_locator' || $action === 'close_locator' || $action === 'get_product_info' || $action === 'get_scans' || $action === 'edit_scan' || $action === 'delete_scan' || $action === 'get_scans_html') && !empty($incomingStoreCode)) {
         $bypassAuth = true;
@@ -240,7 +242,7 @@ try {
             $config['password'] = isset($input['password']) ? trim($input['password']) : '';
             $config['print_margin_top'] = isset($input['print_margin_top']) ? (int) $input['print_margin_top'] : 0;
             $config['print_margin_left'] = isset($input['print_margin_left']) ? (int) $input['print_margin_left'] : 0;
-            
+
             if (isset($input['sync_secret_token'])) {
                 $config['sync_secret_token'] = trim($input['sync_secret_token']);
             }
@@ -373,7 +375,7 @@ try {
             // Check if target store is closed
             $targetClosedSql = "SELECT closed FROM stores WHERE store_code = ?";
             $targetClosedRows = $db->query($targetClosedSql, [strtoupper($cleanStore)]);
-            if (!empty($targetClosedRows) && (int)$targetClosedRows[0]['closed'] === 1) {
+            if (!empty($targetClosedRows) && (int) $targetClosedRows[0]['closed'] === 1) {
                 throw new Exception("Store '" . strtoupper($cleanStore) . "' has been finalized and closed. It cannot be reopened or edited.");
             }
 
@@ -421,36 +423,36 @@ try {
                 throw new Exception("Store Code is required.");
             }
             $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', $storeCode);
-            
+
             $db = new OWI_DB();
-            
+
             // Validate: check locator completion progress
             $checkTbl = $db->query("SHOW TABLES LIKE '{$cleanStore}_locators'");
             if (empty($checkTbl)) {
                 throw new Exception("Store is not initialized.");
             }
-            
+
             $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_locators`");
             $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
             if ($totalLocators === 0) {
                 throw new Exception("No locators found in this store to close.");
             }
-            
+
             $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_locators` WHERE status = 'closed'");
             $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
-            
+
             if ($closedLocators < $totalLocators) {
                 throw new Exception("Cannot close store. All locators must be closed first (Progress is " . round(($closedLocators / $totalLocators) * 100) . "%).");
             }
-            
+
             // Update stores table setting closed = 1
             $db->execute("UPDATE stores SET closed = 1 WHERE store_code = ?", [strtoupper($cleanStore)]);
-            
+
             // Clear current store session
             unset($_SESSION['store_code']);
-            
+
             logAudit('CLOSE_STORE', "Closed store session '" . strtoupper($cleanStore) . "' after 100% completion.", strtoupper($cleanStore));
-            
+
             sendResponse([
                 'status' => 'success',
                 'message' => "Store session '" . strtoupper($cleanStore) . "' closed successfully!"
@@ -463,18 +465,18 @@ try {
             if (empty($store)) {
                 throw new Exception("Invalid store code.");
             }
-            
+
             $db = new OWI_DB();
-            
+
             // Delete from stores table
             $db->execute("DELETE FROM stores WHERE LOWER(store_code) = ?", [$store]);
-            
+
             // Drop related dynamic tables
             $db->execute("DROP TABLE IF EXISTS `{$store}_locators`");
             $db->execute("DROP TABLE IF EXISTS `{$store}_countsheet`");
-            
+
             logAudit('DELETE_STORE', "Permanently deleted store session '" . strtoupper($store) . "' and dropped all its tables.");
-            
+
             sendResponse([
                 'status' => 'success',
                 'message' => "Successfully and permanently deleted store session '" . strtoupper($store) . "'!"
@@ -513,10 +515,10 @@ try {
                 throw new Exception("Store code is required.");
             }
             $storeCode = strtoupper($storeInput);
-            
+
             // Validate that store code exists in stores table
             $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
-            if (empty($storeCheck) || (int)$storeCheck[0]['count'] === 0) {
+            if (empty($storeCheck) || (int) $storeCheck[0]['count'] === 0) {
                 throw new Exception("Store code '" . $storeCode . "' does not exist.");
             }
 
@@ -587,17 +589,17 @@ try {
                 $descr = $productRows[0]['Descr'];
                 $attr = $productRows[0]['Attr'] ?? '';
                 $size = $productRows[0]['Size'] ?? '';
-                
+
                 $product_name = formatProductDescription($descr, $attr, $size);
                 $product_type = $productRows[0]['Type'];
                 $sku = $productRows[0]['SKU'];
                 $real_barcode = $productRows[0]['UPC'];
-                $masterQty = (float)($productRows[0]['Qty'] ?? 0.00);
+                $masterQty = (float) ($productRows[0]['Qty'] ?? 0.00);
             }
 
             // Compute total quantity scanned so far for this product in the current locator/slot
             $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $location]);
-            $existingScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+            $existingScanned = (float) ($sumQuery[0]['total'] ?? 0.00);
             $totalScanned = $existingScanned + $qty;
             $variance = $totalScanned - $masterQty;
 
@@ -613,7 +615,7 @@ try {
 
             // Retrieve updated scanned count (total number of scans/rows) for this locator
             $countRows = $db->query("SELECT COUNT(*) as count FROM `{$store}_countsheet` WHERE SlotNo = ?", [$location]);
-            $scanned_count = !empty($countRows) ? (int)$countRows[0]['count'] : 0;
+            $scanned_count = !empty($countRows) ? (int) $countRows[0]['count'] : 0;
 
             // Format custom message including variance info for both Casio and mobile view
             $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
@@ -684,7 +686,7 @@ try {
             $id = isset($input['id']) ? (int) $input['id'] : 0;
             $barcode = isset($input['barcode']) ? trim($input['barcode']) : '';
             $qty = isset($input['quantity']) ? (float) $input['quantity'] : 0.0;
-            
+
             $scanned_by = isset($input['scanned_by']) ? trim($input['scanned_by']) : '';
             if ($scanned_by !== '') {
                 $_SESSION['username'] = $scanned_by;
@@ -714,7 +716,7 @@ try {
                 $descr = $productRows[0]['Descr'];
                 $attr = $productRows[0]['Attr'] ?? '';
                 $size = $productRows[0]['Size'] ?? '';
-                
+
                 $product_name = formatProductDescription($descr, $attr, $size);
                 $sku = $productRows[0]['SKU'];
                 $real_barcode = $productRows[0]['UPC'];
@@ -741,10 +743,10 @@ try {
             $masterQty = 0.00;
             $productCheck = findCatalogProduct($real_barcode, $store);
             if (!empty($productCheck)) {
-                $masterQty = (float)($productCheck[0]['Qty'] ?? 0.00);
+                $masterQty = (float) ($productCheck[0]['Qty'] ?? 0.00);
             }
             $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
-            $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+            $totalScanned = (float) ($sumQuery[0]['total'] ?? 0.00);
             $newVariance = $totalScanned - $masterQty;
             $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
 
@@ -761,8 +763,8 @@ try {
             if (!$data) {
                 $data = $_POST;
             }
-            $id = isset($data['id']) ? (int)$data['id'] : 0;
-            
+            $id = isset($data['id']) ? (int) $data['id'] : 0;
+
             $scanned_by = isset($data['scanned_by']) ? trim($data['scanned_by']) : '';
             if ($scanned_by !== '') {
                 $_SESSION['username'] = $scanned_by;
@@ -773,7 +775,7 @@ try {
             }
             $db = new OWI_DB();
             $store = strtolower($_SESSION['store_code']);
-            
+
             // Get details before deleting for audit log
             $scanCheck = $db->query("SELECT SlotNo, UPC, Qty, Descr FROM `{$store}_countsheet` WHERE RecNo = ?", [$id]);
             if (!empty($scanCheck)) {
@@ -788,14 +790,14 @@ try {
                 $masterQty = 0.00;
                 $productCheck = findCatalogProduct($real_barcode, $store);
                 if (!empty($productCheck)) {
-                    $masterQty = (float)($productCheck[0]['Qty'] ?? 0.00);
+                    $masterQty = (float) ($productCheck[0]['Qty'] ?? 0.00);
                 }
                 $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
-                $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+                $totalScanned = (float) ($sumQuery[0]['total'] ?? 0.00);
                 $newVariance = $totalScanned - $masterQty;
                 $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
             }
-            
+
             sendResponse([
                 'status' => 'success',
                 'message' => 'Scan deleted successfully!'
@@ -822,14 +824,14 @@ try {
             }
             $location = isset($_GET['location']) ? trim($_GET['location']) : '';
             $db = new OWI_DB();
-            
+
             // Get store code to query scanned counts
             $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
-            
+
             // Look up product in catalog (resolving by UPC or SKU with flexible padding)
             $productRows = findCatalogProduct($barcode);
-            
+
             $product_found = false;
             $product_name = 'Item Not Found';
             $product_type = '';
@@ -838,7 +840,7 @@ try {
             $variance = 0.00;
             $resolvedBarcode = '';
             $resolvedSku = '';
-            
+
             if (!empty($productRows)) {
                 $product_found = true;
                 $descr = $productRows[0]['Descr'];
@@ -846,22 +848,22 @@ try {
                 $size = $productRows[0]['Size'] ?? '';
                 $resolvedBarcode = $productRows[0]['UPC'];
                 $resolvedSku = $productRows[0]['SKU'];
-                
+
                 $product_name = formatProductDescription($descr, $attr, $size);
-                $masterQty = (float)($productRows[0]['Qty'] ?? 0.00);
-                
+                $masterQty = (float) ($productRows[0]['Qty'] ?? 0.00);
+
                 if (!empty($store)) {
                     $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
                     if (!empty($tableCheck)) {
                         $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$productRows[0]['UPC'], $location]);
-                        $totalScanned = (float)($sumQuery[0]['total'] ?? 0.00);
+                        $totalScanned = (float) ($sumQuery[0]['total'] ?? 0.00);
                     }
                 }
                 $variance = $totalScanned - $masterQty;
                 $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
                 $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . $varianceStr;
             }
-            
+
             sendResponse([
                 'status' => 'success',
                 'product_found' => $product_found,
@@ -879,18 +881,19 @@ try {
             $db = new OWI_DB();
             $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
             $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
-            
+
             $tableName = 'items';
             if (!empty($cleanStore)) {
                 try {
                     $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
                     if (!empty($tableCheck)) {
                         $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
-                        if (!empty($countCheck) && (int)$countCheck[0]['count'] > 0) {
+                        if (!empty($countCheck) && (int) $countCheck[0]['count'] > 0) {
                             $tableName = "{$cleanStore}_items";
                         }
                     }
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                }
             }
 
             $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type, Qty as master_qty FROM `{$tableName}` ORDER BY Descr ASC";
@@ -989,7 +992,7 @@ try {
             $desc2Idx = -1;
             $attrIdx = -1;
             $sizeIdx = -1;
- 
+
             $storeInput = $_POST['store_code'] ?? ($_GET['store_code'] ?? ($_SESSION['store_code'] ?? ''));
             $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
 
@@ -1001,37 +1004,39 @@ try {
 
             // Start transaction for speed
             $db->execute("START TRANSACTION");
- 
+
             try {
                 // Clear existing catalog table for current target tables
                 foreach ($targetTables as $targetTbl) {
                     $db->execute("TRUNCATE TABLE `{$targetTbl}`");
                 }
- 
+
                 foreach ($lines as $line) {
                     $line = trim($line);
                     if ($line === '') {
                         continue;
                     }
- 
+
                     // Auto-detect delimiter: tab (\t) or comma (,) and parse quoted/unquoted fields natively
                     $delimiter = (strpos($line, "\t") !== false) ? "\t" : ",";
                     $cols = str_getcsv($line, $delimiter);
                     if (empty($cols)) {
                         continue;
                     }
- 
+
                     if (!$headerChecked) {
-                        // Header check: find indexes flexibly for any format (including Local UPC Filter, Str OH Qty, etc.)
+                        // Header check: find indexes flexibly for any format (including multi-store general masterfile: ALU, LOCAL_UPC, DESCRIPTION1, DESCRIPTION2, ATTR, SIZ, PRICE, AUX1, QTY_STORE_1...125)
+                        $storeCodeClean = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($cleanStore));
+                        $storeCodeNum = preg_replace('/[^0-9]/', '', $storeCodeClean);
+
                         foreach ($cols as $idx => $headerName) {
                             $cleanHeader = strtolower(trim(str_replace(['_', ' '], '', $headerName)));
                             $cleanHeader = trim($cleanHeader, '"\'');
+
                             if ($cleanHeader === 'alu' || $cleanHeader === 'sku') {
                                 $aluIdx = $idx;
                             } elseif ($upcIdx === -1 && (strpos($cleanHeader, 'upc') !== false || strpos($cleanHeader, 'barcode') !== false)) {
                                 $upcIdx = $idx;
-                            } elseif ($qtyIdx === -1 && (strpos($cleanHeader, 'qty') !== false || strpos($cleanHeader, 'quantity') !== false || strpos($cleanHeader, 'stroh') !== false)) {
-                                $qtyIdx = $idx;
                             } elseif ($cleanHeader === 'description1' || $cleanHeader === 'desc1' || $cleanHeader === 'description') {
                                 $desc1Idx = $idx;
                             } elseif ($cleanHeader === 'description2' || $cleanHeader === 'desc2') {
@@ -1040,25 +1045,32 @@ try {
                                 $attrIdx = $idx;
                             } elseif ($cleanHeader === 'siz' || $cleanHeader === 'size') {
                                 $sizeIdx = $idx;
+                            } elseif (strpos($cleanHeader, 'qty') !== false || strpos($cleanHeader, 'quantity') !== false || strpos($cleanHeader, 'stroh') !== false) {
+                                // 1. Check for store-specific quantity match (e.g. qty_store_lbs, qtystore1, qtystore5)
+                                if (!empty($storeCodeClean) && strpos($cleanHeader, $storeCodeClean) !== false) {
+                                    $qtyIdx = $idx;
+                                } elseif (!empty($storeCodeNum) && strpos($cleanHeader, 'store' . $storeCodeNum) !== false) {
+                                    $qtyIdx = $idx;
+                                } elseif ($qtyIdx === -1) {
+                                    // Default fallback to first quantity column found (e.g. QTY_STORE_1 or QTY)
+                                    $qtyIdx = $idx;
+                                }
                             }
                         }
- 
-                        // If headers were missing or not matched, default to standard legacy layout
-                        if ($aluIdx === -1)
-                            $aluIdx = 0;
-                        if ($desc1Idx === -1)
-                            $desc1Idx = 3;
-                        if ($desc2Idx === -1)
-                            $desc2Idx = 4;
- 
+
+                        // If headers were missing or not matched, default to standard layout
+                        if ($aluIdx === -1) $aluIdx = 0;
+                        if ($desc1Idx === -1) $desc1Idx = 2;
+                        if ($desc2Idx === -1) $desc2Idx = 3;
+
                         $headerChecked = true;
- 
+
                         // Check if this line is the header line itself, and skip importing it
                         $isHeaderRow = false;
                         foreach ($cols as $colVal) {
                             $cleanColVal = trim(strtolower($colVal));
                             $cleanColVal = trim($cleanColVal, '"\'');
-                            if ($cleanColVal === 'alu') {
+                            if ($cleanColVal === 'alu' || $cleanColVal === 'local_upc' || $cleanColVal === 'description1') {
                                 $isHeaderRow = true;
                                 break;
                             }
@@ -1067,19 +1079,19 @@ try {
                             continue;
                         }
                     }
- 
+
                     $alu = isset($cols[$aluIdx]) ? trim($cols[$aluIdx], "\t\n\r\0\x0B\"'") : '';
                     $localUpc = ($upcIdx !== -1 && isset($cols[$upcIdx])) ? trim($cols[$upcIdx], "\t\n\r\0\x0B\"'") : '';
-                    $qty = ($qtyIdx !== -1 && isset($cols[$qtyIdx])) ? (float)trim($cols[$qtyIdx], "\t\n\r\0\x0B\"'") : 0.00;
+                    $qty = ($qtyIdx !== -1 && isset($cols[$qtyIdx])) ? (float) trim($cols[$qtyIdx], "\t\n\r\0\x0B\"'") : 0.00;
                     $desc1 = isset($cols[$desc1Idx]) ? trim($cols[$desc1Idx], "\t\n\r\0\x0B\"'") : '';
                     $desc2 = isset($cols[$desc2Idx]) ? trim($cols[$desc2Idx], "\t\n\r\0\x0B\"'") : '';
                     $attr = ($attrIdx !== -1 && isset($cols[$attrIdx])) ? trim($cols[$attrIdx], "\t\n\r\0\x0B\"'") : '';
                     $size = ($sizeIdx !== -1 && isset($cols[$sizeIdx])) ? trim($cols[$sizeIdx], "\t\n\r\0\x0B\"'") : '';
- 
+
                     if ($alu === '') {
                         continue;
                     }
- 
+
                     // Pad ALU to 13 digits to form UPC fallback
                     $fallbackUpc = str_pad($alu, 13, '0', STR_PAD_LEFT);
                     // Use LOCAL_UPC if present, otherwise fallback to padded ALU
@@ -1087,7 +1099,7 @@ try {
                     $sku = $alu;
                     $descr = $desc1;
                     $type = $desc2;
- 
+
                     $recordsToInsert[] = [
                         'upc' => $upc,
                         'sku' => $sku,
@@ -1247,12 +1259,12 @@ try {
             if (empty($storeCode)) {
                 sendResponse(['status' => 'error', 'message' => 'No active store selected.']);
             }
-            
+
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
 
             // Validate that store code exists in stores table
             $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
-            if (empty($storeCheck) || (int)$storeCheck[0]['count'] === 0) {
+            if (empty($storeCheck) || (int) $storeCheck[0]['count'] === 0) {
                 unset($_SESSION['store_code']);
                 sendResponse([
                     'status' => 'store_required',
@@ -1328,7 +1340,7 @@ try {
             // Validate that store code exists in stores table
             $storeCode = $_SESSION['store_code'] ?? '';
             $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
-            if (empty($storeCheck) || (int)$storeCheck[0]['count'] === 0) {
+            if (empty($storeCheck) || (int) $storeCheck[0]['count'] === 0) {
                 throw new Exception("Store code '" . $storeCode . "' does not exist.");
             }
 
@@ -1365,7 +1377,7 @@ try {
 
             // Query current scanned count (total scans count) for this locator
             $countRows = $db->query("SELECT COUNT(*) as count FROM `{$store}_countsheet` WHERE SlotNo = ?", [$name]);
-            $scanned_count = !empty($countRows) ? (int)$countRows[0]['count'] : 0;
+            $scanned_count = !empty($countRows) ? (int) $countRows[0]['count'] : 0;
 
             sendResponse([
                 'status' => 'success',
@@ -1382,10 +1394,10 @@ try {
             }
             $db = new OWI_DB();
             $storeCode = $_SESSION['store_code'] ?? '';
-            
+
             // Validate store code existence
             $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
-            if (empty($storeCheck) || (int)$storeCheck[0]['count'] === 0) {
+            if (empty($storeCheck) || (int) $storeCheck[0]['count'] === 0) {
                 throw new Exception("Store code '" . $storeCode . "' does not exist.");
             }
 
@@ -1474,16 +1486,16 @@ try {
             if (empty($checkTbl)) {
                 throw new Exception("Synchronization failed: Locators table for '{$_SESSION['store_code']}' does not exist.");
             }
-            
+
             $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$locatorsTable}`");
             $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
             if ($totalLocators === 0) {
                 throw new Exception("Synchronization failed: Store '{$_SESSION['store_code']}' has no locators configured.");
             }
-            
+
             $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$locatorsTable}` WHERE status = 'closed'");
             $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
-            
+
             if ($closedLocators < $totalLocators) {
                 $percent = round(($closedLocators / $totalLocators) * 100);
                 throw new Exception("Synchronization failed: Store '{$_SESSION['store_code']}' is only at {$percent}% completion ({$closedLocators} of {$totalLocators} locators closed). All locators must be closed before syncing to the cloud.");
@@ -1538,7 +1550,7 @@ try {
             curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
             curl_setopt($ch, CURLOPT_TIMEOUT, 30);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
+
             $result = curl_exec($ch);
             $err = curl_error($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -1578,30 +1590,30 @@ try {
             if (empty($cloudUrl)) {
                 throw new Exception("Cloud Sync URL is not configured.");
             }
-            
+
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_stores&secret_token=' . urlencode($secretToken);
-            
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
+
             $result = curl_exec($ch);
             $err = curl_error($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            
+
             if ($err) {
                 throw new Exception("cURL Error: " . $err);
             }
-            
+
             $resData = json_decode($result, true);
             if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
                 $msg = $resData['message'] ?? 'Connection to cloud failed.';
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
-            
+
             sendResponse([
                 'status' => 'success',
                 'stores' => $resData['stores']
@@ -1613,54 +1625,54 @@ try {
             if (empty($store)) {
                 throw new Exception("Invalid store code.");
             }
-            
+
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
             $secretToken = trim($config['sync_secret_token'] ?? '');
             if (empty($cloudUrl)) {
                 throw new Exception("Cloud Sync URL is not configured.");
             }
-            
+
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_store_details&store_code=' . urlencode($store) . '&secret_token=' . urlencode($secretToken);
-            
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
+
             $result = curl_exec($ch);
             $err = curl_error($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            
+
             if ($err) {
                 throw new Exception("cURL Error: " . $err);
             }
-            
+
             $resData = json_decode($result, true);
             if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
                 $msg = $resData['message'] ?? 'Download from cloud failed.';
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
-            
+
             $cloudStore = $resData['store'];
             $locators = $resData['locators'];
-            
+
             $db = new OWI_DB();
-            
+
             // Create the local store and tables
             $db->createStoreTables($store, $cloudStore['created_by'] ?? null);
-            
+
             // Sync the closed status
-            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int)$cloudStore['closed'], $store]);
-            
+            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $cloudStore['closed'], $store]);
+
             // Insert locators
             foreach ($locators as $loc) {
                 $locName = $loc['locator_name'];
                 $status = $loc['status'] ?? 'open';
                 $operator = $loc['assigned_operator'] ?? null;
-                
+
                 $check = $db->query("SELECT id FROM `{$store}_locators` WHERE locator_name = ?", [$locName]);
                 if (empty($check)) {
                     $db->execute(
@@ -1674,7 +1686,7 @@ try {
                     );
                 }
             }
-            
+
             sendResponse([
                 'status' => 'success',
                 'message' => "Successfully imported store session '" . strtoupper($store) . "' from cloud with " . count($locators) . " locators!"
@@ -1688,49 +1700,49 @@ try {
             if (empty($cloudUrl)) {
                 throw new Exception("Cloud Sync URL is not configured.");
             }
-            
+
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
-            
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 60);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
+
             $result = curl_exec($ch);
             $err = curl_error($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            
+
             if ($err) {
                 throw new Exception("cURL Error: " . $err);
             }
-            
+
             $resData = json_decode($result, true);
             if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
                 $msg = $resData['message'] ?? 'Connection to cloud failed.';
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
-            
+
             $products = $resData['products'] ?? [];
             if (empty($products)) {
                 throw new Exception("No products found in cloud database catalog.");
             }
-            
+
             $db = new OWI_DB();
-            
+
             // Truncate local items table
             $db->execute("TRUNCATE TABLE items");
-            
+
             // Insert in chunks of 500
             $chunkSize = 500;
             $chunks = array_chunk($products, $chunkSize);
-            
+
             foreach ($chunks as $chunk) {
                 $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) VALUES ";
                 $placeholders = [];
                 $params = [];
-                
+
                 foreach ($chunk as $p) {
                     $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
                     $params[] = $p['UPC'];
@@ -1739,13 +1751,13 @@ try {
                     $params[] = $p['Type'] ?? 'GENERAL';
                     $params[] = $p['Attr'] ?? null;
                     $params[] = $p['Size'] ?? null;
-                    $params[] = isset($p['Qty']) ? (float)$p['Qty'] : 0.00;
+                    $params[] = isset($p['Qty']) ? (float) $p['Qty'] : 0.00;
                 }
-                
+
                 $sqlInsert .= implode(', ', $placeholders);
                 $db->execute($sqlInsert, $params);
             }
-            
+
             sendResponse([
                 'status' => 'success',
                 'message' => "Successfully imported " . count($products) . " products from cloud masterfile!"
@@ -1798,40 +1810,40 @@ try {
             if (empty($cloudUrl)) {
                 throw new Exception("Cloud Sync URL is not configured.");
             }
-            
+
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_users&secret_token=' . urlencode($secretToken);
-            
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 15);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            
+
             $result = curl_exec($ch);
             $err = curl_error($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            
+
             if ($err) {
                 throw new Exception("cURL Error: " . $err);
             }
-            
+
             $resData = json_decode($result, true);
             if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
                 $msg = $resData['message'] ?? 'Connection to cloud failed.';
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
-            
+
             $users = $resData['users'] ?? [];
             if (empty($users)) {
                 throw new Exception("No users found in cloud database.");
             }
-            
+
             $db = new OWI_DB();
-            
+
             // Truncate local users table
             $db->execute("TRUNCATE TABLE users");
-            
+
             // Insert users
             foreach ($users as $u) {
                 $db->execute(
@@ -1839,7 +1851,7 @@ try {
                     [$u['username'], $u['password'], $u['role']]
                 );
             }
-            
+
             sendResponse([
                 'status' => 'success',
                 'message' => "Successfully imported " . count($users) . " user accounts from cloud!"
@@ -1858,36 +1870,36 @@ try {
 
         case 'download_system_zip':
             verifySyncToken();
-            
+
             $zipFile = tempnam(sys_get_temp_dir(), 'owipi_') . '.zip';
             $zip = new ZipArchive();
-            
+
             if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
                 throw new Exception("Cannot create temporary zip archive.");
             }
-            
+
             $sourcePath = realpath(__DIR__);
             $files = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($sourcePath),
                 RecursiveIteratorIterator::LEAVES_ONLY
             );
-            
+
             foreach ($files as $name => $file) {
                 if (!$file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($sourcePath) + 1);
-                    
+
                     // Exclude config, zip, and git files
                     if (basename($filePath) === 'db_config.json' || pathinfo($filePath, PATHINFO_EXTENSION) === 'zip' || strpos($relativePath, '.git') !== false) {
                         continue;
                     }
-                    
+
                     $zip->addFile($filePath, $relativePath);
                 }
             }
-            
+
             $zip->close();
-            
+
             header('Content-Type: application/zip');
             header('Content-Disposition: attachment; filename="owipi.zip"');
             header('Content-Length: ' . filesize($zipFile));
@@ -1943,7 +1955,8 @@ try {
     ]);
 }
 
-function handleReceiveSync() {
+function handleReceiveSync()
+{
     try {
         verifySyncToken();
         $input = json_decode(file_get_contents('php://input'), true);
@@ -1957,14 +1970,14 @@ function handleReceiveSync() {
         }
 
         $db = new OWI_DB();
-        
+
         $storeDetails = $input['store_details'] ?? [];
         $createdBy = $storeDetails['created_by'] ?? null;
         $db->createStoreTables($storeCode, $createdBy);
-        
+
         // Sync the closed status from the local payload to the cloud
         if (isset($storeDetails['closed'])) {
-            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int)$storeDetails['closed'], $storeCode]);
+            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $storeDetails['closed'], $storeCode]);
         }
 
         $locators = $input['locators'] ?? [];
@@ -1994,14 +2007,14 @@ function handleReceiveSync() {
             $sku = $scan['sku'] ?? '';
             $desc = $scan['product_name'] ?? '';
             $qty = (float) $scan['original_qty'];
-            $editedQty = isset($scan['edited_qty']) ? (float)$scan['edited_qty'] : null;
+            $editedQty = isset($scan['edited_qty']) ? (float) $scan['edited_qty'] : null;
             $posted = (int) ($scan['posted'] ?? 0);
             $added = (int) ($scan['added'] ?? 0);
             $edited = (int) ($scan['edited'] ?? 0);
             $scannedBy = $scan['scanned_by'] ?? 'Handheld';
             $countDate = $scan['scanned_at'] ?? date('Y-m-d H:i:s');
             $location = $scan['location'];
-            $variance = isset($scan['variance']) ? (float)$scan['variance'] : 0.00;
+            $variance = isset($scan['variance']) ? (float) $scan['variance'] : 0.00;
 
             $check = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE RecNo = ?", [$recNo]);
             if (!empty($check)) {
@@ -2036,13 +2049,14 @@ function handleReceiveSync() {
 }
 
 // Verify sync token authentication helper
-function verifySyncToken() {
+function verifySyncToken()
+{
     $rawInput = json_decode(file_get_contents('php://input'), true);
     $secretToken = $rawInput['secret_token'] ?? ($_GET['secret_token'] ?? '');
-    
+
     $config = loadConfig();
     $expectedToken = $config['sync_secret_token'] ?? '';
-    
+
     if (!empty($expectedToken) && $secretToken !== $expectedToken) {
         http_response_code(401);
         sendResponse(['status' => 'error', 'message' => 'Unauthorized sync token.']);

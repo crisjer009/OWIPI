@@ -1,5 +1,5 @@
 -- OWIPI Database Backup
--- Generated: 2026-07-20 12:03:14
+-- Generated: 2026-07-21 11:42:46
 
 SET FOREIGN_KEY_CHECKS=0;
 
@@ -16934,7 +16934,7 @@ CREATE TABLE `stores` (
   `closed` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `store_code` (`store_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `stores` VALUES
 ('9', 'LBS', '10', '2026-07-20 16:09:17', '0', '0');
