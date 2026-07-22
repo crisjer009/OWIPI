@@ -493,6 +493,7 @@ try {
             // Drop related dynamic tables
             $db->execute("DROP TABLE IF EXISTS `{$store}_locators`");
             $db->execute("DROP TABLE IF EXISTS `{$store}_countsheet`");
+            $db->execute("DROP TABLE IF EXISTS `{$store}_items`");
 
             logAudit('DELETE_STORE', "Permanently deleted store session '" . strtoupper($store) . "' and dropped all its tables.");
 
