@@ -1442,23 +1442,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #d73a49; border-color: #cb2431;">Import database.sql Backup</button>
                             <?php endif; ?>
                             <?php if ($dbStatus === 'connected'): ?>
-                                <!-- Removed duplicate cloud download button from card to keep UI clean -->
+                                <button onclick="openCloudStoreDownloader()" class="btn btn-secondary btn-sm"
+                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: rgba(16, 185, 129, 0.15); color: var(--success-color); border: 1px solid var(--success-color); border-radius: 6px;">☁️ Download Store from Cloud</button>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
             <?php endif; ?>
 
-            <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem;">
+            <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>;">
                 <div>
-                    <h1 style="margin:0;">Store Inventory Progress</h1>
-                    <div class="header-desc" style="margin-top: 0.25rem;">Real-time locator completion metrics across all your active store databases.</div>
-                </div>
-                <div>
-                    <button onclick="openCloudStoreDownloader()" class="btn btn-secondary" 
-                        style="width: auto; padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 600; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); display: flex; align-items: center; gap: 0.4rem; cursor: pointer; border-radius: 6px; margin: 0;">
-                        ☁️ Download Store from Cloud
-                    </button>
+                    <h1>Store Inventory Progress</h1>
+                    <div class="header-desc">Real-time locator completion metrics across all your active store databases.</div>
                 </div>
             </header>
 
