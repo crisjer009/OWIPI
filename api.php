@@ -1942,8 +1942,20 @@ try {
                 throw new Exception("Store code required.");
             }
             $db = new OWI_DB();
-            $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
-            $locators = $db->query("SELECT * FROM `{$store}_locators`");
+            
+            $storeRows = [];
+            try {
+                $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
+            } catch (Exception $e) {
+                // Table 'stores' or column doesn't exist on cloud
+            }
+
+            $locators = [];
+            try {
+                $locators = $db->query("SELECT * FROM `{$store}_locators`");
+            } catch (Exception $e) {
+                // Table '{store}_locators' doesn't exist on cloud
+            }
 
             // Fetch products specific to this store based on stores_id store number
             $products = [];
