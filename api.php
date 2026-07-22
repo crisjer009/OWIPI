@@ -116,8 +116,25 @@ function findCatalogProduct($barcode, $storeCode = null)
     $tablesToSearch[] = 'items';
 
     foreach ($tablesToSearch as $tableName) {
+        $qtyCol = "`Qty`";
+        if ($tableName === 'items' && !empty($cleanStore)) {
+            try {
+                $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
+                if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                    $strNo = (int) $storeLookup[0]['str_no'];
+                    $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+                } else {
+                    $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                    if ($numMatch !== '') {
+                        $strNo = (int) $numMatch;
+                        $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+                    }
+                }
+            } catch (Exception $exLookup) {}
+        }
+
         // 1. Direct exact match check (fastest)
-        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
+        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
         if (!empty($rows)) {
             return $rows;
         }
@@ -130,7 +147,7 @@ function findCatalogProduct($barcode, $storeCode = null)
             }
             $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
 
-            $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$tableName}` 
+            $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` 
                     WHERE UPC = ? OR SKU = ? 
                        OR UPC = ? OR SKU = ?
                        OR TRIM(LEADING '0' FROM UPC) = ? 
@@ -863,7 +880,7 @@ try {
                 }
                 $variance = $totalScanned - $masterQty;
                 $varianceStr = ($variance >= 0 ? "+" : "") . $variance;
-                $product_type = "Mst Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . $varianceStr;
+                $product_type = "Store Qty: {$masterQty} | Scan: {$totalScanned}\nVar: " . $varianceStr;
             }
 
             sendResponse([
@@ -871,6 +888,7 @@ try {
                 'product_found' => $product_found,
                 'product_name' => $product_name,
                 'product_type' => $product_type,
+                'store_qty' => $masterQty,
                 'master_qty' => $masterQty,
                 'total_scanned' => $totalScanned,
                 'variance' => $variance,

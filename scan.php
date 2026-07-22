@@ -2112,10 +2112,11 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         statusCard.style.background = 'rgba(46, 164, 79, 0.08)';
 
                         let varianceHtml = '';
-                        if (info.master_qty !== undefined) {
+                        const targetStoreQty = info.store_qty !== undefined ? info.store_qty : (info.master_qty !== undefined ? info.master_qty : '0');
+                        if (targetStoreQty !== undefined) {
                             let varianceColor = info.variance < 0 ? '#ff7b72' : (info.variance > 0 ? '#58a6ff' : '#3fb950');
                             let sign = info.variance > 0 ? '+' : '';
-                            varianceHtml = `<br>Masterfile Qty: <strong>${info.master_qty}</strong> | Total Scanned: <strong>${info.total_scanned}</strong><br>Variance: <strong style="color:${varianceColor};">${sign}${info.variance}</strong>`;
+                            varianceHtml = `<br>Store Qty: <strong>${targetStoreQty}</strong> | Total Scanned: <strong>${info.total_scanned}</strong><br>Variance: <strong style="color:${varianceColor};">${sign}${info.variance}</strong>`;
                         }
 
                         statusText.innerHTML = `
@@ -2208,8 +2209,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             if (preResolvedProduct) {
                 document.getElementById('modal-barcode').value = preResolvedProduct.barcode || barcode;
                 document.getElementById('modal-prod-name').innerText = preResolvedProduct.product_name;
-                const mQty = preResolvedProduct.master_qty !== undefined && preResolvedProduct.master_qty !== null ? preResolvedProduct.master_qty : '0';
-                document.getElementById('modal-prod-desc').innerText = `SKU: ${preResolvedProduct.sku || 'N/A'} | Master Qty: ${mQty}`;
+                const mQty = preResolvedProduct.store_qty !== undefined && preResolvedProduct.store_qty !== null ? preResolvedProduct.store_qty : (preResolvedProduct.master_qty !== undefined && preResolvedProduct.master_qty !== null ? preResolvedProduct.master_qty : '0');
+                document.getElementById('modal-prod-desc').innerText = `SKU: ${preResolvedProduct.sku || 'N/A'} | Store Qty: ${mQty}`;
                 document.getElementById('confirm-modal-overlay').classList.add('active');
             } else {
                 document.getElementById('modal-prod-name').innerText = "Checking Catalog...";
@@ -2223,7 +2224,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         if (info.status === 'success' && info.product_found) {
                             document.getElementById('modal-barcode').value = info.barcode;
                             document.getElementById('modal-prod-name').innerText = info.product_name;
-                            document.getElementById('modal-prod-desc').innerText = `SKU: ${info.sku || 'N/A'} | Master Qty: ${info.master_qty}`;
+                            const sQty = info.store_qty !== undefined ? info.store_qty : (info.master_qty !== undefined ? info.master_qty : '0');
+                            document.getElementById('modal-prod-desc').innerText = `SKU: ${info.sku || 'N/A'} | Store Qty: ${sQty}`;
                         } else {
                             document.getElementById('modal-prod-name').innerText = "Item Not Found";
                             document.getElementById('modal-prod-desc').innerText = "Item not found in catalog.";
