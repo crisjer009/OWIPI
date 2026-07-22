@@ -1760,8 +1760,9 @@ try {
             }
 
             $cloudStore = $resData['store'];
-            $locators = $resData['locators'];
+            $locators = $resData['locators'] ?? [];
             $products = $resData['products'] ?? [];
+            $scans = $resData['scans'] ?? [];
 
             $db = new OWI_DB();
 
@@ -1769,7 +1770,9 @@ try {
             $db->createStoreTables($store, $cloudStore['created_by'] ?? null);
 
             // Sync the closed status
-            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $cloudStore['closed'], $store]);
+            if ($cloudStore && isset($cloudStore['closed'])) {
+                $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $cloudStore['closed'], $store]);
+            }
 
             // Insert locators
             foreach ($locators as $loc) {
@@ -1789,6 +1792,44 @@ try {
                         [$status, $operator, $locName]
                     );
                 }
+            }
+
+            // Populate countsheet scans from cloud
+            $scansImported = 0;
+            if (!empty($scans)) {
+                $db->execute("TRUNCATE TABLE `{$store}_countsheet`");
+                foreach ($scans as $scan) {
+                    $recNo = $scan['RecNo'] ?? $scan['id'] ?? null;
+                    $loc = $scan['SlotNo'] ?? $scan['location'] ?? '';
+                    $date = $scan['CountDate'] ?? $scan['scanned_at'] ?? date('Y-m-d H:i:s');
+                    $upc = $scan['UPC'] ?? $scan['barcode'] ?? '';
+                    $sku = $scan['SKU'] ?? $scan['sku'] ?? '';
+                    $descr = $scan['Descr'] ?? $scan['product_name'] ?? '';
+                    $qty = isset($scan['Qty']) ? (float)$scan['Qty'] : (isset($scan['original_qty']) ? (float)$scan['original_qty'] : 0.00);
+                    $editedQty = isset($scan['EditedQty']) ? (float)$scan['EditedQty'] : (isset($scan['edited_qty']) ? (float)$scan['edited_qty'] : 0.00);
+                    $posted = isset($scan['Posted']) ? (int)$scan['Posted'] : (isset($scan['posted']) ? (int)$scan['posted'] : 0);
+                    $added = isset($scan['Added']) ? (int)$scan['Added'] : (isset($scan['added']) ? (int)$scan['added'] : 0);
+                    $edited = isset($scan['Edited']) ? (int)$scan['Edited'] : (isset($scan['edited']) ? (int)$scan['edited'] : 0);
+                    $scannedBy = $scan['ScannedBy'] ?? $scan['scanned_by'] ?? 'CLOUD';
+                    $variance = isset($scan['Variance']) ? (float)$scan['Variance'] : (isset($scan['variance']) ? (float)$scan['variance'] : 0.00);
+
+                    if ($recNo !== null) {
+                        $db->execute(
+                            "INSERT INTO `{$store}_countsheet` 
+                             (RecNo, SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                            [$recNo, $loc, $date, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
+                        );
+                    } else {
+                        $db->execute(
+                            "INSERT INTO `{$store}_countsheet` 
+                             (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                            [$loc, $date, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
+                        );
+                    }
+                }
+                $scansImported = count($scans);
             }
 
             // Populate store items table with specific store products from cloud
@@ -1826,7 +1867,7 @@ try {
 
             sendResponse([
                 'status' => 'success',
-                'message' => "Successfully imported store session '" . strtoupper($store) . "' with " . count($locators) . " locators and " . $productsImported . " specific products!"
+                'message' => "Successfully imported store session '" . strtoupper($store) . "' with " . count($locators) . " locators, " . $scansImported . " scan records, and " . $productsImported . " specific products!"
             ]);
             break;
 
@@ -1976,6 +2017,13 @@ try {
                 // Table '{store}_locators' doesn't exist on cloud
             }
 
+            $scans = [];
+            try {
+                $scans = $db->query("SELECT * FROM `{$store}_countsheet`");
+            } catch (Exception $e) {
+                // Table '{store}_countsheet' doesn't exist on cloud
+            }
+
             // Fetch products specific to this store based on stores_id store number
             $products = [];
             try {
@@ -2013,6 +2061,7 @@ try {
                 'status' => 'success',
                 'store' => $storeRows[0] ?? null,
                 'locators' => $locators,
+                'scans' => $scans,
                 'products' => $products
             ]);
             break;
