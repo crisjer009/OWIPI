@@ -1094,8 +1094,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
-        function approveSyncRequest(id) {
-            if (!confirm("Are you sure you want to approve this store sync request and overwrite cloud data?")) return;
+        async function approveSyncRequest(id) {
+            const ok = await showCustomConfirm(
+                "Are you sure you want to approve this store sync request and overwrite cloud data?",
+                "Approve Sync Request",
+                "Approve & Sync",
+                "Cancel"
+            );
+            if (!ok) return;
 
             fetch('api.php?action=approve_sync_request', {
                 method: 'POST',
@@ -1108,14 +1114,20 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     showToast(data.message, 'success');
                     fetchPendingSyncRequests();
                 } else {
-                    alert("Approval failed: " + data.message);
+                    showCustomAlert("Approval failed: " + data.message, "Approval Failed");
                 }
             })
-            .catch(err => alert("Request failed: " + err));
+            .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
-        function rejectSyncRequest(id) {
-            if (!confirm("Are you sure you want to reject this sync request?")) return;
+        async function rejectSyncRequest(id) {
+            const ok = await showCustomConfirm(
+                "Are you sure you want to reject this sync request?",
+                "Reject Sync Request",
+                "Reject Request",
+                "Cancel"
+            );
+            if (!ok) return;
 
             fetch('api.php?action=reject_sync_request', {
                 method: 'POST',
@@ -1128,10 +1140,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     showToast("Sync request rejected.", 'info');
                     fetchPendingSyncRequests();
                 } else {
-                    alert("Rejection failed: " + data.message);
+                    showCustomAlert("Rejection failed: " + data.message, "Rejection Failed");
                 }
             })
-            .catch(err => alert("Request failed: " + err));
+            .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
         function fetchExistingStores() {
@@ -1217,7 +1229,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             event.preventDefault();
             const storeCode = document.getElementById('cloud_store_select').value;
             if (!storeCode) {
-                alert('Please select a store to download.');
+                showCustomAlert('Please select a store to download.', 'Selection Required');
                 return;
             }
             
@@ -2208,14 +2220,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Sync Items Masterfile from Cloud
-        function syncMasterfileFromCloud() {
+        async function syncMasterfileFromCloud() {
             const targetSelect = document.getElementById('masterfile_target_store');
             const storeCode = targetSelect ? targetSelect.value : '';
             const label = storeCode ? `store ${storeCode.toUpperCase()} database` : "entire Items Masterfile";
 
-            if (!confirm(`Are you sure you want to download and sync the catalog for ${label} from the cloud? This will overwrite the local store database catalog.`)) {
-                return;
-            }
+            const ok = await showCustomConfirm(
+                `Are you sure you want to download and sync the catalog for ${label} from the cloud? This will overwrite the local store database catalog.`,
+                "Sync Masterfile from Cloud",
+                "Download & Sync",
+                "Cancel"
+            );
+            if (!ok) return;
             
             const btn = document.getElementById('btn-sync-master-cloud');
             btn.disabled = true;
@@ -2243,10 +2259,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Sync items specific to a store from the cloud
-        function downloadStoreItemsFromCloud(storeCode) {
-            if (!confirm(`Are you sure you want to download and sync the database items for store ${storeCode.toUpperCase()} from the cloud?`)) {
-                return;
-            }
+        async function downloadStoreItemsFromCloud(storeCode) {
+            const ok = await showCustomConfirm(
+                `Are you sure you want to download and sync the database items for store ${storeCode.toUpperCase()} from the cloud?`,
+                "Download Store Items",
+                "Download Items",
+                "Cancel"
+            );
+            if (!ok) return;
             showToast(`Downloading items for ${storeCode.toUpperCase()} from cloud...`, 'info');
             fetch(`api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode)}`)
                 .then(res => res.json())
@@ -2264,10 +2284,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Sync User Accounts from Cloud
-        function syncUsersFromCloud() {
-            if (!confirm("Are you sure you want to download and sync all user accounts from the cloud? This will overwrite local user accounts.")) {
-                return;
-            }
+        async function syncUsersFromCloud() {
+            const ok = await showCustomConfirm(
+                "Are you sure you want to download and sync all user accounts from the cloud? This will overwrite local user accounts.",
+                "Sync Users from Cloud",
+                "Sync Users",
+                "Cancel"
+            );
+            if (!ok) return;
             
             const btn = document.getElementById('btn-sync-users-cloud');
             btn.disabled = true;
@@ -2295,10 +2319,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Delete Store Session
-        function confirmDeleteStore(storeCode) {
-            if (!confirm(`WARNING: Are you sure you want to permanently delete the store session '${storeCode.toUpperCase()}'? This will DROP all locators, scans, and configs, and cannot be undone.`)) {
-                return;
-            }
+        async function confirmDeleteStore(storeCode) {
+            const ok = await showCustomConfirm(
+                `WARNING: Are you sure you want to permanently delete the store session '${storeCode.toUpperCase()}'? This will DROP all locators, scans, and configs, and cannot be undone.`,
+                "Delete Store Session",
+                "Permanently Delete",
+                "Cancel"
+            );
+            if (!ok) return;
             
             showToast(`Deleting store ${storeCode.toUpperCase()}...`, "info");
             
@@ -2356,10 +2384,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Restore database tables and catalog from database.sql
-        function restoreDatabaseBackup() {
-            if (!confirm("WARNING: This will drop and reset all database tables (users, items, stores) back to the default state using database.sql. Any un-synced scans will be cleared. Do you want to proceed?")) {
-                return;
-            }
+        async function restoreDatabaseBackup() {
+            const ok = await showCustomConfirm(
+                "WARNING: This will drop and reset all database tables (users, items, stores) back to the default state using database.sql. Any un-synced scans will be cleared. Do you want to proceed?",
+                "Restore Database Backup",
+                "Reset & Import",
+                "Cancel"
+            );
+            if (!ok) return;
             showToast("Restoring database structure and importing catalog from database.sql...", "info");
             fetch('api.php?action=restore_default_db')
                 .then(res => res.json())
@@ -2379,10 +2411,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Save current database as default backup
-        function backupDatabaseLocal() {
-            if (!confirm("Are you sure you want to save your current database (schema and data) as the default data for future installations? This will write a database.sql file in your repository.")) {
-                return;
-            }
+        async function backupDatabaseLocal() {
+            const ok = await showCustomConfirm(
+                "Are you sure you want to save your current database (schema and data) as the default data for future installations? This will write a database.sql file in your repository.",
+                "Save Default Database Backup",
+                "Save Backup",
+                "Cancel"
+            );
+            if (!ok) return;
             showToast("Generating default database backup file...", "info");
             fetch('api.php?action=backup_db')
                 .then(res => res.json())
@@ -2790,13 +2826,39 @@ if ($driverLoaded && $dbStatus === 'connected') {
             document.getElementById('prod-submit-btn').innerText = "Add Item";
         }
 
+        // Confirm and clear all scan logs
+        async function confirmClearScans() {
+            const ok = await showCustomConfirm(
+                "Are you sure you want to permanently clear all scan logs from the MySQL countsheet database? This cannot be undone.",
+                "Clear All Scan Logs",
+                "Clear Scans",
+                "Cancel"
+            );
+            if (!ok) return;
+            fetch('api.php?action=clear_scans')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        loadScans();
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => showToast("Failed to clear scans: " + err, "error"));
+        }
+
         // Delete product from the global catalog
-        function deleteProduct(event, barcode) {
+        async function deleteProduct(event, barcode) {
             event.stopPropagation(); // Avoid prefilling the form when hitting delete!
 
-            if (!confirm(`Are you sure you want to delete product barcode "${barcode}" from the catalog?`)) {
-                return;
-            }
+            const ok = await showCustomConfirm(
+                `Are you sure you want to delete product barcode "${barcode}" from the catalog?`,
+                "Delete Catalog Item",
+                "Delete Item",
+                "Cancel"
+            );
+            if (!ok) return;
 
             fetch('api.php?action=delete_product', {
                 method: 'POST',

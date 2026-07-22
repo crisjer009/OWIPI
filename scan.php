@@ -1579,7 +1579,168 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
     <!-- Scan beep synthesizer & Html5Qrcode & QRCode Generator -->
     <script src="js/html5-qrcode.min.js"></script>
     <script src="js/qrcode.min.js"></script>
-    <script>
+        function showCustomConfirm(message, title = "Confirm Action", confirmText = "Confirm", cancelText = "Cancel") {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-dialog-overlay');
+                const titleEl = document.getElementById('custom-dialog-title');
+                const messageEl = document.getElementById('custom-dialog-message');
+                const btnPrimary = document.getElementById('custom-dialog-btn-primary');
+                const btnSecondary = document.getElementById('custom-dialog-btn-secondary');
+
+                if (!overlay || !titleEl || !messageEl || !btnPrimary || !btnSecondary) {
+                    resolve(confirm(message));
+                    return;
+                }
+
+                titleEl.innerHTML = `<span style="font-size:1.2rem;">⚠️</span> ${title}`;
+                messageEl.innerText = message;
+                btnPrimary.innerText = confirmText;
+                btnSecondary.innerText = cancelText;
+                btnSecondary.style.display = 'inline-flex';
+
+                overlay.classList.add('active');
+
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnPrimary.onclick = null;
+                    btnSecondary.onclick = null;
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        cleanup();
+                        resolve(false);
+                    } else if (e.key === 'Enter') {
+                        cleanup();
+                        resolve(true);
+                    }
+                };
+
+                btnPrimary.onclick = () => {
+                    cleanup();
+                    resolve(true);
+                };
+
+                btnSecondary.onclick = () => {
+                    cleanup();
+                    resolve(false);
+                };
+
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
+
+        function showCustomAlert(message, title = "Notice", btnText = "OK") {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-dialog-overlay');
+                const titleEl = document.getElementById('custom-dialog-title');
+                const messageEl = document.getElementById('custom-dialog-message');
+                const btnPrimary = document.getElementById('custom-dialog-btn-primary');
+                const btnSecondary = document.getElementById('custom-dialog-btn-secondary');
+
+                if (!overlay || !titleEl || !messageEl || !btnPrimary) {
+                    alert(message);
+                    resolve();
+                    return;
+                }
+
+                titleEl.innerHTML = `<span style="font-size:1.2rem;">ℹ️</span> ${title}`;
+                messageEl.innerText = message;
+                btnPrimary.innerText = btnText;
+                if (btnSecondary) btnSecondary.style.display = 'none';
+
+                overlay.classList.add('active');
+
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnPrimary.onclick = null;
+                    if (btnSecondary) btnSecondary.onclick = null;
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape' || e.key === 'Enter') {
+                        cleanup();
+                        resolve();
+                    }
+                };
+
+                btnPrimary.onclick = () => {
+                    cleanup();
+                    resolve();
+                };
+
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
+
+        function showCustomPrompt(message, defaultValue = '', title = 'Input Required', btnText = 'Submit') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-dialog-overlay');
+                const titleEl = document.getElementById('custom-dialog-title');
+                const messageEl = document.getElementById('custom-dialog-message');
+                const btnPrimary = document.getElementById('custom-dialog-btn-primary');
+                const btnSecondary = document.getElementById('custom-dialog-btn-secondary');
+
+                if (!overlay || !titleEl || !messageEl || !btnPrimary) {
+                    const val = prompt(message, defaultValue);
+                    resolve(val);
+                    return;
+                }
+
+                titleEl.innerHTML = `<span style="font-size:1.2rem;">✏️</span> ${title}`;
+                messageEl.innerHTML = `
+                    <div style="margin-bottom:10px;">${message}</div>
+                    <input type="text" id="custom-dialog-input" value="${defaultValue}" style="width:100%; padding:8px 12px; font-size:0.9rem; border-radius:6px; background:rgba(0,0,0,0.4); color:white; border:1px solid rgba(255,255,255,0.2); outline:none; box-sizing:border-box;">
+                `;
+                btnPrimary.innerText = btnText;
+                if (btnSecondary) {
+                    btnSecondary.innerText = 'Cancel';
+                    btnSecondary.style.display = 'inline-flex';
+                }
+
+                overlay.classList.add('active');
+                const inputEl = document.getElementById('custom-dialog-input');
+                if (inputEl) {
+                    inputEl.focus();
+                    inputEl.select();
+                }
+
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnPrimary.onclick = null;
+                    if (btnSecondary) btnSecondary.onclick = null;
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        cleanup();
+                        resolve(null);
+                    } else if (e.key === 'Enter') {
+                        cleanup();
+                        resolve(inputEl ? inputEl.value : '');
+                    }
+                };
+
+                btnPrimary.onclick = () => {
+                    const val = inputEl ? inputEl.value : '';
+                    cleanup();
+                    resolve(val);
+                };
+
+                if (btnSecondary) {
+                    btnSecondary.onclick = () => {
+                        cleanup();
+                        resolve(null);
+                    };
+                }
+
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
+
         // Custom Styled Dialog overlay logic
         function customAlert(message, title = "Notification", callback = null) {
             const overlay = document.getElementById('custom-dialog-overlay');
@@ -3985,9 +4146,9 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             renderHostQRCode(newUrl);
         }
 
-        function handleQrIpChange(selectEl) {
+        async function handleQrIpChange(selectEl) {
             if (selectEl.value === 'custom') {
-                const customIp = prompt("Enter Custom IP Address or Hostname (e.g. 192.168.43.1):", "<?= $localIP ?>");
+                const customIp = await showCustomPrompt("Enter Custom IP Address or Hostname (e.g. 192.168.43.1):", "<?= $localIP ?>", "Set Custom Network IP", "Update IP");
                 if (customIp && customIp.trim()) {
                     const cleanIp = customIp.trim();
                     const newOpt = document.createElement('option');
