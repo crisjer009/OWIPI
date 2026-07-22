@@ -1061,15 +1061,17 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     if (data.status === 'success' && data.stores && data.stores.length > 0) {
                         const select = document.getElementById('active_store_select');
                         const targetSelect = document.getElementById('masterfile_target_store');
-                        select.innerHTML = '';
+                        if (select) select.innerHTML = '';
                         if (targetSelect) {
                             targetSelect.innerHTML = '<option value="">Global Master Catalog (Default items table)</option>';
                         }
                         data.stores.forEach(store => {
-                            const opt = document.createElement('option');
-                            opt.value = store.store_code;
-                            opt.innerText = `Store: ${store.store_code}`;
-                            select.appendChild(opt);
+                            if (select) {
+                                const opt = document.createElement('option');
+                                opt.value = store.store_code;
+                                opt.innerText = `Store: ${store.store_code}`;
+                                select.appendChild(opt);
+                            }
 
                             if (targetSelect) {
                                 const targetOpt = document.createElement('option');
@@ -1079,9 +1081,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             }
                         });
                         setStoreMode('select');
+                        const toggleContainer = document.getElementById('toggle-store-mode-container');
+                        if (toggleContainer) toggleContainer.style.display = 'block';
                     } else {
                         setStoreMode('create');
-                        document.getElementById('toggle-store-mode-container').style.display = 'none';
+                        const toggleContainer = document.getElementById('toggle-store-mode-container');
+                        if (toggleContainer) toggleContainer.style.display = 'none';
+                        const toggleBtn = document.getElementById('toggle-store-mode-btn');
+                        if (toggleBtn) toggleBtn.style.display = 'none';
                     }
                 })
                 .catch(err => console.error("Error loading stores:", err));
@@ -1169,15 +1176,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
             const btn = document.getElementById('toggle-store-mode-btn');
 
             if (mode === 'select') {
-                selectGroup.style.display = 'block';
-                inputGroupContainer.style.display = 'none';
-                inputField.required = false;
-                btn.innerText = "Or Create New Store";
+                if (selectGroup) selectGroup.style.display = 'block';
+                if (inputGroupContainer) inputGroupContainer.style.display = 'none';
+                if (inputField) inputField.required = false;
+                if (btn) btn.innerText = "Or Create New Store";
             } else {
-                selectGroup.style.display = 'none';
-                inputGroupContainer.style.display = 'block';
-                inputField.required = true;
-                btn.innerText = "Choose from existing stores";
+                if (selectGroup) selectGroup.style.display = 'none';
+                if (inputGroupContainer) inputGroupContainer.style.display = 'block';
+                if (inputField) inputField.required = true;
+                if (btn) btn.innerText = "Choose from existing stores";
             }
         }
 
