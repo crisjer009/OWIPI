@@ -835,13 +835,13 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
                 📁 Upload Masterfile
             </button>
+            <button id="btn-download-store" class="btn" onclick="downloadStoreFromCloud()"
+                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success-color); color: var(--success-color); font-weight:600;">
+                ☁️ Download Store Masterfile
+            </button>
             <button id="btn-sync-cloud" class="btn" onclick="openCloudSyncModal()"
                 style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
                 ☁️ Sync to Cloud
-            </button>
-            <button id="btn-download-store" class="btn" onclick="downloadStoreFromCloud()"
-                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success-color); color: var(--success-color); font-weight:600;">
-                ☁️ Download Store
             </button>
             <button id="btn-close-store" class="btn btn-danger" onclick="closeStoreSession()"
                 style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#da3633; border-color:#da3633; color:white; font-weight:600;">
@@ -3445,7 +3445,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 .then(data => {
                     if (btn) {
                         btn.disabled = false;
-                        btn.innerText = '☁️ Download Store';
+                        btn.innerText = '☁️ Download Store Masterfile';
                     }
                     if (data.status === 'success') {
                         showToast(data.message, 'success');
@@ -3457,7 +3457,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 .catch(err => {
                     if (btn) {
                         btn.disabled = false;
-                        btn.innerText = '☁️ Download Store';
+                        btn.innerText = '☁️ Download Store Masterfile';
                     }
                     showToast("Download failed: " + err, 'error');
                 });
