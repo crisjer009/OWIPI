@@ -1539,12 +1539,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <span style="font-size: 0.8rem; color: var(--text-secondary);">
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
-                                <?php if ($isSysAdmin): ?>
-                                    <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
-                                        style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
-                                        Delete
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <button onclick="downloadStoreItemsFromCloud('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
+                                        style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
+                                        ☁️ Download Items
                                     </button>
-                                <?php endif; ?>
+                                    <?php if ($isSysAdmin): ?>
+                                        <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
+                                            style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
+                                            Delete
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -2141,6 +2147,27 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     btn.disabled = false;
                     btn.innerText = '☁️ Sync Masterfile from Cloud';
                     showToast("Failed to sync masterfile: " + err, "error");
+                });
+        }
+
+        // Sync items specific to a store from the cloud
+        function downloadStoreItemsFromCloud(storeCode) {
+            if (!confirm(`Are you sure you want to download and sync the database items for store ${storeCode.toUpperCase()} from the cloud?`)) {
+                return;
+            }
+            showToast(`Downloading items for ${storeCode.toUpperCase()} from cloud...`, 'info');
+            fetch(`api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    showToast('Failed to download items: ' + err, 'error');
                 });
         }
 
