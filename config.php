@@ -439,6 +439,27 @@ class OWI_DB {
             $this->execute("INSERT INTO users (username, password, role) VALUES ('operator', ?, 'user')", [$hashedPass]);
         }
         
+        // Create pending_sync_requests table for Admin approval workflow
+        $sqlPendingSync = "
+            CREATE TABLE IF NOT EXISTS pending_sync_requests (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                store_code VARCHAR(50) NOT NULL,
+                requested_by VARCHAR(100) NOT NULL,
+                payload LONGTEXT NOT NULL,
+                local_scans_count INT DEFAULT 0,
+                cloud_scans_count INT DEFAULT 0,
+                status VARCHAR(20) DEFAULT 'pending',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                approved_by VARCHAR(100) NULL,
+                approved_at DATETIME NULL,
+                INDEX idx_store (store_code),
+                INDEX idx_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+        try {
+            $this->execute($sqlPendingSync);
+        } catch (Exception $e) {}
+
         return true;
     }
     

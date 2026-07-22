@@ -1052,7 +1052,87 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchExistingStores();
+            fetchPendingSyncRequests();
         });
+
+        function fetchPendingSyncRequests() {
+            const listEl = document.getElementById('pending-syncs-list');
+            if (!listEl) return;
+
+            fetch('api.php?action=get_pending_syncs')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.requests && data.requests.length > 0) {
+                        let html = '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
+                        data.requests.forEach(req => {
+                            html += `
+                                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 1rem; color: var(--accent-color);">Store: ${req.store_code.toUpperCase()}</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
+                                            Requested by: <strong>${req.requested_by}</strong> • ${req.created_at}
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #9ca3af; margin-top: 4px;">
+                                            Local Scans: <strong style="color:white;">${req.local_scans_count}</strong> | Cloud Scans: <strong style="color:white;">${req.cloud_scans_count}</strong>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button type="button" onclick="approveSyncRequest(${req.id})" class="btn" style="background: var(--success-color); color: white; width: auto; font-size: 0.8rem; padding: 6px 14px; font-weight: 600; cursor: pointer;">Approve Overwrite</button>
+                                        <button type="button" onclick="rejectSyncRequest(${req.id})" class="btn btn-secondary" style="background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid #ef4444; width: auto; font-size: 0.8rem; padding: 6px 14px; font-weight: 600; cursor: pointer;">Reject</button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        listEl.innerHTML = html;
+                    } else {
+                        listEl.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic;">No pending sync requests awaiting approval.</p>';
+                    }
+                })
+                .catch(err => {
+                    listEl.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem;">Failed to load pending sync requests.</p>';
+                });
+        }
+
+        function approveSyncRequest(id) {
+            if (!confirm("Are you sure you want to approve this store sync request and overwrite cloud data?")) return;
+
+            fetch('api.php?action=approve_sync_request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast(data.message, 'success');
+                    fetchPendingSyncRequests();
+                } else {
+                    alert("Approval failed: " + data.message);
+                }
+            })
+            .catch(err => alert("Request failed: " + err));
+        }
+
+        function rejectSyncRequest(id) {
+            if (!confirm("Are you sure you want to reject this sync request?")) return;
+
+            fetch('api.php?action=reject_sync_request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast("Sync request rejected.", 'info');
+                    fetchPendingSyncRequests();
+                } else {
+                    alert("Rejection failed: " + data.message);
+                }
+            })
+            .catch(err => alert("Request failed: " + err));
+        }
 
         function fetchExistingStores() {
             fetch('api.php?action=get_stores')
@@ -1645,6 +1725,24 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary" style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save Token Only</button>
                 </div>
             </div>
+
+            <!-- Pending Cloud Sync Requests Card for Admins -->
+            <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin'])): ?>
+            <div class="card" style="max-width: 600px; margin-top: 2rem;" id="pending-syncs-card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="card-title">
+                        <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:#eab308;">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        Pending Cloud Sync Approvals
+                    </h2>
+                    <button type="button" onclick="fetchPendingSyncRequests()" class="btn btn-secondary btn-sm" style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Refresh</button>
+                </div>
+                <div id="pending-syncs-list" style="margin-top: 1rem;">
+                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Checking for pending sync requests...</p>
+                </div>
+            </div>
+            <?php endif; ?>
 
             <!-- Print Spacing Settings -->
             <div class="card" style="max-width: 600px; margin-top: 2rem;">

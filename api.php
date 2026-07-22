@@ -148,14 +148,14 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
 
 try {
     $bypassAuth = false;
-    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync') {
+    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request') {
         $bypassAuth = true;
     }
 
@@ -1619,18 +1619,13 @@ try {
             $currentRole = $_SESSION['role'] ?? 'user';
             $isAdminOrSystem = in_array(strtolower($currentRole), ['admin', 'system_admin', 'sys_admin']);
 
+            $isStoreOnCloud = false;
+            $cloudScansCount = 0;
             if ($checkHttp === 200 && $checkResult) {
                 $cloudInfo = json_decode($checkResult, true);
                 if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['store'])) {
-                    // Store session already exists on cloud!
-                    if (!$isAdminOrSystem) {
-                        throw new Exception("Synchronization Blocked: Store session '{$_SESSION['store_code']}' already exists on the Cloud Server. Overwriting or syncing an existing cloud store session requires System Admin or Admin approval.");
-                    }
-
+                    $isStoreOnCloud = true;
                     $cloudScansCount = count($cloudInfo['scans'] ?? []);
-                    if ($cloudScansCount > $totalScans && !isset($_GET['force'])) {
-                        throw new Exception("Synchronization Blocked: Cloud server has a higher scan record count ({$cloudScansCount} scans on cloud vs {$totalScans} scans locally). Overwriting requires force approval by a System Admin or Admin.");
-                    }
                 }
             }
 
@@ -1683,6 +1678,43 @@ try {
                 'users' => $usersList,
                 'audit_logs' => $auditLogs
             ];
+
+            // If store already exists on cloud and logged-in user is NOT an Admin/System Admin, submit for approval
+            if ($isStoreOnCloud && !$isAdminOrSystem) {
+                $submitUrl = rtrim($cloudUrl, '/');
+                if (preg_match('/\/api\.php$/i', $submitUrl)) {
+                    $submitUrl = preg_replace('/\/api\.php$/i', '', $submitUrl);
+                }
+                $submitUrl = rtrim($submitUrl, '/') . '/api.php?action=submit_sync_request';
+
+                $payload['local_scans_count'] = $totalScans;
+                $payload['cloud_scans_count'] = $cloudScansCount;
+
+                $chReq = curl_init();
+                curl_setopt($chReq, CURLOPT_URL, $submitUrl);
+                curl_setopt($chReq, CURLOPT_POST, true);
+                curl_setopt($chReq, CURLOPT_POSTFIELDS, json_encode($payload));
+                curl_setopt($chReq, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($chReq, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($chReq, CURLOPT_TIMEOUT, 30);
+                curl_setopt($chReq, CURLOPT_SSL_VERIFYPEER, false);
+
+                $reqResult = curl_exec($chReq);
+                $reqHttp = curl_getinfo($chReq, CURLINFO_HTTP_CODE);
+                curl_close($chReq);
+
+                $reqData = json_decode($reqResult, true);
+                if ($reqHttp === 200 && ($reqData['status'] ?? '') === 'success') {
+                    sendResponse([
+                        'status' => 'pending_approval',
+                        'message' => "Sync request for store '" . strtoupper($_SESSION['store_code']) . "' submitted to Cloud! Waiting for System Admin or Admin approval on the Cloud Dashboard."
+                    ]);
+                    break;
+                } else {
+                    $errMsg = $reqData['message'] ?? 'Failed to submit sync request for approval.';
+                    throw new Exception("Sync Request Submission Failed: " . $errMsg);
+                }
+            }
 
             // Clean Cloud Sync URL (strip api.php if user included it in settings)
             $targetUrl = rtrim($cloudUrl, '/');
@@ -2039,6 +2071,113 @@ try {
             sendResponse([
                 'status' => 'success',
                 'stores' => $stores
+            ]);
+            break;
+
+        case 'submit_sync_request':
+            verifySyncToken();
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                throw new Exception("Invalid sync request payload.");
+            }
+            $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($input['store_code'] ?? ''));
+            $requestedBy = $input['synced_by'] ?? 'UNKNOWN';
+            $localScans = (int) ($input['local_scans_count'] ?? 0);
+            $cloudScans = (int) ($input['cloud_scans_count'] ?? 0);
+
+            $db = new OWI_DB();
+            $jsonPayload = json_encode($input);
+
+            $db->execute(
+                "INSERT INTO pending_sync_requests (store_code, requested_by, payload, local_scans_count, cloud_scans_count, status) VALUES (?, ?, ?, ?, ?, 'pending')",
+                [$storeCode, $requestedBy, $jsonPayload, $localScans, $cloudScans]
+            );
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Sync request for store '" . strtoupper($storeCode) . "' submitted successfully. Awaiting System Admin approval."
+            ]);
+            break;
+
+        case 'get_pending_syncs':
+            $db = new OWI_DB();
+            $requests = [];
+            try {
+                $requests = $db->query("SELECT id, store_code, requested_by, local_scans_count, cloud_scans_count, status, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM pending_sync_requests WHERE status = 'pending' ORDER BY id DESC");
+            } catch (Exception $e) {}
+            sendResponse([
+                'status' => 'success',
+                'requests' => $requests
+            ]);
+            break;
+
+        case 'approve_sync_request':
+            $id = (int) ($_POST['id'] ?? ($_GET['id'] ?? 0));
+            if ($id <= 0) {
+                throw new Exception("Invalid request ID.");
+            }
+            $db = new OWI_DB();
+            $rows = $db->query("SELECT * FROM pending_sync_requests WHERE id = ?", [$id]);
+            if (empty($rows)) {
+                throw new Exception("Pending sync request not found.");
+            }
+            $req = $rows[0];
+            $payload = json_decode($req['payload'], true);
+            if (!$payload) {
+                throw new Exception("Corrupted sync payload.");
+            }
+
+            $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($payload['store_code'] ?? ''));
+            $createdBy = $payload['store_details']['created_by'] ?? null;
+            $db->createStoreTables($storeCode, $createdBy);
+
+            if (isset($payload['store_details']['closed'])) {
+                $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $payload['store_details']['closed'], $storeCode]);
+            }
+
+            foreach ($payload['locators'] ?? [] as $loc) {
+                $locName = $loc['locator_name'];
+                $status = $loc['status'] ?? 'open';
+                $operator = $loc['assigned_operator'] ?? null;
+                $check = $db->query("SELECT id FROM `{$storeCode}_locators` WHERE locator_name = ?", [$locName]);
+                if (empty($check)) {
+                    $db->execute("INSERT INTO `{$storeCode}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)", [$locName, $status, $operator]);
+                } else {
+                    $db->execute("UPDATE `{$storeCode}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?", [$status, $operator, $locName]);
+                }
+            }
+
+            foreach ($payload['scans'] ?? [] as $scan) {
+                $checkScan = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE SlotNo = ? AND UPC = ?", [$scan['location'], $scan['barcode']]);
+                if (empty($checkScan)) {
+                    $db->execute(
+                        "INSERT INTO `{$storeCode}_countsheet` (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                        [$scan['location'], $scan['scanned_at'], $scan['barcode'], $scan['sku'], $scan['product_name'], $scan['original_qty'], $scan['edited_qty'] ?? 0, $scan['posted'] ?? 0, $scan['added'] ?? 0, $scan['edited'] ?? 0, $scan['scanned_by'], $scan['variance'] ?? 0.00]
+                    );
+                }
+            }
+
+            $adminUser = $_SESSION['username'] ?? 'sys_admin';
+            $db->execute("UPDATE pending_sync_requests SET status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?", [$adminUser, $id]);
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Sync request #" . $id . " for store '" . strtoupper($storeCode) . "' approved! Cloud store database updated successfully."
+            ]);
+            break;
+
+        case 'reject_sync_request':
+            $id = (int) ($_POST['id'] ?? ($_GET['id'] ?? 0));
+            if ($id <= 0) {
+                throw new Exception("Invalid request ID.");
+            }
+            $db = new OWI_DB();
+            $adminUser = $_SESSION['username'] ?? 'sys_admin';
+            $db->execute("UPDATE pending_sync_requests SET status = 'rejected', approved_by = ?, approved_at = NOW() WHERE id = ?", [$adminUser, $id]);
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Sync request #" . $id . " rejected."
             ]);
             break;
 
