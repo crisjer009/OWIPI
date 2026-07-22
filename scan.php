@@ -3550,25 +3550,38 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
         // Sync active store details, locators, and product catalog from the cloud
         function downloadStoreFromCloud() {
+            console.log("downloadStoreFromCloud: initiating customConfirm...");
             customConfirm(
                 `Are you sure you want to download and sync the store session, locators, and product catalog for store ${storeCode.toUpperCase()} from the cloud?`,
                 function () {
+                    console.log("downloadStoreFromCloud callback triggered!");
                     const btn = document.getElementById('btn-download-store');
+                    console.log("btn found:", btn);
                     if (btn) {
                         btn.disabled = true;
                         btn.innerText = 'Downloading...';
+                        console.log("btn state modified");
                     }
 
                     const overlay = document.getElementById('download-loading-overlay');
+                    console.log("loading overlay found:", overlay);
                     if (overlay) {
                         overlay.classList.add('active');
+                        console.log("overlay class active added");
                     }
                     
+                    console.log("calling showToast...");
                     showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
                     
-                    fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`)
-                        .then(res => res.json())
+                    const fetchUrl = `api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`;
+                    console.log("fetching url:", fetchUrl);
+                    fetch(fetchUrl)
+                        .then(res => {
+                            console.log("Fetch response received, status:", res.status);
+                            return res.json();
+                        })
                         .then(data => {
+                            console.log("Fetch response data:", data);
                             if (btn) {
                                 btn.disabled = false;
                                 btn.innerText = '☁️ Download Store Masterfile';
@@ -3584,6 +3597,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             }
                         })
                         .catch(err => {
+                            console.error("Fetch promise chain caught error:", err);
                             if (btn) {
                                 btn.disabled = false;
                                 btn.innerText = '☁️ Download Store Masterfile';
