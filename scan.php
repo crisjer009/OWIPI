@@ -561,7 +561,90 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 flex-direction: column;
                 text-align: center;
                 gap: 10px;
-            }
+        }
+
+        /* Custom Premium Toast Notification */
+        .custom-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 99999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .custom-toast.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .custom-toast.success {
+            background: #10b981;
+            border: 1px solid #059669;
+        }
+        .custom-toast.error {
+            background: #ef4444;
+            border: 1px solid #dc2626;
+        }
+        .custom-toast.info {
+            background: #3b82f6;
+            border: 1px solid #2563eb;
+        }
+
+        /* Custom Premium Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(16, 185, 129, 0.1);
+            border-top: 4px solid var(--success-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.2px;
+        }
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -3403,6 +3486,26 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 });
         }
 
+        // Custom Premium Toast Notification System
+        function showToast(message, type = 'info') {
+            const existing = document.querySelector('.custom-toast');
+            if (existing) {
+                existing.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `custom-toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '✔' : type === 'error' ? '✖' : 'ℹ'}</span> ${message}`;
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('active'), 50);
+
+            setTimeout(() => {
+                toast.classList.remove('active');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
         // Cloud Sync Modal functions
         function openCloudSyncModal() {
             document.getElementById('cloud-sync-modal-overlay').classList.add('active');
@@ -3437,6 +3540,11 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 btn.disabled = true;
                 btn.innerText = 'Downloading...';
             }
+
+            const overlay = document.getElementById('download-loading-overlay');
+            if (overlay) {
+                overlay.classList.add('active');
+            }
             
             showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
             
@@ -3447,9 +3555,12 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         btn.disabled = false;
                         btn.innerText = '☁️ Download Store Masterfile';
                     }
+                    if (overlay) {
+                        overlay.classList.remove('active');
+                    }
                     if (data.status === 'success') {
                         showToast(data.message, 'success');
-                        setTimeout(() => window.location.reload(), 1500);
+                        setTimeout(() => window.location.reload(), 2000);
                     } else {
                         showToast("Error: " + data.message, 'error');
                     }
@@ -3458,6 +3569,9 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     if (btn) {
                         btn.disabled = false;
                         btn.innerText = '☁️ Download Store Masterfile';
+                    }
+                    if (overlay) {
+                        overlay.classList.remove('active');
                     }
                     showToast("Download failed: " + err, 'error');
                 });
@@ -3735,6 +3849,12 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             </form>
         </div>
     </div>
-</body>
 
+    <!-- Download Store Loading Overlay -->
+    <div id="download-loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Downloading Store Masterfile from Cloud...</div>
+        <div class="loading-subtext">Syncing locators, sessions, and catalog items. Please keep this tab open.</div>
+    </div>
+</body>
 </html>
