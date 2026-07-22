@@ -561,91 +561,105 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 flex-direction: column;
                 text-align: center;
                 gap: 10px;
-        }
+            }
 
-        /* Custom Premium Toast Notification */
-        .custom-toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            padding: 12px 24px;
-            border-radius: 8px;
-            color: #ffffff;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            z-index: 99999;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .custom-toast.active {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .custom-toast.success {
-            background: #10b981;
-            border: 1px solid #059669;
-        }
-        .custom-toast.error {
-            background: #ef4444;
-            border: 1px solid #dc2626;
-        }
-        .custom-toast.info {
-            background: #3b82f6;
-            border: 1px solid #2563eb;
-        }
+            /* Custom Premium Toast Notification */
+            .custom-toast {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                padding: 12px 24px;
+                border-radius: 8px;
+                color: #ffffff;
+                font-size: 0.9rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 99999;
+                transform: translateY(100px);
+                opacity: 0;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
 
-        /* Custom Premium Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(13, 17, 23, 0.85);
-            backdrop-filter: blur(8px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .loading-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(16, 185, 129, 0.1);
-            border-top: 4px solid var(--success-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 1.5rem;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-text {
-            color: #ffffff;
-            font-size: 1.1rem;
-            font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            letter-spacing: -0.2px;
-        }
-        .loading-subtext {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-        }
+            .custom-toast.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .custom-toast.success {
+                background: #10b981;
+                border: 1px solid #059669;
+            }
+
+            .custom-toast.error {
+                background: #ef4444;
+                border: 1px solid #dc2626;
+            }
+
+            .custom-toast.info {
+                background: #3b82f6;
+                border: 1px solid #2563eb;
+            }
+
+            /* Custom Premium Loading Overlay */
+            .loading-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(13, 17, 23, 0.85);
+                backdrop-filter: blur(8px);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                z-index: 999999;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+            }
+
+            .loading-overlay.active {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid rgba(16, 185, 129, 0.1);
+                border-top: 4px solid var(--success-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 1.5rem;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .loading-text {
+                color: #ffffff;
+                font-size: 1.1rem;
+                font-weight: 600;
+                font-family: 'Outfit', sans-serif;
+                letter-spacing: -0.2px;
+            }
+
+            .loading-subtext {
+                color: var(--text-secondary);
+                font-size: 0.85rem;
+                margin-top: 0.5rem;
+            }
     </style>
 </head>
 
@@ -910,26 +924,26 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
             <?php if (!$isMobileScanner): ?>
-            <button id="switch-view-btn" class="btn" onclick="toggleHostMobileView()"
-                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(139, 148, 158, 0.15); border: 1px solid rgba(255,255,255,0.2); color: #c9d1d9; font-weight:600;">
-                🖥️ Host Console
-            </button>
-            <button id="btn-upload-masterfile" class="btn btn-secondary" onclick="openHostMasterfileModal()"
-                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
-                📁 Upload Masterfile
-            </button>
-            <button id="btn-download-store" class="btn" onclick="downloadStoreFromCloud()"
-                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success-color); color: var(--success-color); font-weight:600;">
-                ☁️ Download Store Masterfile
-            </button>
-            <button id="btn-sync-cloud" class="btn" onclick="openCloudSyncModal()"
-                style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
-                ☁️ Sync to Cloud
-            </button>
-            <button id="btn-close-store" class="btn btn-danger" onclick="closeStoreSession()"
-                style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#da3633; border-color:#da3633; color:white; font-weight:600;">
-                🔒 Close Store
-            </button>
+                <button id="switch-view-btn" class="btn" onclick="toggleHostMobileView()"
+                    style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(139, 148, 158, 0.15); border: 1px solid rgba(255,255,255,0.2); color: #c9d1d9; font-weight:600;">
+                    🖥️ Host Console
+                </button>
+                <button id="btn-upload-masterfile" class="btn btn-secondary" onclick="openHostMasterfileModal()"
+                    style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
+                    📁 Upload Masterfile
+                </button>
+                <button id="btn-download-store" class="btn" onclick="downloadStoreFromCloud()"
+                    style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success-color); color: var(--success-color); font-weight:600;">
+                    ☁️ Download Store Masterfile
+                </button>
+                <button id="btn-sync-cloud" class="btn" onclick="openCloudSyncModal()"
+                    style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
+                    ☁️ Sync to Cloud
+                </button>
+                <button id="btn-close-store" class="btn btn-danger" onclick="closeStoreSession()"
+                    style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#da3633; border-color:#da3633; color:white; font-weight:600;">
+                    🔒 Close Store
+                </button>
             <?php endif; ?>
             <div id="connection-status" class="connection-status" style="margin-left: 0; position: static;">Online</div>
             <a href="logout.php" id="logout-btn"
@@ -1030,17 +1044,23 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             </div>
 
             <!-- Scanner controls (Zoom & Torch) -->
-            <div id="scanner-hardware-controls" style="display: none; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; flex-direction: column; gap: 10px; box-sizing: border-box; width: 100%;">
+            <div id="scanner-hardware-controls"
+                style="display: none; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; flex-direction: column; gap: 10px; box-sizing: border-box; width: 100%;">
                 <!-- Zoom Control -->
                 <div id="zoom-control-container" style="display: none; align-items: center; gap: 10px; width: 100%;">
-                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; min-width: 50px;">🔍 ZOOM:</span>
-                    <input type="range" id="scanner-zoom-slider" min="1" max="5" step="0.1" value="1" style="flex-grow: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; outline: none; cursor: pointer; margin: 0; padding: 0;">
-                    <span id="zoom-value-label" style="font-size: 0.8rem; color: var(--text-white); font-weight: 600; min-width: 35px; text-align: right;">1.0x</span>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; min-width: 50px;">🔍
+                        ZOOM:</span>
+                    <input type="range" id="scanner-zoom-slider" min="1" max="5" step="0.1" value="1"
+                        style="flex-grow: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; outline: none; cursor: pointer; margin: 0; padding: 0;">
+                    <span id="zoom-value-label"
+                        style="font-size: 0.8rem; color: var(--text-white); font-weight: 600; min-width: 35px; text-align: right;">1.0x</span>
                 </div>
                 <!-- Torch Control -->
-                <div id="torch-control-container" style="display: none; align-items: center; gap: 10px; justify-content: space-between; width: 100%;">
+                <div id="torch-control-container"
+                    style="display: none; align-items: center; gap: 10px; justify-content: space-between; width: 100%;">
                     <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">🔦 FLASHLIGHT:</span>
-                    <button type="button" id="btn-toggle-torch" class="btn" style="width: auto; height: 30px; padding: 0 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255, 255, 255, 0.1); color: var(--text-white); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: none;">
+                    <button type="button" id="btn-toggle-torch" class="btn"
+                        style="width: auto; height: 30px; padding: 0 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255, 255, 255, 0.1); color: var(--text-white); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: none;">
                         <span>OFF</span>
                     </button>
                 </div>
@@ -1207,7 +1227,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 <select id="qr-ip-select"
                                     style="font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
                                     onchange="updateQRCodeIP(this.value)">
-                                    <?php foreach ($detectedLocalIPs as $ipItem): 
+                                    <?php foreach ($detectedLocalIPs as $ipItem):
                                         $adapterName = $ipItem['adapter'];
                                         $lower = strtolower($adapterName);
                                         $typeLabel = 'LOCAL';
@@ -1218,9 +1238,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                         $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
                                         $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
                                         $displayName = str_ireplace('adapter ', '', $displayName);
-                                    ?>
+                                        ?>
                                         <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>: <?= htmlspecialchars($displayName) ?>)<?= $ipItem['has_gateway'] ? ' 🌐' : '' ?>
+                                            <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>:
+                                            <?= htmlspecialchars($displayName) ?>)<?= $ipItem['has_gateway'] ? ' 🌐' : '' ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -1491,10 +1512,12 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     <label for="sync_cloud_url"
                         style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Cloud
                         Server API URL</label>
-                    <input type="url" id="sync_cloud_url" class="form-control" placeholder="https://pginv.officewarehouse.com.ph/OWIPI/"
+                    <input type="url" id="sync_cloud_url" class="form-control"
+                        placeholder="https://pginv.officewarehouse.com.ph/OWIPI/"
                         style="width:100%; box-sizing:border-box;" required>
                     <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">The full URL
-                        of your cloud server instance, e.g. <code>https://pginv.officewarehouse.com.ph/OWIPI/</code></span>
+                        of your cloud server instance, e.g.
+                        <code>https://pginv.officewarehouse.com.ph/OWIPI/</code></span>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
@@ -1701,101 +1724,101 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
-                // Continuous scans polling for Host Console
-                loadHostScans();
-                setInterval(loadHostScans, 3000);
+                    // Continuous scans polling for Host Console
+                    loadHostScans();
+                    setInterval(loadHostScans, 3000);
 
-                // Load host locators panel
-                loadHostLocators();
-                setInterval(loadHostLocators, 3000);
-            } else {
-                // On Mobile (Scanner Mode)
-                document.body.style.overflow = 'auto';
-                document.getElementById('host-connect-card').style.display = 'none';
-                document.getElementById('scanner-section').style.display = 'block';
-
-                if (!isSecure && !navigator.mediaDevices) {
-                    document.getElementById('secure-warning').classList.add('active');
-                    const switchLink = document.getElementById('secure-switch-link');
-                    if (switchLink) {
-                        switchLink.href = window.location.href.replace('http://', 'https://');
-                    }
-                }
-
-                // Fetch available cameras
-                Html5Qrcode.getCameras().then(devices => {
-                    const select = document.getElementById("camera-select");
-                    if (devices && devices.length > 0) {
-                        select.innerHTML = '';
-                        devices.forEach((device, index) => {
-                            const opt = document.createElement("option");
-                            opt.value = device.id;
-                            // Label back camera automatically
-                            const label = device.label || `Camera ${index + 1}`;
-                            opt.text = label;
-                            // Select back camera as default if label indicates it
-                            if (label.toLowerCase().indexOf("back") > -1 || label.toLowerCase().indexOf("rear") > -1 || label.toLowerCase().indexOf("environment") > -1) {
-                                opt.selected = true;
-                            }
-                            select.appendChild(opt);
-                        });
-                    } else {
-                        select.innerHTML = '<option value="">No cameras detected</option>';
-                    }
-                }).catch(err => {
-                    console.error("Camera scan failed: ", err);
-                    const select = document.getElementById("camera-select");
-                    select.innerHTML = '<option value="">Permission denied / Camera issue</option>';
-                    if (!isSecure) {
-                        document.getElementById('secure-warning').classList.add('active');
-                    }
-                });
-
-
-                // Hide logout, switch, and host-only admin buttons on mobile
-                const logoutBtn = document.getElementById('logout-btn');
-                if (logoutBtn) logoutBtn.style.display = 'none';
-                const switchBtn = document.getElementById('switch-btn');
-                if (switchBtn) switchBtn.style.display = 'none';
-                const switchViewBtn = document.getElementById('switch-view-btn');
-                if (switchViewBtn) switchViewBtn.style.display = 'none';
-                const uploadMasterBtn = document.getElementById('btn-upload-masterfile');
-                if (uploadMasterBtn) uploadMasterBtn.style.display = 'none';
-                const syncBtn = document.getElementById('btn-sync-cloud');
-                if (syncBtn) syncBtn.style.display = 'none';
-                const closeBtn = document.getElementById('btn-close-store');
-                if (closeBtn) closeBtn.style.display = 'none';
-
-                // Load mobile locators searchable list
-                loadMobileLocators();
-
-                // Poll active session status to detect host close/disconnect events
-                setInterval(checkActiveSessionStatus, 5000);
-
-                // Check active session status to determine if we show the Connect Modal
-                const savedName = localStorage.getItem('operator_name');
-                const savedLoc = localStorage.getItem('active_locator');
-
-                if (savedName && savedLoc) {
-                    // Populate hidden main fields
-                    document.getElementById('scanned_by').value = savedName;
-                    document.getElementById('location').value = savedLoc;
-
-                    // Strip Slot for display
-                    let displayLoc = savedLoc;
-                    if (displayLoc.toLowerCase().startsWith('slot ')) {
-                        displayLoc = displayLoc.substring(5);
-                    } else if (displayLoc.toLowerCase().startsWith('slot')) {
-                        displayLoc = displayLoc.substring(4);
-                    }
-
-                    document.getElementById('display-operator').innerText = savedName;
-                    document.getElementById('display-locator').innerText = displayLoc;
-                    document.getElementById('active-session-card').style.display = 'flex';
-                    loadMobileScanLogFromServer(savedLoc);
+                    // Load host locators panel
+                    loadHostLocators();
+                    setInterval(loadHostLocators, 3000);
                 } else {
-                    showConnectModal();
-                }
+                    // On Mobile (Scanner Mode)
+                    document.body.style.overflow = 'auto';
+                    document.getElementById('host-connect-card').style.display = 'none';
+                    document.getElementById('scanner-section').style.display = 'block';
+
+                    if (!isSecure && !navigator.mediaDevices) {
+                        document.getElementById('secure-warning').classList.add('active');
+                        const switchLink = document.getElementById('secure-switch-link');
+                        if (switchLink) {
+                            switchLink.href = window.location.href.replace('http://', 'https://');
+                        }
+                    }
+
+                    // Fetch available cameras
+                    Html5Qrcode.getCameras().then(devices => {
+                        const select = document.getElementById("camera-select");
+                        if (devices && devices.length > 0) {
+                            select.innerHTML = '';
+                            devices.forEach((device, index) => {
+                                const opt = document.createElement("option");
+                                opt.value = device.id;
+                                // Label back camera automatically
+                                const label = device.label || `Camera ${index + 1}`;
+                                opt.text = label;
+                                // Select back camera as default if label indicates it
+                                if (label.toLowerCase().indexOf("back") > -1 || label.toLowerCase().indexOf("rear") > -1 || label.toLowerCase().indexOf("environment") > -1) {
+                                    opt.selected = true;
+                                }
+                                select.appendChild(opt);
+                            });
+                        } else {
+                            select.innerHTML = '<option value="">No cameras detected</option>';
+                        }
+                    }).catch(err => {
+                        console.error("Camera scan failed: ", err);
+                        const select = document.getElementById("camera-select");
+                        select.innerHTML = '<option value="">Permission denied / Camera issue</option>';
+                        if (!isSecure) {
+                            document.getElementById('secure-warning').classList.add('active');
+                        }
+                    });
+
+
+                    // Hide logout, switch, and host-only admin buttons on mobile
+                    const logoutBtn = document.getElementById('logout-btn');
+                    if (logoutBtn) logoutBtn.style.display = 'none';
+                    const switchBtn = document.getElementById('switch-btn');
+                    if (switchBtn) switchBtn.style.display = 'none';
+                    const switchViewBtn = document.getElementById('switch-view-btn');
+                    if (switchViewBtn) switchViewBtn.style.display = 'none';
+                    const uploadMasterBtn = document.getElementById('btn-upload-masterfile');
+                    if (uploadMasterBtn) uploadMasterBtn.style.display = 'none';
+                    const syncBtn = document.getElementById('btn-sync-cloud');
+                    if (syncBtn) syncBtn.style.display = 'none';
+                    const closeBtn = document.getElementById('btn-close-store');
+                    if (closeBtn) closeBtn.style.display = 'none';
+
+                    // Load mobile locators searchable list
+                    loadMobileLocators();
+
+                    // Poll active session status to detect host close/disconnect events
+                    setInterval(checkActiveSessionStatus, 5000);
+
+                    // Check active session status to determine if we show the Connect Modal
+                    const savedName = localStorage.getItem('operator_name');
+                    const savedLoc = localStorage.getItem('active_locator');
+
+                    if (savedName && savedLoc) {
+                        // Populate hidden main fields
+                        document.getElementById('scanned_by').value = savedName;
+                        document.getElementById('location').value = savedLoc;
+
+                        // Strip Slot for display
+                        let displayLoc = savedLoc;
+                        if (displayLoc.toLowerCase().startsWith('slot ')) {
+                            displayLoc = displayLoc.substring(5);
+                        } else if (displayLoc.toLowerCase().startsWith('slot')) {
+                            displayLoc = displayLoc.substring(4);
+                        }
+
+                        document.getElementById('display-operator').innerText = savedName;
+                        document.getElementById('display-locator').innerText = displayLoc;
+                        document.getElementById('active-session-card').style.display = 'flex';
+                        loadMobileScanLogFromServer(savedLoc);
+                    } else {
+                        showConnectModal();
+                    }
                 }
             } catch (e) {
                 console.error("Initialization error:", e);
@@ -1903,7 +1926,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     isScannerRunning = true;
                     document.getElementById('btn-start').disabled = true;
                     document.getElementById('btn-stop').disabled = false;
-                    
+
                     // Initialize zoom and flashlight/torch hardware controls
                     setTimeout(initializeHardwareControls, 500);
                 })
@@ -1937,7 +1960,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             try {
                 const capabilities = html5QrCode.getRunningTrackCapabilities();
                 const settings = html5QrCode.getRunningTrackSettings();
-                
+
                 const controlsDiv = document.getElementById('scanner-hardware-controls');
                 const zoomDiv = document.getElementById('zoom-control-container');
                 const zoomSlider = document.getElementById('scanner-zoom-slider');
@@ -1952,17 +1975,17 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     zoomSupported = true;
                     showControls = true;
                     zoomDiv.style.display = 'flex';
-                    
+
                     const minZoom = capabilities.zoom.min || 1;
                     const maxZoom = capabilities.zoom.max || 5;
                     const currentZoom = settings.zoom || minZoom;
-                    
+
                     zoomSlider.min = minZoom;
                     zoomSlider.max = maxZoom;
                     zoomSlider.value = currentZoom;
                     zoomLabel.innerText = parseFloat(currentZoom).toFixed(1) + 'x';
-                    
-                    zoomSlider.oninput = function() {
+
+                    zoomSlider.oninput = function () {
                         const val = parseFloat(this.value);
                         zoomLabel.innerText = val.toFixed(1) + 'x';
                         html5QrCode.applyVideoConstraints({
@@ -1980,13 +2003,13 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     showControls = true;
                     torchDiv.style.display = 'flex';
                     isTorchOn = settings.torch || false;
-                    
+
                     torchBtn.innerHTML = isTorchOn ? '<span>ON 🔦</span>' : '<span>OFF</span>';
                     torchBtn.style.background = isTorchOn ? 'rgba(218, 54, 51, 0.15)' : 'rgba(255, 255, 255, 0.1)';
                     torchBtn.style.borderColor = isTorchOn ? '#da3633' : 'rgba(255,255,255,0.15)';
                     torchBtn.style.color = isTorchOn ? '#ff7b72' : 'var(--text-white)';
 
-                    torchBtn.onclick = function() {
+                    torchBtn.onclick = function () {
                         isTorchOn = !isTorchOn;
                         html5QrCode.applyVideoConstraints({
                             advanced: [{ torch: isTorchOn }]
@@ -2955,22 +2978,25 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         };
 
                         const now = new Date();
-                        const countDateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        const countDateStr = now.toLocaleDateString('en-US', {                        let headerText = '';
+                        headerText += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
+                        headerText += centerText('Annual Inventory Count') + '\r\n\r\n';
+                        headerText += centerText('*****    Initial Count Sheet   *****') + '\r\n\r\n';
+                        headerText += `Locator No. : ${displayLoc}\r\n`;
+                        headerText += `Count Date. : ${countDateStr}\r\n\r\n`;
 
-                        let text = '';
-                        text += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
-                        text += centerText('Annual Inventory Count') + '\r\n\r\n';
-                        text += centerText('*****    Initial Count Sheet   *****') + '\r\n\r\n';
-                        text += `Locator No. : ${displayLoc}\r\n`;
-                        text += `Count Date. : ${countDateStr}\r\n\r\n`;
-
-                        // Header columns row (97 chars wide layout)
-                        text += padRight('Rec No', 8) + 
-                                padRight('UPC', 15) + 
-                                padRight('SKU', 8) + 
-                                padRight('Description', 52) + 
-                                padRight('Count', 6) + 
-                                'Remarks\r\n\r\n';
+                        let tableHtml = `<table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 13px; background: white; color: black; line-height: 1;">
+                            <thead>
+                                <tr style="line-height: 1.6; border-bottom: 1.5px solid #000;">
+                                    <th style="text-align: left; width: 8ch; font-weight: normal; padding: 0;">Rec No</th>
+                                    <th style="text-align: left; width: 15ch; font-weight: normal; padding: 0;">UPC</th>
+                                    <th style="text-align: left; width: 8ch; font-weight: normal; padding: 0;">SKU</th>
+                                    <th style="text-align: left; width: 52ch; font-weight: normal; padding: 0;">Description</th>
+                                    <th style="text-align: left; width: 6ch; font-weight: normal; padding: 0;">Count</th>
+                                    <th style="text-align: left; font-weight: normal; padding: 0;">Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
 
                         let grandTotal = 0;
                         let infCount = 0;
@@ -2994,16 +3020,17 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 cleanDescr = cleanDescr.substring(0, 52);
                             }
 
-                            // Generate formatted row with vertical-align bottom to guarantee underlines render below text without crossing, with 4px breathing room
-                            text += '<span style="border-bottom: 1px dashed #000; padding-bottom: 4px; display: inline-block; width: 89ch; vertical-align: bottom; box-sizing: border-box; line-height: 1.1;">' +
-                                padRight(recNo, 8) +
-                                padRight(barcode, 15) +
-                                padRight(sku, 8) +
-                                padRight(cleanDescr, 52) +
-                                padRight(qtyStr, 6) +
-                                '</span>' +
-                                '_______\r\n';
+                            tableHtml += `<tr style="line-height: 1.8;">
+                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(recNo, 8)}</td>
+                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 15ch;">${padRight(barcode, 15)}</td>
+                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(sku, 8)}</td>
+                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 52ch;">${padRight(cleanDescr, 52)}</td>
+                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 6ch;">${padRight(qtyStr, 6)}</td>
+                                <td style="padding: 6px 0; vertical-align: bottom;">_______</td>
+                            </tr>`;
                         });
+
+                        tableHtml += `</tbody></table>`;
 
                         // Get unique operators who scanned in this locator
                         const operators = [...new Set(scans.map(scan => scan.scanned_by).filter(Boolean))];
@@ -3016,15 +3043,16 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             return ' '.repeat(padLeft) + str + ' '.repeat(len - str.length - padLeft);
                         };
 
-                        text += '\r\n';
-                        text += padRight(`Number of Records Scanned: ${scans.length}`, 69) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
-                        text += `No. of INF Found : ${infCount}\r\n\r\n`;
+                        let footerText = '';
+                        footerText += '\r\n';
+                        footerText += padRight(`Number of Records Scanned: ${scans.length}`, 69) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
+                        footerText += `No. of INF Found : ${infCount}\r\n\r\n`;
 
-                        text += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
-                        text += '       ____________            ____________               ____________\r\n';
-                        text += '        Scanned  By             Counted By                 Checked By\r\n\r\n\r\n\r\n';
-                        text += '              ____________                    ____________\r\n';
-                        text += '               Team Leader                     Posted By\r\n';
+                        footerText += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
+                        footerText += '       ____________            ____________               ____________\r\n';
+                        footerText += '        Scanned  By             Counted By                 Checked By\r\n\r\n\r\n\r\n';
+                        footerText += '              ____________                    ____________\r\n';
+                        footerText += '               Team Leader                     Posted By\r\n';
 
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
@@ -3048,31 +3076,24 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                     }
                                     body {
                                         font-family: monospace;
-                                        white-space: pre;
-                                        font-size: 13px;
-                                        line-height: 1.55;
                                         background: white;
                                         color: black;
                                         padding-top: ${printMarginTop}mm;
                                         padding-left: ${printMarginLeft}mm;
                                         margin: 0;
                                     }
-                                    pre {
-                                        margin: 0;
-                                        padding: 0;
-                                        font-family: monospace;
-                                        line-height: 1.55;
-                                    }
                                 </style>
                             </head>
                             <body>
-                                <pre>${text}</pre>
+                                <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${headerText}</pre>
+                                ${tableHtml}
+                                <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${footerText}</pre>
                                 <script>
                                     window.onload = function() {
                                         window.print();
                                         window.close();
                                     }
-                                <\/script>
+                                </script>
                             </body>
                             </html>
                         `);
@@ -3159,7 +3180,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
                         // Header columns row
-                        text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Mst Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
+                        text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
                         text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
                         let grandTotal = 0;
@@ -3172,7 +3193,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             const mstQtyVal = item.masterQty;
                             const qtyVal = item.totalQty;
                             const varianceVal = qtyVal - mstQtyVal;
-                            
+
                             const mstQtyStr = mstQtyVal.toFixed(0);
                             const qtyStr = qtyVal.toFixed(0);
                             const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
@@ -3702,10 +3723,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         overlay.classList.add('active');
                         console.log("overlay class active added");
                     }
-                    
+
                     console.log("calling showToast...");
                     showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
-                    
+
                     const fetchUrl = `api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`;
                     console.log("fetching url:", fetchUrl);
                     fetch(fetchUrl)
@@ -3809,38 +3830,38 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cloud_sync_url: cloudUrl, sync_secret_token: secretToken })
             })
-            .then(res => res.json())
-            .then(saveData => {
-                if (saveData.status !== 'success') {
-                    throw new Error(saveData.message || 'Failed to save configuration.');
-                }
-                // Trigger sync execution
-                return fetch('api.php?action=trigger_cloud_sync').then(res => res.json());
-            })
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
+                .then(res => res.json())
+                .then(saveData => {
+                    if (saveData.status !== 'success') {
+                        throw new Error(saveData.message || 'Failed to save configuration.');
+                    }
+                    // Trigger sync execution
+                    return fetch('api.php?action=trigger_cloud_sync').then(res => res.json());
+                })
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
 
-                if (data.status === 'success') {
-                    statusMsg.style.background = 'rgba(46,164,79,0.15)';
-                    statusMsg.style.color = '#2ea44f';
-                    statusMsg.innerText = data.message;
+                    if (data.status === 'success') {
+                        statusMsg.style.background = 'rgba(46,164,79,0.15)';
+                        statusMsg.style.color = '#2ea44f';
+                        statusMsg.innerText = data.message;
 
-                    // Reload dashboard/locators to reflect status
-                    loadHostLocators();
-                } else {
+                        // Reload dashboard/locators to reflect status
+                        loadHostLocators();
+                    } else {
+                        statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                        statusMsg.style.color = '#f85149';
+                        statusMsg.innerText = data.message;
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
                     statusMsg.style.background = 'rgba(248,81,73,0.15)';
                     statusMsg.style.color = '#f85149';
-                    statusMsg.innerText = data.message;
-                }
-            })
-            .catch(err => {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-                statusMsg.style.background = 'rgba(248,81,73,0.15)';
-                statusMsg.style.color = '#f85149';
-                statusMsg.innerText = 'Sync failed: ' + err.message;
-            });
+                    statusMsg.innerText = 'Sync failed: ' + err.message;
+                });
         }
 
         function toggleHostMobileView() {
@@ -3937,7 +3958,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 const img = qrContainer.querySelector('img');
                 const canvas = qrContainer.querySelector('canvas');
                 const isValidImg = (img && img.src && img.src.length > 100 && img.offsetHeight > 10) || (canvas && canvas.offsetHeight > 10);
-                
+
                 if (!isValidImg) {
                     qrContainer.innerHTML = '';
                     const fallbackImg = document.createElement('img');
@@ -3960,25 +3981,38 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
     </script>
 
     <!-- Host Upload Store Masterfile Modal -->
-    <div id="host-masterfile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-        <div class="card" style="width: 100%; max-width: 480px; padding: 1.5rem; margin: 0; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.75rem;">
+    <div id="host-masterfile-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 99999; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
+        <div class="card"
+            style="width: 100%; max-width: 480px; padding: 1.5rem; margin: 0; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.75rem;">
                 <h3 style="margin: 0; font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px;">
                     📁 Upload Store Masterfile
                 </h3>
-                <button onclick="closeHostMasterfileModal()" style="background: none; border: none; color: #8b949e; font-size: 1.4rem; cursor: pointer;">&times;</button>
+                <button onclick="closeHostMasterfileModal()"
+                    style="background: none; border: none; color: #8b949e; font-size: 1.4rem; cursor: pointer;">&times;</button>
             </div>
             <p style="font-size: 0.85rem; color: #8b949e; margin-bottom: 1.25rem; line-height: 1.5;">
-                Import item masterfile for active store <strong><?= htmlspecialchars($_SESSION['store_code'] ?? '') ?></strong> (table: <code><?= strtolower(htmlspecialchars($_SESSION['store_code'] ?? '')) ?>_items</code>). Supports <strong>.txt</strong> / <strong>.csv</strong> format.
+                Import item masterfile for active store
+                <strong><?= htmlspecialchars($_SESSION['store_code'] ?? '') ?></strong> (table:
+                <code><?= strtolower(htmlspecialchars($_SESSION['store_code'] ?? '')) ?>_items</code>). Supports
+                <strong>.txt</strong> / <strong>.csv</strong> format.
             </p>
             <form id="host-masterfile-form" onsubmit="uploadHostMasterfile(event)">
                 <div class="form-group" style="margin-bottom: 1.25rem;">
-                    <label for="host_masterfile_input" style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 0.5rem; font-weight: 500;">Select Masterfile (.txt / .csv / .tsv)</label>
-                    <input type="file" id="host_masterfile_input" class="form-control" accept=".txt,.csv,.tsv" required style="height: 42px; padding: 0.4rem 0.75rem; font-size: 0.85rem; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; width: 100%; box-sizing: border-box;">
+                    <label for="host_masterfile_input"
+                        style="font-size: 0.85rem; color: #8b949e; display: block; margin-bottom: 0.5rem; font-weight: 500;">Select
+                        Masterfile (.txt / .csv / .tsv)</label>
+                    <input type="file" id="host_masterfile_input" class="form-control" accept=".txt,.csv,.tsv" required
+                        style="height: 42px; padding: 0.4rem 0.75rem; font-size: 0.85rem; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; width: 100%; box-sizing: border-box;">
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeHostMasterfileModal()" class="btn btn-secondary" style="width: auto; padding: 6px 14px; font-size: 0.85rem; border-radius: 6px;">Cancel</button>
-                    <button type="submit" id="host-upload-btn" class="btn btn-primary" style="width: auto; padding: 6px 18px; font-size: 0.85rem; background: #2563eb; font-weight: 600; border-radius: 6px;">Upload & Import</button>
+                    <button type="button" onclick="closeHostMasterfileModal()" class="btn btn-secondary"
+                        style="width: auto; padding: 6px 14px; font-size: 0.85rem; border-radius: 6px;">Cancel</button>
+                    <button type="submit" id="host-upload-btn" class="btn btn-primary"
+                        style="width: auto; padding: 6px 18px; font-size: 0.85rem; background: #2563eb; font-weight: 600; border-radius: 6px;">Upload
+                        & Import</button>
                 </div>
             </form>
         </div>
@@ -4026,4 +4060,5 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         <div class="loading-subtext">Syncing locators, sessions, and catalog items. Please keep this tab open.</div>
     </div>
 </body>
+
 </html>
