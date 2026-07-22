@@ -2994,16 +2994,15 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 cleanDescr = cleanDescr.substring(0, 52);
                             }
 
-                            // Generate formatted row with precise spacing
-                            text += padRight(recNo, 8) +
+                            // Generate formatted row with precise spacing and a CSS-dashed bottom line under columns 1-5 (89 chars wide)
+                            text += '<span style="border-bottom: 1px dashed #000; padding-bottom: 2px; display: inline-block; width: 89ch;">' +
+                                padRight(recNo, 8) +
                                 padRight(barcode, 15) +
                                 padRight(sku, 8) +
                                 padRight(cleanDescr, 52) +
                                 padRight(qtyStr, 6) +
+                                '</span>' +
                                 '_______\r\n';
-                            
-                            // Broken line between items from Record No. up to Count (89 chars)
-                            text += '-'.repeat(89) + '\r\n';
                         });
 
                         // Get unique operators who scanned in this locator
