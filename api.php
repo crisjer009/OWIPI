@@ -1812,6 +1812,7 @@ try {
             break;
 
         case 'import_cloud_products':
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
             $secretToken = trim($config['sync_secret_token'] ?? '');
@@ -1819,68 +1820,108 @@ try {
                 throw new Exception("Cloud Sync URL is not configured.");
             }
 
-            $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $targetUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-            $result = curl_exec($ch);
-            $err = curl_error($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-
-            if ($err) {
-                throw new Exception("cURL Error: " . $err);
-            }
-
-            $resData = json_decode($result, true);
-            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
-                $msg = $resData['message'] ?? 'Connection to cloud failed.';
-                throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
-            }
-
-            $products = $resData['products'] ?? [];
-            if (empty($products)) {
-                throw new Exception("No products found in cloud database catalog.");
-            }
-
             $db = new OWI_DB();
 
-            // Truncate local items table
-            $db->execute("TRUNCATE TABLE items");
+            if (!empty($store)) {
+                // Fetch store-specific details/products from cloud
+                $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_store_details&store_code=' . urlencode($store) . '&secret_token=' . urlencode($secretToken);
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $targetUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $result = curl_exec($ch);
+                $err = curl_error($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($err) {
+                    throw new Exception("cURL Error: " . $err);
+                }
+
+                $resData = json_decode($result, true);
+                if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                    $msg = $resData['message'] ?? 'Connection to cloud failed.';
+                    throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
+                }
+
+                $products = $resData['products'] ?? [];
+                if (empty($products)) {
+                    throw new Exception("No products found for store " . strtoupper($store) . " in cloud catalog.");
+                }
+
+                // Ensure store tables exist
+                $db->createStoreTables($store);
+                $targetTbl = "`{$store}_items`";
+            } else {
+                // Fetch all products from cloud master catalog
+                $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $targetUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $result = curl_exec($ch);
+                $err = curl_error($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($err) {
+                    throw new Exception("cURL Error: " . $err);
+                }
+
+                $resData = json_decode($result, true);
+                if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                    $msg = $resData['message'] ?? 'Connection to cloud failed.';
+                    throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
+                }
+
+                $products = $resData['products'] ?? [];
+                if (empty($products)) {
+                    throw new Exception("No products found in cloud database catalog.");
+                }
+
+                $targetTbl = "items";
+            }
+
+            // Truncate target table
+            $db->execute("TRUNCATE TABLE {$targetTbl}");
 
             // Insert in chunks of 500
             $chunkSize = 500;
             $chunks = array_chunk($products, $chunkSize);
 
             foreach ($chunks as $chunk) {
-                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty) VALUES ";
+                $sqlInsert = "INSERT INTO {$targetTbl} (UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty) VALUES ";
                 $placeholders = [];
                 $params = [];
 
                 foreach ($chunk as $p) {
                     $placeholders[] = "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    $params[] = $p['UPC'];
-                    $params[] = $p['SKU'];
-                    $params[] = $p['Descr'];
-                    $params[] = $p['Type'] ?? 'GENERAL';
-                    $params[] = $p['Attr'] ?? null;
-                    $params[] = $p['Size'] ?? null;
-                    $params[] = isset($p['Price']) ? (float) $p['Price'] : 0.00;
-                    $params[] = $p['Aux1'] ?? null;
-                    $params[] = isset($p['Qty']) ? (float) $p['Qty'] : 0.00;
+                    $params[] = $p['UPC'] ?? $p['LOCAL_UPC'] ?? $p['upc'] ?? '';
+                    $params[] = $p['SKU'] ?? $p['ALU'] ?? $p['sku'] ?? '';
+                    $params[] = $p['Descr'] ?? $p['DESCRIPTION1'] ?? $p['descr'] ?? '';
+                    $params[] = $p['Type'] ?? $p['DESCRIPTION2'] ?? $p['type'] ?? 'GENERAL';
+                    $params[] = $p['Attr'] ?? $p['attr'] ?? null;
+                    $params[] = $p['Size'] ?? $p['SIZ'] ?? $p['size'] ?? null;
+                    $params[] = isset($p['Price']) ? (float)$p['Price'] : (isset($p['price']) ? (float)$p['price'] : 0.00);
+                    $params[] = $p['Aux1'] ?? $p['aux1'] ?? null;
+                    $params[] = isset($p['Qty']) ? (float)$p['Qty'] : (isset($p['qty']) ? (float)$p['qty'] : 0.00);
                 }
 
                 $sqlInsert .= implode(', ', $placeholders);
                 $db->execute($sqlInsert, $params);
             }
 
+            $msg = !empty($store)
+                ? "Successfully imported " . count($products) . " products for store " . strtoupper($store) . " from cloud!"
+                : "Successfully imported " . count($products) . " products from cloud masterfile!";
+
             sendResponse([
                 'status' => 'success',
-                'message' => "Successfully imported " . count($products) . " products from cloud masterfile!"
+                'message' => $msg
             ]);
             break;
 

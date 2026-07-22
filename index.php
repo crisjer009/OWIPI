@@ -2111,7 +2111,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
         // Sync Items Masterfile from Cloud
         function syncMasterfileFromCloud() {
-            if (!confirm("Are you sure you want to download and sync the entire Items Masterfile from the cloud? This will overwrite the local product catalog.")) {
+            const targetSelect = document.getElementById('masterfile_target_store');
+            const storeCode = targetSelect ? targetSelect.value : '';
+            const label = storeCode ? `store ${storeCode.toUpperCase()} database` : "entire Items Masterfile";
+
+            if (!confirm(`Are you sure you want to download and sync the catalog for ${label} from the cloud? This will overwrite the local store database catalog.`)) {
                 return;
             }
             
@@ -2119,9 +2123,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
             btn.disabled = true;
             btn.innerText = 'Syncing catalog from cloud...';
             
-            showToast("Fetching masterfile from cloud...", "info");
+            showToast(`Fetching catalog for ${label} from cloud...`, "info");
             
-            fetch('api.php?action=import_cloud_products')
+            fetch(`api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode)}`)
                 .then(res => res.json())
                 .then(data => {
                     btn.disabled = false;
