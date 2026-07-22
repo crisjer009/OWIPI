@@ -148,8 +148,8 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'fetch_cloud_stores', 'import_cloud_store', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store'];
 
@@ -1742,6 +1742,7 @@ try {
 
             $cloudStore = $resData['store'];
             $locators = $resData['locators'];
+            $products = $resData['products'] ?? [];
 
             $db = new OWI_DB();
 
@@ -1771,9 +1772,42 @@ try {
                 }
             }
 
+            // Populate store items table with specific store products from cloud
+            $productsImported = 0;
+            if (!empty($products)) {
+                $db->execute("TRUNCATE TABLE `{$store}_items`");
+
+                $chunkSize = 200;
+                $chunks = array_chunk($products, $chunkSize);
+
+                $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
+                $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
+
+                foreach ($chunks as $chunk) {
+                    $placeholders = [];
+                    $params = [];
+                    foreach ($chunk as $row) {
+                        $placeholders[] = $singleRowPlaceholder;
+                        $params[] = $row['UPC'] ?? $row['LOCAL_UPC'] ?? $row['upc'] ?? '';
+                        $params[] = $row['SKU'] ?? $row['ALU'] ?? $row['sku'] ?? '';
+                        $params[] = $row['Descr'] ?? $row['DESCRIPTION1'] ?? $row['descr'] ?? '';
+                        $params[] = $row['Type'] ?? $row['DESCRIPTION2'] ?? $row['type'] ?? 'GENERAL';
+                        $params[] = $row['Attr'] ?? $row['attr'] ?? null;
+                        $params[] = $row['Size'] ?? $row['SIZ'] ?? $row['size'] ?? null;
+                        $params[] = isset($row['Price']) ? (float)$row['Price'] : (isset($row['price']) ? (float)$row['price'] : 0.00);
+                        $params[] = $row['Aux1'] ?? $row['AUX1'] ?? $row['aux1'] ?? null;
+                        $params[] = isset($row['Qty']) ? (float)$row['Qty'] : (isset($row['qty']) ? (float)$row['qty'] : 0.00);
+                    }
+                    $sqlChunk = "INSERT INTO `{$store}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
+                    $db->execute($sqlChunk, $params);
+                }
+                $productsImported = count($products);
+            }
+
             sendResponse([
                 'status' => 'success',
-                'message' => "Successfully imported store session '" . strtoupper($store) . "' from cloud with " . count($locators) . " locators!"
+                'message' => "Successfully imported store session '" . strtoupper($store) . "' with " . count($locators) . " locators and " . $productsImported . " specific products!"
             ]);
             break;
 
@@ -1870,10 +1904,44 @@ try {
             $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
             $locators = $db->query("SELECT * FROM `{$store}_locators`");
 
+            // Fetch products specific to this store based on stores_id store number
+            $products = [];
+            try {
+                $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($store), $store]);
+                if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                    $strNo = (int) $storeLookup[0]['str_no'];
+                } else {
+                    $numMatch = preg_replace('/[^0-9]/', '', $store);
+                    if ($numMatch !== '') {
+                        $strNo = (int) $numMatch;
+                    } else {
+                        $strNo = null;
+                    }
+                }
+
+                if ($strNo !== null) {
+                    $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, `QTY_STORE_{$strNo}` as Qty FROM items WHERE `QTY_STORE_{$strNo}` > 0");
+                } else {
+                    try {
+                        $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
+                        if (!empty($tableCheck)) {
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
+                        } else {
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items");
+                        }
+                    } catch (Exception $ex) {
+                        $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items");
+                    }
+                }
+            } catch (Exception $e) {
+                $products = [];
+            }
+
             sendResponse([
                 'status' => 'success',
                 'store' => $storeRows[0] ?? null,
-                'locators' => $locators
+                'locators' => $locators,
+                'products' => $products
             ]);
             break;
 
