@@ -2615,24 +2615,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
-        // Confirm and clear all scan logs
-        function confirmClearScans() {
-            if (confirm("Are you sure you want to permanently clear all scan logs from the MySQL countsheet database? This cannot be undone.")) {
-                fetch('api.php?action=clear_scans')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            showToast(data.message, "success");
-                            loadScans();
-                        } else {
-                            showToast(data.message, "error");
-                        }
-                    })
-                    .catch(err => {
-                        showToast("Failed to clear logs: " + err, "error");
-                    });
-            }
-        }
+        // Confirm and clear all scan logs (handled by async confirmClearScans below)
 
         // Export data to CSV
         function exportToCSV() {
@@ -3040,26 +3023,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => showToast("Failed to create user: " + err, "error"));
         }
 
-        // Delete user account
-        function deleteUser(id, username) {
-            if (confirm(`Are you sure you want to permanently delete the user account '${username}'?`)) {
-                fetch('api.php?action=delete_user', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            showToast(data.message, "success");
-                            loadUsers();
-                        } else {
-                            showToast(data.message, "error");
-                        }
-                    })
-                    .catch(err => showToast("Failed to delete user: " + err, "error"));
-            }
-        }
+        // Delete user account (handled by async deleteUser below)
 
         // Catalog Simulator Check
         function runTestScanCheck(event) {
@@ -3127,18 +3091,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             inputEl.focus();
         }
 
-        // Exit Store Session
-        function logoutStore() {
-            if (confirm("Are you sure you want to exit the current store session? This will return you to the Store Selector.")) {
-                fetch('api.php?action=logout_store')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            window.location.reload();
-                        }
-                    });
-            }
-        }
+        // Exit Store Session (handled by async logoutStore below)
     </script>
 </body>
 
