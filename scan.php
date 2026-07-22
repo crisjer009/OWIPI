@@ -3095,7 +3095,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                         window.print();
                                         window.close();
                                     }
-                                </script>
+                                <\/script>
                             </body>
                             </html>
                         `);
