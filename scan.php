@@ -564,103 +564,103 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             }
         }
 
-            /* Custom Premium Toast Notification */
-            .custom-toast {
-                position: fixed;
-                bottom: 24px;
-                right: 24px;
-                padding: 12px 24px;
-                border-radius: 8px;
-                color: #ffffff;
-                font-size: 0.9rem;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-                z-index: 99999;
-                transform: translateY(100px);
-                opacity: 0;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Custom Premium Toast Notification */
+        .custom-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 99999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .custom-toast.active {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .custom-toast.success {
+            background: #10b981;
+            border: 1px solid #059669;
+        }
+
+        .custom-toast.error {
+            background: #ef4444;
+            border: 1px solid #dc2626;
+        }
+
+        .custom-toast.info {
+            background: #3b82f6;
+            border: 1px solid #2563eb;
+        }
+
+        /* Custom Premium Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(16, 185, 129, 0.1);
+            border-top: 4px solid var(--success-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
             }
 
-            .custom-toast.active {
-                transform: translateY(0);
-                opacity: 1;
+            100% {
+                transform: rotate(360deg);
             }
+        }
 
-            .custom-toast.success {
-                background: #10b981;
-                border: 1px solid #059669;
-            }
+        .loading-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.2px;
+        }
 
-            .custom-toast.error {
-                background: #ef4444;
-                border: 1px solid #dc2626;
-            }
-
-            .custom-toast.info {
-                background: #3b82f6;
-                border: 1px solid #2563eb;
-            }
-
-            /* Custom Premium Loading Overlay */
-            .loading-overlay {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(13, 17, 23, 0.85);
-                backdrop-filter: blur(8px);
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                z-index: 999999;
-                opacity: 0;
-                pointer-events: none;
-                transition: opacity 0.3s ease;
-            }
-
-            .loading-overlay.active {
-                opacity: 1;
-                pointer-events: auto;
-            }
-
-            .spinner {
-                width: 50px;
-                height: 50px;
-                border: 4px solid rgba(16, 185, 129, 0.1);
-                border-top: 4px solid var(--success-color);
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-                margin-bottom: 1.5rem;
-            }
-
-            @keyframes spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-
-            .loading-text {
-                color: #ffffff;
-                font-size: 1.1rem;
-                font-weight: 600;
-                font-family: 'Outfit', sans-serif;
-                letter-spacing: -0.2px;
-            }
-
-            .loading-subtext {
-                color: var(--text-secondary);
-                font-size: 0.85rem;
-                margin-top: 0.5rem;
-            }
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 
@@ -3022,13 +3022,13 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 cleanDescr = cleanDescr.substring(0, 52);
                             }
 
-                            tableHtml += `<tr style="line-height: 1.8;">
-                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(recNo, 8)}</td>
-                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 15ch;">${padRight(barcode, 15)}</td>
-                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(sku, 8)}</td>
-                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 52ch;">${padRight(cleanDescr, 52)}</td>
-                                <td style="padding: 6px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 6ch;">${padRight(qtyStr, 6)}</td>
-                                <td style="padding: 6px 0; vertical-align: bottom;">_______</td>
+                            tableHtml += `<tr style="line-height: 1.25;">
+                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(recNo, 8)}</td>
+                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 15ch;">${padRight(barcode, 15)}</td>
+                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(sku, 8)}</td>
+                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 52ch;">${padRight(cleanDescr, 52)}</td>
+                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 6ch;">${padRight(qtyStr, 6)}</td>
+                                <td style="padding: 2px 0; vertical-align: bottom;">_______</td>
                             </tr>`;
                         });
 
@@ -3471,7 +3471,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                         font-family: monospace;
                                         white-space: pre;
                                         font-size: 13px;
-                                        line-height: 1.1;
+                                        line-height: 0.25;
                                         background: white;
                                         color: black;
                                         padding-top: ${printMarginTop}mm;
@@ -3482,7 +3482,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                         margin: 0;
                                         padding: 0;
                                         font-family: monospace;
-                                        line-height: 1.1;
+                                        line-height: 0.25;
                                     }
                                 </style>
                             </head>
