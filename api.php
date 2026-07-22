@@ -1601,7 +1601,14 @@ try {
                 WHERE synced = 0
             ");
 
-            if (empty($locators) && empty($scans)) {
+            // Fetch items catalog
+            $products = [];
+            $checkItemsTbl = $db->query("SHOW TABLES LIKE ?", ["{$store}_items"]);
+            if (!empty($checkItemsTbl)) {
+                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
+            }
+
+            if (empty($locators) && empty($scans) && empty($products)) {
                 sendResponse([
                     'status' => 'success',
                     'message' => 'Everything is already synchronized with the cloud.'
@@ -1615,7 +1622,8 @@ try {
                 'store_code' => $_SESSION['store_code'],
                 'store_details' => $storeDetails,
                 'locators' => $locators,
-                'scans' => $scans
+                'scans' => $scans,
+                'products' => $products
             ];
 
             // Clean Cloud Sync URL (strip api.php if user included it in settings)
@@ -2239,13 +2247,48 @@ function handleReceiveSync()
             }
         }
 
-        logAudit('RECEIVE_SYNC', "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators and " . count($scans) . " scan records.", strtoupper($storeCode));
+        // Sync items catalog for the store to the cloud
+        $products = $input['products'] ?? [];
+        if (!empty($products)) {
+            $db->execute("TRUNCATE TABLE `{$storeCode}_items`");
+
+            $chunkSize = 200;
+            $chunks = array_chunk($products, $chunkSize);
+
+            $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
+            $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+            $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
+
+            foreach ($chunks as $chunk) {
+                $placeholders = [];
+                $params = [];
+                foreach ($chunk as $row) {
+                    $placeholders[] = $singleRowPlaceholder;
+                    $params[] = $row['UPC'];
+                    $params[] = $row['SKU'];
+                    $params[] = $row['Descr'] ?? '';
+                    $params[] = $row['Type'] ?? '';
+                    $params[] = $row['Attr'] ?? '';
+                    $params[] = $row['Size'] ?? '';
+                    $params[] = $row['Price'] ?? 0.00;
+                    $params[] = $row['Aux1'] ?? '';
+                    $params[] = $row['Qty'] ?? 0;
+                }
+                if (!empty($placeholders)) {
+                    $sql = "INSERT INTO `{$storeCode}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
+                    $db->execute($sql, $params);
+                }
+            }
+        }
+
+        logAudit('RECEIVE_SYNC', "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, and " . count($products) . " catalog items.", strtoupper($storeCode));
 
         sendResponse([
             'status' => 'success',
             'message' => 'Sync payload processed successfully.',
             'synced_locators' => count($locators),
-            'synced_scans' => count($scans)
+            'synced_scans' => count($scans),
+            'synced_products' => count($products)
         ]);
 
     } catch (Exception $e) {
