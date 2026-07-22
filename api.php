@@ -2175,11 +2175,41 @@ try {
             }
 
             foreach ($payload['scans'] ?? [] as $scan) {
-                $checkScan = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE SlotNo = ? AND UPC = ?", [$scan['location'], $scan['barcode']]);
+                $recNo = isset($scan['id']) ? (int) $scan['id'] : 0;
+                $slotNo = $scan['location'];
+                $upc = $scan['barcode'];
+                $sku = $scan['sku'] ?? '';
+                $descr = $scan['product_name'] ?? '';
+                $qty = (float) $scan['original_qty'];
+                $editedQty = isset($scan['edited_qty']) ? (float) $scan['edited_qty'] : null;
+                $posted = (int) ($scan['posted'] ?? 0);
+                $added = (int) ($scan['added'] ?? 0);
+                $edited = (int) ($scan['edited'] ?? 0);
+                $scannedBy = !empty($scan['scanned_by']) ? $scan['scanned_by'] : 'Handheld';
+                $countDate = $scan['scanned_at'] ?? date('Y-m-d H:i:s');
+                $variance = (float) ($scan['variance'] ?? 0.00);
+
+                // Match existing record by RecNo OR by SlotNo + UPC + CountDate
+                $checkScan = [];
+                if ($recNo > 0) {
+                    $checkScan = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE RecNo = ?", [$recNo]);
+                }
                 if (empty($checkScan)) {
+                    $checkScan = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE SlotNo = ? AND UPC = ? AND CountDate = ?", [$slotNo, $upc, $countDate]);
+                }
+
+                if (!empty($checkScan)) {
+                    $targetRecNo = $checkScan[0]['RecNo'];
+                    $db->execute(
+                        "UPDATE `{$storeCode}_countsheet` 
+                         SET SlotNo = ?, CountDate = ?, UPC = ?, SKU = ?, Descr = ?, Qty = ?, EditedQty = ?, Posted = ?, Added = ?, Edited = ?, ScannedBy = ?, Variance = ?, synced = 1
+                         WHERE RecNo = ?",
+                        [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance, $targetRecNo]
+                    );
+                } else {
                     $db->execute(
                         "INSERT INTO `{$storeCode}_countsheet` (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-                        [$scan['location'], $scan['scanned_at'], $scan['barcode'], $scan['sku'], $scan['product_name'], $scan['original_qty'], $scan['edited_qty'] ?? 0, $scan['posted'] ?? 0, $scan['added'] ?? 0, $scan['edited'] ?? 0, $scan['scanned_by'], $scan['variance'] ?? 0.00]
+                        [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
                     );
                 }
             }
@@ -2513,7 +2543,7 @@ function handleReceiveSync()
 
         $scans = $input['scans'] ?? [];
         foreach ($scans as $scan) {
-            $recNo = (int) $scan['id'];
+            $recNo = (int) ($scan['id'] ?? 0);
             $barcode = $scan['barcode'];
             $sku = $scan['sku'] ?? '';
             $desc = $scan['product_name'] ?? '';
@@ -2522,25 +2552,33 @@ function handleReceiveSync()
             $posted = (int) ($scan['posted'] ?? 0);
             $added = (int) ($scan['added'] ?? 0);
             $edited = (int) ($scan['edited'] ?? 0);
-            $scannedBy = $scan['scanned_by'] ?? 'Handheld';
+            $scannedBy = !empty($scan['scanned_by']) ? $scan['scanned_by'] : 'Handheld';
             $countDate = $scan['scanned_at'] ?? date('Y-m-d H:i:s');
             $location = $scan['location'];
             $variance = isset($scan['variance']) ? (float) $scan['variance'] : 0.00;
 
-            $check = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE RecNo = ?", [$recNo]);
+            $check = [];
+            if ($recNo > 0) {
+                $check = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE RecNo = ?", [$recNo]);
+            }
+            if (empty($check)) {
+                $check = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE SlotNo = ? AND UPC = ? AND CountDate = ?", [$location, $barcode, $countDate]);
+            }
+
             if (!empty($check)) {
+                $targetRecNo = $check[0]['RecNo'];
                 $db->execute(
                     "UPDATE `{$storeCode}_countsheet` 
                      SET SlotNo = ?, CountDate = ?, UPC = ?, SKU = ?, Descr = ?, Qty = ?, EditedQty = ?, Posted = ?, Added = ?, Edited = ?, ScannedBy = ?, synced = 1, Variance = ?
                      WHERE RecNo = ?",
-                    [$location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance, $recNo]
+                    [$location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance, $targetRecNo]
                 );
             } else {
                 $db->execute(
                     "INSERT INTO `{$storeCode}_countsheet` 
-                     (RecNo, SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
-                    [$recNo, $location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
+                     (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                    [$location, $countDate, $barcode, $sku, $desc, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
                 );
             }
         }
