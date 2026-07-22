@@ -1219,35 +1219,34 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                         <?php
                         $detectedLocalIPs = getServerLocalIPs();
-                        if (count($detectedLocalIPs) > 1):
-                            ?>
-                            <div style="margin-top: 8px; width: 100%; max-width: 210px; text-align: left;">
-                                <label for="qr-ip-select"
-                                    style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 2px; text-align: center;">Host
-                                    Network IP (Local or Wi-Fi):</label>
-                                <select id="qr-ip-select"
-                                    style="font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
-                                    onchange="updateQRCodeIP(this.value)">
-                                    <?php foreach ($detectedLocalIPs as $ipItem):
-                                        $adapterName = $ipItem['adapter'];
-                                        $lower = strtolower($adapterName);
-                                        $typeLabel = 'LOCAL';
-                                        if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
-                                            $typeLabel = 'WIFI';
-                                        }
-                                        $displayName = $adapterName;
-                                        $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
-                                        $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
-                                        $displayName = str_ireplace('adapter ', '', $displayName);
-                                        ?>
-                                        <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>:
-                                            <?= htmlspecialchars($displayName) ?>)<?= $ipItem['has_gateway'] ? ' 🌐' : '' ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        <?php endif; ?>
+                        ?>
+                        <div style="margin-top: 8px; width: 100%; max-width: 210px; text-align: left;">
+                            <label for="qr-ip-select"
+                                style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 2px; text-align: center;">Host
+                                Network IP (Local or Wi-Fi):</label>
+                            <select id="qr-ip-select"
+                                style="font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
+                                onchange="handleQrIpChange(this)">
+                                <?php foreach ($detectedLocalIPs as $ipItem):
+                                    $adapterName = $ipItem['adapter'];
+                                    $lower = strtolower($adapterName);
+                                    $typeLabel = 'LOCAL';
+                                    if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
+                                        $typeLabel = 'WIFI';
+                                    }
+                                    $displayName = $adapterName;
+                                    $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
+                                    $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
+                                    $displayName = str_ireplace('adapter ', '', $displayName);
+                                    ?>
+                                    <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>:
+                                        <?= htmlspecialchars($displayName) ?>)<?= $ipItem['has_gateway'] ? ' 🌐' : '' ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <option value="custom">✏️ Enter Custom IP Address...</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -3974,11 +3973,33 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             }, 100);
         }
 
+        let activeQRCodeUrl = "<?= $scanUrl ?>";
+
         function updateQRCodeIP(newIp) {
-            const currentUrl = "<?= $scanUrl ?>";
-            const oldIp = "<?= $localIP ?>";
-            const newUrl = currentUrl.replace(oldIp, newIp);
+            const defaultIp = "<?= $localIP ?>";
+            const baseUrl = activeQRCodeUrl || "<?= $scanUrl ?>";
+            const newUrl = baseUrl.replace(/\/\/([^:\/]+)/, '//' + newIp);
+            activeQRCodeUrl = newUrl;
             renderHostQRCode(newUrl);
+        }
+
+        function handleQrIpChange(selectEl) {
+            if (selectEl.value === 'custom') {
+                const customIp = prompt("Enter Custom IP Address or Hostname (e.g. 192.168.43.1):", "<?= $localIP ?>");
+                if (customIp && customIp.trim()) {
+                    const cleanIp = customIp.trim();
+                    const newOpt = document.createElement('option');
+                    newOpt.value = cleanIp;
+                    newOpt.innerText = `${cleanIp} (Custom IP) 🌐`;
+                    newOpt.selected = true;
+                    selectEl.insertBefore(newOpt, selectEl.lastElementChild);
+                    updateQRCodeIP(cleanIp);
+                } else {
+                    selectEl.value = "<?= $localIP ?>";
+                }
+            } else {
+                updateQRCodeIP(selectEl.value);
+            }
         }
     </script>
 
