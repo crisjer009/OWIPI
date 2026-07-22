@@ -1541,17 +1541,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     </button>
                                 <?php endif; ?>
                             </div>
+                        </div>
                     <?php endforeach; ?>
-                    
-                    <!-- Cloud Download Store Trigger Card in Host Dashboard Grid -->
-                    <div class="card" onclick="openCloudStoreDownloader()"
-                        onmouseover="this.style.background='rgba(16, 185, 129, 0.08)'; this.style.borderColor='var(--success-color)';"
-                        onmouseout="this.style.background='rgba(16, 185, 129, 0.03)'; this.style.borderColor='rgba(16, 185, 129, 0.3)';"
-                        style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem; min-height: 180px; border: 2px dashed rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.03); cursor: pointer; border-radius: 8px; box-sizing: border-box; text-align: center; transition: all 0.2s ease; margin: 0;">
-                        <div style="font-size: 2.25rem; color: var(--success-color); margin-bottom: 0.5rem; line-height: 1;">☁️</div>
-                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: var(--success-color); margin: 0;">Download Store</h3>
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; font-weight: 500;">Import store database from cloud</div>
-                    </div>
                 </div>
             <?php endif; ?>
         </div>

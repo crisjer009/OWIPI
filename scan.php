@@ -839,6 +839,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background:#1f6feb; border-color:#388bfd; color:white; font-weight:600;">
                 ☁️ Sync to Cloud
             </button>
+            <button id="btn-download-store" class="btn" onclick="downloadStoreFromCloud()"
+                style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.15); border: 1px solid var(--success-color); color: var(--success-color); font-weight:600;">
+                ☁️ Download Store
+            </button>
             <button id="btn-close-store" class="btn btn-danger" onclick="closeStoreSession()"
                 style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#da3633; border-color:#da3633; color:white; font-weight:600;">
                 🔒 Close Store
@@ -3420,6 +3424,43 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             const statusMsg = document.getElementById('sync-status-msg');
             statusMsg.style.display = 'none';
             statusMsg.innerText = '';
+        }
+
+        // Sync active store details, locators, and product catalog from the cloud
+        function downloadStoreFromCloud() {
+            if (!confirm(`Are you sure you want to download and sync the store session, locators, and product catalog for store ${storeCode.toUpperCase()} from the cloud?`)) {
+                return;
+            }
+            
+            const btn = document.getElementById('btn-download-store');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Downloading...';
+            }
+            
+            showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
+            
+            fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerText = '☁️ Download Store';
+                    }
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast("Error: " + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerText = '☁️ Download Store';
+                    }
+                    showToast("Download failed: " + err, 'error');
+                });
         }
 
         function saveSyncConfig(event) {
