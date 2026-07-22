@@ -3531,50 +3531,52 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
         // Sync active store details, locators, and product catalog from the cloud
         function downloadStoreFromCloud() {
-            if (!confirm(`Are you sure you want to download and sync the store session, locators, and product catalog for store ${storeCode.toUpperCase()} from the cloud?`)) {
-                return;
-            }
-            
-            const btn = document.getElementById('btn-download-store');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerText = 'Downloading...';
-            }
+            customConfirm(
+                `Are you sure you want to download and sync the store session, locators, and product catalog for store ${storeCode.toUpperCase()} from the cloud?`,
+                function () {
+                    const btn = document.getElementById('btn-download-store');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.innerText = 'Downloading...';
+                    }
 
-            const overlay = document.getElementById('download-loading-overlay');
-            if (overlay) {
-                overlay.classList.add('active');
-            }
-            
-            showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
-            
-            fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerText = '☁️ Download Store Masterfile';
-                    }
+                    const overlay = document.getElementById('download-loading-overlay');
                     if (overlay) {
-                        overlay.classList.remove('active');
+                        overlay.classList.add('active');
                     }
-                    if (data.status === 'success') {
-                        showToast(data.message, 'success');
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showToast("Error: " + data.message, 'error');
-                    }
-                })
-                .catch(err => {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerText = '☁️ Download Store Masterfile';
-                    }
-                    if (overlay) {
-                        overlay.classList.remove('active');
-                    }
-                    showToast("Download failed: " + err, 'error');
-                });
+                    
+                    showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
+                    
+                    fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerText = '☁️ Download Store Masterfile';
+                            }
+                            if (overlay) {
+                                overlay.classList.remove('active');
+                            }
+                            if (data.status === 'success') {
+                                showToast(data.message, 'success');
+                                setTimeout(() => window.location.reload(), 2000);
+                            } else {
+                                showToast("Error: " + data.message, 'error');
+                            }
+                        })
+                        .catch(err => {
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerText = '☁️ Download Store Masterfile';
+                            }
+                            if (overlay) {
+                                overlay.classList.remove('active');
+                            }
+                            showToast("Download failed: " + err, 'error');
+                        });
+                },
+                "Confirm Store Download"
+            );
         }
 
         function saveSyncConfig(event) {
