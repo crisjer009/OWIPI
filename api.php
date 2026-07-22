@@ -657,7 +657,7 @@ try {
                        c.Variance as variance,
                        COALESCE(i.Qty, 0.00) as master_qty
                 FROM `{$store}_countsheet` c
-                LEFT JOIN items i ON i.UPC = c.UPC
+                LEFT JOIN `{$store}_items` i ON i.UPC = c.UPC
             ";
 
             if ($location !== '') {
