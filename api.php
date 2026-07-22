@@ -49,11 +49,11 @@ function sendResponse($data)
 }
 
 // Helper function to write to master audit_logs table
-function logAudit($action, $details, $storeCode = null)
+function logAudit($action, $details, $storeCode = null, $overrideUsername = null)
 {
     try {
         $db = new OWI_DB();
-        $username = $_SESSION['username'] ?? 'UNKNOWN';
+        $username = !empty($overrideUsername) ? $overrideUsername : ($_SESSION['username'] ?? 'UNKNOWN');
         $store = $storeCode ? $storeCode : ($_SESSION['store_code'] ?? null);
 
         $sql = "INSERT INTO audit_logs (store_code, username, action, details) VALUES (?, ?, ?, ?)";
@@ -1611,7 +1611,10 @@ try {
             // Fetch users table
             $usersList = $db->query("SELECT username, password, role FROM users");
 
-            if (empty($locators) && empty($scans) && empty($products) && empty($usersList)) {
+            // Fetch local audit logs
+            $auditLogs = $db->query("SELECT store_code, username, action, details, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM audit_logs WHERE store_code = ? OR store_code IS NULL", [$_SESSION['store_code']]);
+
+            if (empty($locators) && empty($scans) && empty($products) && empty($usersList) && empty($auditLogs)) {
                 sendResponse([
                     'status' => 'success',
                     'message' => 'Everything is already synchronized with the cloud.'
@@ -1623,11 +1626,13 @@ try {
             $payload = [
                 'secret_token' => $secretToken,
                 'store_code' => $_SESSION['store_code'],
+                'synced_by' => $_SESSION['username'] ?? 'UNKNOWN',
                 'store_details' => $storeDetails,
                 'locators' => $locators,
                 'scans' => $scans,
                 'products' => $products,
-                'users' => $usersList
+                'users' => $usersList,
+                'audit_logs' => $auditLogs
             ];
 
             // Clean Cloud Sync URL (strip api.php if user included it in settings)
@@ -2310,7 +2315,37 @@ function handleReceiveSync()
             }
         }
 
-        logAudit('RECEIVE_SYNC', "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, " . count($products) . " catalog items, and " . count($usersList) . " user accounts.", strtoupper($storeCode));
+        // Sync local audit logs to the cloud audit_logs table
+        $incomingAuditLogs = $input['audit_logs'] ?? [];
+        if (!empty($incomingAuditLogs)) {
+            foreach ($incomingAuditLogs as $log) {
+                $logStore = $log['store_code'] ?? $storeCode;
+                $logUser = $log['username'] ?? 'UNKNOWN';
+                $logAction = $log['action'] ?? '';
+                $logDetails = $log['details'] ?? '';
+                $logCreatedAt = $log['created_at'] ?? date('Y-m-d H:i:s');
+
+                // Prevent duplicate audit entries on cloud
+                $checkLog = $db->query(
+                    "SELECT id FROM audit_logs WHERE (store_code = ? OR (store_code IS NULL AND ? IS NULL)) AND username = ? AND action = ? AND details = ? AND created_at = ?",
+                    [$logStore, $logStore, $logUser, $logAction, $logDetails, $logCreatedAt]
+                );
+                if (empty($checkLog)) {
+                    $db->execute(
+                        "INSERT INTO audit_logs (store_code, username, action, details, created_at) VALUES (?, ?, ?, ?, ?)",
+                        [$logStore, $logUser, $logAction, $logDetails, $logCreatedAt]
+                    );
+                }
+            }
+        }
+
+        $syncedBy = $input['synced_by'] ?? ($_SESSION['username'] ?? 'SYSTEM');
+        logAudit(
+            'RECEIVE_SYNC', 
+            "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, " . count($products) . " catalog items, " . count($usersList) . " user accounts, and " . count($incomingAuditLogs) . " audit logs.", 
+            strtoupper($storeCode),
+            $syncedBy
+        );
 
         sendResponse([
             'status' => 'success',
@@ -2318,7 +2353,8 @@ function handleReceiveSync()
             'synced_locators' => count($locators),
             'synced_scans' => count($scans),
             'synced_products' => count($products),
-            'synced_users' => count($usersList)
+            'synced_users' => count($usersList),
+            'synced_audit_logs' => count($incomingAuditLogs)
         ]);
 
     } catch (Exception $e) {
