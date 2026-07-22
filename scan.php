@@ -562,6 +562,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 text-align: center;
                 gap: 10px;
             }
+        }
 
             /* Custom Premium Toast Notification */
             .custom-toast {
