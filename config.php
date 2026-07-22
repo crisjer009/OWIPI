@@ -657,7 +657,43 @@ class OWI_DB {
         return true;
     }
 
-    // Import SQL file into the database with high-performance streaming and transaction batching
+    private function executeChunkedQuery($query) {
+        $len = strlen($query);
+        if ($len > 250000 && preg_match('/^(INSERT\s+INTO\s+`?[^`\s]+`?\s*(?:\([^)]+\)\s*)?VALUES\s+)([\s\S]+);$/i', trim($query), $matches)) {
+            $prefix = $matches[1];
+            $valuesStr = trim($matches[2]);
+
+            // Split by tuple boundary "), ("
+            $rawTuples = preg_split('/\),\s*\(/', $valuesStr);
+            $total = count($rawTuples);
+            if ($total > 1) {
+                $chunkSize = 200;
+                for ($i = 0; $i < $total; $i += $chunkSize) {
+                    $chunk = array_slice($rawTuples, $i, $chunkSize);
+                    $chunkTuples = [];
+                    foreach ($chunk as $idx => $t) {
+                        $clean = $t;
+                        if ($i === 0 && $idx === 0) {
+                            // First element of first chunk: already has leading '('
+                            $clean = $clean . ')';
+                        } else if ($i + $chunkSize >= $total && $idx === count($chunk) - 1) {
+                            // Last element of last chunk: already has trailing ')'
+                            $clean = '(' . $clean;
+                        } else {
+                            $clean = '(' . $clean . ')';
+                        }
+                        $chunkTuples[] = $clean;
+                    }
+                    $chunkSql = $prefix . implode(', ', $chunkTuples) . ';';
+                    $this->pdo->exec($chunkSql);
+                }
+                return;
+            }
+        }
+        $this->pdo->exec($query);
+    }
+
+    // Import SQL file into the database with automatic connection recovery and streaming
     public function importSqlFile($filePath) {
         $this->connect(true);
         if (!file_exists($filePath)) {
@@ -667,20 +703,28 @@ class OWI_DB {
         @set_time_limit(600);
         @ini_set('memory_limit', '512M');
 
+        // Increase session max_allowed_packet and disable foreign key checks
+        try {
+            $this->pdo->exec("SET SESSION max_allowed_packet = 67108864;");
+        } catch (Exception $e) {}
+
+        try {
+            $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+        } catch (Exception $e) {}
+
         $handle = fopen($filePath, 'r');
         if (!$handle) {
             throw new Exception("Unable to open SQL backup file.");
         }
 
         $query = '';
-        if (!$this->pdo->inTransaction()) {
-            $this->pdo->beginTransaction();
-        }
-        $count = 0;
-
         while (($line = fgets($handle)) !== false) {
             $trimmed = trim($line);
-            if ($trimmed === '' || strpos($trimmed, '--') === 0 || strpos($trimmed, '/*') === 0 || strpos($trimmed, '/*!') === 0) {
+
+            if ($trimmed === '' || strpos($trimmed, '--') === 0) {
+                continue;
+            }
+            if (strpos($trimmed, '/*') === 0 && strpos($trimmed, '*/') !== false) {
                 continue;
             }
 
@@ -688,24 +732,24 @@ class OWI_DB {
 
             if (substr($trimmed, -1) === ';') {
                 try {
-                    $this->pdo->exec($query);
+                    $this->executeChunkedQuery($query);
                 } catch (PDOException $e) {
-                    // Ignore non-critical errors (e.g., DROP TABLE IF EXISTS on non-existent tables)
-                }
-                $query = '';
-                $count++;
-                if ($count % 500 === 0) {
-                    if ($this->pdo->inTransaction()) {
-                        $this->pdo->commit();
-                        $this->pdo->beginTransaction();
+                    $errMsg = $e->getMessage();
+                    if (strpos($errMsg, '2006') !== false || strpos($errMsg, 'gone away') !== false || strpos($errMsg, 'header') !== false) {
+                        $this->connect(true);
+                        try {
+                            $this->executeChunkedQuery($query);
+                        } catch (Exception $ex) {}
                     }
                 }
+                $query = '';
             }
         }
 
-        if ($this->pdo->inTransaction()) {
-            $this->pdo->commit();
-        }
         fclose($handle);
+
+        try {
+            $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+        } catch (Exception $e) {}
     }
 }
