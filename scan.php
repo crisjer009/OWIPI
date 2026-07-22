@@ -2978,7 +2978,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         };
 
                         const now = new Date();
-                        const countDateStr = now.toLocaleDateString('en-US', {                        let headerText = '';
+                        const countDateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                        let headerText = '';
                         headerText += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
                         headerText += centerText('Annual Inventory Count') + '\r\n\r\n';
                         headerText += centerText('*****    Initial Count Sheet   *****') + '\r\n\r\n';
