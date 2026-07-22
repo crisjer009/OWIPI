@@ -3050,7 +3050,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                         font-family: monospace;
                                         white-space: pre;
                                         font-size: 13px;
-                                        line-height: 1.1;
+                                        line-height: 1.55;
                                         background: white;
                                         color: black;
                                         padding-top: ${printMarginTop}mm;
@@ -3061,7 +3061,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                         margin: 0;
                                         padding: 0;
                                         font-family: monospace;
-                                        line-height: 1.1;
+                                        line-height: 1.55;
                                     }
                                 </style>
                             </head>
