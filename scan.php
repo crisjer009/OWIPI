@@ -2968,7 +2968,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         text += padRight('Rec No', 8) + 
                                 padRight('UPC', 15) + 
                                 padRight('SKU', 8) + 
-                                padRight('Description', 38) + 
+                                padRight('Description', 37) + 
                                 padRight('Count', 6) + 
                                 'Remarks\r\n\r\n';
 
@@ -2988,17 +2988,17 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 infCount++;
                             }
 
-                            // Truncate description if it exceeds column space to prevent pushing other columns out of alignment
+                            // Truncate description at 34 chars to guarantee at least 3 trailing spaces before the Count column (which is padded to 37)
                             let cleanDescr = descr;
-                            if (cleanDescr.length > 38) {
-                                cleanDescr = cleanDescr.substring(0, 38);
+                            if (cleanDescr.length > 34) {
+                                cleanDescr = cleanDescr.substring(0, 34);
                             }
 
                             // Generate formatted row with precise spacing
                             text += padRight(recNo, 8) +
                                 padRight(barcode, 15) +
                                 padRight(sku, 8) +
-                                padRight(cleanDescr, 38) +
+                                padRight(cleanDescr, 37) +
                                 padRight(qtyStr, 6) +
                                 '_______\r\n';
                         });
@@ -3015,7 +3015,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         };
 
                         text += '\r\n';
-                        text += padRight(`Number of Records Scanned: ${scans.length}`, 55) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
+                        text += padRight(`Number of Records Scanned: ${scans.length}`, 54) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
                         text += `No. of INF Found : ${infCount}\r\n\r\n`;
 
                         text += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
