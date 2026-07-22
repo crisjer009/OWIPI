@@ -570,6 +570,31 @@ class OWI_DB {
         try {
             $this->execute($sqlStoreItemsTable);
             $this->ensureItemsColumnsExist("{$cleanStore}_items");
+
+            // Populate store-specific items table from central items catalog if empty
+            $itemCountCheck = $this->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
+            $itemCount = !empty($itemCountCheck) ? (int) $itemCountCheck[0]['count'] : 0;
+            if ($itemCount == 0) {
+                $storeLookup = $this->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
+                $strNo = null;
+                if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                    $strNo = (int) $storeLookup[0]['str_no'];
+                } else {
+                    $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                    if ($numMatch !== '') {
+                        $strNo = (int) $numMatch;
+                    }
+                }
+
+                $qtyCol = $strNo !== null ? "`QTY_STORE_{$strNo}`" : "`Qty`";
+
+                $sqlPopulate = "
+                    INSERT INTO `{$cleanStore}_items` (UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty)
+                    SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, COALESCE({$qtyCol}, 0.00)
+                    FROM items
+                ";
+                $this->execute($sqlPopulate);
+            }
         } catch (Exception $e) {}
         
         // Seed default Slots if table is empty
@@ -610,39 +635,20 @@ class OWI_DB {
             if (!isset($existingCols['aux1'])) {
                 $colsToAdd[] = "`Aux1` VARCHAR(100) NULL";
             }
-            for ($i = 1; $i <= 125; $i++) {
-                $colName = "QTY_STORE_{$i}";
-                if (!isset($existingCols[strtolower($colName)])) {
-                    $colsToAdd[] = "`{$colName}` DECIMAL(10,2) NOT NULL DEFAULT 0.00";
+
+            // Only add 125 store quantity columns to central 'items' table
+            if (strtolower($tableName) === 'items') {
+                for ($i = 1; $i <= 125; $i++) {
+                    $colName = "QTY_STORE_{$i}";
+                    if (!isset($existingCols[strtolower($colName)])) {
+                        $colsToAdd[] = "`{$colName}` DECIMAL(10,2) NOT NULL DEFAULT 0.00";
+                    }
                 }
             }
 
             if (!empty($colsToAdd)) {
                 $alterSql = "ALTER TABLE `{$tableName}` ADD COLUMN " . implode(', ADD COLUMN ', $colsToAdd);
                 $this->execute($alterSql);
-            }
-
-            // Sync Qty <-> QTY_STORE_{strNo} if table is store-specific
-            $cleanStore = str_ireplace('_items', '', $tableName);
-            if (!empty($cleanStore) && $cleanStore !== 'items') {
-                try {
-                    $storeLookup = $this->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
-                    $strNo = null;
-                    if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
-                        $strNo = (int) $storeLookup[0]['str_no'];
-                    } else {
-                        $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
-                        if ($numMatch !== '') {
-                            $strNo = (int) $numMatch;
-                        }
-                    }
-
-                    if ($strNo !== null) {
-                        $storeCol = "QTY_STORE_{$strNo}";
-                        $this->execute("UPDATE `{$tableName}` SET `{$storeCol}` = `Qty` WHERE (`{$storeCol}` = 0 OR `{$storeCol}` IS NULL) AND `Qty` > 0");
-                        $this->execute("UPDATE `{$tableName}` SET `Qty` = `{$storeCol}` WHERE (`Qty` = 0 OR `Qty` IS NULL) AND `{$storeCol}` > 0");
-                    }
-                } catch (Exception $exSync) {}
             }
         } catch (Exception $e) {
             error_log("Failed to ensure columns for table {$tableName}: " . $e->getMessage());
