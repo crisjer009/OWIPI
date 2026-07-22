@@ -1616,12 +1616,20 @@ try {
             $checkHttp = curl_getinfo($chCheck, CURLINFO_HTTP_CODE);
             curl_close($chCheck);
 
+            $currentRole = $_SESSION['role'] ?? 'user';
+            $isAdminOrSystem = in_array(strtolower($currentRole), ['admin', 'system_admin', 'sys_admin']);
+
             if ($checkHttp === 200 && $checkResult) {
                 $cloudInfo = json_decode($checkResult, true);
                 if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['store'])) {
+                    // Store session already exists on cloud!
+                    if (!$isAdminOrSystem) {
+                        throw new Exception("Synchronization Blocked: Store session '{$_SESSION['store_code']}' already exists on the Cloud Server. Overwriting or syncing an existing cloud store session requires System Admin or Admin approval.");
+                    }
+
                     $cloudScansCount = count($cloudInfo['scans'] ?? []);
                     if ($cloudScansCount > $totalScans && !isset($_GET['force'])) {
-                        throw new Exception("Synchronization blocked: Cloud server already has a higher scan record count ({$cloudScansCount} scans on cloud vs {$totalScans} scans locally). Please download/import the store session from cloud to avoid overwriting cloud data.");
+                        throw new Exception("Synchronization Blocked: Cloud server has a higher scan record count ({$cloudScansCount} scans on cloud vs {$totalScans} scans locally). Overwriting requires force approval by a System Admin or Admin.");
                     }
                 }
             }
@@ -2282,6 +2290,31 @@ function handleReceiveSync()
         }
 
         $db = new OWI_DB();
+
+        $syncedBy = $input['synced_by'] ?? 'UNKNOWN';
+
+        // Check if store already exists on cloud and enforce Admin authorization for overwriting
+        $existingStore = $db->query("SELECT id FROM stores WHERE LOWER(store_code) = ?", [$storeCode]);
+        if (!empty($existingStore)) {
+            // Check if user has System Admin or Admin role on cloud
+            $userCheck = $db->query("SELECT role FROM users WHERE LOWER(username) = LOWER(?)", [$syncedBy]);
+            $userRole = !empty($userCheck) ? strtolower($userCheck[0]['role'] ?? 'user') : 'user';
+            $isAuthorizedAdmin = in_array($userRole, ['admin', 'system_admin', 'sys_admin']);
+
+            if (!$isAuthorizedAdmin) {
+                try {
+                    $cloudScansCheck = $db->query("SELECT COUNT(*) as count FROM `{$storeCode}_countsheet`");
+                    $cloudScansCount = (int) ($cloudScansCheck[0]['count'] ?? 0);
+                    if ($cloudScansCount > 0) {
+                        throw new Exception("Cloud Overwrite Blocked: Store session '" . strtoupper($storeCode) . "' already exists on the cloud with {$cloudScansCount} scan records. User '{$syncedBy}' is not a System Admin or Admin. Overwriting existing cloud store data requires System Admin or Admin approval.");
+                    }
+                } catch (Exception $exCloud) {
+                    if (strpos($exCloud->getMessage(), 'Cloud Overwrite Blocked') !== false) {
+                        throw $exCloud;
+                    }
+                }
+            }
+        }
 
         $storeDetails = $input['store_details'] ?? [];
         $createdBy = $storeDetails['created_by'] ?? null;
