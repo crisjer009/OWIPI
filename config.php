@@ -621,6 +621,29 @@ class OWI_DB {
                 $alterSql = "ALTER TABLE `{$tableName}` ADD COLUMN " . implode(', ADD COLUMN ', $colsToAdd);
                 $this->execute($alterSql);
             }
+
+            // Sync Qty <-> QTY_STORE_{strNo} if table is store-specific
+            $cleanStore = str_ireplace('_items', '', $tableName);
+            if (!empty($cleanStore) && $cleanStore !== 'items') {
+                try {
+                    $storeLookup = $this->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
+                    $strNo = null;
+                    if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                        $strNo = (int) $storeLookup[0]['str_no'];
+                    } else {
+                        $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                        if ($numMatch !== '') {
+                            $strNo = (int) $numMatch;
+                        }
+                    }
+
+                    if ($strNo !== null) {
+                        $storeCol = "QTY_STORE_{$strNo}";
+                        $this->execute("UPDATE `{$tableName}` SET `{$storeCol}` = `Qty` WHERE (`{$storeCol}` = 0 OR `{$storeCol}` IS NULL) AND `Qty` > 0");
+                        $this->execute("UPDATE `{$tableName}` SET `Qty` = `{$storeCol}` WHERE (`Qty` = 0 OR `Qty` IS NULL) AND `{$storeCol}` > 0");
+                    }
+                } catch (Exception $exSync) {}
+            }
         } catch (Exception $e) {
             error_log("Failed to ensure columns for table {$tableName}: " . $e->getMessage());
         }
