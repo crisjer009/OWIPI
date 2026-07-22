@@ -3590,10 +3590,11 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 overlay.classList.remove('active');
                             }
                             if (data.status === 'success') {
-                                showToast(data.message, 'success');
-                                setTimeout(() => window.location.reload(), 2000);
+                                customAlert(data.message, () => {
+                                    window.location.reload();
+                                }, "Download Success");
                             } else {
-                                showToast("Error: " + data.message, 'error');
+                                customAlert("Error: " + data.message, null, "Download Failed");
                             }
                         })
                         .catch(err => {
@@ -3605,7 +3606,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             if (overlay) {
                                 overlay.classList.remove('active');
                             }
-                            showToast("Download failed: " + err, 'error');
+                            customAlert("Download failed: " + err, null, "Download Failed");
                         });
                 },
                 "Confirm Store Download"
