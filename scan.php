@@ -821,7 +821,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 </form>
             </div>
         </div>
-        <script>
+        \x3Cscript\x3E
             let storeInputMode = 'create';
 
             window.addEventListener('DOMContentLoaded', () => {
@@ -3252,7 +3252,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${headerText}</pre>
                                 ${tableHtml}
                                 <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${footerText}</pre>
-                                <script>
+                                \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
                                         window.close();
@@ -3429,7 +3429,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             </head>
                             <body>
                                 <pre>${text}</pre>
-                                <script>
+                                \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
                                         window.close();
@@ -3650,7 +3650,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             </head>
                             <body>
                                 <pre>${text}</pre>
-                                <script>
+                                \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
                                         window.close();
