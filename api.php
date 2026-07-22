@@ -1609,7 +1609,7 @@ try {
             }
 
             // Fetch users table
-            $usersList = $db->query("SELECT username, password, full_name, role, store_code FROM users");
+            $usersList = $db->query("SELECT username, password, role FROM users");
 
             if (empty($locators) && empty($scans) && empty($products) && empty($usersList)) {
                 sendResponse([
@@ -2293,20 +2293,18 @@ function handleReceiveSync()
                 if (empty($uName)) continue;
 
                 $uPass = $u['password'] ?? '';
-                $uFull = $u['full_name'] ?? '';
-                $uRole = $u['role'] ?? 'OPERATOR';
-                $uStore = $u['store_code'] ?? null;
+                $uRole = $u['role'] ?? 'user';
 
                 $checkUser = $db->query("SELECT id FROM users WHERE LOWER(username) = LOWER(?)", [$uName]);
                 if (!empty($checkUser)) {
                     $db->execute(
-                        "UPDATE users SET password = ?, full_name = ?, role = ?, store_code = ? WHERE LOWER(username) = LOWER(?)",
-                        [$uPass, $uFull, $uRole, $uStore, $uName]
+                        "UPDATE users SET password = ?, role = ? WHERE LOWER(username) = LOWER(?)",
+                        [$uPass, $uRole, $uName]
                     );
                 } else {
                     $db->execute(
-                        "INSERT INTO users (username, password, full_name, role, store_code) VALUES (?, ?, ?, ?, ?)",
-                        [$uName, $uPass, $uFull, $uRole, $uStore]
+                        "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                        [$uName, $uPass, $uRole]
                     );
                 }
             }
