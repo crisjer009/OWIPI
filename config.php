@@ -693,8 +693,26 @@ class OWI_DB {
         $this->pdo->exec($query);
     }
 
+    // Drop all existing tables in the database to guarantee clean restoration
+    public function dropAllTables() {
+        $this->connect(true);
+        try {
+            $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 0;");
+            $tables = $this->query("SHOW TABLES");
+            foreach ($tables as $table) {
+                $tableName = current($table);
+                if ($tableName) {
+                    $this->pdo->exec("DROP TABLE IF EXISTS `{$tableName}`");
+                }
+            }
+            $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 1;");
+        } catch (Exception $e) {
+            error_log("Failed to drop existing tables: " . $e->getMessage());
+        }
+    }
+
     // Import SQL file into the database with automatic connection recovery and streaming
-    public function importSqlFile($filePath) {
+    public function importSqlFile($filePath, $dropExisting = true) {
         $this->connect(true);
         if (!file_exists($filePath)) {
             throw new Exception("SQL file not found at: {$filePath}");
@@ -702,6 +720,10 @@ class OWI_DB {
 
         @set_time_limit(600);
         @ini_set('memory_limit', '512M');
+
+        if ($dropExisting) {
+            $this->dropAllTables();
+        }
 
         // Increase session max_allowed_packet and disable foreign key checks
         try {
