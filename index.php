@@ -1450,11 +1450,17 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
             <?php endif; ?>
 
-            <header <?= $isSysAdmin ? 'style="margin-top: 2rem;"' : '' ?>>
+            <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h1>Store Inventory Progress</h1>
                     <div class="header-desc">Real-time locator completion metrics across all your active store
                         databases.</div>
+                </div>
+                <div>
+                    <button onclick="openCloudStoreDownloader()" class="btn btn-secondary" 
+                        style="width: auto; padding: 0.6rem 1.25rem; font-size: 0.85rem; font-weight: 600; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); display: flex; align-items: center; gap: 0.4rem; cursor: pointer; border-radius: 6px;">
+                        ☁️ Download Store from Cloud
+                    </button>
                 </div>
             </header>
 
@@ -1539,18 +1545,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <span style="font-size: 0.8rem; color: var(--text-secondary);">
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <button onclick="downloadStoreItemsFromCloud('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
-                                        style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
-                                        ☁️ Download Items
+                                <?php if ($isSysAdmin): ?>
+                                    <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
+                                        style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
+                                        Delete
                                     </button>
-                                    <?php if ($isSysAdmin): ?>
-                                        <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
-                                            style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
-                                            Delete
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
