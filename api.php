@@ -117,7 +117,7 @@ function findCatalogProduct($barcode, $storeCode = null)
 
     foreach ($tablesToSearch as $tableName) {
         // 1. Direct exact match check (fastest)
-        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
+        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
         if (!empty($rows)) {
             return $rows;
         }
@@ -130,7 +130,7 @@ function findCatalogProduct($barcode, $storeCode = null)
             }
             $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
 
-            $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM `{$tableName}` 
+            $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$tableName}` 
                     WHERE UPC = ? OR SKU = ? 
                        OR UPC = ? OR SKU = ?
                        OR TRIM(LEADING '0' FROM UPC) = ? 
@@ -896,7 +896,7 @@ try {
                 }
             }
 
-            $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type, Qty as master_qty FROM `{$tableName}` ORDER BY Descr ASC";
+            $sqlProducts = "SELECT UPC as barcode, SKU as sku, Descr as product_name, Type as type, Attr as attr, Size as size, Price as price, Aux1 as aux1, Qty as master_qty FROM `{$tableName}` ORDER BY Descr ASC";
             $products = $db->query($sqlProducts);
             sendResponse([
                 'status' => 'success',
@@ -910,6 +910,10 @@ try {
             $name = isset($input['product_name']) ? trim($input['product_name']) : '';
             $sku = isset($input['sku']) ? trim($input['sku']) : '';
             $type = isset($input['type']) ? trim($input['type']) : 'GENERAL';
+            $attr = isset($input['attr']) ? trim($input['attr']) : null;
+            $size = isset($input['size']) ? trim($input['size']) : null;
+            $price = isset($input['price']) ? (float)$input['price'] : 0.00;
+            $aux1 = isset($input['aux1']) ? trim($input['aux1']) : null;
 
             if (empty($barcode) || empty($name)) {
                 throw new Exception("UPC (Barcode) and Product Description are required.");
@@ -923,14 +927,18 @@ try {
 
             // Insert/Update global items catalog
             $sqlInsert = "
-                INSERT INTO items (UPC, SKU, Descr, Type) 
-                VALUES (?, ?, ?, ?)
+                INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Price, Aux1) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE 
                     SKU = VALUES(SKU), 
                     Descr = VALUES(Descr), 
-                    Type = VALUES(Type)
+                    Type = VALUES(Type),
+                    Attr = VALUES(Attr),
+                    Size = VALUES(Size),
+                    Price = VALUES(Price),
+                    Aux1 = VALUES(Aux1)
             ";
-            $db->execute($sqlInsert, [$barcode, $sku, $name, $type]);
+            $db->execute($sqlInsert, [$barcode, $sku, $name, $type, $attr, $size, $price, $aux1]);
 
             logAudit($actionName, "UPC: {$barcode}, SKU: {$sku}, Description: {$name}, Type: {$type}");
 
@@ -984,24 +992,45 @@ try {
             $recordsToInsert = [];
             $headerChecked = false;
 
-            // Map header indexes
+            // Header column mapping
             $aluIdx = -1;
             $upcIdx = -1;
-            $qtyIdx = -1;
             $desc1Idx = -1;
             $desc2Idx = -1;
             $attrIdx = -1;
             $sizeIdx = -1;
+            $priceIdx = -1;
+            $aux1Idx = -1;
+            $qtyIdx = -1;
+            $storeQtyIdxs = [];
 
             $storeInput = $_POST['store_code'] ?? ($_GET['store_code'] ?? '');
             $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
 
-            // System Admin General Masterfile targets central 'items' table only.
-            // Store Host upload targets '[store]_items' table only.
+            // Determine target store number if active store is provided
+            $targetStoreNo = null;
+            if (!empty($cleanStore)) {
+                try {
+                    $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [$cleanStore, $cleanStore]);
+                    if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                        $targetStoreNo = (int) $storeLookup[0]['str_no'];
+                    }
+                } catch (Exception $e) {}
+
+                if (!$targetStoreNo) {
+                    $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                    if ($numMatch !== '') {
+                        $targetStoreNo = (int) $numMatch;
+                    }
+                }
+            }
+
+            // Central catalog or store items table
             if (!empty($cleanStore)) {
                 $db->createStoreTables($cleanStore);
                 $targetTables = ["{$cleanStore}_items"];
             } else {
+                $db->ensureItemsColumnsExist('items');
                 $targetTables = ['items'];
             }
 
@@ -1020,7 +1049,7 @@ try {
                         continue;
                     }
 
-                    // Auto-detect delimiter: tab (\t) or comma (,) and parse quoted/unquoted fields natively
+                    // Auto-detect delimiter: tab (\t) or comma (,)
                     $delimiter = (strpos($line, "\t") !== false) ? "\t" : ",";
                     $cols = str_getcsv($line, $delimiter);
                     if (empty($cols)) {
@@ -1028,52 +1057,63 @@ try {
                     }
 
                     if (!$headerChecked) {
-                        // Header check: find indexes flexibly for any format (including multi-store general masterfile: ALU, LOCAL_UPC, DESCRIPTION1, DESCRIPTION2, ATTR, SIZ, PRICE, AUX1, QTY_STORE_1...125)
                         $storeCodeClean = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($cleanStore));
                         $storeCodeNum = preg_replace('/[^0-9]/', '', $storeCodeClean);
 
                         foreach ($cols as $idx => $headerName) {
-                            $cleanHeader = strtolower(trim(str_replace(['_', ' '], '', $headerName)));
-                            $cleanHeader = trim($cleanHeader, '"\'');
+                            $rawHeader = trim(str_replace(['_', ' '], '', strtolower($headerName)));
+                            $rawHeader = trim($rawHeader, '"\'');
 
-                            if ($cleanHeader === 'alu' || $cleanHeader === 'sku') {
+                            if ($rawHeader === 'alu' || $rawHeader === 'sku') {
                                 $aluIdx = $idx;
-                            } elseif ($upcIdx === -1 && (strpos($cleanHeader, 'upc') !== false || strpos($cleanHeader, 'barcode') !== false)) {
+                            } elseif ($upcIdx === -1 && ($rawHeader === 'localupc' || strpos($rawHeader, 'upc') !== false || strpos($rawHeader, 'barcode') !== false)) {
                                 $upcIdx = $idx;
-                            } elseif ($cleanHeader === 'description1' || $cleanHeader === 'desc1' || $cleanHeader === 'description') {
+                            } elseif ($rawHeader === 'description1' || $rawHeader === 'desc1' || $rawHeader === 'description') {
                                 $desc1Idx = $idx;
-                            } elseif ($cleanHeader === 'description2' || $cleanHeader === 'desc2') {
+                            } elseif ($rawHeader === 'description2' || $rawHeader === 'desc2') {
                                 $desc2Idx = $idx;
-                            } elseif ($cleanHeader === 'attr' || $cleanHeader === 'attribute') {
+                            } elseif ($rawHeader === 'attr' || $rawHeader === 'attribute') {
                                 $attrIdx = $idx;
-                            } elseif ($cleanHeader === 'siz' || $cleanHeader === 'size') {
+                            } elseif ($rawHeader === 'siz' || $rawHeader === 'size') {
                                 $sizeIdx = $idx;
-                            } elseif (strpos($cleanHeader, 'qty') !== false || strpos($cleanHeader, 'quantity') !== false || strpos($cleanHeader, 'stroh') !== false) {
-                                // 1. Check for store-specific quantity match (e.g. qty_store_lbs, qtystore1, qtystore5)
-                                if (!empty($storeCodeClean) && strpos($cleanHeader, $storeCodeClean) !== false) {
+                            } elseif ($rawHeader === 'price') {
+                                $priceIdx = $idx;
+                            } elseif ($rawHeader === 'aux1') {
+                                $aux1Idx = $idx;
+                            } elseif (preg_match('/^qtystore(\d+)$/i', $rawHeader, $m)) {
+                                $sNum = (int) $m[1];
+                                if ($sNum >= 1 && $sNum <= 125) {
+                                    $storeQtyIdxs[$sNum] = $idx;
+                                }
+                            } elseif (strpos($rawHeader, 'qty') !== false || strpos($rawHeader, 'quantity') !== false || strpos($rawHeader, 'stroh') !== false) {
+                                if (!empty($storeCodeClean) && strpos($rawHeader, $storeCodeClean) !== false) {
                                     $qtyIdx = $idx;
-                                } elseif (!empty($storeCodeNum) && strpos($cleanHeader, 'store' . $storeCodeNum) !== false) {
+                                } elseif (!empty($storeCodeNum) && strpos($rawHeader, 'store' . $storeCodeNum) !== false) {
                                     $qtyIdx = $idx;
                                 } elseif ($qtyIdx === -1) {
-                                    // Default fallback to first quantity column found (e.g. QTY_STORE_1 or QTY)
                                     $qtyIdx = $idx;
                                 }
                             }
                         }
 
-                        // If headers were missing or not matched, default to standard layout
+                        // Default positional indexes matching standard layout (ALU, LOCAL_UPC, DESCRIPTION1, DESCRIPTION2, ATTR, SIZ, PRICE, AUX1)
                         if ($aluIdx === -1) $aluIdx = 0;
-                        if ($desc1Idx === -1) $desc1Idx = 2;
-                        if ($desc2Idx === -1) $desc2Idx = 3;
+                        if ($upcIdx === -1 && isset($cols[1])) $upcIdx = 1;
+                        if ($desc1Idx === -1 && isset($cols[2])) $desc1Idx = 2;
+                        if ($desc2Idx === -1 && isset($cols[3])) $desc2Idx = 3;
+                        if ($attrIdx === -1 && isset($cols[4])) $attrIdx = 4;
+                        if ($sizeIdx === -1 && isset($cols[5])) $sizeIdx = 5;
+                        if ($priceIdx === -1 && isset($cols[6])) $priceIdx = 6;
+                        if ($aux1Idx === -1 && isset($cols[7])) $aux1Idx = 7;
 
                         $headerChecked = true;
 
-                        // Check if this line is the header line itself, and skip importing it
+                        // Check if this row is header row and skip
                         $isHeaderRow = false;
                         foreach ($cols as $colVal) {
                             $cleanColVal = trim(strtolower($colVal));
                             $cleanColVal = trim($cleanColVal, '"\'');
-                            if ($cleanColVal === 'alu' || $cleanColVal === 'local_upc' || $cleanColVal === 'description1') {
+                            if ($cleanColVal === 'alu' || $cleanColVal === 'local_upc' || $cleanColVal === 'description1' || $cleanColVal === 'qty_store_1') {
                                 $isHeaderRow = true;
                                 break;
                             }
@@ -1085,62 +1125,103 @@ try {
 
                     $alu = isset($cols[$aluIdx]) ? trim($cols[$aluIdx], "\t\n\r\0\x0B\"'") : '';
                     $localUpc = ($upcIdx !== -1 && isset($cols[$upcIdx])) ? trim($cols[$upcIdx], "\t\n\r\0\x0B\"'") : '';
-                    $qty = ($qtyIdx !== -1 && isset($cols[$qtyIdx])) ? (float) trim($cols[$qtyIdx], "\t\n\r\0\x0B\"'") : 0.00;
-                    $desc1 = isset($cols[$desc1Idx]) ? trim($cols[$desc1Idx], "\t\n\r\0\x0B\"'") : '';
-                    $desc2 = isset($cols[$desc2Idx]) ? trim($cols[$desc2Idx], "\t\n\r\0\x0B\"'") : '';
+                    $desc1 = ($desc1Idx !== -1 && isset($cols[$desc1Idx])) ? trim($cols[$desc1Idx], "\t\n\r\0\x0B\"'") : '';
+                    $desc2 = ($desc2Idx !== -1 && isset($cols[$desc2Idx])) ? trim($cols[$desc2Idx], "\t\n\r\0\x0B\"'") : '';
                     $attr = ($attrIdx !== -1 && isset($cols[$attrIdx])) ? trim($cols[$attrIdx], "\t\n\r\0\x0B\"'") : '';
                     $size = ($sizeIdx !== -1 && isset($cols[$sizeIdx])) ? trim($cols[$sizeIdx], "\t\n\r\0\x0B\"'") : '';
+                    $priceStr = ($priceIdx !== -1 && isset($cols[$priceIdx])) ? trim($cols[$priceIdx], "\t\n\r\0\x0B\"'") : '0';
+                    $price = is_numeric($priceStr) ? (float) $priceStr : 0.00;
+                    $aux1 = ($aux1Idx !== -1 && isset($cols[$aux1Idx])) ? trim($cols[$aux1Idx], "\t\n\r\0\x0B\"'") : '';
 
-                    if ($alu === '') {
+                    if ($alu === '' && $localUpc === '') {
                         continue;
                     }
 
-                    // Pad ALU to 13 digits to form UPC fallback
                     $fallbackUpc = str_pad($alu, 13, '0', STR_PAD_LEFT);
-                    // Use LOCAL_UPC if present, otherwise fallback to padded ALU
                     $upc = (!empty($localUpc)) ? $localUpc : $fallbackUpc;
-                    $sku = $alu;
+                    $sku = ($alu !== '') ? $alu : $upc;
                     $descr = $desc1;
                     $type = $desc2;
 
-                    $recordsToInsert[] = [
+                    // Store quantities 1..125
+                    $qtyStoreRow = [];
+                    $totalQtySum = 0.00;
+                    for ($s = 1; $s <= 125; $s++) {
+                        $colI = $storeQtyIdxs[$s] ?? (7 + $s);
+                        $qVal = (isset($cols[$colI]) && is_numeric(trim($cols[$colI], "\t\n\r\0\x0B\"'"))) ? (float) trim($cols[$colI], "\t\n\r\0\x0B\"'") : 0.00;
+                        $qtyStoreRow[$s] = $qVal;
+                        $totalQtySum += $qVal;
+                    }
+
+                    // Active store Qty
+                    if ($targetStoreNo !== null && isset($qtyStoreRow[$targetStoreNo])) {
+                        $qty = $qtyStoreRow[$targetStoreNo];
+                    } elseif ($qtyIdx !== -1 && isset($cols[$qtyIdx]) && is_numeric(trim($cols[$qtyIdx], "\t\n\r\0\x0B\"'"))) {
+                        $qty = (float) trim($cols[$qtyIdx], "\t\n\r\0\x0B\"'");
+                    } else {
+                        $qty = $totalQtySum;
+                    }
+
+                    $rowRecord = [
                         'upc' => $upc,
                         'sku' => $sku,
                         'descr' => $descr,
                         'type' => $type,
                         'attr' => $attr,
                         'size' => $size,
-                        'qty' => $qty
+                        'price' => $price,
+                        'aux1' => $aux1,
+                        'qty' => $qty,
+                        'store_qtys' => $qtyStoreRow
                     ];
+
+                    $recordsToInsert[] = $rowRecord;
                 }
 
-                // Batch insert records in 500-item chunks for extreme speed
-                $chunkSize = 500;
+                // Batch insert records in 200-item chunks
+                $chunkSize = 200;
                 $chunks = array_chunk($recordsToInsert, $chunkSize);
+
+                // Insert columns list
+                $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
+                for ($s = 1; $s <= 125; $s++) {
+                    $colNames[] = "QTY_STORE_{$s}";
+                }
+                $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+
+                $updateAssignments = [];
+                foreach (['SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'] as $f) {
+                    $updateAssignments[] = "`{$f}` = VALUES(`{$f}`)";
+                }
+                for ($s = 1; $s <= 125; $s++) {
+                    $updateAssignments[] = "`QTY_STORE_{$s}` = VALUES(`QTY_STORE_{$s}`)";
+                }
+                $updateSql = implode(', ', $updateAssignments);
+
+                $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
+
                 foreach ($chunks as $chunk) {
                     foreach ($targetTables as $targetTbl) {
                         $placeholders = [];
                         $params = [];
                         foreach ($chunk as $row) {
-                            $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
+                            $placeholders[] = $singleRowPlaceholder;
                             $params[] = $row['upc'];
                             $params[] = $row['sku'];
                             $params[] = $row['descr'];
                             $params[] = $row['type'];
                             $params[] = $row['attr'];
                             $params[] = $row['size'];
+                            $params[] = $row['price'];
+                            $params[] = $row['aux1'];
                             $params[] = $row['qty'];
+                            for ($s = 1; $s <= 125; $s++) {
+                                $params[] = $row['store_qtys'][$s] ?? 0.00;
+                            }
                         }
                         $sqlChunk = "
-                            INSERT INTO `{$targetTbl}` (UPC, SKU, Descr, Type, Attr, Size, Qty) 
+                            INSERT INTO `{$targetTbl}` ({$colSql}) 
                             VALUES " . implode(', ', $placeholders) . "
-                            ON DUPLICATE KEY UPDATE 
-                                SKU = VALUES(SKU), 
-                                Descr = VALUES(Descr), 
-                                Type = VALUES(Type),
-                                Attr = VALUES(Attr),
-                                Size = VALUES(Size),
-                                Qty = VALUES(Qty)
                         ";
                         $db->execute($sqlChunk, $params);
                     }
@@ -1155,7 +1236,7 @@ try {
 
             sendResponse([
                 'status' => 'success',
-                'message' => "Successfully imported $importedCount products into store catalog!"
+                'message' => "Successfully imported {$importedCount} products into store catalog!"
             ]);
             break;
 
@@ -1742,18 +1823,20 @@ try {
             $chunks = array_chunk($products, $chunkSize);
 
             foreach ($chunks as $chunk) {
-                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Qty) VALUES ";
+                $sqlInsert = "INSERT INTO items (UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty) VALUES ";
                 $placeholders = [];
                 $params = [];
 
                 foreach ($chunk as $p) {
-                    $placeholders[] = "(?, ?, ?, ?, ?, ?, ?)";
+                    $placeholders[] = "(?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $params[] = $p['UPC'];
                     $params[] = $p['SKU'];
                     $params[] = $p['Descr'];
                     $params[] = $p['Type'] ?? 'GENERAL';
                     $params[] = $p['Attr'] ?? null;
                     $params[] = $p['Size'] ?? null;
+                    $params[] = isset($p['Price']) ? (float) $p['Price'] : 0.00;
+                    $params[] = $p['Aux1'] ?? null;
                     $params[] = isset($p['Qty']) ? (float) $p['Qty'] : 0.00;
                 }
 
@@ -1779,19 +1862,17 @@ try {
 
         case 'get_cloud_store_details':
             verifySyncToken();
-            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
+            $store = $_GET['store_code'] ?? '';
             if (empty($store)) {
-                throw new Exception("Invalid store code.");
+                throw new Exception("Store code required.");
             }
             $db = new OWI_DB();
             $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
-            if (empty($storeRows)) {
-                throw new Exception("Store does not exist on cloud.");
-            }
             $locators = $db->query("SELECT * FROM `{$store}_locators`");
+
             sendResponse([
                 'status' => 'success',
-                'store' => $storeRows[0],
+                'store' => $storeRows[0] ?? null,
                 'locators' => $locators
             ]);
             break;
@@ -1799,7 +1880,7 @@ try {
         case 'get_cloud_products':
             verifySyncToken();
             $db = new OWI_DB();
-            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Qty FROM items");
+            $products = $db->query("SELECT * FROM items");
             sendResponse([
                 'status' => 'success',
                 'products' => $products

@@ -347,16 +347,21 @@ class OWI_DB {
         // Create global items table
         $sqlGlobalItemsTable = "
             CREATE TABLE IF NOT EXISTS items (
-                UPC VARCHAR(100) NOT NULL PRIMARY KEY,
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                UPC VARCHAR(100) NOT NULL,
                 SKU VARCHAR(100) NOT NULL,
                 Descr VARCHAR(255) NOT NULL,
                 Type VARCHAR(100) NULL,
                 Attr VARCHAR(100) NULL,
                 Size VARCHAR(100) NULL,
-                Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00
+                Price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                Aux1 VARCHAR(100) NULL,
+                Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                INDEX idx_upc (UPC),
+                INDEX idx_sku (SKU)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
- 
+
         // Create global audit logs table
         $sqlAuditLogsTable = "
             CREATE TABLE IF NOT EXISTS audit_logs (
@@ -381,16 +386,8 @@ class OWI_DB {
             // Column already exists
         }
  
-        // Dynamically add Attr, Size, and Qty columns to items table for existing installations
-        try {
-            $this->execute("ALTER TABLE items ADD COLUMN Attr VARCHAR(100) NULL AFTER Type");
-        } catch (Exception $ex) {}
-        try {
-            $this->execute("ALTER TABLE items ADD COLUMN Size VARCHAR(100) NULL AFTER Attr");
-        } catch (Exception $ex) {}
-        try {
-            $this->execute("ALTER TABLE items ADD COLUMN Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER Size");
-        } catch (Exception $ex) {}
+        // Ensure all masterfile columns (Price, Aux1, QTY_STORE_1..125) exist on items table
+        $this->ensureItemsColumnsExist('items');
 
         // Seed default global items
         $sqlSeedCheck = "SELECT COUNT(*) as count FROM items";
@@ -535,17 +532,23 @@ class OWI_DB {
         // Construct the store-specific items table
         $sqlStoreItemsTable = "
             CREATE TABLE IF NOT EXISTS `{$cleanStore}_items` (
-                UPC VARCHAR(100) NOT NULL PRIMARY KEY,
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                UPC VARCHAR(100) NOT NULL,
                 SKU VARCHAR(100) NOT NULL,
                 Descr VARCHAR(255) NOT NULL,
                 Type VARCHAR(100) NULL,
                 Attr VARCHAR(100) NULL,
                 Size VARCHAR(100) NULL,
-                Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00
+                Price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                Aux1 VARCHAR(100) NULL,
+                Qty DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                INDEX idx_upc (UPC),
+                INDEX idx_sku (SKU)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ";
         try {
             $this->execute($sqlStoreItemsTable);
+            $this->ensureItemsColumnsExist("{$cleanStore}_items");
         } catch (Exception $e) {}
         
         // Seed default Slots if table is empty
@@ -559,6 +562,47 @@ class OWI_DB {
         }
         
         return true;
+    }
+
+    // Ensure all 125 store quantity columns + Price + Aux1 exist on an items table, and allow duplicate UPCs
+    public function ensureItemsColumnsExist($tableName = 'items') {
+        try {
+            // Check if UPC is still PRIMARY KEY, convert to id AUTO_INCREMENT PRIMARY KEY to allow duplicate UPCs
+            $pkCheck = $this->query("SHOW KEYS FROM `{$tableName}` WHERE Key_name = 'PRIMARY'");
+            if (!empty($pkCheck) && strtolower($pkCheck[0]['Column_name']) === 'upc') {
+                try {
+                    $this->execute("ALTER TABLE `{$tableName}` DROP PRIMARY KEY, ADD COLUMN `id` INT AUTO_INCREMENT PRIMARY KEY FIRST, ADD INDEX `idx_upc` (`UPC`)");
+                } catch (Exception $exPk) {}
+            }
+
+            $colsResult = $this->query("SHOW COLUMNS FROM `{$tableName}`");
+            if (empty($colsResult)) return;
+            $existingCols = [];
+            foreach ($colsResult as $c) {
+                $existingCols[strtolower($c['Field'])] = true;
+            }
+
+            $colsToAdd = [];
+            if (!isset($existingCols['price'])) {
+                $colsToAdd[] = "`Price` DECIMAL(10,2) NOT NULL DEFAULT 0.00";
+            }
+            if (!isset($existingCols['aux1'])) {
+                $colsToAdd[] = "`Aux1` VARCHAR(100) NULL";
+            }
+            for ($i = 1; $i <= 125; $i++) {
+                $colName = "QTY_STORE_{$i}";
+                if (!isset($existingCols[strtolower($colName)])) {
+                    $colsToAdd[] = "`{$colName}` DECIMAL(10,2) NOT NULL DEFAULT 0.00";
+                }
+            }
+
+            if (!empty($colsToAdd)) {
+                $alterSql = "ALTER TABLE `{$tableName}` ADD COLUMN " . implode(', ADD COLUMN ', $colsToAdd);
+                $this->execute($alterSql);
+            }
+        } catch (Exception $e) {
+            error_log("Failed to ensure columns for table {$tableName}: " . $e->getMessage());
+        }
     }
 
     // Export full database structure and data to a SQL file

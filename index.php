@@ -1691,7 +1691,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div class="card" style="margin: 0;">
                     <div class="card-header"
                         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-                        <h2 class="card-title" style="margin-bottom:0;">Current Registered Products (Items)</h2>
+                        <h2 class="card-title" style="margin-bottom:0; display: flex; align-items: center; gap: 0.5rem;">
+                            Current Registered Products (Items)
+                            <span id="catalog-count-badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 4px 10px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">0 Items</span>
+                        </h2>
                         <input type="text" id="catalog-search" class="form-control" placeholder="Search catalog..."
                             oninput="filterCatalog()"
                             style="max-width: 140px; height: 36px; font-size: 0.85rem; padding: 0 0.75rem; margin:0;">
@@ -2583,6 +2586,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
         function renderCatalog(productsList) {
             const tbody = document.getElementById('products-tbody');
+            const countBadge = document.getElementById('catalog-count-badge');
+            const totalCount = catalogProducts ? catalogProducts.length : 0;
+            const currentCount = productsList ? productsList.length : 0;
+
+            if (countBadge) {
+                if (currentCount < totalCount) {
+                    countBadge.innerText = `${currentCount.toLocaleString()} / ${totalCount.toLocaleString()} Items`;
+                } else {
+                    countBadge.innerText = `${totalCount.toLocaleString()} Items`;
+                }
+            }
+
             if (productsList && productsList.length > 0) {
                 let html = '';
                 productsList.forEach(prod => {
