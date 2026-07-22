@@ -2969,7 +2969,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 padRight('UPC', 15) + 
                                 padRight('SKU', 8) + 
                                 padRight('Description', 38) + 
-                                padRight('Count', 8) + 
+                                padRight('Count', 6) + 
                                 'Remarks\r\n\r\n';
 
                         let grandTotal = 0;
@@ -2999,7 +2999,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 padRight(barcode, 15) +
                                 padRight(sku, 8) +
                                 padRight(cleanDescr, 38) +
-                                padRight(qtyStr, 8) +
+                                padRight(qtyStr, 6) +
                                 '_______\r\n';
                         });
 
@@ -3015,7 +3015,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         };
 
                         text += '\r\n';
-                        text += padRight(`Number of Records Scanned: ${scans.length}`, 52) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
+                        text += padRight(`Number of Records Scanned: ${scans.length}`, 55) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
                         text += `No. of INF Found : ${infCount}\r\n\r\n`;
 
                         text += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
