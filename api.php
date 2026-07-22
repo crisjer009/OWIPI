@@ -1608,7 +1608,10 @@ try {
                 $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
             }
 
-            if (empty($locators) && empty($scans) && empty($products)) {
+            // Fetch users table
+            $usersList = $db->query("SELECT username, password, full_name, role, store_code FROM users");
+
+            if (empty($locators) && empty($scans) && empty($products) && empty($usersList)) {
                 sendResponse([
                     'status' => 'success',
                     'message' => 'Everything is already synchronized with the cloud.'
@@ -1623,7 +1626,8 @@ try {
                 'store_details' => $storeDetails,
                 'locators' => $locators,
                 'scans' => $scans,
-                'products' => $products
+                'products' => $products,
+                'users' => $usersList
             ];
 
             // Clean Cloud Sync URL (strip api.php if user included it in settings)
@@ -2281,14 +2285,42 @@ function handleReceiveSync()
             }
         }
 
-        logAudit('RECEIVE_SYNC', "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, and " . count($products) . " catalog items.", strtoupper($storeCode));
+        // Sync users table to the cloud
+        $usersList = $input['users'] ?? [];
+        if (!empty($usersList)) {
+            foreach ($usersList as $u) {
+                $uName = trim($u['username'] ?? '');
+                if (empty($uName)) continue;
+
+                $uPass = $u['password'] ?? '';
+                $uFull = $u['full_name'] ?? '';
+                $uRole = $u['role'] ?? 'OPERATOR';
+                $uStore = $u['store_code'] ?? null;
+
+                $checkUser = $db->query("SELECT id FROM users WHERE LOWER(username) = LOWER(?)", [$uName]);
+                if (!empty($checkUser)) {
+                    $db->execute(
+                        "UPDATE users SET password = ?, full_name = ?, role = ?, store_code = ? WHERE LOWER(username) = LOWER(?)",
+                        [$uPass, $uFull, $uRole, $uStore, $uName]
+                    );
+                } else {
+                    $db->execute(
+                        "INSERT INTO users (username, password, full_name, role, store_code) VALUES (?, ?, ?, ?, ?)",
+                        [$uName, $uPass, $uFull, $uRole, $uStore]
+                    );
+                }
+            }
+        }
+
+        logAudit('RECEIVE_SYNC', "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, " . count($products) . " catalog items, and " . count($usersList) . " user accounts.", strtoupper($storeCode));
 
         sendResponse([
             'status' => 'success',
             'message' => 'Sync payload processed successfully.',
             'synced_locators' => count($locators),
             'synced_scans' => count($scans),
-            'synced_products' => count($products)
+            'synced_products' => count($products),
+            'synced_users' => count($usersList)
         ]);
 
     } catch (Exception $e) {
