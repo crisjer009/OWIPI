@@ -2994,8 +2994,8 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 cleanDescr = cleanDescr.substring(0, 52);
                             }
 
-                            // Generate formatted row with precise spacing and a dashed underline under columns 1-5 (89 characters wide)
-                            text += '<span style="border-bottom: 1px dashed #000; padding-bottom: 1px;">' +
+                            // Generate formatted row with vertical-align bottom to guarantee underlines render below text without crossing, with 4px breathing room
+                            text += '<span style="border-bottom: 1px dashed #000; padding-bottom: 4px; display: inline-block; width: 89ch; vertical-align: bottom; box-sizing: border-box; line-height: 1.1;">' +
                                 padRight(recNo, 8) +
                                 padRight(barcode, 15) +
                                 padRight(sku, 8) +
