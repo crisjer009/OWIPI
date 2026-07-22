@@ -1587,6 +1587,45 @@ try {
                 throw new Exception("Synchronization failed: Store '{$_SESSION['store_code']}' is only at {$percent}% completion ({$closedLocators} of {$totalLocators} locators closed). All locators must be closed before syncing to the cloud.");
             }
 
+            // Validation: Check countsheet table exists and has scan records
+            $countsheetTbl = "{$store}_countsheet";
+            $checkCsTbl = $db->query("SHOW TABLES LIKE ?", [$countsheetTbl]);
+            if (empty($checkCsTbl)) {
+                throw new Exception("Synchronization failed: Countsheet table for '{$_SESSION['store_code']}' does not exist.");
+            }
+
+            $totalScansCheck = $db->query("SELECT COUNT(*) as count FROM `{$countsheetTbl}`");
+            $totalScans = (int) ($totalScansCheck[0]['count'] ?? 0);
+            if ($totalScans === 0) {
+                throw new Exception("Synchronization failed: Store '{$_SESSION['store_code']}' has 0 scan records. Cannot sync an empty store session.");
+            }
+
+            // Validation: Pre-check cloud store status to prevent data overwrite conflict
+            $checkCloudUrl = rtrim($cloudUrl, '/');
+            if (preg_match('/\/api\.php$/i', $checkCloudUrl)) {
+                $checkCloudUrl = preg_replace('/\/api\.php$/i', '', $checkCloudUrl);
+            }
+            $checkCloudUrl = rtrim($checkCloudUrl, '/') . '/api.php?action=get_cloud_store_details&store_code=' . urlencode($_SESSION['store_code']) . '&secret_token=' . urlencode($secretToken);
+
+            $chCheck = curl_init();
+            curl_setopt($chCheck, CURLOPT_URL, $checkCloudUrl);
+            curl_setopt($chCheck, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($chCheck, CURLOPT_TIMEOUT, 10);
+            curl_setopt($chCheck, CURLOPT_SSL_VERIFYPEER, false);
+            $checkResult = curl_exec($chCheck);
+            $checkHttp = curl_getinfo($chCheck, CURLINFO_HTTP_CODE);
+            curl_close($chCheck);
+
+            if ($checkHttp === 200 && $checkResult) {
+                $cloudInfo = json_decode($checkResult, true);
+                if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['store'])) {
+                    $cloudScansCount = count($cloudInfo['scans'] ?? []);
+                    if ($cloudScansCount > $totalScans && !isset($_GET['force'])) {
+                        throw new Exception("Synchronization blocked: Cloud server already has a higher scan record count ({$cloudScansCount} scans on cloud vs {$totalScans} scans locally). Please download/import the store session from cloud to avoid overwriting cloud data.");
+                    }
+                }
+            }
+
             // Fetch unsynced locators
             $locators = $db->query("SELECT * FROM `{$store}_locators` WHERE synced = 0");
 
