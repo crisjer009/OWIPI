@@ -1,9 +1,0 @@
-{
-    "server": "localhost",
-    "port": "3306",
-    "database": "owi_physical_inventory",
-    "username": "root",
-    "password": "",
-    "print_margin_top": 0,
-    "print_margin_left": 10
-}
