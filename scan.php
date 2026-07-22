@@ -2947,7 +2947,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                             str = String(str || '');
                             return str + ' '.repeat(Math.max(0, len - str.length));
                         };
-                        const centerText = (str, len = 84) => {
+                        const centerText = (str, len = 97) => {
                             str = String(str || '').trim();
                             if (str.length >= len) return str;
                             const padLeft = Math.floor((len - str.length) / 2);
@@ -2964,11 +2964,11 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         text += `Locator No. : ${displayLoc}\r\n`;
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
-                        // Header columns row
+                        // Header columns row (97 chars wide layout)
                         text += padRight('Rec No', 8) + 
                                 padRight('UPC', 15) + 
                                 padRight('SKU', 8) + 
-                                padRight('Description', 37) + 
+                                padRight('Description', 52) + 
                                 padRight('Count', 6) + 
                                 'Remarks\r\n\r\n';
 
@@ -2988,17 +2988,17 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 infCount++;
                             }
 
-                            // Truncate description at 34 chars to guarantee at least 3 trailing spaces before the Count column (which is padded to 37)
+                            // Keep descriptions complete by allowing up to 52 characters before padding
                             let cleanDescr = descr;
-                            if (cleanDescr.length > 34) {
-                                cleanDescr = cleanDescr.substring(0, 34);
+                            if (cleanDescr.length > 52) {
+                                cleanDescr = cleanDescr.substring(0, 52);
                             }
 
                             // Generate formatted row with precise spacing
                             text += padRight(recNo, 8) +
                                 padRight(barcode, 15) +
                                 padRight(sku, 8) +
-                                padRight(cleanDescr, 37) +
+                                padRight(cleanDescr, 52) +
                                 padRight(qtyStr, 6) +
                                 '_______\r\n';
                         });
@@ -3015,7 +3015,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         };
 
                         text += '\r\n';
-                        text += padRight(`Number of Records Scanned: ${scans.length}`, 54) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
+                        text += padRight(`Number of Records Scanned: ${scans.length}`, 69) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
                         text += `No. of INF Found : ${infCount}\r\n\r\n`;
 
                         text += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
