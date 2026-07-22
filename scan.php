@@ -3001,6 +3001,9 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 padRight(cleanDescr, 52) +
                                 padRight(qtyStr, 6) +
                                 '_______\r\n';
+                            
+                            // Broken line between items from Record No. up to Count (89 chars)
+                            text += '-'.repeat(89) + '\r\n';
                         });
 
                         // Get unique operators who scanned in this locator
