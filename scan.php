@@ -1568,9 +1568,10 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
         }
 
         function customConfirm(message, onConfirm, title = "Confirm Action", onCancel = null) {
+            console.log("customConfirm active with title:", title);
             const overlay = document.getElementById('custom-dialog-overlay');
             if (!overlay) {
-                // Fallback to native if DOM not ready
+                console.warn("custom-dialog-overlay not found, falling back to confirm()");
                 if (confirm(message)) {
                     if (typeof onConfirm === 'function') onConfirm();
                 } else {
@@ -1588,14 +1589,32 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             btnSecondary.style.display = 'block';
 
             btnPrimary.innerText = "Yes, Proceed";
-            btnPrimary.onclick = function () {
+            btnPrimary.onclick = function (e) {
+                console.log("customConfirm: Yes, Proceed clicked");
+                if (e) e.preventDefault();
                 overlay.classList.remove('active');
-                if (typeof onConfirm === 'function') onConfirm();
+                if (typeof onConfirm === 'function') {
+                    try {
+                        console.log("Executing onConfirm callback...");
+                        onConfirm();
+                    } catch (err) {
+                        console.error("Error in customConfirm callback:", err);
+                        alert("Callback Error: " + err.message);
+                    }
+                }
             };
 
-            btnSecondary.onclick = function () {
+            btnSecondary.onclick = function (e) {
+                console.log("customConfirm: Cancel clicked");
+                if (e) e.preventDefault();
                 overlay.classList.remove('active');
-                if (typeof onCancel === 'function') onCancel();
+                if (typeof onCancel === 'function') {
+                    try {
+                        onCancel();
+                    } catch (err) {
+                        console.error("Error in customConfirm Cancel callback:", err);
+                    }
+                }
             };
 
             overlay.classList.add('active');
