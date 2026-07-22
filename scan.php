@@ -2965,7 +2965,12 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
                         // Header columns row
-                        text += padRight('Rec No', 6) + padRight('UPC', 15) + padRight('SKU', 6) + padRight('Description', 41) + padRight('Count', 9) + 'Remarks\r\n\r\n';
+                        text += padRight('Rec No', 8) + 
+                                padRight('UPC', 15) + 
+                                padRight('SKU', 8) + 
+                                padRight('Description', 38) + 
+                                padRight('Count', 8) + 
+                                'Remarks\r\n\r\n';
 
                         let grandTotal = 0;
                         let infCount = 0;
@@ -2983,12 +2988,18 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                                 infCount++;
                             }
 
+                            // Truncate description if it exceeds column space to prevent pushing other columns out of alignment
+                            let cleanDescr = descr;
+                            if (cleanDescr.length > 38) {
+                                cleanDescr = cleanDescr.substring(0, 38);
+                            }
+
                             // Generate formatted row with precise spacing
-                            text += padRight(recNo, 6) +
+                            text += padRight(recNo, 8) +
                                 padRight(barcode, 15) +
-                                padRight(sku, 6) +
-                                padRight(descr, 41) +
-                                padRight(qtyStr, 9) +
+                                padRight(sku, 8) +
+                                padRight(cleanDescr, 38) +
+                                padRight(qtyStr, 8) +
                                 '_______\r\n';
                         });
 
@@ -3166,10 +3177,16 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
 
                             grandTotal += qtyVal;
 
+                            // Truncate description if it exceeds column space to prevent pushing other columns out of alignment
+                            let cleanDescr = descr;
+                            if (cleanDescr.length > 35) {
+                                cleanDescr = cleanDescr.substring(0, 35);
+                            }
+
                             text += padRight(recNo, 8) +
                                 padRight(barcode, 16) +
                                 padRight(sku, 8) +
-                                padRight(descr, 35) +
+                                padRight(cleanDescr, 35) +
                                 padQtyCenter(mstQtyStr, 10) +
                                 padQtyCenter(qtyStr, 10) +
                                 padQtyCenter(varianceStr, 10) + '\r\n';
