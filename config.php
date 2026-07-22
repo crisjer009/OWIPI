@@ -657,29 +657,55 @@ class OWI_DB {
         return true;
     }
 
-    // Import SQL file into the database
+    // Import SQL file into the database with high-performance streaming and transaction batching
     public function importSqlFile($filePath) {
         $this->connect(true);
         if (!file_exists($filePath)) {
             throw new Exception("SQL file not found at: {$filePath}");
         }
-        
-        $sql = file_get_contents($filePath);
-        
-        // Remove comments
-        $sql = preg_replace('/--.*\n/', '', $sql);
-        $sql = preg_replace('/\/\*.*?\*\//s', '', $sql);
-        
-        $queries = explode(';', $sql);
-        foreach ($queries as $query) {
-            $query = trim($query);
-            if ($query !== '') {
+
+        @set_time_limit(600);
+        @ini_set('memory_limit', '512M');
+
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            throw new Exception("Unable to open SQL backup file.");
+        }
+
+        $query = '';
+        if (!$this->pdo->inTransaction()) {
+            $this->pdo->beginTransaction();
+        }
+        $count = 0;
+
+        while (($line = fgets($handle)) !== false) {
+            $trimmed = trim($line);
+            if ($trimmed === '' || strpos($trimmed, '--') === 0 || strpos($trimmed, '/*') === 0 || strpos($trimmed, '/*!') === 0) {
+                continue;
+            }
+
+            $query .= $line;
+
+            if (substr($trimmed, -1) === ';') {
                 try {
                     $this->pdo->exec($query);
                 } catch (PDOException $e) {
-                    // Ignore errors on specific queries (like drops if not exist)
+                    // Ignore non-critical errors (e.g., DROP TABLE IF EXISTS on non-existent tables)
+                }
+                $query = '';
+                $count++;
+                if ($count % 500 === 0) {
+                    if ($this->pdo->inTransaction()) {
+                        $this->pdo->commit();
+                        $this->pdo->beginTransaction();
+                    }
                 }
             }
         }
+
+        if ($this->pdo->inTransaction()) {
+            $this->pdo->commit();
+        }
+        fclose($handle);
     }
 }

@@ -309,6 +309,8 @@ try {
             break;
 
         case 'restore_default_db':
+            @set_time_limit(600);
+            @ini_set('memory_limit', '512M');
             $db = new OWI_DB();
             $sqlFile = __DIR__ . "/database.sql";
             if (!file_exists($sqlFile)) {
