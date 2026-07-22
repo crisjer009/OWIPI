@@ -1579,6 +1579,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
     <!-- Scan beep synthesizer & Html5Qrcode & QRCode Generator -->
     <script src="js/html5-qrcode.min.js"></script>
     <script src="js/qrcode.min.js"></script>
+    <script>
         function showCustomConfirm(message, title = "Confirm Action", confirmText = "Confirm", cancelText = "Cancel") {
             return new Promise((resolve) => {
                 const overlay = document.getElementById('custom-dialog-overlay');
