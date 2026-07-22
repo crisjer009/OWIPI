@@ -1981,7 +1981,7 @@ try {
                 }
 
                 if ($strNo !== null) {
-                    $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, `QTY_STORE_{$strNo}` as Qty FROM items WHERE `QTY_STORE_{$strNo}` > 0");
+                    $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, `QTY_STORE_{$strNo}` as Qty FROM items");
                 } else {
                     try {
                         $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
