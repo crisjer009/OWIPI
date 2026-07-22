@@ -1230,8 +1230,6 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 })
                 .catch(err => alert("Request failed: " + err));
         }
-
-        }
     </script>
 
     <!-- Sidebar -->
