@@ -1029,6 +1029,23 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 </div>
             </div>
 
+            <!-- Scanner controls (Zoom & Torch) -->
+            <div id="scanner-hardware-controls" style="display: none; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; flex-direction: column; gap: 10px; box-sizing: border-box; width: 100%;">
+                <!-- Zoom Control -->
+                <div id="zoom-control-container" style="display: none; align-items: center; gap: 10px; width: 100%;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; min-width: 50px;">🔍 ZOOM:</span>
+                    <input type="range" id="scanner-zoom-slider" min="1" max="5" step="0.1" value="1" style="flex-grow: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; outline: none; cursor: pointer; margin: 0; padding: 0;">
+                    <span id="zoom-value-label" style="font-size: 0.8rem; color: var(--text-white); font-weight: 600; min-width: 35px; text-align: right;">1.0x</span>
+                </div>
+                <!-- Torch Control -->
+                <div id="torch-control-container" style="display: none; align-items: center; gap: 10px; justify-content: space-between; width: 100%;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">🔦 FLASHLIGHT:</span>
+                    <button type="button" id="btn-toggle-torch" class="btn" style="width: auto; height: 30px; padding: 0 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255, 255, 255, 0.1); color: var(--text-white); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: none;">
+                        <span>OFF</span>
+                    </button>
+                </div>
+            </div>
+
             <div class="form-group" style="display: none;">
                 <label for="camera-select">Select Camera Device</label>
                 <select id="camera-select" class="form-control">
@@ -1857,17 +1874,23 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             html5QrCode = new Html5Qrcode("reader");
 
             const config = {
-                fps: 10,
+                fps: 20, // Higher scan frequency for faster detection
                 qrbox: function (width, height) {
-                    // Mobile scanner frame sizing
+                    // Mobile scanner frame sizing tailored for wide 1D barcodes
                     const minEdge = Math.min(width, height);
-                    const size = Math.floor(minEdge * 0.75);
+                    const size = Math.floor(minEdge * 0.85);
                     return {
                         width: size,
-                        height: Math.floor(size * 0.5) // Rectangular aspect ratio for barcode scanning
+                        height: Math.max(85, Math.floor(size * 0.4)) // Wide and narrow horizontal box
                     };
                 },
-                aspectRatio: 1.333333 // 4:3 default for mobile cameras
+                aspectRatio: 1.333333, // 4:3 default for mobile cameras
+                videoConstraints: {
+                    facingMode: "environment",
+                    // Request high resolution for sharp focus on tiny barcodes
+                    width: { min: 640, ideal: 1280, max: 1920 },
+                    height: { min: 480, ideal: 720, max: 1080 }
+                }
             };
 
             html5QrCode.start(
@@ -1880,6 +1903,9 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     isScannerRunning = true;
                     document.getElementById('btn-start').disabled = true;
                     document.getElementById('btn-stop').disabled = false;
+                    
+                    // Initialize zoom and flashlight/torch hardware controls
+                    setTimeout(initializeHardwareControls, 500);
                 })
                 .catch(err => {
                     alert("Failed to start camera: " + err);
@@ -1897,9 +1923,97 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 document.getElementById('btn-stop').disabled = true;
                 document.getElementById('scanner-placeholder').style.display = 'flex';
                 document.getElementById('scanner-active-badge').style.background = 'var(--text-muted)';
+                document.getElementById('scanner-hardware-controls').style.display = 'none'; // Hide hardware controls
             }).catch(err => {
                 console.error("Failed to stop scanner", err);
             });
+        }
+
+        let zoomSupported = false;
+        let torchSupported = false;
+        let isTorchOn = false;
+
+        function initializeHardwareControls() {
+            try {
+                const capabilities = html5QrCode.getRunningTrackCapabilities();
+                const settings = html5QrCode.getRunningTrackSettings();
+                
+                const controlsDiv = document.getElementById('scanner-hardware-controls');
+                const zoomDiv = document.getElementById('zoom-control-container');
+                const zoomSlider = document.getElementById('scanner-zoom-slider');
+                const zoomLabel = document.getElementById('zoom-value-label');
+                const torchDiv = document.getElementById('torch-control-container');
+                const torchBtn = document.getElementById('btn-toggle-torch');
+
+                let showControls = false;
+
+                // 1. Handle Zoom capability
+                if (capabilities.zoom) {
+                    zoomSupported = true;
+                    showControls = true;
+                    zoomDiv.style.display = 'flex';
+                    
+                    const minZoom = capabilities.zoom.min || 1;
+                    const maxZoom = capabilities.zoom.max || 5;
+                    const currentZoom = settings.zoom || minZoom;
+                    
+                    zoomSlider.min = minZoom;
+                    zoomSlider.max = maxZoom;
+                    zoomSlider.value = currentZoom;
+                    zoomLabel.innerText = parseFloat(currentZoom).toFixed(1) + 'x';
+                    
+                    zoomSlider.oninput = function() {
+                        const val = parseFloat(this.value);
+                        zoomLabel.innerText = val.toFixed(1) + 'x';
+                        html5QrCode.applyVideoConstraints({
+                            advanced: [{ zoom: val }]
+                        }).catch(err => console.error("Failed to apply zoom:", err));
+                    };
+                } else {
+                    zoomSupported = false;
+                    zoomDiv.style.display = 'none';
+                }
+
+                // 2. Handle Torch capability
+                if (capabilities.torch) {
+                    torchSupported = true;
+                    showControls = true;
+                    torchDiv.style.display = 'flex';
+                    isTorchOn = settings.torch || false;
+                    
+                    torchBtn.innerHTML = isTorchOn ? '<span>ON 🔦</span>' : '<span>OFF</span>';
+                    torchBtn.style.background = isTorchOn ? 'rgba(218, 54, 51, 0.15)' : 'rgba(255, 255, 255, 0.1)';
+                    torchBtn.style.borderColor = isTorchOn ? '#da3633' : 'rgba(255,255,255,0.15)';
+                    torchBtn.style.color = isTorchOn ? '#ff7b72' : 'var(--text-white)';
+
+                    torchBtn.onclick = function() {
+                        isTorchOn = !isTorchOn;
+                        html5QrCode.applyVideoConstraints({
+                            advanced: [{ torch: isTorchOn }]
+                        }).then(() => {
+                            torchBtn.innerHTML = isTorchOn ? '<span>ON 🔦</span>' : '<span>OFF</span>';
+                            torchBtn.style.background = isTorchOn ? 'rgba(218, 54, 51, 0.15)' : 'rgba(255, 255, 255, 0.1)';
+                            torchBtn.style.borderColor = isTorchOn ? '#da3633' : 'rgba(255,255,255,0.15)';
+                            torchBtn.style.color = isTorchOn ? '#ff7b72' : 'var(--text-white)';
+                        }).catch(err => {
+                            console.error("Failed to toggle torch:", err);
+                            isTorchOn = !isTorchOn; // revert state
+                        });
+                    };
+                } else {
+                    torchSupported = false;
+                    torchDiv.style.display = 'none';
+                }
+
+                if (showControls) {
+                    controlsDiv.style.display = 'flex';
+                } else {
+                    controlsDiv.style.display = 'none';
+                }
+
+            } catch (ex) {
+                console.warn("Hardware control initialization failed:", ex);
+            }
         }
 
         // Scan callbacks
