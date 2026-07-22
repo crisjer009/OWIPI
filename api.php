@@ -1668,7 +1668,10 @@ try {
             $products = [];
             $checkItemsTbl = $db->query("SHOW TABLES LIKE ?", ["{$store}_items"]);
             if (!empty($checkItemsTbl)) {
-                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
+                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items` WHERE Qty > 0");
+                if (empty($products)) {
+                    $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items` LIMIT 500");
+                }
             }
 
             // Fetch users table
@@ -2105,6 +2108,11 @@ try {
             $cloudScans = (int) ($input['cloud_scans_count'] ?? 0);
 
             $db = new OWI_DB();
+            if (isset($input['products']) && is_array($input['products']) && count($input['products']) > 500) {
+                $input['products'] = array_values(array_filter($input['products'], function ($p) {
+                    return (float) ($p['Qty'] ?? 0) > 0;
+                }));
+            }
             $jsonPayload = json_encode($input);
 
             $db->execute(

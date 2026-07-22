@@ -230,6 +230,10 @@ class OWI_DB {
             
             $this->pdo = new PDO($dsn, $username, $password, $options);
             
+            try {
+                $this->pdo->exec("SET SESSION max_allowed_packet = 67108864");
+            } catch (PDOException $pktEx) {}
+            
             // Self-healing check: if database was selected, verify if 'stores' table exists and has all columns
             if ($selectDatabase && !self::$isInitializing) {
                 static $dbChecked = false;
