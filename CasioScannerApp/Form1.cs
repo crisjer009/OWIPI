@@ -464,7 +464,7 @@ namespace CasioScannerApp
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "POST";
-                request.Timeout = 8000;
+                request.Timeout = 25000;
                 request.ContentType = "application/json";
 
                 // Build clean JSON payload
@@ -713,7 +713,7 @@ namespace CasioScannerApp
 
                     HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                     request.Method = "GET";
-                    request.Timeout = 4000; // 4 seconds timeout
+                    request.Timeout = 15000; // 15 seconds timeout
 
                     using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                     {
@@ -933,7 +933,7 @@ namespace CasioScannerApp
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "POST";
-                request.Timeout = 8000;
+                request.Timeout = 25000;
                 request.ContentType = "application/json";
 
                 string jsonPayload = string.Format(
@@ -1094,7 +1094,7 @@ namespace CasioScannerApp
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "POST";
-                request.Timeout = 8000; // 8 seconds timeout
+                request.Timeout = 25000; // 25 seconds timeout
                 request.ContentType = "application/x-www-form-urlencoded";
 
                 // Build url-encoded payload with variable quantity
@@ -1348,7 +1348,7 @@ namespace CasioScannerApp
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             request.Method = method;
-            request.Timeout = 8000;
+            request.Timeout = 25000;
 
             if (method == "POST")
             {
