@@ -1,3 +1,4 @@
 db_config.json
 sync_token.txt
 .gemini/
+php_debug.log
