@@ -22,8 +22,7 @@ if (!$isLocalhost) {
     <html>
     <head>
         <title>OWIPI Local Installer</title>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-        <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap"></noscript>
+        <link rel="stylesheet" href="assets/fonts/fonts.css">
         <style>
             body {
                 font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -96,8 +95,7 @@ $step = $_GET['step'] ?? 'form';
 <html>
 <head>
     <title>OWIPI System Installer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap"></noscript>
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
         body {
             font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

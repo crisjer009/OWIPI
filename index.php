@@ -135,11 +135,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OWI Physical Inventory - Gateway Console</title>
-    <!-- Google Fonts (Non-blocking for instant offline load) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"></noscript>
+    <!-- Local Offline Fonts (100% Instant Offline Load) -->
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
         :root {
             --bg-color: #0b0f19;

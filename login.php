@@ -76,9 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - OWI Physical Inventory Gateway</title>
-    <!-- Google Fonts (Non-blocking for instant offline load) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap"></noscript>
+    <!-- Local Offline Fonts (100% Instant Offline Load) -->
+    <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
         :root {
             --bg-color: #0b0f19;
