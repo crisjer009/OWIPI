@@ -1575,7 +1575,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             <!-- Pending Cloud Sync Approvals Card for Admins -->
             <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin'])): ?>
-                <div class="card" style="max-width: 100%; margin-top: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.04); border-radius: 12px; position: relative;" id="pending-syncs-card">
+                <div class="card" style="max-width: 600px; margin-top: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.04); border-radius: 12px; position: relative;" id="pending-syncs-card">
                     <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
                         <h2 class="card-title" style="font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; color: white;">
                             <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #eab308; color: #000; font-size: 0.85rem; font-weight: 900;">!</span>
