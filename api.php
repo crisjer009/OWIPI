@@ -2130,6 +2130,18 @@ try {
             $db = new OWI_DB();
             $requests = [];
             try {
+                $db->execute("CREATE TABLE IF NOT EXISTS pending_sync_requests (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    store_code VARCHAR(50) NOT NULL,
+                    requested_by VARCHAR(100) NOT NULL,
+                    payload LONGTEXT NOT NULL,
+                    local_scans_count INT DEFAULT 0,
+                    cloud_scans_count INT DEFAULT 0,
+                    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+                    approved_by VARCHAR(100) NULL,
+                    approved_at DATETIME NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )");
                 $requests = $db->query("SELECT id, store_code, requested_by, local_scans_count, cloud_scans_count, status, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM pending_sync_requests WHERE status = 'pending' ORDER BY id DESC");
             } catch (Exception $e) {}
             sendResponse([
