@@ -821,7 +821,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 </form>
             </div>
         </div>
-        \x3Cscript\x3E
+        <script>
             let storeInputMode = 'create';
 
             window.addEventListener('DOMContentLoaded', () => {
