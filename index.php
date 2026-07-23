@@ -64,7 +64,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             $percent = 0;
             $status = 'Not Initialized';
 
-            if (isset($row['closed']) && (int)$row['closed'] === 1) {
+            if (isset($row['closed']) && (int) $row['closed'] === 1) {
                 $status = 'Closed';
                 try {
                     $checkTbl = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
@@ -77,7 +77,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             $percent = round(($closedLocators / $totalLocators) * 100);
                         }
                     }
-                } catch (Exception $ex) {}
+                } catch (Exception $ex) {
+                }
             } else {
                 try {
                     $checkTbl = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
@@ -868,6 +869,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             body {
                 flex-direction: column;
             }
+
             aside {
                 position: relative;
                 width: 100%;
@@ -876,28 +878,34 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 border-right: none;
                 border-bottom: 1px solid var(--card-border);
             }
+
             .logo-area {
                 margin-bottom: 1.5rem;
                 justify-content: center;
             }
+
             .nav-menu {
                 flex-direction: row;
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 0.5rem;
             }
+
             .nav-item {
                 padding: 0.5rem 0.75rem;
                 font-size: 0.8rem;
             }
+
             main {
                 margin-left: 0;
                 padding: 1rem;
                 width: 100%;
             }
+
             .system-status-widget {
                 display: none;
             }
+
             .products-grid {
                 grid-template-columns: 1fr;
                 height: auto;
@@ -1006,9 +1014,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         for now ✕</a>
                 </div>
             </form>
-            <div style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem; text-align: center;">
-                <a href="javascript:void(0)" onclick="openCloudStoreDownloader()" 
-                   style="font-size:0.85rem; color:var(--success-color); text-decoration:none; font-weight:700; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+            <div
+                style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem; text-align: center;">
+                <a href="javascript:void(0)" onclick="openCloudStoreDownloader()"
+                    style="font-size:0.85rem; color:var(--success-color); text-decoration:none; font-weight:700; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;">
                     ☁️ Download Store from Cloud
                 </a>
             </div>
@@ -1022,12 +1031,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div
                     style="width:50px; height:50px; background:linear-gradient(135deg, var(--success-color), #059669); border-radius:14px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(16, 185, 129, 0.35); margin-bottom:1rem;">
                     <svg viewBox="0 0 24 24" style="width:26px;height:26px;fill:white;">
-                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
+                        <path
+                            d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z" />
                     </svg>
                 </div>
                 <h2 style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:700; margin-bottom:0.25rem;">
                     Download Store from Cloud</h2>
-                <p style="color:var(--text-secondary); font-size:0.85rem;">Fetch active store sessions and templates configured on the cloud server.</p>
+                <p style="color:var(--text-secondary); font-size:0.85rem;">Fetch active store sessions and templates
+                    configured on the cloud server.</p>
             </div>
 
             <form onsubmit="handleImportCloudStore(event)" id="cloud-store-download-form">
@@ -1038,11 +1049,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     </select>
                 </div>
 
-                <button type="submit" class="btn" id="btn-import-cloud-store" style="width:100%; margin-top: 1rem; background: var(--success-color); border-color: var(--success-color);">Download & Import Store</button>
+                <button type="submit" class="btn" id="btn-import-cloud-store"
+                    style="width:100%; margin-top: 1rem; background: var(--success-color); border-color: var(--success-color);">Download
+                    & Import Store</button>
 
                 <div style="text-align:center; margin-top: 1.25rem;">
                     <a href="javascript:void(0)" onclick="closeCloudStoreDownloader()"
-                        style="font-size:0.8rem; color:var(--text-secondary); text-decoration:none; font-weight:600;">Cancel ✕</a>
+                        style="font-size:0.8rem; color:var(--text-secondary); text-decoration:none; font-weight:600;">Cancel
+                        ✕</a>
                 </div>
             </form>
         </div>
@@ -1057,12 +1071,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
         function fetchPendingSyncRequests() {
             const listEl = document.getElementById('pending-syncs-list');
+            const cardEl = document.getElementById('pending-syncs-card');
             if (!listEl) return;
 
             fetch('api.php?action=get_pending_syncs')
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success' && data.requests && data.requests.length > 0) {
+                        if (cardEl) cardEl.style.display = 'block';
                         let html = '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
                         data.requests.forEach(req => {
                             html += `
@@ -1094,6 +1110,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
+        function dismissPendingSyncCard() {
+            const cardEl = document.getElementById('pending-syncs-card');
+            if (cardEl) cardEl.style.display = 'none';
+        }
+
         async function approveSyncRequest(id) {
             const ok = await showCustomConfirm(
                 "Are you sure you want to approve this store sync request and overwrite cloud data?",
@@ -1108,16 +1129,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${id}`
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showToast(data.message, 'success');
-                    fetchPendingSyncRequests();
-                } else {
-                    showCustomAlert("Approval failed: " + data.message, "Approval Failed");
-                }
-            })
-            .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        fetchPendingSyncRequests();
+                    } else {
+                        showCustomAlert("Approval failed: " + data.message, "Approval Failed");
+                    }
+                })
+                .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
         async function rejectSyncRequest(id) {
@@ -1134,16 +1155,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `id=${id}`
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showToast("Sync request rejected.", 'info');
-                    fetchPendingSyncRequests();
-                } else {
-                    showCustomAlert("Rejection failed: " + data.message, "Rejection Failed");
-                }
-            })
-            .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast("Sync request rejected.", 'info');
+                        fetchPendingSyncRequests();
+                    } else {
+                        showCustomAlert("Rejection failed: " + data.message, "Rejection Failed");
+                    }
+                })
+                .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
         function fetchExistingStores() {
@@ -1189,13 +1210,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
         function openCloudStoreDownloader() {
             // Close the main selector first if it is open
             closeStoreSelector();
-            
+
             // Show our download overlay
             document.getElementById('cloud-store-download-overlay').style.display = 'flex';
-            
+
             const selectEl = document.getElementById('cloud_store_select');
             selectEl.innerHTML = '<option value="">Loading active stores from cloud...</option>';
-            
+
             fetch('api.php?action=fetch_cloud_stores')
                 .then(res => res.json())
                 .then(data => {
@@ -1232,19 +1253,19 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 showCustomAlert('Please select a store to download.', 'Selection Required');
                 return;
             }
-            
+
             const btn = document.getElementById('btn-import-cloud-store');
             btn.disabled = true;
             btn.innerText = 'Downloading store...';
-            
+
             showToast(`Downloading '${storeCode.toUpperCase()}' from cloud...`, 'info');
-            
+
             fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode)}`)
                 .then(res => res.json())
                 .then(data => {
                     btn.disabled = false;
                     btn.innerText = 'Download & Import Store';
-                    
+
                     if (data.status === 'success') {
                         showToast(data.message, 'success');
                         closeCloudStoreDownloader();
@@ -1363,13 +1384,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         MySQL Setup
                     </div>
                 <?php endif; ?>
-                 <div class="nav-item" onclick="switchView('checker', this)">
-                     <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;">
-                         <path d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h3v14h-3zm-9 16h12v2H7z"/>
-                     </svg>
-                     Test Scan Checker
-                 </div>
-                 <div class="nav-item" onclick="switchView('products', this)">
+                <div class="nav-item" onclick="switchView('checker', this)">
+                    <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;">
+                        <path d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h3v14h-3zm-9 16h12v2H7z" />
+                    </svg>
+                    Test Scan Checker
+                </div>
+                <div class="nav-item" onclick="switchView('products', this)">
                     <svg viewBox="0 0 24 24">
                         <path
                             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" />
@@ -1536,7 +1557,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
                                     style="padding: 0.5rem 1rem; font-size: 0.85rem;">Initialize DB Tables</button>
                                 <button onclick="restoreDatabaseBackup()" class="btn btn-danger btn-sm"
-                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #d73a49; border-color: #cb2431;">Import database.sql Backup</button>
+                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #d73a49; border-color: #cb2431;">Import
+                                    database.sql Backup</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -1546,9 +1568,31 @@ if ($driverLoaded && $dbStatus === 'connected') {
             <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>;">
                 <div>
                     <h1>Store Inventory Progress</h1>
-                    <div class="header-desc">Real-time locator completion metrics across all your active store databases.</div>
+                    <div class="header-desc">Real-time locator completion metrics across all your active store
+                        databases.</div>
                 </div>
             </header>
+
+            <!-- Pending Cloud Sync Approvals Card for Admins -->
+            <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin'])): ?>
+                <div class="card" style="max-width: 100%; margin-top: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.04); border-radius: 12px; position: relative;" id="pending-syncs-card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                        <h2 class="card-title" style="font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; color: white;">
+                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #eab308; color: #000; font-size: 0.85rem; font-weight: 900;">!</span>
+                            <span>Pending Cloud Sync Approvals</span>
+                        </h2>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" onclick="fetchPendingSyncRequests()" class="btn btn-secondary btn-sm"
+                                style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer; border-radius: 6px;">Refresh</button>
+                            <button type="button" onclick="dismissPendingSyncCard()" style="background: none; border: none; color: #8b949e; font-size: 1.3rem; cursor: pointer; padding: 0 6px; line-height: 1; border-radius: 4px;" title="Dismiss">&times;</button>
+                        </div>
+                    </div>
+                    <div id="pending-syncs-list" style="margin-top: 1rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">Checking for pending sync requests...
+                        </p>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <?php if (empty($storesData)): ?>
                 <div class="card" style="max-width: 600px; padding: 2.5rem; text-align: center;">
@@ -1600,8 +1644,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     <h3
                                         style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; color: var(--text-primary); margin: 0;">
                                         <?= htmlspecialchars($s['store_code']) ?>
-                                        <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; letter-spacing: 0;">
-                                            Created by: <span style="color: var(--accent-color); font-weight: 600;"><?= htmlspecialchars($s['creator']) ?></span>
+                                        <div
+                                            style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; margin-top: 4px; letter-spacing: 0;">
+                                            Created by: <span
+                                                style="color: var(--accent-color); font-weight: 600;"><?= htmlspecialchars($s['creator']) ?></span>
                                         </div>
                                     </h3>
                                     <span class="badge"
@@ -1632,7 +1678,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
                                 <?php if ($isSysAdmin): ?>
-                                    <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')" class="btn btn-secondary btn-sm"
+                                    <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')"
+                                        class="btn btn-secondary btn-sm"
                                         style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
                                         Delete
                                     </button>
@@ -1658,30 +1705,41 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 class="card-title">
                         <svg viewBox="0 0 24 24">
-                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
+                            <path
+                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
                         </svg>
                         MySQL Database Connection
                     </h2>
                     <?php if ($dbStatus === 'connected'): ?>
-                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-db-form" onclick="toggleDbForm()" style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Show Fields</button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-db-form"
+                            onclick="toggleDbForm()"
+                            style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Show Fields</button>
                     <?php endif; ?>
                 </div>
 
-                <div id="db-connected-status-summary" style="display: <?php echo ($dbStatus === 'connected') ? 'block' : 'none'; ?>; padding: 0.5rem 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                        <div style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
-                            <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected Successfully.
+                <div id="db-connected-status-summary"
+                    style="display: <?php echo ($dbStatus === 'connected') ? 'block' : 'none'; ?>; padding: 0.5rem 0;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div
+                            style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                            <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected
+                            Successfully.
                         </div>
-                        <button type="button" onclick="backupDatabaseLocal()" class="btn btn-secondary" style="width: auto; font-size: 0.8rem; padding: 6px 14px; border: 1px solid var(--accent-color); color: var(--accent-color); background: rgba(59, 130, 246, 0.08); font-weight: 600; cursor: pointer; border-radius: 6px;">
+                        <button type="button" onclick="backupDatabaseLocal()" class="btn btn-secondary"
+                            style="width: auto; font-size: 0.8rem; padding: 6px 14px; border: 1px solid var(--accent-color); color: var(--accent-color); background: rgba(59, 130, 246, 0.08); font-weight: 600; cursor: pointer; border-radius: 6px;">
                             💾 Set Current DB as Default
                         </button>
                     </div>
                     <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">
-                        Host: <code><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></code> | Database: <code><?= htmlspecialchars($config['database']) ?></code>
+                        Host:
+                        <code><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></code>
+                        | Database: <code><?= htmlspecialchars($config['database']) ?></code>
                     </p>
                 </div>
 
-                <form id="config-form" onsubmit="saveDbConfig(event)" style="display: <?php echo ($dbStatus === 'connected') ? 'none' : 'block'; ?>; margin-top: 1rem;">
+                <form id="config-form" onsubmit="saveDbConfig(event)"
+                    style="display: <?php echo ($dbStatus === 'connected') ? 'none' : 'block'; ?>; margin-top: 1rem;">
                     <div class="form-group" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
                         <div>
                             <label for="db_server">MySQL Server Host</label>
@@ -1714,7 +1772,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
                     <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                         <button type="submit" class="btn">Save & Verify Connection</button>
-                        <button type="button" onclick="testConnection()" class="btn btn-secondary">Test Connection Only</button>
+                        <button type="button" onclick="testConnection()" class="btn btn-secondary">Test Connection
+                            Only</button>
                     </div>
                 </form>
             </div>
@@ -1724,7 +1783,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div class="card-header">
                     <h2 class="card-title">
                         <svg viewBox="0 0 24 24">
-                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                            <path
+                                d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
                         </svg>
                         Security & Synchronization Token
                     </h2>
@@ -1732,29 +1792,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div class="form-group">
                     <label for="sync_secret_token">Secret Sync Token (Cloud & Local Authorization)</label>
                     <input type="text" id="sync_secret_token" class="form-control"
-                        value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>" placeholder="e.g. my_secure_token_123">
-                    <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.</small>
-                    <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary" style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save Token Only</button>
+                        value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>"
+                        placeholder="e.g. my_secure_token_123">
+                    <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a
+                        custom secret token here. This exact same token must be configured on local hosts to allow
+                        successful data synchronization.</small>
+                    <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary"
+                        style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save
+                        Token Only</button>
                 </div>
             </div>
 
-            <!-- Pending Cloud Sync Requests Card for Admins -->
-            <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin'])): ?>
-            <div class="card" style="max-width: 600px; margin-top: 2rem;" id="pending-syncs-card">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 class="card-title">
-                        <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:#eab308;">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                        </svg>
-                        Pending Cloud Sync Approvals
-                    </h2>
-                    <button type="button" onclick="fetchPendingSyncRequests()" class="btn btn-secondary btn-sm" style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Refresh</button>
-                </div>
-                <div id="pending-syncs-list" style="margin-top: 1rem;">
-                    <p style="color: var(--text-secondary); font-size: 0.85rem;">Checking for pending sync requests...</p>
-                </div>
-            </div>
-            <?php endif; ?>
+
 
             <!-- Print Spacing Settings -->
             <div class="card" style="max-width: 600px; margin-top: 2rem;">
@@ -1801,9 +1850,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div class="card" style="margin: 0;">
                     <div class="card-header"
                         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-                        <h2 class="card-title" style="margin-bottom:0; display: flex; align-items: center; gap: 0.5rem;">
+                        <h2 class="card-title"
+                            style="margin-bottom:0; display: flex; align-items: center; gap: 0.5rem;">
                             Current Registered Products (Items)
-                            <span id="catalog-count-badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 4px 10px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">0 Items</span>
+                            <span id="catalog-count-badge" class="badge"
+                                style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 4px 10px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">0
+                                Items</span>
                         </h2>
                         <input type="text" id="catalog-search" class="form-control" placeholder="Search catalog..."
                             oninput="filterCatalog()"
@@ -1895,11 +1947,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             style="width:100%; margin-top: 0.5rem; background:linear-gradient(135deg, var(--accent-color), #2563eb);">Upload
                             & Import</button>
                     </form>
-                    <div style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
+                    <div
+                        style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
                         <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
                             Or fetch the latest catalog directly from your cloud server database.
                         </div>
-                        <button type="button" onclick="syncMasterfileFromCloud()" id="btn-sync-master-cloud" class="btn btn-secondary"
+                        <button type="button" onclick="syncMasterfileFromCloud()" id="btn-sync-master-cloud"
+                            class="btn btn-secondary"
                             style="width:100%; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); font-weight: 600; cursor: pointer;">
                             ☁️ Sync Masterfile from Cloud
                         </button>
@@ -1948,11 +2002,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
                         <button type="submit" class="btn" style="margin-top: 1rem; width: 100%;">Create Account</button>
                     </form>
-                    <div style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
+                    <div
+                        style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
                         <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
                             Or sync and download all existing accounts from your cloud server.
                         </div>
-                        <button type="button" onclick="syncUsersFromCloud()" id="btn-sync-users-cloud" class="btn btn-secondary"
+                        <button type="button" onclick="syncUsersFromCloud()" id="btn-sync-users-cloud"
+                            class="btn btn-secondary"
                             style="width:100%; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); font-weight: 600; cursor: pointer;">
                             ☁️ Sync Users from Cloud
                         </button>
@@ -2023,64 +2079,81 @@ if ($driverLoaded && $dbStatus === 'connected') {
             <header>
                 <div>
                     <h1>Test Scan Checker Simulator</h1>
-                    <div class="header-desc">Simulate a barcode scan or look up a SKU to instantly verify if it exists in the master database.</div>
+                    <div class="header-desc">Simulate a barcode scan or look up a SKU to instantly verify if it exists
+                        in the master database.</div>
                 </div>
             </header>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
                 <!-- Simulator Input Card -->
                 <div class="card" style="margin: 0; padding: 2rem;">
-                    <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                    <div class="card-header"
+                        style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
                         <h2 class="card-title">Barcode Simulator</h2>
                     </div>
 
                     <form id="checker-form" onsubmit="runTestScanCheck(event)">
                         <div class="form-group">
-                            <label for="checker_barcode" style="color: var(--accent-color); font-weight: 700;">Scan / Enter Barcode or SKU</label>
-                            <input type="text" id="checker_barcode" class="form-control" 
-                                placeholder="Type or scan item barcode / SKU code..." 
-                                style="height: 48px; font-size: 1.1rem; border-color: rgba(59, 130, 246, 0.4); text-align: center; font-family: monospace; outline: none; background: rgba(0,0,0,0.25);" 
+                            <label for="checker_barcode" style="color: var(--accent-color); font-weight: 700;">Scan /
+                                Enter Barcode or SKU</label>
+                            <input type="text" id="checker_barcode" class="form-control"
+                                placeholder="Type or scan item barcode / SKU code..."
+                                style="height: 48px; font-size: 1.1rem; border-color: rgba(59, 130, 246, 0.4); text-align: center; font-family: monospace; outline: none; background: rgba(0,0,0,0.25);"
                                 required autocomplete="off">
                         </div>
                         <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
-                            <button type="submit" class="btn" style="flex: 2; height: 44px; font-weight: 700;">🔍 Test Lookup</button>
-                            <button type="button" onclick="resetChecker()" class="btn btn-secondary" style="flex: 1; height: 44px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">Clear</button>
+                            <button type="submit" class="btn" style="flex: 2; height: 44px; font-weight: 700;">🔍 Test
+                                Lookup</button>
+                            <button type="button" onclick="resetChecker()" class="btn btn-secondary"
+                                style="flex: 1; height: 44px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">Clear</button>
                         </div>
                     </form>
                 </div>
 
                 <!-- Simulation Response Display Card -->
-                <div class="card" id="checker-response-card" style="margin: 0; padding: 2rem; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.1);">
+                <div class="card" id="checker-response-card"
+                    style="margin: 0; padding: 2rem; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px dashed rgba(255,255,255,0.1); background: rgba(0,0,0,0.1);">
                     <div id="checker-empty-state" style="text-align: center; color: var(--text-secondary);">
-                        <svg viewBox="0 0 24 24" style="width: 64px; height: 64px; fill: rgba(255,255,255,0.15); margin-bottom: 1rem;">
-                            <path d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h3v14h-3zm-9 16h12v2H7z"/>
+                        <svg viewBox="0 0 24 24"
+                            style="width: 64px; height: 64px; fill: rgba(255,255,255,0.15); margin-bottom: 1rem;">
+                            <path d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h3v14h-3zm-9 16h12v2H7z" />
                         </svg>
-                        <p style="font-size: 0.95rem; font-weight: 500;">Ready to test. Input or scan a code on the left to verify.</p>
+                        <p style="font-size: 0.95rem; font-weight: 500;">Ready to test. Input or scan a code on the left
+                            to verify.</p>
                     </div>
 
                     <div id="checker-result-found" style="display: none; width: 100%;">
-                        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.5rem; color: #10b981; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px;">
+                        <div
+                            style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.5rem; color: #10b981; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px;">
                             <span>🟢 MATCH FOUND IN DATABASE</span>
                         </div>
-                        <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; line-height: 1.6;">
-                            <div style="margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                                <strong style="color: var(--text-secondary);">Product Name:</strong> 
-                                <br><span id="checker-res-name" style="color: white; font-size: 1.15rem; font-weight: 700; display: block; margin-top: 4px;">-</span>
+                        <div
+                            style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1.25rem; border: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; line-height: 1.6;">
+                            <div
+                                style="margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                                <strong style="color: var(--text-secondary);">Product Name:</strong>
+                                <br><span id="checker-res-name"
+                                    style="color: white; font-size: 1.15rem; font-weight: 700; display: block; margin-top: 4px;">-</span>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0.5rem;">
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0.5rem;">
                                 <div>
                                     <strong style="color: var(--text-secondary);">Barcode (UPC):</strong>
-                                    <div id="checker-res-barcode" style="font-family: monospace; color: var(--accent-color); font-weight: 700; font-size: 1rem;">-</div>
+                                    <div id="checker-res-barcode"
+                                        style="font-family: monospace; color: var(--accent-color); font-weight: 700; font-size: 1rem;">
+                                        -</div>
                                 </div>
                                 <div>
                                     <strong style="color: var(--text-secondary);">SKU Code:</strong>
-                                    <div id="checker-res-sku" style="font-family: monospace; color: white; font-weight: 600;">-</div>
+                                    <div id="checker-res-sku"
+                                        style="font-family: monospace; color: white; font-weight: 600;">-</div>
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <div>
                                     <strong style="color: var(--text-secondary);">Masterfile Qty:</strong>
-                                    <div id="checker-res-qty" style="color: #10b981; font-weight: 800; font-size: 1.2rem;">-</div>
+                                    <div id="checker-res-qty"
+                                        style="color: #10b981; font-weight: 800; font-size: 1.2rem;">-</div>
                                 </div>
                                 <div>
                                     <strong style="color: var(--text-secondary);">Attributes:</strong>
@@ -2091,14 +2164,19 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     </div>
 
                     <div id="checker-result-notfound" style="display: none; width: 100%; text-align: center;">
-                        <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.5rem; color: #ef4444; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px;">
+                        <div
+                            style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1.5rem; color: #ef4444; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 0.5px;">
                             <span>🔴 ITEM NOT FOUND (INF)</span>
                         </div>
                         <svg viewBox="0 0 24 24" style="width: 56px; height: 56px; fill: #ef4444; margin-bottom: 1rem;">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                         </svg>
-                        <p style="color: white; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.5rem;">Scanned barcode/SKU does not exist in master catalog.</p>
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 280px; margin: 0 auto;">When scanned, this item will save as an <strong>Item Not Found (INF)</strong> record with 0.00 master quantity.</p>
+                        <p style="color: white; font-weight: 700; font-size: 1.05rem; margin-bottom: 0.5rem;">Scanned
+                            barcode/SKU does not exist in master catalog.</p>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; max-width: 280px; margin: 0 auto;">
+                            When scanned, this item will save as an <strong>Item Not Found (INF)</strong> record with
+                            0.00 master quantity.</p>
                     </div>
                 </div>
             </div>
@@ -2232,13 +2310,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 "Cancel"
             );
             if (!ok) return;
-            
+
             const btn = document.getElementById('btn-sync-master-cloud');
             btn.disabled = true;
             btn.innerText = 'Syncing catalog from cloud...';
-            
+
             showToast(`Fetching catalog for ${label} from cloud...`, "info");
-            
+
             fetch(`api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode)}`)
                 .then(res => res.json())
                 .then(data => {
@@ -2292,13 +2370,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 "Cancel"
             );
             if (!ok) return;
-            
+
             const btn = document.getElementById('btn-sync-users-cloud');
             btn.disabled = true;
             btn.innerText = 'Syncing user accounts...';
-            
+
             showToast("Fetching user accounts from cloud...", "info");
-            
+
             fetch('api.php?action=import_cloud_users')
                 .then(res => res.json())
                 .then(data => {
@@ -2327,9 +2405,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 "Cancel"
             );
             if (!ok) return;
-            
+
             showToast(`Deleting store ${storeCode.toUpperCase()}...`, "info");
-            
+
             fetch(`api.php?action=delete_store&store_code=${encodeURIComponent(storeCode)}`)
                 .then(res => res.json())
                 .then(data => {
@@ -2478,24 +2556,24 @@ if ($driverLoaded && $dbStatus === 'connected') {
         function saveTokenOnly() {
             const token = document.getElementById('sync_secret_token').value.trim();
             showToast("Saving Secret Sync Token...", "info");
-            
+
             fetch('api.php?action=save_sync_token', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sync_secret_token: token })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showToast(data.message, "success");
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    showToast(data.message, "error");
-                }
-            })
-            .catch(err => {
-                showToast("Failed to save token: " + err, "error");
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    showToast("Failed to save token: " + err, "error");
+                });
         }
 
         // Toggle MySQL Connection form visibility
@@ -3045,7 +3123,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .then(data => {
                     emptyCard.style.display = 'none';
                     responseCard.style.borderStyle = 'solid';
-                    
+
                     if (data.status === 'success' && data.product_found) {
                         foundCard.style.display = 'block';
                         notFoundCard.style.display = 'none';
@@ -3055,19 +3133,19 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         document.getElementById('checker-res-sku').innerText = data.sku || 'N/A';
                         document.getElementById('checker-res-qty').innerText = parseFloat(data.master_qty || 0).toFixed(0);
                         document.getElementById('checker-res-attr').innerText = (data.sku ? 'MASTERFILE ITEM' : 'GENERAL');
-                        
+
                         responseCard.style.borderColor = 'rgba(16, 185, 129, 0.4)';
                         responseCard.style.background = 'rgba(16, 185, 129, 0.08)';
                         showToast("Match found in database!", "success");
                     } else {
                         foundCard.style.display = 'none';
                         notFoundCard.style.display = 'block';
-                        
+
                         responseCard.style.borderColor = 'rgba(239, 68, 68, 0.4)';
                         responseCard.style.background = 'rgba(239, 68, 68, 0.08)';
                         showToast("Item not found in database.", "error");
                     }
-                    
+
                     // Highlight input to scan again quickly
                     inputEl.select();
                 })
@@ -3081,12 +3159,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
             document.getElementById('checker-empty-state').style.display = 'block';
             document.getElementById('checker-result-found').style.display = 'none';
             document.getElementById('checker-result-notfound').style.display = 'none';
-            
+
             const responseCard = document.getElementById('checker-response-card');
             responseCard.style.borderStyle = 'dashed';
             responseCard.style.borderColor = 'rgba(255,255,255,0.1)';
             responseCard.style.background = 'rgba(0,0,0,0.1)';
-            
+
             const inputEl = document.getElementById('checker_barcode');
             inputEl.focus();
         }
