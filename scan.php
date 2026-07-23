@@ -36,6 +36,14 @@ $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $scriptDir = rtrim($scriptDir, '/');
 $isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '');
+
+// Pre-fetch active non-closed stores for instant store selection on load
+$existingStoresList = [];
+try {
+    $dbStoreHelper = new OWI_DB();
+    $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
+} catch (Exception $e) {}
+$hasActiveStores = !empty($existingStoresList);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -770,18 +778,20 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                 </div>
 
                 <form onsubmit="handleSelectStore(event)" id="store-select-form">
-                    <div class="form-group" id="existing-stores-group" style="display:none;">
+                    <div class="form-group" id="existing-stores-group" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                         <label for="active_store_select">Choose Open Store</label>
                         <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
-                            <!-- Dynamically populated -->
+                            <?php foreach ($existingStoresList as $st): ?>
+                                <option value="<?= htmlspecialchars($st['store_code']) ?>">Store: <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <div class="form-group" id="new-store-group">
+                    <div class="form-group" id="new-store-group" style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
                         <div style="margin-bottom: 1rem;">
                             <label for="active_store_input" id="store-input-label">Create / Connect New Store Code</label>
                             <input type="text" id="active_store_input" class="form-control" placeholder="STORE CODE"
-                                style="text-transform: uppercase;" autocomplete="off">
+                                style="text-transform: uppercase;" autocomplete="off" <?= $hasActiveStores ? '' : 'required' ?>>
                         </div>
                         <div>
                             <label for="active_store_locators">Number of Locators Needed</label>
@@ -795,7 +805,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
                     <div style="text-align:center; margin-top: 1rem;" id="toggle-store-mode-container">
                         <a href="javascript:void(0)" onclick="toggleStoreInputMode()"
                             style="font-size:0.8rem; color:#3b82f6; text-decoration:none; font-weight:600;"
-                            id="toggle-store-mode-btn">Choose from existing stores</a>
+                            id="toggle-store-mode-btn"><?= $hasActiveStores ? 'Or Create New Store' : 'Choose from existing stores' ?></a>
                     </div>
 
                     <div
@@ -822,7 +832,7 @@ $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SE
             </div>
         </div>
         <script>
-            let storeInputMode = 'create';
+            let storeInputMode = <?= $hasActiveStores ? "'select'" : "'create'" ?>;
 
             window.addEventListener('DOMContentLoaded', () => {
                 fetchExistingStores();
