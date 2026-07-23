@@ -1221,6 +1221,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         setStoreMode('select');
                         const toggleContainer = document.getElementById('toggle-store-mode-container');
                         if (toggleContainer) toggleContainer.style.display = 'block';
+                        const toggleBtn = document.getElementById('toggle-store-mode-btn');
+                        if (toggleBtn) toggleBtn.style.display = 'inline-block';
                     } else {
                         setStoreMode('create');
                         const toggleContainer = document.getElementById('toggle-store-mode-container');
