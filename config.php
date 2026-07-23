@@ -155,7 +155,7 @@ function isLoggedIn() {
 }
 
 function isAdmin() {
-    return isset($_SESSION['role']) && $_SESSION['role'] === 'system_admin';
+    return isset($_SESSION['role']) && in_array($_SESSION['role'], ['system_admin', 'admin']);
 }
 
 function hasActiveStore() {
@@ -163,10 +163,13 @@ function hasActiveStore() {
 }
 
 function checkAuth($requireAdmin = false) {
+    $isApiCall = (strpos($_SERVER['SCRIPT_NAME'] ?? '', 'api.php') !== false) ||
+                 (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') ||
+                 (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
     if (!isLoggedIn()) {
-        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+        if ($isApiCall) {
             header('Content-Type: application/json');
-            http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'Unauthorized. Please log in.']);
             exit;
         }
@@ -174,6 +177,11 @@ function checkAuth($requireAdmin = false) {
         exit;
     }
     if ($requireAdmin && !isAdmin()) {
+        if ($isApiCall) {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'error', 'message' => 'Admin privileges required to perform this action.']);
+            exit;
+        }
         header('Location: scan.php');
         exit;
     }
