@@ -2597,15 +2597,19 @@ $hasActiveStores = !empty($existingStoresList);
                         // Compute Metrics
                         let totalQty = 0;
                         const uniqueBarcodes = new Set();
+                        const infBarcodes = new Set();
 
                         scans.forEach(scan => {
                             totalQty += parseFloat(scan.quantity || 0);
                             uniqueBarcodes.add(scan.barcode);
+                            if (scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product' || !scan.sku || scan.sku === '') {
+                                infBarcodes.add(scan.barcode);
+                            }
                         });
 
                         // Update metrics UI
                         totalQtyEl.innerText = totalQty.toFixed(0);
-                        uniqueBarcodesEl.innerText = uniqueBarcodes.size;
+                        uniqueBarcodesEl.innerText = infBarcodes.size;
 
                         // Update table body UI
                         if (scans.length > 0) {

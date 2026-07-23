@@ -660,6 +660,30 @@ try {
             $store = strtolower($_SESSION['store_code']);
             $location = isset($_GET['location']) ? trim($_GET['location']) : '';
 
+            // Self-healing: Update descriptions & SKUs for any previous "Item Not Found" scans that now exist in the items tables
+            try {
+                $countsheetCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
+                if (!empty($countsheetCheck)) {
+                    $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
+                    if (!empty($tableCheck)) {
+                        $db->execute("
+                            UPDATE `{$store}_countsheet` c
+                            INNER JOIN `{$store}_items` i ON i.UPC = c.UPC OR i.SKU = c.UPC
+                            SET c.Descr = i.Descr, c.SKU = i.SKU
+                            WHERE c.Descr IN ('Item Not Found', 'Unknown Product', 'N/A', '') OR c.SKU = '' OR c.SKU IS NULL
+                        ");
+                    }
+                    $db->execute("
+                        UPDATE `{$store}_countsheet` c
+                        INNER JOIN `items` i ON i.UPC = c.UPC OR i.SKU = c.UPC
+                        SET c.Descr = i.Descr, c.SKU = i.SKU
+                        WHERE c.Descr IN ('Item Not Found', 'Unknown Product', 'N/A', '') OR c.SKU = '' OR c.SKU IS NULL
+                    ");
+                }
+            } catch (Exception $exHeal) {
+                // Ignore
+            }
+
             // Fetch scans from dynamic store countsheet table
             $sqlScans = "
                 SELECT c.RecNo as id, c.UPC as barcode, c.Qty as original_qty, 
