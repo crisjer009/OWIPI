@@ -374,6 +374,7 @@ namespace CasioScannerApp
         // Load configuration from local text file
         private void LoadConfig()
         {
+            txtHost.Text = "http://pginv.officewarehouse.com.ph/OWIPI";
             try
             {
                 if (File.Exists(configPath))
@@ -385,7 +386,7 @@ namespace CasioScannerApp
                         string line3 = sr.ReadLine();
                         string line4 = sr.ReadLine();
 
-                        if (line1 != null) txtHost.Text = line1.Trim();
+                        if (line1 != null && line1.Trim() != "") txtHost.Text = line1.Trim();
                         txtStoreCode.Text = ""; // Always start blank on load
                         txtOperator.Text = "";  // Always start blank on load
                         if (line4 != null) txtLocator.Text = line4.Trim(); // Load locator history
