@@ -3208,8 +3208,184 @@ if ($driverLoaded && $dbStatus === 'connected') {
             inputEl.focus();
         }
 
-        // Exit Store Session (handled by async logoutStore below)
+        function showCustomConfirm(message, title = "Confirm Action", confirmText = "Confirm", cancelText = "Cancel") {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-dialog-overlay');
+                const titleEl = document.getElementById('custom-dialog-title');
+                const messageEl = document.getElementById('custom-dialog-message');
+                const btnPrimary = document.getElementById('custom-dialog-btn-primary');
+                const btnSecondary = document.getElementById('custom-dialog-btn-secondary');
+
+                if (!overlay || !titleEl || !messageEl || !btnPrimary || !btnSecondary) {
+                    resolve(confirm(message));
+                    return;
+                }
+
+                titleEl.innerHTML = `<span style="font-size:1.2rem;">⚠️</span> ${title}`;
+                messageEl.innerText = message;
+                btnPrimary.innerText = confirmText;
+                btnSecondary.innerText = cancelText;
+                btnSecondary.style.display = 'inline-flex';
+
+                overlay.classList.add('active');
+
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnPrimary.onclick = null;
+                    btnSecondary.onclick = null;
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        cleanup();
+                        resolve(false);
+                    } else if (e.key === 'Enter') {
+                        cleanup();
+                        resolve(true);
+                    }
+                };
+
+                btnPrimary.onclick = () => {
+                    cleanup();
+                    resolve(true);
+                };
+
+                btnSecondary.onclick = () => {
+                    cleanup();
+                    resolve(false);
+                };
+
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
+
+        function showCustomAlert(message, title = "Notice", btnText = "OK") {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-dialog-overlay');
+                const titleEl = document.getElementById('custom-dialog-title');
+                const messageEl = document.getElementById('custom-dialog-message');
+                const btnPrimary = document.getElementById('custom-dialog-btn-primary');
+                const btnSecondary = document.getElementById('custom-dialog-btn-secondary');
+
+                if (!overlay || !titleEl || !messageEl || !btnPrimary) {
+                    alert(message);
+                    resolve();
+                    return;
+                }
+
+                titleEl.innerHTML = `<span style="font-size:1.2rem;">ℹ️</span> ${title}`;
+                messageEl.innerText = message;
+                btnPrimary.innerText = btnText;
+                if (btnSecondary) btnSecondary.style.display = 'none';
+
+                overlay.classList.add('active');
+
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnPrimary.onclick = null;
+                    if (btnSecondary) btnSecondary.onclick = null;
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape' || e.key === 'Enter') {
+                        cleanup();
+                        resolve();
+                    }
+                };
+
+                btnPrimary.onclick = () => {
+                    cleanup();
+                    resolve();
+                };
+
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
+
+        function showCustomPrompt(message, defaultValue = '', title = 'Input Required', btnText = 'Submit') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('custom-dialog-overlay');
+                const titleEl = document.getElementById('custom-dialog-title');
+                const messageEl = document.getElementById('custom-dialog-message');
+                const btnPrimary = document.getElementById('custom-dialog-btn-primary');
+                const btnSecondary = document.getElementById('custom-dialog-btn-secondary');
+
+                if (!overlay || !titleEl || !messageEl || !btnPrimary) {
+                    const val = prompt(message, defaultValue);
+                    resolve(val);
+                    return;
+                }
+
+                titleEl.innerHTML = `<span style="font-size:1.2rem;">✏️</span> ${title}`;
+                messageEl.innerHTML = `
+                    <div style="margin-bottom:10px;">${message}</div>
+                    <input type="text" id="custom-dialog-input" value="${defaultValue}" style="width:100%; padding:8px 12px; font-size:0.9rem; border-radius:6px; background:rgba(0,0,0,0.4); color:white; border:1px solid rgba(255,255,255,0.2); outline:none; box-sizing:border-box;">
+                `;
+                btnPrimary.innerText = btnText;
+                if (btnSecondary) {
+                    btnSecondary.innerText = 'Cancel';
+                    btnSecondary.style.display = 'inline-flex';
+                }
+
+                overlay.classList.add('active');
+                const inputEl = document.getElementById('custom-dialog-input');
+                if (inputEl) {
+                    inputEl.focus();
+                    inputEl.select();
+                }
+
+                const cleanup = () => {
+                    overlay.classList.remove('active');
+                    btnPrimary.onclick = null;
+                    if (btnSecondary) btnSecondary.onclick = null;
+                    document.removeEventListener('keydown', keyHandler);
+                };
+
+                const keyHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        cleanup();
+                        resolve(null);
+                    } else if (e.key === 'Enter') {
+                        cleanup();
+                        resolve(inputEl ? inputEl.value : '');
+                    }
+                };
+
+                btnPrimary.onclick = () => {
+                    const val = inputEl ? inputEl.value : '';
+                    cleanup();
+                    resolve(val);
+                };
+
+                if (btnSecondary) {
+                    btnSecondary.onclick = () => {
+                        cleanup();
+                        resolve(null);
+                    };
+                }
+
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
     </script>
+
+    <!-- Global Modern Custom Dialog Modal -->
+    <div class="modal-overlay" id="custom-dialog-overlay" style="z-index: 999999;">
+        <div class="modal-card" style="max-width: 440px; width: 90%; text-align: center; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px);">
+            <h3 class="modal-title" id="custom-dialog-title" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: white; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                Confirmation
+            </h3>
+            <div id="custom-dialog-message" style="font-size: 0.9rem; color: #8b949e; margin-bottom: 1.5rem; line-height: 1.5;">
+                Are you sure you want to proceed?
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: center;" id="custom-dialog-actions">
+                <button type="button" class="btn btn-secondary" id="custom-dialog-btn-secondary" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px;">Cancel</button>
+                <button type="button" class="btn btn-primary" id="custom-dialog-btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600;">Confirm</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
