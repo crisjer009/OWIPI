@@ -14,7 +14,7 @@
     <PlatformID>E2BECB1F-8C8C-4092-B32E-6561359093FA</PlatformID>
     <OSVersion>5.0</OSVersion>
     <DeployDirSuffix>CasioScannerApp</DeployDirSuffix>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FormFactorID>
     </FormFactorID>
   </PropertyGroup>
