@@ -778,7 +778,7 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
 
                 <form onsubmit="handleSelectStore(event)" id="store-select-form">
-                    <div class="form-group" id="existing-stores-group" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
+                    <div class="form-group" id="existing-stores-group" style="display:none;">
                         <label for="active_store_select">Choose Open Store</label>
                         <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
                             <?php foreach ($existingStoresList as $st): ?>
@@ -787,11 +787,11 @@ $hasActiveStores = !empty($existingStoresList);
                         </select>
                     </div>
 
-                    <div class="form-group" id="new-store-group" style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
+                    <div class="form-group" id="new-store-group" style="display:block;">
                         <div style="margin-bottom: 1rem;">
                             <label for="active_store_input" id="store-input-label">Create / Connect New Store Code</label>
                             <input type="text" id="active_store_input" class="form-control" placeholder="STORE CODE"
-                                style="text-transform: uppercase;" autocomplete="off" <?= $hasActiveStores ? '' : 'required' ?>>
+                                style="text-transform: uppercase;" autocomplete="off" required>
                         </div>
                         <div>
                             <label for="active_store_locators">Number of Locators Needed</label>
@@ -802,10 +802,10 @@ $hasActiveStores = !empty($existingStoresList);
 
                     <button type="submit" class="btn-select-store" style="margin-top: 1rem;">Activate Store Session</button>
 
-                    <div style="text-align:center; margin-top: 1rem;" id="toggle-store-mode-container">
+                    <div style="text-align:center; margin-top: 1rem;" id="toggle-store-mode-container" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                         <a href="javascript:void(0)" onclick="toggleStoreInputMode()"
                             style="font-size:0.8rem; color:#3b82f6; text-decoration:none; font-weight:600;"
-                            id="toggle-store-mode-btn"><?= $hasActiveStores ? 'Or Create New Store' : 'Choose from existing stores' ?></a>
+                            id="toggle-store-mode-btn">Choose from existing stores</a>
                     </div>
 
                     <div
@@ -832,7 +832,7 @@ $hasActiveStores = !empty($existingStoresList);
             </div>
         </div>
         <script>
-            let storeInputMode = <?= $hasActiveStores ? "'select'" : "'create'" ?>;
+            let storeInputMode = 'create';
 
             window.addEventListener('DOMContentLoaded', () => {
                 fetchExistingStores();
@@ -842,6 +842,7 @@ $hasActiveStores = !empty($existingStoresList);
                 fetch('api.php?action=get_stores')
                     .then(res => res.json())
                     .then(data => {
+                        const toggleContainer = document.getElementById('toggle-store-mode-container');
                         if (data.status === 'success' && data.stores && data.stores.length > 0) {
                             const select = document.getElementById('active_store_select');
                             select.innerHTML = '';
@@ -851,10 +852,9 @@ $hasActiveStores = !empty($existingStoresList);
                                 opt.innerText = `Store: ${store.store_code}`;
                                 select.appendChild(opt);
                             });
-                            setStoreMode('select');
+                            if (toggleContainer) toggleContainer.style.display = 'block';
                         } else {
-                            setStoreMode('create');
-                            document.getElementById('toggle-store-mode-container').style.display = 'none';
+                            if (toggleContainer) toggleContainer.style.display = 'none';
                         }
                     })
                     .catch(err => console.error("Error loading stores:", err));
