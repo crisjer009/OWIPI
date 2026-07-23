@@ -1673,17 +1673,27 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             </div>
 
                             <div
-                                style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
                                 <span style="font-size: 0.8rem; color: var(--text-secondary);">
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
-                                <?php if ($isSysAdmin): ?>
-                                    <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')"
-                                        class="btn btn-secondary btn-sm"
-                                        style="padding: 2px 8px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
-                                        Delete
-                                    </button>
-                                <?php endif; ?>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin']) && ($s['status'] === 'Finished' || $s['status'] === 'Closed')): ?>
+                                        <button onclick="reopenStoreSession('<?= htmlspecialchars($s['store_code']) ?>')"
+                                            class="btn btn-secondary btn-sm"
+                                            style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid var(--accent-color); color: var(--accent-color); background: rgba(59, 130, 246, 0.1); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;"
+                                            title="Re-open store session so users can access locators again">
+                                            🔄 Re-open Store
+                                        </button>
+                                    <?php endif; ?>
+                                    <?php if ($isSysAdmin): ?>
+                                        <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')"
+                                            class="btn btn-secondary btn-sm"
+                                            style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
+                                            Delete
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -2393,6 +2403,35 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     btn.disabled = false;
                     btn.innerText = '☁️ Sync Users from Cloud';
                     showToast("Failed to sync users: " + err, "error");
+                });
+        }
+
+        // Re-open Finished/Closed Store Session for Admins
+        async function reopenStoreSession(storeCode) {
+            const ok = await showCustomConfirm(
+                `Are you sure you want to re-open store session '${storeCode.toUpperCase()}'? This will allow operators and the store creator to access and scan in this store again.`,
+                "Re-open Store Session",
+                "Re-open Store",
+                "Cancel"
+            );
+            if (!ok) return;
+
+            showToast(`Re-opening store ${storeCode.toUpperCase()}...`, "info");
+
+            fetch(`api.php?action=reopen_store&store_code=${encodeURIComponent(storeCode)}`, {
+                method: 'POST'
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showCustomAlert("Failed to re-open store: " + data.message, "Re-open Failed");
+                    }
+                })
+                .catch(err => {
+                    showCustomAlert("Request failed: " + err, "Network Error");
                 });
         }
 

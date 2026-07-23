@@ -2238,6 +2238,29 @@ try {
             ]);
             break;
 
+        case 'reopen_store':
+            $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ($_POST['store_code'] ?? '')));
+            if (empty($storeCode)) {
+                throw new Exception("Invalid store code.");
+            }
+            $db = new OWI_DB();
+            
+            // 1. Re-open store status in stores table
+            try {
+                $db->execute("UPDATE stores SET closed = 0 WHERE LOWER(store_code) = ?", [$storeCode]);
+            } catch (Exception $e) {}
+
+            // 2. Set status = 'open' for locators in {store}_locators table
+            try {
+                $db->execute("UPDATE `{$storeCode}_locators` SET status = 'open'");
+            } catch (Exception $e) {}
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Store '" . strtoupper($storeCode) . "' has been successfully re-opened! Users can now access and continue scanning."
+            ]);
+            break;
+
         case 'get_cloud_store_details':
             verifySyncToken();
             $store = $_GET['store_code'] ?? '';
