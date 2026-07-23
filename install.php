@@ -22,10 +22,11 @@ if (!$isLocalhost) {
     <html>
     <head>
         <title>OWIPI Local Installer</title>
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+        <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap"></noscript>
         <style>
             body {
-                font-family: 'Outfit', sans-serif;
+                font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
                 background: #0b0f19;
                 color: #e2e8f0;
                 padding: 3rem 1.5rem;
@@ -95,10 +96,11 @@ $step = $_GET['step'] ?? 'form';
 <html>
 <head>
     <title>OWIPI System Installer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap"></noscript>
     <style>
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: #0b0f19;
             color: #e2e8f0;
             padding: 3rem 1.5rem;
