@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (password_verify($password, $user['password'])) {
                     // Generate unique session token to prevent concurrent logins
                     $token = md5(uniqid(rand(), true));
-                    $db->execute("UPDATE users SET session_token = ? WHERE id = ?", [$token, $user['id']]);
+                    saveSessionToken($user['username'], $token);
 
                     // Password matches. Establish active session
                     $_SESSION['user_id'] = $user['id'];

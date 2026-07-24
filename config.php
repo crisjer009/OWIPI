@@ -149,33 +149,49 @@ function getServerLocalIP() {
     return $ips[0]['ip'];
 }
 
-// Authentication Check Helpers
+// Session token file-based helpers to prevent concurrent logins (No Database alterations)
+function getSessionTokens() {
+    $file = __DIR__ . '/session_tokens.json';
+    if (file_exists($file)) {
+        $content = @file_get_contents($file);
+        $data = json_decode($content, true);
+        if (is_array($data)) {
+            return $data;
+        }
+    }
+    return [];
+}
+
+function saveSessionToken($username, $token) {
+    $file = __DIR__ . '/session_tokens.json';
+    try {
+        $tokens = getSessionTokens();
+        $tokens[strtolower(trim($username))] = $token;
+        @file_put_contents($file, json_encode($tokens, JSON_PRETTY_PRINT));
+    } catch (Exception $e) {}
+}
+
 function isLoggedIn() {
-    if (!isset($_SESSION['user_id']) || !isset($_SESSION['session_token'])) {
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['session_token']) || !isset($_SESSION['username'])) {
         return false;
     }
-    // Fetch current token from DB to ensure single login session (prevent concurrent logins)
-    try {
-        $db = new OWI_DB();
-        $rows = $db->query("SELECT session_token FROM users WHERE id = ?", [$_SESSION['user_id']]);
-        if (!empty($rows)) {
-            $dbToken = $rows[0]['session_token'];
-            if ($dbToken !== $_SESSION['session_token']) {
-                // Logged in from elsewhere! Destroy session
-                $_SESSION = array();
-                if (ini_get("session.use_cookies")) {
-                    $params = session_get_cookie_params();
-                    setcookie(session_name(), '', time() - 42000,
-                        $params["path"], $params["domain"],
-                        $params["secure"], $params["httponly"]
-                    );
-                }
-                session_destroy();
-                return false;
+    // Check local JSON session token mapping to prevent concurrent logins
+    $tokens = getSessionTokens();
+    $userKey = strtolower(trim($_SESSION['username']));
+    if (isset($tokens[$userKey])) {
+        if ($tokens[$userKey] !== $_SESSION['session_token']) {
+            // Logged in from elsewhere! Destroy session
+            $_SESSION = array();
+            if (ini_get("session.use_cookies")) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000,
+                    $params["path"], $params["domain"],
+                    $params["secure"], $params["httponly"]
+                );
             }
+            session_destroy();
+            return false;
         }
-    } catch (Exception $e) {
-        // Fallback to true if DB connection fails to prevent lockout
     }
     return true;
 }
@@ -430,13 +446,6 @@ class OWI_DB {
             // Column already exists
         }
 
-        // Dynamically add session_token column to users table for concurrent login checks
-        try {
-            $this->execute("ALTER TABLE users ADD COLUMN session_token VARCHAR(255) NULL");
-        } catch (Exception $ex) {
-            // Column already exists
-        }
- 
         // Ensure all masterfile columns (Price, Aux1, QTY_STORE_1..125) exist on items table
         $this->ensureItemsColumnsExist('items');
 
