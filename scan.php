@@ -1370,6 +1370,10 @@ $hasActiveStores = !empty($existingStoresList);
                     style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
                     <span>Count Sheet & Locators</span>
                     <div style="display: flex; gap: 8px;">
+                        <button id="btn-export-excel" class="btn" onclick="exportStoreVarianceExcel()"
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#21262d; border: 1px solid #30363d; color:#c9d1d9; display:flex; align-items:center; gap:4px;">
+                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z"/></svg>
+                            Export Excel</button>
                         <button id="btn-print-summary" class="btn btn-success" onclick="printStoreSummary()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
                             Summary</button>
@@ -3461,6 +3465,11 @@ $hasActiveStores = !empty($existingStoresList);
                     console.error("Print summary error:", err);
                     alert("Failed to load scans for summary print: " + err);
                 });
+        }
+
+        // Export store masterfile with scans and variance to Excel (CSV format)
+        function exportStoreVarianceExcel() {
+            window.location.href = `api.php?action=export_masterfile_variance&store_code=${encodeURIComponent(storeCode)}`;
         }
 
         // Close the entire store session after validations

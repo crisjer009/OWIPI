@@ -855,6 +855,94 @@ try {
             ]);
             break;
 
+        case 'export_masterfile_variance':
+            $db = new OWI_DB();
+            $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
+            if (empty($storeInput)) {
+                throw new Exception("Store code is required.");
+            }
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
+
+            // Verify if items table exists
+            $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
+            if (empty($tableCheck)) {
+                throw new Exception("Store items table does not exist. Please import a masterfile first.");
+            }
+
+            // Verify if countsheet table exists
+            $countsheetCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
+            if (empty($countsheetCheck)) {
+                throw new Exception("Store countsheet table does not exist.");
+            }
+
+            // Query items with master_qty, scanned_qty, and variance
+            $sql = "
+                SELECT 
+                    COALESCE(i.UPC, c.UPC) as upc, 
+                    COALESCE(i.SKU, c.SKU) as sku, 
+                    COALESCE(NULLIF(i.Descr, ''), c.Descr, 'Item Not Found') as description, 
+                    COALESCE(i.Qty, 0.00) as master_qty,
+                    COALESCE(c.scanned_qty, 0.00) as scanned_qty,
+                    (COALESCE(c.scanned_qty, 0.00) - COALESCE(i.Qty, 0.00)) as variance
+                FROM `{$store}_items` i
+                LEFT JOIN (
+                    SELECT UPC, SKU, Descr, SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                    FROM `{$store}_countsheet` 
+                    GROUP BY UPC
+                ) c ON c.UPC = i.UPC
+
+                UNION
+
+                SELECT 
+                    c.UPC as upc, 
+                    c.SKU as sku, 
+                    c.Descr as description, 
+                    0.00 as master_qty,
+                    c.scanned_qty as scanned_qty,
+                    c.scanned_qty as variance
+                FROM (
+                    SELECT UPC, SKU, Descr, SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                    FROM `{$store}_countsheet` 
+                    GROUP BY UPC
+                ) c
+                LEFT JOIN `{$store}_items` i ON i.UPC = c.UPC
+                WHERE i.UPC IS NULL
+                ORDER BY upc ASC
+            ";
+            
+            $rows = $db->query($sql);
+
+            // Set headers to trigger file download
+            $filename = "OWI_Masterfile_Variance_" . strtoupper($store) . "_" . date('Ymd_His') . ".csv";
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+
+            // Open PHP output stream
+            $output = fopen('php://output', 'w');
+
+            // Output UTF-8 BOM for Excel compatibility
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Write CSV headers
+            fputcsv($output, ['Barcode (UPC)', 'ALU/SKU', 'Description', 'Master Qty', 'Scanned Qty', 'Variance']);
+
+            // Write CSV data rows
+            foreach ($rows as $row) {
+                fputcsv($output, [
+                    $row['upc'],
+                    $row['sku'],
+                    $row['description'],
+                    (float)$row['master_qty'],
+                    (float)$row['scanned_qty'],
+                    (float)$row['variance']
+                ]);
+            }
+
+            fclose($output);
+            exit;
+
         case 'get_product_info':
             $barcode = isset($_GET['barcode']) ? trim($_GET['barcode']) : '';
             if (empty($barcode)) {
