@@ -19,6 +19,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['server_settings_activ
     $config = array_merge($config, $newConfig);
 }
 
+// Redirect mobile scanner devices automatically to scan page without forcing login
+if (isMobileDevice()) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    if (!isset($_SESSION['user_id'])) {
+        $_SESSION['user_id'] = 999;
+        $_SESSION['username'] = 'Mobile Scanner';
+        $_SESSION['role'] = 'user';
+        $_SESSION['is_mobile_scanner'] = true;
+    }
+    header('Location: scan.php');
+    exit;
+}
+
 // Redirect if already logged in
 if (isLoggedIn()) {
     if (isAdmin()) {
@@ -285,7 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </svg>
             </div>
             <div class="logo-text">OWI PHYSICAL</div>
-            <div class="logo-subtitle">INVENTORY GATEWAY</div>
+            <div class="logo-subtitle">HOST ACCOUNT LOGIN</div>
         </div>
 
         <?php if (!empty($error)): ?>
@@ -310,6 +325,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="hidden" name="server_settings_active" id="server_settings_active" value="0">
 
             <button type="submit" class="btn">Log In</button>
+
+            <div style="text-align:center; margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);">
+                <a href="scan.php?mobile=1" style="font-size: 0.8rem; color: #3b82f6; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                    📱 Handheld Scanner Mode (No Login Required)
+                </a>
+            </div>
 
             <?php if (isset($_GET['sysadmin'])): ?>
             <!-- Collapsible Settings Section -->

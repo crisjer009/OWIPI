@@ -32,7 +32,8 @@ $existingStoresList = [];
 try {
     $dbStoreHelper = new OWI_DB();
     $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
-} catch (Exception $e) {}
+} catch (Exception $e) {
+}
 $hasActiveStores = !empty($existingStoresList);
 
 // Try to test connection if driver is loaded
@@ -1011,16 +1012,19 @@ if ($driverLoaded && $dbStatus === 'connected') {
             </div>
 
             <form onsubmit="handleSelectStore(event)" id="store-select-form">
-                <div class="form-group" id="existing-stores-group" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
+                <div class="form-group" id="existing-stores-group"
+                    style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                     <label for="active_store_select">Choose Existing Store</label>
                     <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
                         <?php foreach ($existingStoresList as $st): ?>
-                            <option value="<?= htmlspecialchars($st['store_code']) ?>">Store: <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
+                            <option value="<?= htmlspecialchars($st['store_code']) ?>">Store:
+                                <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
 
-                <div class="form-group" id="new-store-group" style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
+                <div class="form-group" id="new-store-group"
+                    style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
                     <div style="margin-bottom: 1rem;">
                         <label for="active_store_input" id="store-input-label">Create / Connect New Store Code</label>
                         <input type="text" id="active_store_input" class="form-control" placeholder="e.g. TES, HQ, CEBU"
@@ -1606,20 +1610,28 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             <!-- Pending Cloud Sync Approvals Card for Admins -->
             <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin'])): ?>
-                <div class="card" style="max-width: 600px; margin-top: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.04); border-radius: 12px; position: relative;" id="pending-syncs-card">
-                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-                        <h2 class="card-title" style="font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; color: white;">
-                            <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #eab308; color: #000; font-size: 0.85rem; font-weight: 900;">!</span>
+                <div class="card"
+                    style="max-width: 600px; margin-top: 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(234, 179, 8, 0.35); background: rgba(234, 179, 8, 0.04); border-radius: 12px; position: relative;"
+                    id="pending-syncs-card">
+                    <div class="card-header"
+                        style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                        <h2 class="card-title"
+                            style="font-size: 1.05rem; display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; color: white;">
+                            <span
+                                style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #eab308; color: #000; font-size: 0.85rem; font-weight: 900;">!</span>
                             <span>Pending Cloud Sync Approvals</span>
                         </h2>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <button type="button" onclick="fetchPendingSyncRequests()" class="btn btn-secondary btn-sm"
                                 style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer; border-radius: 6px;">Refresh</button>
-                            <button type="button" onclick="dismissPendingSyncCard()" style="background: none; border: none; color: #8b949e; font-size: 1.3rem; cursor: pointer; padding: 0 6px; line-height: 1; border-radius: 4px;" title="Dismiss">&times;</button>
+                            <button type="button" onclick="dismissPendingSyncCard()"
+                                style="background: none; border: none; color: #8b949e; font-size: 1.3rem; cursor: pointer; padding: 0 6px; line-height: 1; border-radius: 4px;"
+                                title="Dismiss">&times;</button>
                         </div>
                     </div>
                     <div id="pending-syncs-list" style="margin-top: 1rem;">
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">Checking for pending sync requests...
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; font-style: italic;">Checking for
+                            pending sync requests...
                         </p>
                     </div>
                 </div>
@@ -3404,16 +3416,21 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
     <!-- Global Modern Custom Dialog Modal -->
     <div class="modal-overlay" id="custom-dialog-overlay" style="z-index: 999999;">
-        <div class="modal-card" style="max-width: 440px; width: 90%; text-align: center; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px);">
-            <h3 class="modal-title" id="custom-dialog-title" style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: white; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <div class="modal-card"
+            style="max-width: 440px; width: 90%; text-align: center; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px);">
+            <h3 class="modal-title" id="custom-dialog-title"
+                style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: white; margin-bottom: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
                 Confirmation
             </h3>
-            <div id="custom-dialog-message" style="font-size: 0.9rem; color: #8b949e; margin-bottom: 1.5rem; line-height: 1.5;">
+            <div id="custom-dialog-message"
+                style="font-size: 0.9rem; color: #8b949e; margin-bottom: 1.5rem; line-height: 1.5;">
                 Are you sure you want to proceed?
             </div>
             <div style="display: flex; gap: 10px; justify-content: center;" id="custom-dialog-actions">
-                <button type="button" class="btn btn-secondary" id="custom-dialog-btn-secondary" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px;">Cancel</button>
-                <button type="button" class="btn btn-primary" id="custom-dialog-btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600;">Confirm</button>
+                <button type="button" class="btn btn-secondary" id="custom-dialog-btn-secondary"
+                    style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px;">Cancel</button>
+                <button type="button" class="btn btn-primary" id="custom-dialog-btn-primary"
+                    style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600;">Confirm</button>
             </div>
         </div>
     </div>

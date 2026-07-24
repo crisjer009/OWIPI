@@ -150,11 +150,48 @@ function getServerLocalIP() {
 }
 
 // Authentication Check Helpers
+function isMobileDevice() {
+    if (!empty($_SESSION['is_mobile_scanner'])) {
+        return true;
+    }
+    if (isset($_GET['autologin']) || isset($_GET['mobile']) || isset($_GET['operator']) || (isset($_GET['store_code']) && !isset($_SESSION['user_id']))) {
+        return true;
+    }
+    $ua = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+    if (!empty($ua)) {
+        $mobileKeywords = [
+            'windows ce', 'wm', 'android', 'iphone', 'ipad', 'ipod', 'mobile',
+            'handheld', 'casio', 'symbol', 'zebra', 'honeywell', 'intermec',
+            'datalogic', 'pda', 'iemobile', 'opera mini', 'armv4', 'wce'
+        ];
+        foreach ($mobileKeywords as $keyword) {
+            if (strpos($ua, $keyword) !== false) {
+                return true;
+            }
+        }
+    }
+    $script = strtolower($_SERVER['SCRIPT_NAME'] ?? '');
+    if (strpos($script, 'mobile_ce.php') !== false) {
+        return true;
+    }
+    return false;
+}
+
 function isLoggedIn() {
-    if (!isset($_SESSION['user_id']) || !isset($_SESSION['session_token'])) {
+    if (!isset($_SESSION['user_id'])) {
         return false;
     }
-    // Fetch current token from DB to ensure single login session (prevent concurrent logins)
+
+    // Mobile Scanners / non-host user sessions bypass single session token DB check
+    if (!empty($_SESSION['is_mobile_scanner']) || (isset($_SESSION['role']) && $_SESSION['role'] === 'user')) {
+        return true;
+    }
+
+    if (!isset($_SESSION['session_token'])) {
+        return false;
+    }
+
+    // Fetch current token from DB to ensure single login session for HOST user accounts
     try {
         $db = new OWI_DB();
         $rows = $db->query("SELECT session_token FROM users WHERE id = ?", [$_SESSION['user_id']]);
@@ -189,6 +226,28 @@ function hasActiveStore() {
 }
 
 function checkAuth($requireAdmin = false) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Exclude mobile scanner users from mandatory login
+    if (!$requireAdmin && isMobileDevice()) {
+        if (!isset($_SESSION['user_id'])) {
+            $_SESSION['user_id'] = 999;
+            $_SESSION['username'] = isset($_GET['user']) ? urldecode($_GET['user']) : (isset($_GET['operator']) ? urldecode($_GET['operator']) : 'Mobile Scanner');
+            $_SESSION['role'] = 'user';
+            $_SESSION['is_mobile_scanner'] = true;
+            if (isset($_GET['store'])) {
+                $_SESSION['store_code'] = strtoupper($_GET['store']);
+            } elseif (isset($_GET['store_code'])) {
+                $_SESSION['store_code'] = strtoupper($_GET['store_code']);
+            }
+        } else {
+            $_SESSION['is_mobile_scanner'] = true;
+        }
+        return true;
+    }
+
     $isApiCall = (strpos($_SERVER['SCRIPT_NAME'] ?? '', 'api.php') !== false) ||
                  (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') ||
                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
@@ -198,7 +257,7 @@ function checkAuth($requireAdmin = false) {
     if (!isLoggedIn()) {
         if ($isApiCall) {
             header('Content-Type: application/json');
-            echo json_encode(['status' => 'error', 'message' => 'Unauthorized. Please log in.']);
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized. Please log in with a Host User account.']);
             exit;
         }
         $redirectUrl = 'login.php';

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-// Handle dynamic QR Autologin to bypass login page
+// Handle dynamic QR Autologin or Mobile Scanner query parameters
 if (isset($_GET['autologin']) && isset($_GET['store'])) {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
@@ -9,6 +9,7 @@ if (isset($_GET['autologin']) && isset($_GET['store'])) {
     $_SESSION['user_id'] = (int) $_GET['autologin'];
     $_SESSION['username'] = isset($_GET['user']) ? urldecode($_GET['user']) : 'Mobile Scanner';
     $_SESSION['store_code'] = strtoupper($_GET['store']);
+    $_SESSION['role'] = 'user';
     $_SESSION['is_mobile_scanner'] = true;
 
     // Redirect to clean scan.php URL to hide credentials in browser history
@@ -16,7 +17,17 @@ if (isset($_GET['autologin']) && isset($_GET['store'])) {
     exit;
 }
 
-checkAuth(); // All authenticated users can scan
+if (isMobileDevice() && !isset($_SESSION['user_id'])) {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    $_SESSION['user_id'] = 999;
+    $_SESSION['username'] = 'Mobile Scanner';
+    $_SESSION['role'] = 'user';
+    $_SESSION['is_mobile_scanner'] = true;
+}
+
+checkAuth(); // HOST user accounts require login; mobile scanner users bypass login
 $config = loadConfig();
 $marginTop = isset($config['print_margin_top']) ? (int) $config['print_margin_top'] : 0;
 $marginLeft = isset($config['print_margin_left']) ? (int) $config['print_margin_left'] : 10;
@@ -42,7 +53,8 @@ $existingStoresList = [];
 try {
     $dbStoreHelper = new OWI_DB();
     $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
-} catch (Exception $e) {}
+} catch (Exception $e) {
+}
 $hasActiveStores = !empty($existingStoresList);
 ?>
 <!DOCTYPE html>
@@ -780,7 +792,8 @@ $hasActiveStores = !empty($existingStoresList);
                         <label for="active_store_select">Choose Open Store</label>
                         <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
                             <?php foreach ($existingStoresList as $st): ?>
-                                <option value="<?= htmlspecialchars($st['store_code']) ?>">Store: <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
+                                <option value="<?= htmlspecialchars($st['store_code']) ?>">Store:
+                                    <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -800,7 +813,8 @@ $hasActiveStores = !empty($existingStoresList);
 
                     <button type="submit" class="btn-select-store" style="margin-top: 1rem;">Activate Store Session</button>
 
-                    <div style="text-align:center; margin-top: 1rem;" id="toggle-store-mode-container" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
+                    <div style="text-align:center; margin-top: 1rem;" id="toggle-store-mode-container"
+                        style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                         <a href="javascript:void(0)" onclick="toggleStoreInputMode()"
                             style="font-size:0.8rem; color:#3b82f6; text-decoration:none; font-weight:600;"
                             id="toggle-store-mode-btn">Choose from existing stores</a>
@@ -1372,7 +1386,10 @@ $hasActiveStores = !empty($existingStoresList);
                     <div style="display: flex; gap: 8px;">
                         <button id="btn-export-excel" class="btn" onclick="exportStoreVarianceExcel()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#21262d; border: 1px solid #30363d; color:#c9d1d9; display:flex; align-items:center; gap:4px;">
-                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z"/></svg>
+                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;">
+                                <path
+                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z" />
+                            </svg>
                             Export Excel</button>
                         <button id="btn-print-summary" class="btn btn-success" onclick="printStoreSummary()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
