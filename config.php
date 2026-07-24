@@ -151,7 +151,33 @@ function getServerLocalIP() {
 
 // Authentication Check Helpers
 function isLoggedIn() {
-    return isset($_SESSION['user_id']);
+    if (!isset($_SESSION['user_id']) || !isset($_SESSION['session_token'])) {
+        return false;
+    }
+    // Fetch current token from DB to ensure single login session (prevent concurrent logins)
+    try {
+        $db = new OWI_DB();
+        $rows = $db->query("SELECT session_token FROM users WHERE id = ?", [$_SESSION['user_id']]);
+        if (!empty($rows)) {
+            $dbToken = $rows[0]['session_token'];
+            if ($dbToken !== $_SESSION['session_token']) {
+                // Logged in from elsewhere! Destroy session
+                $_SESSION = array();
+                if (ini_get("session.use_cookies")) {
+                    $params = session_get_cookie_params();
+                    setcookie(session_name(), '', time() - 42000,
+                        $params["path"], $params["domain"],
+                        $params["secure"], $params["httponly"]
+                    );
+                }
+                session_destroy();
+                return false;
+            }
+        }
+    } catch (Exception $e) {
+        // Fallback to true if DB connection fails to prevent lockout
+    }
+    return true;
 }
 
 function isAdmin() {
@@ -167,13 +193,19 @@ function checkAuth($requireAdmin = false) {
                  (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') ||
                  (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
 
+    $hadSession = isset($_SESSION['user_id']);
+
     if (!isLoggedIn()) {
         if ($isApiCall) {
             header('Content-Type: application/json');
             echo json_encode(['status' => 'error', 'message' => 'Unauthorized. Please log in.']);
             exit;
         }
-        header('Location: login.php');
+        $redirectUrl = 'login.php';
+        if ($hadSession) {
+            $redirectUrl .= '?msg=session_conflict';
+        }
+        header('Location: ' . $redirectUrl);
         exit;
     }
     if ($requireAdmin && !isAdmin()) {
@@ -394,6 +426,13 @@ class OWI_DB {
         // Dynamically add synced column to stores table for existing installations
         try {
             $this->execute("ALTER TABLE stores ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");
+        } catch (Exception $ex) {
+            // Column already exists
+        }
+
+        // Dynamically add session_token column to users table for concurrent login checks
+        try {
+            $this->execute("ALTER TABLE users ADD COLUMN session_token VARCHAR(255) NULL");
         } catch (Exception $ex) {
             // Column already exists
         }

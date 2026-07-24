@@ -2,6 +2,9 @@
 require_once __DIR__ . '/config.php';
 
 $error = '';
+if (isset($_GET['msg']) && $_GET['msg'] === 'session_conflict') {
+    $error = 'This account has been logged in from another location/device.';
+}
 $config = loadConfig();
 
 // Save connection settings if submitted as part of the login attempt
@@ -46,10 +49,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($rows)) {
                 $user = $rows[0];
                 if (password_verify($password, $user['password'])) {
+                    // Generate unique session token to prevent concurrent logins
+                    $token = md5(uniqid(rand(), true));
+                    $db->execute("UPDATE users SET session_token = ? WHERE id = ?", [$token, $user['id']]);
+
                     // Password matches. Establish active session
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['role'] = $user['role'];
+                    $_SESSION['session_token'] = $token;
                     
                     // Do not auto-select store, let them choose or create it in index.php/scan.php
                     if ($user['role'] === 'system_admin' || $user['role'] === 'admin') {
