@@ -1172,6 +1172,7 @@ $hasActiveStores = !empty($existingStoresList);
                             <tr
                                 style="border-bottom: 2px solid rgba(255,255,255,0.08); color: var(--text-white); font-weight: 600; position: sticky; top: 0; background: #161b22; z-index: 1;">
                                 <th style="padding: 12px 10px;">Barcode</th>
+                                <th style="padding: 12px 10px;">ALU/SKU</th>
                                 <th style="padding: 12px 10px;">Description</th>
                                 <th style="padding: 12px 10px; text-align: center;">Qty</th>
                                 <th style="padding: 12px 10px;">Scanned By</th>
@@ -1181,7 +1182,7 @@ $hasActiveStores = !empty($existingStoresList);
                         </thead>
                         <tbody id="host-scans-tbody">
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
                                     Waiting for scanner connections...
                                 </td>
                             </tr>
@@ -2628,6 +2629,7 @@ $hasActiveStores = !empty($existingStoresList);
                                 html += `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                         <td style="padding: 12px 10px; font-family:monospace; color:#58a6ff; font-weight:600;">${scan.barcode}</td>
+                                        <td style="padding: 12px 10px; font-family:monospace; color:#3fb950; font-weight:600;">${scan.sku || 'N/A'}</td>
                                         <td style="padding: 12px 10px; color:var(--text-white); font-weight:500;">${scan.product_name || '<span style="color:var(--text-muted);">Item Not in Catalog</span>'}</td>
                                         <td style="padding: 12px 10px; text-align: center; font-weight:700; color:var(--text-white); font-size:1rem;">${parseFloat(scan.quantity).toFixed(0)}</td>
                                         <td style="padding: 12px 10px; color:#c9d1d9;">${scan.scanned_by || 'Unknown'}</td>
@@ -2641,7 +2643,7 @@ $hasActiveStores = !empty($existingStoresList);
                         } else {
                             tbody.innerHTML = `
                                 <tr>
-                                    <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                    <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
                                         No scans logged yet. Connect a mobile device to start scanning!
                                     </td>
                                 </tr>
