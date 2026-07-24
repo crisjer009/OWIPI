@@ -929,16 +929,31 @@ try {
             fputcsv($output, ['Barcode (UPC)', 'ALU/SKU', 'Description', 'Master Qty', 'Scanned Qty', 'Variance']);
 
             // Write CSV data rows
+            $totalMaster = 0.0;
+            $totalScanned = 0.0;
+            $totalVariance = 0.0;
+
             foreach ($rows as $row) {
+                $master = (float)$row['master_qty'];
+                $scanned = (float)$row['scanned_qty'];
+                $var = (float)$row['variance'];
+
+                $totalMaster += $master;
+                $totalScanned += $scanned;
+                $totalVariance += $var;
+
                 fputcsv($output, [
                     $row['upc'],
                     $row['sku'],
                     $row['description'],
-                    (float)$row['master_qty'],
-                    (float)$row['scanned_qty'],
-                    (float)$row['variance']
+                    $master,
+                    $scanned,
+                    $var
                 ]);
             }
+
+            // Write totals row
+            fputcsv($output, ['TOTAL', '', '', $totalMaster, $totalScanned, $totalVariance]);
 
             fclose($output);
             exit;
