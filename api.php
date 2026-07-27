@@ -1017,7 +1017,7 @@ try {
                         WHERE UPC LIKE ? OR SKU LIKE ? OR Descr LIKE ? 
                            OR UPC LIKE ? OR SKU LIKE ?
                            OR UPC LIKE ? OR SKU LIKE ?
-                        LIMIT 40";
+                        LIMIT 150";
                 $params = [$searchParam, $searchParam, $searchParam, $searchUnpadded, $searchUnpadded, $searchPadded, $searchPadded];
                 $rows = $db->query($sql, $params);
                 if (!empty($rows)) {
@@ -1025,6 +1025,67 @@ try {
                     break;
                 }
             }
+
+            // Priority sorting: 1st ALU/SKU, 2nd Barcode/UPC, 3rd Description
+            $qLower = strtolower($q);
+            $unpaddedLower = strtolower($unpadded);
+            $padded6Lower = strtolower($padded6);
+
+            usort($items, function($a, $b) use ($qLower, $unpaddedLower, $padded6Lower) {
+                $getRank = function($item) use ($qLower, $unpaddedLower, $padded6Lower) {
+                    $sku = strtolower(trim($item['SKU'] ?? ''));
+                    $upc = strtolower(trim($item['UPC'] ?? ''));
+                    $desc = strtolower(trim($item['Descr'] ?? ''));
+
+                    // Rank 1: Exact SKU match (raw, unpadded, or padded6)
+                    if ($sku === $qLower || $sku === $unpaddedLower || $sku === $padded6Lower) {
+                        return 1;
+                    }
+                    // Rank 2: SKU prefix / starts with match
+                    if (strpos($sku, $qLower) === 0 || strpos($sku, $unpaddedLower) === 0) {
+                        return 2;
+                    }
+                    // Rank 3: SKU contains match
+                    if (strpos($sku, $qLower) !== false || strpos($sku, $unpaddedLower) !== false) {
+                        return 3;
+                    }
+
+                    // Rank 4: Exact Barcode/UPC match
+                    if ($upc === $qLower || $upc === $unpaddedLower || $upc === $padded6Lower) {
+                        return 4;
+                    }
+                    // Rank 5: Barcode/UPC prefix / starts with match
+                    if (strpos($upc, $qLower) === 0 || strpos($upc, $unpaddedLower) === 0) {
+                        return 5;
+                    }
+                    // Rank 6: Barcode/UPC contains match
+                    if (strpos($upc, $qLower) !== false || strpos($upc, $unpaddedLower) !== false) {
+                        return 6;
+                    }
+
+                    // Rank 7: Description starts with match
+                    if (strpos($desc, $qLower) === 0) {
+                        return 7;
+                    }
+                    // Rank 8: Description contains match
+                    if (strpos($desc, $qLower) !== false) {
+                        return 8;
+                    }
+
+                    return 9;
+                };
+
+                $rankA = $getRank($a);
+                $rankB = $getRank($b);
+
+                if ($rankA !== $rankB) {
+                    return $rankA - $rankB;
+                }
+                return strcmp(strtolower($a['Descr'] ?? ''), strtolower($b['Descr'] ?? ''));
+            });
+
+            // Limit top 40 results after priority sorting
+            $items = array_slice($items, 0, 40);
 
             $results = [];
             foreach ($items as $item) {
