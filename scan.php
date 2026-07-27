@@ -1391,7 +1391,7 @@ $hasActiveStores = !empty($existingStoresList);
                                     d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z" />
                             </svg>
                             Export Excel</button>
-                        <button id="btn-print-summary" class="btn btn-success" onclick="printStoreSummary()"
+                        <button id="btn-print-summary" class="btn btn-success" onclick="openPrintSummaryModal()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
                             Summary</button>
                         <button class="btn btn-primary" onclick="autoAddNextLocator()"
@@ -1576,6 +1576,29 @@ $hasActiveStores = !empty($existingStoresList);
                         style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Close</button>
                 </div>
             </form>
+        </div>
+    <!-- Modal for Print Summary Options (All vs Variance Only) -->
+    <div class="modal-overlay" id="print-summary-modal-overlay">
+        <div class="modal" style="max-width: 420px; text-align: center; padding: 1.75rem;">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🖨️</div>
+            <h3 class="modal-title" style="font-size: 1.25rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">Print Store Summary</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; line-height: 1.4;">
+                Select which items to include in the count summary report:
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button type="button" class="btn btn-primary" onclick="confirmPrintSummary('all')"
+                    style="width: 100%; height: 42px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #388bfd; border-color: #388bfd; cursor: pointer; border-radius: 8px;">
+                    📋 Print All Summary
+                </button>
+                <button type="button" class="btn btn-success" onclick="confirmPrintSummary('variance_only')"
+                    style="width: 100%; height: 42px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #2ea44f; border-color: #2ea44f; cursor: pointer; border-radius: 8px;">
+                    ⚠️ Print With Variance Only
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closePrintSummaryModal()"
+                    style="width: 100%; height: 38px; font-size: 0.85rem; margin-top: 4px; cursor: pointer; border-radius: 8px; background: rgba(255,255,255,0.05); color: #8b949e; border: 1px solid rgba(255,255,255,0.1);">
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
 
@@ -3302,13 +3325,35 @@ $hasActiveStores = !empty($existingStoresList);
                 });
         }
 
-        // Print store count summary matching HHTGW summary format
-        function printStoreSummary() {
+        // Open modal to select print summary mode (All vs Variance Only)
+        function openPrintSummaryModal() {
             const progressText = document.getElementById('widget-progress-text');
             if (progressText) {
                 const percent = parseInt(progressText.querySelector('span').innerText) || 0;
                 if (percent < 100) {
-                    alert(`Cannot print summary. Completion progress is only ${percent}%. All locators must be closed to print summary.`);
+                    customAlert(`Cannot print summary. Completion progress is only ${percent}%. All locators must be closed to print summary.`, "Error");
+                    return;
+                }
+            }
+            document.getElementById('print-summary-modal-overlay').classList.add('active');
+        }
+
+        function closePrintSummaryModal() {
+            document.getElementById('print-summary-modal-overlay').classList.remove('active');
+        }
+
+        function confirmPrintSummary(mode) {
+            closePrintSummaryModal();
+            printStoreSummary(mode);
+        }
+
+        // Print store count summary matching HHTGW summary format
+        function printStoreSummary(mode = 'all') {
+            const progressText = document.getElementById('widget-progress-text');
+            if (progressText) {
+                const percent = parseInt(progressText.querySelector('span').innerText) || 0;
+                if (percent < 100) {
+                    customAlert(`Cannot print summary. Completion progress is only ${percent}%. All locators must be closed to print summary.`, "Error");
                     return;
                 }
             }
@@ -3324,7 +3369,6 @@ $hasActiveStores = !empty($existingStoresList);
                             return;
                         }
 
-                        // Group scans by Barcode/UPC
                         // Group scans by Barcode/UPC
                         const summaryMap = {};
                         scans.forEach(scan => {
@@ -3342,8 +3386,18 @@ $hasActiveStores = !empty($existingStoresList);
                         });
 
                         // Convert to array and sort by description alphabetically
-                        const items = Object.values(summaryMap);
+                        let items = Object.values(summaryMap);
                         items.sort((a, b) => a.description.localeCompare(b.description));
+
+                        // Filter for variance only if requested
+                        const isVarianceOnly = (mode === 'variance_only');
+                        if (isVarianceOnly) {
+                            items = items.filter(item => (item.totalQty - item.masterQty) !== 0);
+                            if (items.length === 0) {
+                                customAlert("No items with variance found in the store summary.", "Info");
+                                return;
+                            }
+                        }
 
                         let infCount = 0;
                         items.forEach(item => {
@@ -3373,10 +3427,14 @@ $hasActiveStores = !empty($existingStoresList);
                             return ' '.repeat(padLeft) + str;
                         };
 
+                        const summaryTitle = isVarianceOnly 
+                            ? '*****   Inventory Count Summary (Variance Only)   *****' 
+                            : '*****   Inventory Count Summary (100% Completion)   *****';
+
                         let text = '';
                         text += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
                         text += centerText('Annual Inventory Count') + '\r\n\r\n';
-                        text += centerText('*****   Inventory Count Summary (100% Completion)   *****') + '\r\n\r\n';
+                        text += centerText(summaryTitle) + '\r\n\r\n';
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
                         // Header columns row
