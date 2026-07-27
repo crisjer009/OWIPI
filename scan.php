@@ -2773,107 +2773,100 @@ $hasActiveStores = !empty($existingStoresList);
             tbody.innerHTML = html;
         }
 
-        // Search item across locators in Locator Completion Progress card
+        let locatorProgressSearchTimeout = null;
+
+        // Search item in store masterfile database for Locator Completion Progress card
         function searchLocatorProgressItem() {
             const input = document.getElementById('locator-progress-item-search');
             const resultsContainer = document.getElementById('locator-progress-search-results');
             if (!input || !resultsContainer) return;
 
-            const q = input.value.toLowerCase().trim();
+            const q = input.value.trim();
             if (q === '') {
                 resultsContainer.style.display = 'none';
                 resultsContainer.innerHTML = '';
                 return;
             }
 
-            const scans = window.cachedHostScans || [];
-            if (scans.length === 0) {
+            // Debounce input slightly (200ms) for smooth typing
+            clearTimeout(locatorProgressSearchTimeout);
+            locatorProgressSearchTimeout = setTimeout(() => {
                 resultsContainer.style.display = 'block';
                 resultsContainer.innerHTML = `
                     <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
-                        No scans available in system yet.
+                        🔍 Searching masterfile database for "${q}"...
                     </div>
                 `;
-                return;
-            }
 
-            // Filter matching scans by Barcode, ALU/SKU, or Description
-            const matches = scans.filter(scan => {
-                const bc = (scan.barcode || '').toLowerCase();
-                const sku = (scan.sku || '').toLowerCase();
-                const desc = (scan.product_name || '').toLowerCase();
-                return bc.includes(q) || sku.includes(q) || desc.includes(q);
-            });
+                fetch(`api.php?action=search_masterfile&q=${encodeURIComponent(q)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.results) {
+                            if (data.results.length === 0) {
+                                resultsContainer.innerHTML = `
+                                    <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
+                                        No items matching "${q}" found in masterfile database.
+                                    </div>
+                                `;
+                                return;
+                            }
 
-            if (matches.length === 0) {
-                resultsContainer.style.display = 'block';
-                resultsContainer.innerHTML = `
-                    <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
-                        No items matching "${q}" found in locators.
-                    </div>
-                `;
-                return;
-            }
+                            let html = '';
+                            data.results.forEach(item => {
+                                const locatorsEntries = Object.entries(item.locators || {});
+                                let locatorsHtml = '';
 
-            // Group matching items by Barcode/UPC
-            const grouped = {};
-            matches.forEach(scan => {
-                const bc = scan.barcode;
-                if (!grouped[bc]) {
-                    grouped[bc] = {
-                        barcode: bc,
-                        sku: scan.sku || 'N/A',
-                        description: scan.product_name || 'Item Not Found',
-                        locatorsMap: {},
-                        totalQty: 0
-                    };
-                }
+                                if (locatorsEntries.length > 0) {
+                                    locatorsHtml = locatorsEntries.map(([locName, locQty]) => {
+                                        let cleanLoc = locName;
+                                        if (cleanLoc.toLowerCase().startsWith('slot ')) cleanLoc = cleanLoc.substring(5);
+                                        else if (cleanLoc.toLowerCase().startsWith('slot')) cleanLoc = cleanLoc.substring(4);
+                                        return `<span style="background: rgba(210,153,34,0.12); color: #d29922; border: 1px solid rgba(210,153,34,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+                                            📍 Slot ${cleanLoc} — Qty: ${locQty}
+                                        </span>`;
+                                    }).join(' ');
+                                } else {
+                                    locatorsHtml = `<span style="color: var(--text-muted); font-size: 0.72rem; font-style: italic;">
+                                        Not scanned in any locator yet
+                                    </span>`;
+                                }
 
-                let loc = scan.location || 'Unknown';
-                if (loc.toLowerCase().startsWith('slot ')) {
-                    loc = loc.substring(5);
-                } else if (loc.toLowerCase().startsWith('slot')) {
-                    loc = loc.substring(4);
-                }
+                                const varianceVal = parseFloat(item.variance || 0);
+                                const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
+                                const varianceColor = varianceVal === 0 ? '#3fb950' : (varianceVal > 0 ? '#58a6ff' : '#f85149');
 
-                if (!grouped[bc].locatorsMap[loc]) {
-                    grouped[bc].locatorsMap[loc] = 0;
-                }
-                const qty = parseFloat(scan.quantity || 0);
-                grouped[bc].locatorsMap[loc] += qty;
-                grouped[bc].totalQty += qty;
-            });
+                                html += `
+                                    <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                                            <span style="color: var(--text-white); font-weight: 600; font-size: 0.85rem;">${item.description}</span>
+                                            <div style="display:flex; gap:6px; flex-shrink: 0; margin-left: 8px;">
+                                                <span style="background: rgba(255,255,255,0.05); color: #8b949e; font-weight: 600; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem;" title="Masterfile Store Quantity">DB: ${item.master_qty}</span>
+                                                <span style="background: rgba(56,139,253,0.15); color: #58a6ff; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem;" title="Physical Counted Quantity">Counted: ${item.scanned_qty}</span>
+                                                <span style="background: rgba(255,255,255,0.05); color: ${varianceColor}; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem;" title="Variance">Var: ${varianceStr}</span>
+                                            </div>
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 6px;">
+                                            UPC: <span style="color:#58a6ff; font-weight:600;">${item.barcode}</span> | ALU/SKU: <span style="color:#3fb950; font-weight:600;">${item.sku}</span>
+                                        </div>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                            ${locatorsHtml}
+                                        </div>
+                                    </div>
+                                `;
+                            });
 
-            const groupItems = Object.values(grouped);
-            let html = '';
-
-            groupItems.forEach(item => {
-                const locatorsList = Object.entries(item.locatorsMap).map(([locName, locQty]) => {
-                    return `<span style="background: rgba(210,153,34,0.12); color: #d29922; border: 1px solid rgba(210,153,34,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
-                        📍 Slot ${locName} — Qty: ${locQty}
-                    </span>`;
-                }).join(' ');
-
-                html += `
-                    <div style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
-                            <span style="color: var(--text-white); font-weight: 600; font-size: 0.82rem;">${item.description}</span>
-                            <span style="background: rgba(56,139,253,0.15); color: #58a6ff; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.73rem; flex-shrink: 0; margin-left: 8px;">
-                                Total: ${item.totalQty}
-                            </span>
-                        </div>
-                        <div style="font-family: monospace; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 5px;">
-                            UPC: <span style="color:#58a6ff; font-weight:600;">${item.barcode}</span> | ALU/SKU: <span style="color:#3fb950; font-weight:600;">${item.sku}</span>
-                        </div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                            ${locatorsList}
-                        </div>
-                    </div>
-                `;
-            });
-
-            resultsContainer.style.display = 'block';
-            resultsContainer.innerHTML = html;
+                            resultsContainer.innerHTML = html;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error searching masterfile database:", err);
+                        resultsContainer.innerHTML = `
+                            <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
+                                Error searching masterfile database.
+                            </div>
+                        `;
+                    });
+            }, 200);
         }
 
         // Load mobile locators searchable list for modal datalist

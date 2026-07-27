@@ -166,9 +166,9 @@ function findCatalogProduct($barcode, $storeCode = null)
 
 // Enforce Authentication
 $adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile'];
 
-$storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance'];
+$storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
 try {
     $bypassAuth = false;
@@ -957,6 +957,76 @@ try {
 
             fclose($output);
             exit;
+
+        case 'search_masterfile':
+            $q = trim($_GET['q'] ?? '');
+            if ($q === '') {
+                sendResponse(['status' => 'success', 'results' => []]);
+            }
+
+            $storeCode = $_SESSION['store_code'] ?? ($_GET['store_code'] ?? '');
+            $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+
+            if (empty($cleanStore)) {
+                sendResponse(['status' => 'error', 'message' => 'No active store selected.']);
+            }
+
+            $itemsTable = "{$cleanStore}_items";
+            $countTable = "{$cleanStore}_countsheet";
+
+            $db = new OWI_DB();
+            $tableCheck = $db->query("SHOW TABLES LIKE '{$itemsTable}'");
+            if (empty($tableCheck)) {
+                $itemsTable = "items";
+            }
+
+            $searchParam = "%{$q}%";
+            $sql = "SELECT UPC, SKU, Descr, Qty FROM `{$itemsTable}` 
+                    WHERE UPC LIKE ? OR SKU LIKE ? OR Descr LIKE ? 
+                    LIMIT 40";
+            $items = $db->query($sql, [$searchParam, $searchParam, $searchParam]);
+
+            // Query countsheet to gather locators and quantities
+            $countCheck = $db->query("SHOW TABLES LIKE '{$countTable}'");
+            $scansMap = [];
+            if (!empty($countCheck)) {
+                $scans = $db->query("SELECT UPC, SlotNo, Qty, Edited, EditedQty FROM `{$countTable}`");
+                foreach ($scans as $scan) {
+                    $upc = $scan['UPC'];
+                    $loc = $scan['SlotNo'] ?? 'Unknown';
+                    $qty = (isset($scan['Edited']) && $scan['Edited'] == 1) ? (float)$scan['EditedQty'] : (float)$scan['Qty'];
+                    if (!isset($scansMap[$upc])) {
+                        $scansMap[$upc] = ['total' => 0, 'locators' => []];
+                    }
+                    if (!isset($scansMap[$upc]['locators'][$loc])) {
+                        $scansMap[$upc]['locators'][$loc] = 0;
+                    }
+                    $scansMap[$upc]['locators'][$loc] += $qty;
+                    $scansMap[$upc]['total'] += $qty;
+                }
+            }
+
+            $results = [];
+            foreach ($items as $item) {
+                $upc = $item['UPC'];
+                $mstQty = (float)($item['Qty'] ?? 0);
+                $scanInfo = $scansMap[$upc] ?? ['total' => 0, 'locators' => []];
+                $scannedQty = $scanInfo['total'];
+                $variance = $scannedQty - $mstQty;
+
+                $results[] = [
+                    'barcode' => $upc,
+                    'sku' => $item['SKU'] ?? 'N/A',
+                    'description' => $item['Descr'] ?? 'Item Not Found',
+                    'master_qty' => $mstQty,
+                    'scanned_qty' => $scannedQty,
+                    'variance' => $variance,
+                    'locators' => $scanInfo['locators']
+                ];
+            }
+
+            sendResponse(['status' => 'success', 'results' => $results]);
+            break;
 
         case 'get_product_info':
             $barcode = isset($_GET['barcode']) ? trim($_GET['barcode']) : '';
