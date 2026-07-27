@@ -971,30 +971,73 @@ try {
                 sendResponse(['status' => 'error', 'message' => 'No active store selected.']);
             }
 
-            $itemsTable = "{$cleanStore}_items";
-            $countTable = "{$cleanStore}_countsheet";
-
             $db = new OWI_DB();
-            $tableCheck = $db->query("SHOW TABLES LIKE '{$itemsTable}'");
-            if (empty($tableCheck)) {
-                $itemsTable = "items";
+            $tablesToSearch = [];
+
+            try {
+                $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
+                if (!empty($tableCheck)) {
+                    $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
+                    if (!empty($countCheck) && (int) $countCheck[0]['count'] > 0) {
+                        $tablesToSearch[] = "{$cleanStore}_items";
+                    }
+                }
+            } catch (Exception $e) {}
+
+            $tablesToSearch[] = 'items';
+
+            $items = [];
+            $unpadded = ctype_digit($q) ? ltrim($q, '0') : $q;
+            if ($unpadded === '') $unpadded = '0';
+            $padded6 = ctype_digit($q) ? str_pad($unpadded, 6, '0', STR_PAD_LEFT) : $q;
+
+            foreach ($tablesToSearch as $tableName) {
+                $qtyCol = "`Qty`";
+                if ($tableName === 'items' && !empty($cleanStore)) {
+                    try {
+                        $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
+                        if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                            $strNo = (int) $storeLookup[0]['str_no'];
+                            $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+                        } else {
+                            $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                            if ($numMatch !== '') {
+                                $strNo = (int) $numMatch;
+                                $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+                            }
+                        }
+                    } catch (Exception $exLookup) {}
+                }
+
+                $searchParam = "%{$q}%";
+                $searchUnpadded = "%{$unpadded}%";
+                $searchPadded = "%{$padded6}%";
+
+                $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` 
+                        WHERE UPC LIKE ? OR SKU LIKE ? OR Descr LIKE ? 
+                           OR UPC LIKE ? OR SKU LIKE ?
+                           OR UPC LIKE ? OR SKU LIKE ?
+                        LIMIT 40";
+                $params = [$searchParam, $searchParam, $searchParam, $searchUnpadded, $searchUnpadded, $searchPadded, $searchPadded];
+                $rows = $db->query($sql, $params);
+                if (!empty($rows)) {
+                    $items = $rows;
+                    break; // Found matches in database table!
+                }
             }
 
-            $searchParam = "%{$q}%";
-            $sql = "SELECT UPC, SKU, Descr, Qty FROM `{$itemsTable}` 
-                    WHERE UPC LIKE ? OR SKU LIKE ? OR Descr LIKE ? 
-                    LIMIT 40";
-            $items = $db->query($sql, [$searchParam, $searchParam, $searchParam]);
-
-            // Query countsheet to gather locators and quantities
+            // Gather scanned locators & quantities from countsheet table
+            $countTable = "{$cleanStore}_countsheet";
             $countCheck = $db->query("SHOW TABLES LIKE '{$countTable}'");
             $scansMap = [];
             if (!empty($countCheck)) {
-                $scans = $db->query("SELECT UPC, SlotNo, Qty, Edited, EditedQty FROM `{$countTable}`");
+                $scans = $db->query("SELECT UPC, SKU, SlotNo, Qty, Edited, EditedQty FROM `{$countTable}`");
                 foreach ($scans as $scan) {
                     $upc = $scan['UPC'];
+                    $sku = $scan['SKU'] ?? '';
                     $loc = $scan['SlotNo'] ?? 'Unknown';
                     $qty = (isset($scan['Edited']) && $scan['Edited'] == 1) ? (float)$scan['EditedQty'] : (float)$scan['Qty'];
+                    
                     if (!isset($scansMap[$upc])) {
                         $scansMap[$upc] = ['total' => 0, 'locators' => []];
                     }
@@ -1003,20 +1046,32 @@ try {
                     }
                     $scansMap[$upc]['locators'][$loc] += $qty;
                     $scansMap[$upc]['total'] += $qty;
+
+                    if (!empty($sku) && $sku !== $upc) {
+                        if (!isset($scansMap[$sku])) {
+                            $scansMap[$sku] = ['total' => 0, 'locators' => []];
+                        }
+                        if (!isset($scansMap[$sku]['locators'][$loc])) {
+                            $scansMap[$sku]['locators'][$loc] = 0;
+                        }
+                        $scansMap[$sku]['locators'][$loc] += $qty;
+                        $scansMap[$sku]['total'] += $qty;
+                    }
                 }
             }
 
             $results = [];
             foreach ($items as $item) {
                 $upc = $item['UPC'];
+                $sku = $item['SKU'] ?? 'N/A';
                 $mstQty = (float)($item['Qty'] ?? 0);
-                $scanInfo = $scansMap[$upc] ?? ['total' => 0, 'locators' => []];
+                $scanInfo = $scansMap[$upc] ?? ($scansMap[$sku] ?? ['total' => 0, 'locators' => []]);
                 $scannedQty = $scanInfo['total'];
                 $variance = $scannedQty - $mstQty;
 
                 $results[] = [
                     'barcode' => $upc,
-                    'sku' => $item['SKU'] ?? 'N/A',
+                    'sku' => $sku,
                     'description' => $item['Descr'] ?? 'Item Not Found',
                     'master_qty' => $mstQty,
                     'scanned_qty' => $scannedQty,
