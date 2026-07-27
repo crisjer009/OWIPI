@@ -2637,24 +2637,25 @@ $hasActiveStores = !empty($existingStoresList);
         }
 
         // Fetch all store scan records and display in host terminal table
+        window.cachedHostScans = [];
+
+        // Fetch all store scan records and display in host terminal table
         function loadHostScans() {
             fetch('api.php?action=get_scans')
                 .then(res => res.json())
                 .then(data => {
-                    const tbody = document.getElementById('host-scans-tbody');
                     const totalQtyEl = document.getElementById('metric-total-qty');
                     const uniqueBarcodesEl = document.getElementById('metric-unique-barcodes');
-                    const activeScannersEl = document.getElementById('metric-active-scanners');
 
                     if (data.status === 'success' && data.scans) {
-                        const scans = data.scans;
+                        window.cachedHostScans = data.scans;
 
                         // Compute Metrics
                         let totalQty = 0;
                         const uniqueBarcodes = new Set();
                         const infBarcodes = new Set();
 
-                        scans.forEach(scan => {
+                        data.scans.forEach(scan => {
                             totalQty += parseFloat(scan.quantity || 0);
                             uniqueBarcodes.add(scan.barcode);
                             if (scan.product_name === 'Item Not Found' || scan.product_name === 'Unknown Product' || !scan.sku || scan.sku === '') {
@@ -2663,68 +2664,100 @@ $hasActiveStores = !empty($existingStoresList);
                         });
 
                         // Update metrics UI
-                        totalQtyEl.innerText = totalQty.toFixed(0);
-                        uniqueBarcodesEl.innerText = infBarcodes.size;
+                        if (totalQtyEl) totalQtyEl.innerText = totalQty.toFixed(0);
+                        if (uniqueBarcodesEl) uniqueBarcodesEl.innerText = infBarcodes.size;
 
-                        // Update table body UI
-                        if (scans.length > 0) {
-                            let html = '';
-                            scans.forEach(scan => {
-                                const timeStr = scan.scanned_at ? scan.scanned_at.split(' ')[1] || scan.scanned_at : 'N/A';
-
-                                // Strip "Slot " to show just the number
-                                let displayLoc = scan.location || '';
-                                if (displayLoc.toLowerCase().startsWith('slot ')) {
-                                    displayLoc = displayLoc.substring(5);
-                                } else if (displayLoc.toLowerCase().startsWith('slot')) {
-                                    displayLoc = displayLoc.substring(4);
-                                }
-
-                                html += `
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                        <td style="padding: 12px 10px; font-family:monospace; color:#58a6ff; font-weight:600;">${scan.barcode}</td>
-                                        <td style="padding: 12px 10px; font-family:monospace; color:#3fb950; font-weight:600;">${scan.sku || 'N/A'}</td>
-                                        <td style="padding: 12px 10px; color:var(--text-white); font-weight:500;">${scan.product_name || '<span style="color:var(--text-muted);">Item Not in Catalog</span>'}</td>
-                                        <td style="padding: 12px 10px; text-align: center; font-weight:700; color:var(--text-white); font-size:1rem;">${parseFloat(scan.quantity).toFixed(0)}</td>
-                                        <td style="padding: 12px 10px; color:#c9d1d9;">${scan.scanned_by || 'Unknown'}</td>
-                                        <td style="padding: 12px 10px; text-align: center; color:var(--text-white); font-weight:600;"><span class="badge" style="background:rgba(210,153,34,0.15); color:#d29922; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${displayLoc}</span></td>
-                                        <td style="padding: 12px 10px; text-align: right; color:var(--text-muted); font-size:0.8rem;">${timeStr}</td>
-                                    </tr>
-                                `;
-                            });
-                            tbody.innerHTML = html;
-                            filterHostScans();
-                        } else {
-                            tbody.innerHTML = `
-                                <tr>
-                                    <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
-                                        No scans logged yet. Connect a mobile device to start scanning!
-                                    </td>
-                                </tr>
-                            `;
-                        }
+                        // Render filtered host scans table
+                        filterHostScans();
                     }
                 })
                 .catch(err => console.error("Error loading host scans:", err));
         }
 
-        // Live incoming scans search filter function
+        // Fast in-memory search filter function for Live Incoming Scans Log
         function filterHostScans() {
             const tbody = document.getElementById('host-scans-tbody');
             const searchInput = document.getElementById('host-scans-search');
-            if (tbody && searchInput) {
-                const q = searchInput.value.toLowerCase().trim();
-                const rows = tbody.querySelectorAll('tr');
-                rows.forEach(row => {
-                    if (row.cells.length === 1) return; // skip feedback rows
-                    const text = row.innerText.toLowerCase();
-                    if (q === '' || text.indexOf(q) > -1) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
+            if (!tbody) return;
+
+            const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const scans = window.cachedHostScans || [];
+
+            if (scans.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                            No scans logged yet. Connect a mobile device to start scanning!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Filter in memory for 60fps instant responsiveness
+            let filtered = scans;
+            if (q !== '') {
+                filtered = scans.filter(scan => {
+                    const bc = (scan.barcode || '').toLowerCase();
+                    const sku = (scan.sku || '').toLowerCase();
+                    const desc = (scan.product_name || '').toLowerCase();
+                    const by = (scan.scanned_by || '').toLowerCase();
+                    const loc = (scan.location || '').toLowerCase();
+                    return bc.includes(q) || sku.includes(q) || desc.includes(q) || by.includes(q) || loc.includes(q);
                 });
             }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                            No scans found matching "${q}".
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Limit DOM rows rendered to top 150 matching items to avoid DOM reflow lag
+            const displayLimit = 150;
+            const itemsToRender = filtered.slice(0, displayLimit);
+
+            let html = '';
+            itemsToRender.forEach(scan => {
+                const timeStr = scan.scanned_at ? (scan.scanned_at.split(' ')[1] || scan.scanned_at) : 'N/A';
+
+                // Strip "Slot " to show just the number
+                let displayLoc = scan.location || '';
+                if (displayLoc.toLowerCase().startsWith('slot ')) {
+                    displayLoc = displayLoc.substring(5);
+                } else if (displayLoc.toLowerCase().startsWith('slot')) {
+                    displayLoc = displayLoc.substring(4);
+                }
+
+                html += `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 12px 10px; font-family:monospace; color:#58a6ff; font-weight:600;">${scan.barcode}</td>
+                        <td style="padding: 12px 10px; font-family:monospace; color:#3fb950; font-weight:600;">${scan.sku || 'N/A'}</td>
+                        <td style="padding: 12px 10px; color:var(--text-white); font-weight:500;">${scan.product_name || '<span style="color:var(--text-muted);">Item Not in Catalog</span>'}</td>
+                        <td style="padding: 12px 10px; text-align: center; font-weight:700; color:var(--text-white); font-size:1rem;">${parseFloat(scan.quantity).toFixed(0)}</td>
+                        <td style="padding: 12px 10px; color:#c9d1d9;">${scan.scanned_by || 'Unknown'}</td>
+                        <td style="padding: 12px 10px; text-align: center; color:var(--text-white); font-weight:600;"><span class="badge" style="background:rgba(210,153,34,0.15); color:#d29922; font-size:0.75rem; padding: 2px 6px; border-radius: 4px;">${displayLoc}</span></td>
+                        <td style="padding: 12px 10px; text-align: right; color:var(--text-muted); font-size:0.8rem;">${timeStr}</td>
+                    </tr>
+                `;
+            });
+
+            if (filtered.length > displayLimit) {
+                html += `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 8px; color: var(--text-muted); font-size: 0.75rem; background: rgba(255,255,255,0.02);">
+                            Showing top ${displayLimit} of ${filtered.length} matching scans. Refine search to see specific items.
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = html;
         }
 
         // Load mobile locators searchable list for modal datalist
@@ -3029,7 +3062,7 @@ $hasActiveStores = !empty($existingStoresList);
                 let matchCount = 0;
                 rows.forEach(row => {
                     if (row.cells.length === 1) return; // skip feedback rows
-                    const text = row.innerText.toLowerCase();
+                    const text = row.textContent.toLowerCase();
                     if (text.indexOf(q) > -1) {
                         row.style.display = '';
                         matchCount++;
