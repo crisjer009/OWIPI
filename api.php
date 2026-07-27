@@ -1033,33 +1033,47 @@ try {
 
             usort($items, function($a, $b) use ($qLower, $unpaddedLower, $padded6Lower) {
                 $getRank = function($item) use ($qLower, $unpaddedLower, $padded6Lower) {
-                    $sku = strtolower(trim($item['SKU'] ?? ''));
-                    $upc = strtolower(trim($item['UPC'] ?? ''));
-                    $desc = strtolower(trim($item['Descr'] ?? ''));
+                    $skuRaw = trim($item['SKU'] ?? '');
+                    $upcRaw = trim($item['UPC'] ?? '');
+                    $descRaw = trim($item['Descr'] ?? '');
 
-                    // Rank 1: Exact SKU match (raw, unpadded, or padded6)
-                    if ($sku === $qLower || $sku === $unpaddedLower || $sku === $padded6Lower) {
+                    $sku = strtolower($skuRaw);
+                    $upc = strtolower($upcRaw);
+                    $desc = strtolower($descRaw);
+
+                    $skuUnpadded = ctype_digit($sku) ? ltrim($sku, '0') : $sku;
+                    if ($skuUnpadded === '') $skuUnpadded = '0';
+
+                    $upcUnpadded = ctype_digit($upc) ? ltrim($upc, '0') : $upc;
+                    if ($upcUnpadded === '') $upcUnpadded = '0';
+
+                    // Rank 1: Exact SKU match (supports 1-digit, 2-digit, 3-digit ALUs raw, unpadded, or padded6)
+                    if ($sku === $qLower || $sku === $unpaddedLower || $sku === $padded6Lower || $skuUnpadded === $unpaddedLower) {
                         return 1;
                     }
-                    // Rank 2: SKU prefix / starts with match
-                    if (strpos($sku, $qLower) === 0 || strpos($sku, $unpaddedLower) === 0) {
+
+                    // Rank 2: SKU starts with match
+                    if (strpos($sku, $qLower) === 0 || strpos($sku, $unpaddedLower) === 0 || strpos($skuUnpadded, $unpaddedLower) === 0) {
                         return 2;
                     }
+
                     // Rank 3: SKU contains match
-                    if (strpos($sku, $qLower) !== false || strpos($sku, $unpaddedLower) !== false) {
+                    if (strpos($sku, $qLower) !== false || strpos($sku, $unpaddedLower) !== false || strpos($skuUnpadded, $unpaddedLower) !== false) {
                         return 3;
                     }
 
-                    // Rank 4: Exact Barcode/UPC match
-                    if ($upc === $qLower || $upc === $unpaddedLower || $upc === $padded6Lower) {
+                    // Rank 4: Exact Barcode/UPC match (raw or unpadded)
+                    if ($upc === $qLower || $upc === $unpaddedLower || $upc === $padded6Lower || $upcUnpadded === $unpaddedLower) {
                         return 4;
                     }
-                    // Rank 5: Barcode/UPC prefix / starts with match
-                    if (strpos($upc, $qLower) === 0 || strpos($upc, $unpaddedLower) === 0) {
+
+                    // Rank 5: Barcode/UPC starts with match
+                    if (strpos($upc, $qLower) === 0 || strpos($upc, $unpaddedLower) === 0 || strpos($upcUnpadded, $unpaddedLower) === 0) {
                         return 5;
                     }
+
                     // Rank 6: Barcode/UPC contains match
-                    if (strpos($upc, $qLower) !== false || strpos($upc, $unpaddedLower) !== false) {
+                    if (strpos($upc, $qLower) !== false || strpos($upc, $unpaddedLower) !== false || strpos($upcUnpadded, $unpaddedLower) !== false) {
                         return 6;
                     }
 
@@ -1067,6 +1081,7 @@ try {
                     if (strpos($desc, $qLower) === 0) {
                         return 7;
                     }
+
                     // Rank 8: Description contains match
                     if (strpos($desc, $qLower) !== false) {
                         return 8;
