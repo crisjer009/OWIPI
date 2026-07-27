@@ -3450,7 +3450,9 @@ $hasActiveStores = !empty($existingStoresList);
                         text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
                         text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
-                        let grandTotal = 0;
+                        let grandTotalMaster = 0;
+                        let grandTotalScanned = 0;
+                        let grandTotalVariance = 0;
 
                         items.forEach((item, index) => {
                             const recNo = index + 1;
@@ -3465,7 +3467,9 @@ $hasActiveStores = !empty($existingStoresList);
                             const qtyStr = qtyVal.toFixed(0);
                             const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
 
-                            grandTotal += qtyVal;
+                            grandTotalMaster += mstQtyVal;
+                            grandTotalScanned += qtyVal;
+                            grandTotalVariance += varianceVal;
 
                             // Truncate description if it exceeds column space to prevent pushing other columns out of alignment
                             let cleanDescr = descr;
@@ -3484,12 +3488,19 @@ $hasActiveStores = !empty($existingStoresList);
                         });
 
                         text += '\r\n';
-                        const totalInfStr = `Total INF items: ${infCount}`;
-                        const grandTotalLabel = "GRAND TOTAL : ";
-                        const spacesNeeded = 85 - totalInfStr.length - grandTotalLabel.length;
-                        const spacing = ' '.repeat(Math.max(0, spacesNeeded));
+                        text += '<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>';
+                        const totalInfStr = padRight(`Total INF items: ${infCount}`, 40);
+                        const grandTotalLabel = padRight("GRAND TOTAL :", 27);
 
-                        text += totalInfStr + spacing + grandTotalLabel + padQtyCenter(grandTotal.toFixed(0), 10) + '\r\n';
+                        const mstTotalStr = grandTotalMaster.toFixed(0);
+                        const scannedTotalStr = grandTotalScanned.toFixed(0);
+                        const varianceTotalStr = (grandTotalVariance >= 0 ? '+' : '') + grandTotalVariance.toFixed(0);
+
+                        text += totalInfStr + grandTotalLabel +
+                            padQtyCenter(mstTotalStr, 10) +
+                            padQtyCenter(scannedTotalStr, 10) +
+                            padQtyCenter(varianceTotalStr, 10) + '\r\n';
+                        text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
