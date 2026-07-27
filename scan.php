@@ -3161,8 +3161,8 @@ $hasActiveStores = !empty($existingStoresList);
                             return;
                         }
 
-                        // Order scans by RecNo (chronological order)
-                        scans.reverse(); // API returns DESC, we reverse it to ASC for printing
+                        // Order scans by RecNo (chronological ASC order matching table view)
+                        scans.sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
                         // Helper padding functions for alignment
                         const padRight = (str, len) => {
@@ -3557,8 +3557,8 @@ $hasActiveStores = !empty($existingStoresList);
                             return; // Nothing to print
                         }
 
-                        // Order scans by RecNo (chronological order)
-                        editedScans.reverse(); // API returns DESC, we reverse it to ASC for printing
+                        // Order scans by RecNo (chronological ASC order matching table view)
+                        editedScans.sort((a, b) => parseInt(a.id) - parseInt(b.id));
 
                         // Helper padding functions for alignment
                         const padRight = (str, len) => {
@@ -3717,6 +3717,9 @@ $hasActiveStores = !empty($existingStoresList);
                         const tbody = document.getElementById('view-scans-tbody');
 
                         if (scans.length > 0) {
+                            // Sort scans in chronological ASC order by RecNo matching print sheet order
+                            scans.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
                             let html = '';
                             scans.forEach((scan, index) => {
                                 html += `
