@@ -1585,8 +1585,10 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
             </form>
         </div>
+    </div>
+
     <!-- Modal for Print Summary Options (All vs Variance Only) -->
-    <div class="modal-overlay" id="print-summary-modal-overlay">
+    <div class="modal-overlay" id="print-summary-modal-overlay" style="z-index: 999999;">
         <div class="modal" style="max-width: 420px; text-align: center; padding: 1.75rem;">
             <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🖨️</div>
             <h3 class="modal-title" style="font-size: 1.25rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">Print Store Summary</h3>
@@ -3335,19 +3337,17 @@ $hasActiveStores = !empty($existingStoresList);
 
         // Open modal to select print summary mode (All vs Variance Only)
         function openPrintSummaryModal() {
-            const progressText = document.getElementById('widget-progress-text');
-            if (progressText) {
-                const percent = parseInt(progressText.querySelector('span').innerText) || 0;
-                if (percent < 100) {
-                    customAlert(`Cannot print summary. Completion progress is only ${percent}%. All locators must be closed to print summary.`, "Error");
-                    return;
-                }
+            const modalEl = document.getElementById('print-summary-modal-overlay');
+            if (modalEl) {
+                modalEl.classList.add('active');
             }
-            document.getElementById('print-summary-modal-overlay').classList.add('active');
         }
 
         function closePrintSummaryModal() {
-            document.getElementById('print-summary-modal-overlay').classList.remove('active');
+            const modalEl = document.getElementById('print-summary-modal-overlay');
+            if (modalEl) {
+                modalEl.classList.remove('active');
+            }
         }
 
         function confirmPrintSummary(mode) {
@@ -3359,7 +3359,8 @@ $hasActiveStores = !empty($existingStoresList);
         function printStoreSummary(mode = 'all') {
             const progressText = document.getElementById('widget-progress-text');
             if (progressText) {
-                const percent = parseInt(progressText.querySelector('span').innerText) || 0;
+                const percentSpan = progressText.querySelector('span');
+                const percent = percentSpan ? (parseInt(percentSpan.innerText) || 0) : 100;
                 if (percent < 100) {
                     customAlert(`Cannot print summary. Completion progress is only ${percent}%. All locators must be closed to print summary.`, "Error");
                     return;
