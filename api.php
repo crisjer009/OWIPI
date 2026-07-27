@@ -172,7 +172,7 @@ $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locato
 
 try {
     $bypassAuth = false;
-    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request') {
+    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session') {
         $bypassAuth = true;
     }
 
@@ -1103,6 +1103,26 @@ try {
                 'barcode' => $resolvedBarcode,
                 'sku' => $resolvedSku
             ]);
+            break;
+
+        case 'release_session':
+            if (isset($_SESSION['user_id'])) {
+                $userId = $_SESSION['user_id'];
+                try {
+                    $db = new OWI_DB();
+                    $db->execute("UPDATE users SET session_token = NULL, last_activity = 0 WHERE id = ?", [$userId]);
+                } catch (Exception $ex) {}
+                $_SESSION = array();
+                if (ini_get("session.use_cookies")) {
+                    $params = session_get_cookie_params();
+                    setcookie(session_name(), '', time() - 42000,
+                        $params["path"], $params["domain"],
+                        $params["secure"], $params["httponly"]
+                    );
+                }
+                @session_destroy();
+            }
+            sendResponse(['status' => 'success']);
             break;
 
         case 'get_products':

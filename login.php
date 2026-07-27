@@ -70,12 +70,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $activeTimeout = 15 * 60; // 15 minutes of inactivity before session is considered expired
 
                     $isSessionActive = !empty($existingToken) && ($lastActive > 0) && ((time() - $lastActive) < $activeTimeout);
+                    $forceLogin = !empty($_POST['force_login']);
 
-                    if ($isSessionActive) {
-                        // Prevent new login and protect the active user session from being logged out
-                        $error = '⚠️ This account is currently logged in at another location/device. Access denied.';
+                    if ($isSessionActive && !$forceLogin) {
+                        // Account is active elsewhere, offer force login override option
+                        $showForceLogin = true;
+                        $error = '⚠️ This account is currently logged in at another location/device.';
                     } else {
-                        // Account is available. Establish active session and token.
+                        // Account is available or force login override selected. Establish active session.
                         $token = md5(uniqid(rand(), true));
                         $now = time();
                         $db->execute("UPDATE users SET session_token = ?, last_activity = ? WHERE id = ?", [$token, $now, $user['id']]);
@@ -316,13 +318,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="logo-subtitle">HOST ACCOUNT LOGIN</div>
         </div>
 
-        <?php if (!empty($error)): ?>
-            <div class="error-alert">
-                <?= htmlspecialchars($error) ?>
-            </div>
-        <?php endif; ?>
-
         <form method="POST" action="login.php">
+            <?php if (!empty($error)): ?>
+                <div class="error-alert">
+                    <div><?= htmlspecialchars($error) ?></div>
+                    <?php if (!empty($showForceLogin)): ?>
+                        <div style="margin-top: 10px; border-top: 1px solid rgba(239,68,68,0.25); padding-top: 10px;">
+                            <p style="font-size: 0.8rem; margin: 0 0 8px 0; color: #fca5a5; line-height: 1.3;">
+                                Accidentally closed your browser or rebooted? Click below to override the active session and log in now.
+                            </p>
+                            <button type="submit" name="force_login" value="1" class="btn" style="background: #e11d48; margin-top: 4px; padding: 0.7rem; font-size: 0.85rem; box-shadow: 0 3px 12px rgba(225,29,72,0.4);">
+                                ⚡ Force Log In & Terminate Other Session
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
             
             <div class="form-group">
                 <label for="username">Username</label>
