@@ -57,30 +57,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Connect to MySQL server and provision the master database dynamically
             $db->initializeDatabase();
             
+            // Helper function to resolve client IP
+            function getLoginClientIP() {
+                if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+                    return $_SERVER['HTTP_CLIENT_IP'];
+                } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                    $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+                    return trim($ips[0]);
+                }
+                return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            }
+
+            $clientIP = getLoginClientIP();
+            
             // Query the master users table
-            $sql = "SELECT id, username, password, role, session_token, last_activity FROM users WHERE username = ?";
+            $sql = "SELECT id, username, password, role, session_token, last_activity, login_ip FROM users WHERE username = ?";
             $rows = $db->query($sql, [$username]);
             
             if (!empty($rows)) {
                 $user = $rows[0];
                 if (password_verify($password, $user['password'])) {
-                    // Check if user account is currently logged in at another location/device
                     $existingToken = $user['session_token'] ?? null;
+                    $existingIP = $user['login_ip'] ?? null;
                     $lastActive = (int)($user['last_activity'] ?? 0);
-                    $activeTimeout = 15 * 60; // 15 minutes of inactivity before session is considered expired
+                    $activeTimeout = 3 * 60; // 3 minutes of inactivity timeout
 
                     $isSessionActive = !empty($existingToken) && ($lastActive > 0) && ((time() - $lastActive) < $activeTimeout);
-                    $forceLogin = !empty($_POST['force_login']);
+                    $isSameIP = !empty($existingIP) && ($existingIP === $clientIP);
 
-                    if ($isSessionActive && !$forceLogin) {
-                        // Account is active elsewhere, offer force login override option
-                        $showForceLogin = true;
-                        $error = '⚠️ This account is currently logged in at another location/device.';
+                    if ($isSessionActive && !$isSameIP) {
+                        // Account is active at ANOTHER location/device -> Access Denied! No force override allowed.
+                        $error = '⚠️ This account is currently logged in at another location/device. Access denied.';
                     } else {
-                        // Account is available or force login override selected. Establish active session.
+                        // Same IP re-authenticating (tab closed/rebooted) OR session expired -> Allow login & re-attach session
                         $token = md5(uniqid(rand(), true));
                         $now = time();
-                        $db->execute("UPDATE users SET session_token = ?, last_activity = ? WHERE id = ?", [$token, $now, $user['id']]);
+                        $db->execute("UPDATE users SET session_token = ?, last_activity = ?, login_ip = ? WHERE id = ?", [$token, $now, $clientIP, $user['id']]);
 
                         // Password matches. Establish active session
                         $_SESSION['user_id'] = $user['id'];
@@ -318,22 +330,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="logo-subtitle">HOST ACCOUNT LOGIN</div>
         </div>
 
+        <?php if (!empty($error)): ?>
+            <div class="error-alert">
+                <?= htmlspecialchars($error) ?>
+            </div>
+        <?php endif; ?>
+
         <form method="POST" action="login.php">
-            <?php if (!empty($error)): ?>
-                <div class="error-alert">
-                    <div><?= htmlspecialchars($error) ?></div>
-                    <?php if (!empty($showForceLogin)): ?>
-                        <div style="margin-top: 10px; border-top: 1px solid rgba(239,68,68,0.25); padding-top: 10px;">
-                            <p style="font-size: 0.8rem; margin: 0 0 8px 0; color: #fca5a5; line-height: 1.3;">
-                                Accidentally closed your browser or rebooted? Click below to override the active session and log in now.
-                            </p>
-                            <button type="submit" name="force_login" value="1" class="btn" style="background: #e11d48; margin-top: 4px; padding: 0.7rem; font-size: 0.85rem; box-shadow: 0 3px 12px rgba(225,29,72,0.4);">
-                                ⚡ Force Log In & Terminate Other Session
-                            </button>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
             
             <div class="form-group">
                 <label for="username">Username</label>

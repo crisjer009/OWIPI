@@ -510,6 +510,11 @@ class OWI_DB {
         } catch (Exception $ex) {
             // Column already exists
         }
+        try {
+            $this->execute("ALTER TABLE users ADD COLUMN login_ip VARCHAR(100) NULL");
+        } catch (Exception $ex) {
+            // Column already exists
+        }
 
         // Ensure all masterfile columns (Price, Aux1, QTY_STORE_1..125) exist on items table
         $this->ensureItemsColumnsExist('items');
