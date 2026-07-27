@@ -1022,61 +1022,22 @@ try {
                 $rows = $db->query($sql, $params);
                 if (!empty($rows)) {
                     $items = $rows;
-                    break; // Found matches in database table!
-                }
-            }
-
-            // Gather scanned locators & quantities from countsheet table
-            $countTable = "{$cleanStore}_countsheet";
-            $countCheck = $db->query("SHOW TABLES LIKE '{$countTable}'");
-            $scansMap = [];
-            if (!empty($countCheck)) {
-                $scans = $db->query("SELECT UPC, SKU, SlotNo, Qty, Edited, EditedQty FROM `{$countTable}`");
-                foreach ($scans as $scan) {
-                    $upc = $scan['UPC'];
-                    $sku = $scan['SKU'] ?? '';
-                    $loc = $scan['SlotNo'] ?? 'Unknown';
-                    $qty = (isset($scan['Edited']) && $scan['Edited'] == 1) ? (float)$scan['EditedQty'] : (float)$scan['Qty'];
-                    
-                    if (!isset($scansMap[$upc])) {
-                        $scansMap[$upc] = ['total' => 0, 'locators' => []];
-                    }
-                    if (!isset($scansMap[$upc]['locators'][$loc])) {
-                        $scansMap[$upc]['locators'][$loc] = 0;
-                    }
-                    $scansMap[$upc]['locators'][$loc] += $qty;
-                    $scansMap[$upc]['total'] += $qty;
-
-                    if (!empty($sku) && $sku !== $upc) {
-                        if (!isset($scansMap[$sku])) {
-                            $scansMap[$sku] = ['total' => 0, 'locators' => []];
-                        }
-                        if (!isset($scansMap[$sku]['locators'][$loc])) {
-                            $scansMap[$sku]['locators'][$loc] = 0;
-                        }
-                        $scansMap[$sku]['locators'][$loc] += $qty;
-                        $scansMap[$sku]['total'] += $qty;
-                    }
+                    break;
                 }
             }
 
             $results = [];
             foreach ($items as $item) {
-                $upc = $item['UPC'];
-                $sku = $item['SKU'] ?? 'N/A';
-                $mstQty = (float)($item['Qty'] ?? 0);
-                $scanInfo = $scansMap[$upc] ?? ($scansMap[$sku] ?? ['total' => 0, 'locators' => []]);
-                $scannedQty = $scanInfo['total'];
-                $variance = $scannedQty - $mstQty;
+                $priceVal = isset($item['Price']) ? (float)$item['Price'] : 0.00;
+                $attrText = !empty($item['Attr']) ? $item['Attr'] : (!empty($item['Type']) ? $item['Type'] : 'MASTERFILE ITEM');
 
                 $results[] = [
-                    'barcode' => $upc,
-                    'sku' => $sku,
+                    'barcode' => $item['UPC'] ?? '',
+                    'sku' => $item['SKU'] ?? 'N/A',
                     'description' => $item['Descr'] ?? 'Item Not Found',
-                    'master_qty' => $mstQty,
-                    'scanned_qty' => $scannedQty,
-                    'variance' => $variance,
-                    'locators' => $scanInfo['locators']
+                    'master_qty' => (float)($item['Qty'] ?? 0),
+                    'price' => $priceVal,
+                    'attributes' => $attrText
                 ];
             }
 

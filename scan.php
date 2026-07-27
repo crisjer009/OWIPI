@@ -2813,43 +2813,40 @@ $hasActiveStores = !empty($existingStoresList);
 
                             let html = '';
                             data.results.forEach(item => {
-                                const locatorsEntries = Object.entries(item.locators || {});
-                                let locatorsHtml = '';
-
-                                if (locatorsEntries.length > 0) {
-                                    locatorsHtml = locatorsEntries.map(([locName, locQty]) => {
-                                        let cleanLoc = locName;
-                                        if (cleanLoc.toLowerCase().startsWith('slot ')) cleanLoc = cleanLoc.substring(5);
-                                        else if (cleanLoc.toLowerCase().startsWith('slot')) cleanLoc = cleanLoc.substring(4);
-                                        return `<span style="background: rgba(210,153,34,0.12); color: #d29922; border: 1px solid rgba(210,153,34,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
-                                            📍 Slot ${cleanLoc} — Qty: ${locQty}
-                                        </span>`;
-                                    }).join(' ');
-                                } else {
-                                    locatorsHtml = `<span style="color: var(--text-muted); font-size: 0.72rem; font-style: italic;">
-                                        Not scanned in any locator yet
-                                    </span>`;
-                                }
-
-                                const varianceVal = parseFloat(item.variance || 0);
-                                const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
-                                const varianceColor = varianceVal === 0 ? '#3fb950' : (varianceVal > 0 ? '#58a6ff' : '#f85149');
+                                const priceStr = (item.price !== undefined && item.price !== null && item.price !== 0) 
+                                    ? '₱' + parseFloat(item.price).toFixed(2) 
+                                    : 'N/A';
+                                const attrStr = item.attributes || 'MASTERFILE ITEM';
 
                                 html += `
-                                    <div style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">
-                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-                                            <span style="color: var(--text-white); font-weight: 600; font-size: 0.85rem;">${item.description}</span>
-                                            <div style="display:flex; gap:6px; flex-shrink: 0; margin-left: 8px;">
-                                                <span style="background: rgba(255,255,255,0.05); color: #8b949e; font-weight: 600; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem;" title="Masterfile Store Quantity">DB: ${item.master_qty}</span>
-                                                <span style="background: rgba(56,139,253,0.15); color: #58a6ff; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem;" title="Physical Counted Quantity">Counted: ${item.scanned_qty}</span>
-                                                <span style="background: rgba(255,255,255,0.05); color: ${varianceColor}; font-weight: 700; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem;" title="Variance">Var: ${varianceStr}</span>
+                                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(46,164,79,0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.8rem;">
+                                        <div style="display: flex; align-items: center; gap: 6px; color: #3fb950; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+                                            <span style="display: inline-block; width: 7px; height: 7px; background: #3fb950; border-radius: 50%; box-shadow: 0 0 6px #3fb950;"></span>
+                                            MATCH FOUND IN DATABASE
+                                        </div>
+
+                                        <div style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 2px;">Product Name:</div>
+                                        <div style="color: var(--text-white); font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; line-height: 1.3;">
+                                            ${item.description}
+                                        </div>
+
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+                                            <div>
+                                                <span style="color: var(--text-muted); display: block; font-size: 0.68rem;">Barcode (UPC):</span>
+                                                <span style="font-family: monospace; color: #58a6ff; font-weight: 600;">${item.barcode || 'N/A'}</span>
                                             </div>
-                                        </div>
-                                        <div style="font-family: monospace; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 6px;">
-                                            UPC: <span style="color:#58a6ff; font-weight:600;">${item.barcode}</span> | ALU/SKU: <span style="color:#3fb950; font-weight:600;">${item.sku}</span>
-                                        </div>
-                                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                                            ${locatorsHtml}
+                                            <div>
+                                                <span style="color: var(--text-muted); display: block; font-size: 0.68rem;">SKU Code:</span>
+                                                <span style="font-family: monospace; color: #3fb950; font-weight: 600;">${item.sku || 'N/A'}</span>
+                                            </div>
+                                            <div>
+                                                <span style="color: var(--text-muted); display: block; font-size: 0.68rem;">Masterfile Qty:</span>
+                                                <span style="font-weight: 700; color: #2ea44f;">${item.master_qty}</span>
+                                            </div>
+                                            <div>
+                                                <span style="color: var(--text-muted); display: block; font-size: 0.68rem;">Price:</span>
+                                                <span style="font-weight: 700; color: #d29922;">${priceStr}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 `;
