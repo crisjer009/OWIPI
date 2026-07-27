@@ -2076,14 +2076,6 @@ $hasActiveStores = !empty($existingStoresList);
             window.addEventListener('online', updateNetworkStatus);
             window.addEventListener('offline', updateNetworkStatus);
             updateNetworkStatus();
-
-            // Release session token when tab/window is closed
-            window.addEventListener('pagehide', function () {
-                if (navigator.sendBeacon) {
-                    const formData = new FormData();
-                    navigator.sendBeacon('api.php?action=release_session', formData);
-                }
-            });
         });
 
         function updateNetworkStatus() {
