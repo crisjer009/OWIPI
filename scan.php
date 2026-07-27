@@ -156,6 +156,16 @@ $hasActiveStores = !empty($existingStoresList);
             background: #f85149;
         }
 
+        .connection-status.local {
+            background: rgba(210, 153, 34, 0.15);
+            color: #d29922;
+            border: 1px solid rgba(210, 153, 34, 0.3);
+        }
+
+        .connection-status.local::before {
+            background: #d29922;
+        }
+
         /* Container Cards */
         .card {
             background: var(--card-bg);
@@ -2070,12 +2080,21 @@ $hasActiveStores = !empty($existingStoresList);
 
         function updateNetworkStatus() {
             const status = document.getElementById('connection-status');
-            if (navigator.onLine) {
-                status.innerText = "Online";
-                status.className = "connection-status";
-            } else {
+            if (!status) return;
+
+            const hostname = (window.location.hostname || '').toLowerCase();
+            const isLocalhost = ['localhost', '127.0.0.1', '::1', ''].includes(hostname);
+            const isLocalIP = /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(hostname);
+
+            if (!navigator.onLine) {
                 status.innerText = "Offline (Local Only)";
                 status.className = "connection-status offline";
+            } else if (isLocalhost || isLocalIP) {
+                status.innerText = "Offline (Local)";
+                status.className = "connection-status local";
+            } else {
+                status.innerText = "Online";
+                status.className = "connection-status";
             }
         }
 
