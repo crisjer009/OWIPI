@@ -198,7 +198,7 @@ function isLoggedIn() {
         if (!empty($rows)) {
             $dbToken = $rows[0]['session_token'];
             if ($dbToken !== $_SESSION['session_token']) {
-                // Logged in from elsewhere! Destroy session
+                // Token mismatch (e.g. session ended)
                 $_SESSION = array();
                 if (ini_get("session.use_cookies")) {
                     $params = session_get_cookie_params();
@@ -209,6 +209,9 @@ function isLoggedIn() {
                 }
                 session_destroy();
                 return false;
+            } else {
+                // Refresh last_activity timestamp in DB to keep active session alive
+                $db->execute("UPDATE users SET last_activity = ? WHERE id = ?", [time(), $_SESSION['user_id']]);
             }
         }
     } catch (Exception $e) {
@@ -489,9 +492,14 @@ class OWI_DB {
             // Column already exists
         }
 
-        // Dynamically add session_token column to users table for concurrent login checks
+        // Dynamically add session_token and last_activity columns to users table for concurrent login checks
         try {
             $this->execute("ALTER TABLE users ADD COLUMN session_token VARCHAR(255) NULL");
+        } catch (Exception $ex) {
+            // Column already exists
+        }
+        try {
+            $this->execute("ALTER TABLE users ADD COLUMN last_activity INT NULL");
         } catch (Exception $ex) {
             // Column already exists
         }

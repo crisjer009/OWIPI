@@ -58,29 +58,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->initializeDatabase();
             
             // Query the master users table
-            $sql = "SELECT id, username, password, role FROM users WHERE username = ?";
+            $sql = "SELECT id, username, password, role, session_token, last_activity FROM users WHERE username = ?";
             $rows = $db->query($sql, [$username]);
             
             if (!empty($rows)) {
                 $user = $rows[0];
                 if (password_verify($password, $user['password'])) {
-                    // Generate unique session token to prevent concurrent logins
-                    $token = md5(uniqid(rand(), true));
-                    $db->execute("UPDATE users SET session_token = ? WHERE id = ?", [$token, $user['id']]);
+                    // Check if user account is currently logged in at another location/device
+                    $existingToken = $user['session_token'] ?? null;
+                    $lastActive = (int)($user['last_activity'] ?? 0);
+                    $activeTimeout = 15 * 60; // 15 minutes of inactivity before session is considered expired
 
-                    // Password matches. Establish active session
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['role'] = $user['role'];
-                    $_SESSION['session_token'] = $token;
-                    
-                    // Do not auto-select store, let them choose or create it in index.php/scan.php
-                    if ($user['role'] === 'system_admin' || $user['role'] === 'admin') {
-                        header('Location: index.php');
+                    $isSessionActive = !empty($existingToken) && ($lastActive > 0) && ((time() - $lastActive) < $activeTimeout);
+
+                    if ($isSessionActive) {
+                        // Prevent new login and protect the active user session from being logged out
+                        $error = '⚠️ This account is currently logged in at another location/device. Access denied.';
                     } else {
-                        header('Location: scan.php');
+                        // Account is available. Establish active session and token.
+                        $token = md5(uniqid(rand(), true));
+                        $now = time();
+                        $db->execute("UPDATE users SET session_token = ?, last_activity = ? WHERE id = ?", [$token, $now, $user['id']]);
+
+                        // Password matches. Establish active session
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['username'] = $user['username'];
+                        $_SESSION['role'] = $user['role'];
+                        $_SESSION['session_token'] = $token;
+                        
+                        // Do not auto-select store, let them choose or create it in index.php/scan.php
+                        if ($user['role'] === 'system_admin' || $user['role'] === 'admin') {
+                            header('Location: index.php');
+                        } else {
+                            header('Location: scan.php');
+                        }
+                        exit;
                     }
-                    exit;
                 } else {
                     $error = 'Invalid password.';
                 }

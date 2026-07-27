@@ -1,6 +1,14 @@
 <?php
 require_once __DIR__ . '/config.php';
 
+// Clear session_token in database so account is freed up for future logins
+if (isset($_SESSION['user_id'])) {
+    try {
+        $db = new OWI_DB();
+        $db->execute("UPDATE users SET session_token = NULL, last_activity = 0 WHERE id = ?", [$_SESSION['user_id']]);
+    } catch (Exception $e) {}
+}
+
 // Clear session variables
 $_SESSION = array();
 
