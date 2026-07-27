@@ -1383,6 +1383,18 @@ $hasActiveStores = !empty($existingStoresList);
                         </div>
                     </div>
                 </div>
+
+                <!-- Item Search in Locator Progress Card -->
+                <div style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
+                    <div style="position: relative;">
+                        <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
+                            style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
+                            oninput="searchLocatorProgressItem()">
+                    </div>
+                    <div id="locator-progress-search-results"
+                        style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
+                    </div>
+                </div>
             </div>
 
             <!-- Right Side: Locator Manager & Count Sheet (takes 50% width) -->
@@ -2667,8 +2679,9 @@ $hasActiveStores = !empty($existingStoresList);
                         if (totalQtyEl) totalQtyEl.innerText = totalQty.toFixed(0);
                         if (uniqueBarcodesEl) uniqueBarcodesEl.innerText = infBarcodes.size;
 
-                        // Render filtered host scans table
+                        // Render filtered host scans table & locator progress item search
                         filterHostScans();
+                        searchLocatorProgressItem();
                     }
                 })
                 .catch(err => console.error("Error loading host scans:", err));
@@ -2758,6 +2771,109 @@ $hasActiveStores = !empty($existingStoresList);
             }
 
             tbody.innerHTML = html;
+        }
+
+        // Search item across locators in Locator Completion Progress card
+        function searchLocatorProgressItem() {
+            const input = document.getElementById('locator-progress-item-search');
+            const resultsContainer = document.getElementById('locator-progress-search-results');
+            if (!input || !resultsContainer) return;
+
+            const q = input.value.toLowerCase().trim();
+            if (q === '') {
+                resultsContainer.style.display = 'none';
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            const scans = window.cachedHostScans || [];
+            if (scans.length === 0) {
+                resultsContainer.style.display = 'block';
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
+                        No scans available in system yet.
+                    </div>
+                `;
+                return;
+            }
+
+            // Filter matching scans by Barcode, ALU/SKU, or Description
+            const matches = scans.filter(scan => {
+                const bc = (scan.barcode || '').toLowerCase();
+                const sku = (scan.sku || '').toLowerCase();
+                const desc = (scan.product_name || '').toLowerCase();
+                return bc.includes(q) || sku.includes(q) || desc.includes(q);
+            });
+
+            if (matches.length === 0) {
+                resultsContainer.style.display = 'block';
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
+                        No items matching "${q}" found in locators.
+                    </div>
+                `;
+                return;
+            }
+
+            // Group matching items by Barcode/UPC
+            const grouped = {};
+            matches.forEach(scan => {
+                const bc = scan.barcode;
+                if (!grouped[bc]) {
+                    grouped[bc] = {
+                        barcode: bc,
+                        sku: scan.sku || 'N/A',
+                        description: scan.product_name || 'Item Not Found',
+                        locatorsMap: {},
+                        totalQty: 0
+                    };
+                }
+
+                let loc = scan.location || 'Unknown';
+                if (loc.toLowerCase().startsWith('slot ')) {
+                    loc = loc.substring(5);
+                } else if (loc.toLowerCase().startsWith('slot')) {
+                    loc = loc.substring(4);
+                }
+
+                if (!grouped[bc].locatorsMap[loc]) {
+                    grouped[bc].locatorsMap[loc] = 0;
+                }
+                const qty = parseFloat(scan.quantity || 0);
+                grouped[bc].locatorsMap[loc] += qty;
+                grouped[bc].totalQty += qty;
+            });
+
+            const groupItems = Object.values(grouped);
+            let html = '';
+
+            groupItems.forEach(item => {
+                const locatorsList = Object.entries(item.locatorsMap).map(([locName, locQty]) => {
+                    return `<span style="background: rgba(210,153,34,0.12); color: #d29922; border: 1px solid rgba(210,153,34,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+                        📍 Slot ${locName} — Qty: ${locQty}
+                    </span>`;
+                }).join(' ');
+
+                html += `
+                    <div style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px;">
+                            <span style="color: var(--text-white); font-weight: 600; font-size: 0.82rem;">${item.description}</span>
+                            <span style="background: rgba(56,139,253,0.15); color: #58a6ff; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 0.73rem; flex-shrink: 0; margin-left: 8px;">
+                                Total: ${item.totalQty}
+                            </span>
+                        </div>
+                        <div style="font-family: monospace; font-size: 0.74rem; color: var(--text-muted); margin-bottom: 5px;">
+                            UPC: <span style="color:#58a6ff; font-weight:600;">${item.barcode}</span> | ALU/SKU: <span style="color:#3fb950; font-weight:600;">${item.sku}</span>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                            ${locatorsList}
+                        </div>
+                    </div>
+                `;
+            });
+
+            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = html;
         }
 
         // Load mobile locators searchable list for modal datalist
