@@ -2679,9 +2679,8 @@ $hasActiveStores = !empty($existingStoresList);
                         if (totalQtyEl) totalQtyEl.innerText = totalQty.toFixed(0);
                         if (uniqueBarcodesEl) uniqueBarcodesEl.innerText = infBarcodes.size;
 
-                        // Render filtered host scans table & locator progress item search
+                        // Render filtered host scans table
                         filterHostScans();
-                        searchLocatorProgressItem();
                     }
                 })
                 .catch(err => console.error("Error loading host scans:", err));
