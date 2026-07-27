@@ -1389,7 +1389,8 @@ $hasActiveStores = !empty($existingStoresList);
                     <div style="position: relative;">
                         <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
                             style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
-                            oninput="searchLocatorProgressItem()">
+                            oninput="searchLocatorProgressItem()"
+                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
                     </div>
                     <div id="locator-progress-search-results"
                         style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
@@ -2787,21 +2788,18 @@ $hasActiveStores = !empty($existingStoresList);
                 return;
             }
 
-            // Debounce input slightly (200ms) for smooth typing
+            // Debounce 300ms to avoid constant API calls and UI layout jumps while typing
             clearTimeout(locatorProgressSearchTimeout);
             locatorProgressSearchTimeout = setTimeout(() => {
-                resultsContainer.style.display = 'block';
-                resultsContainer.innerHTML = `
-                    <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
-                        🔍 Searching masterfile database for "${q}"...
-                    </div>
-                `;
-
                 fetch(`api.php?action=search_masterfile&q=${encodeURIComponent(q)}`)
                     .then(res => res.json())
                     .then(data => {
+                        // Ensure input hasn't changed or been cleared while fetching
+                        if (input.value.trim() !== q) return;
+
                         if (data.status === 'success' && data.results) {
                             if (data.results.length === 0) {
+                                resultsContainer.style.display = 'block';
                                 resultsContainer.innerHTML = `
                                     <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
                                         No items matching "${q}" found in masterfile database.
@@ -2815,7 +2813,6 @@ $hasActiveStores = !empty($existingStoresList);
                                 const priceStr = (item.price !== undefined && item.price !== null && item.price !== 0) 
                                     ? '₱' + parseFloat(item.price).toFixed(2) 
                                     : 'N/A';
-                                const attrStr = item.attributes || 'MASTERFILE ITEM';
 
                                 html += `
                                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(46,164,79,0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.8rem;">
@@ -2851,18 +2848,14 @@ $hasActiveStores = !empty($existingStoresList);
                                 `;
                             });
 
+                            resultsContainer.style.display = 'block';
                             resultsContainer.innerHTML = html;
                         }
                     })
                     .catch(err => {
                         console.error("Error searching masterfile database:", err);
-                        resultsContainer.innerHTML = `
-                            <div style="text-align: center; padding: 12px; color: var(--text-muted); font-size: 0.78rem;">
-                                Error searching masterfile database.
-                            </div>
-                        `;
                     });
-            }, 200);
+            }, 300);
         }
 
         // Load mobile locators searchable list for modal datalist
