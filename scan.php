@@ -2855,7 +2855,7 @@ $hasActiveStores = !empty($existingStoresList);
                                                 <span style="font-family: monospace; color: #3fb950; font-weight: 600;">${item.sku || 'N/A'}</span>
                                             </div>
                                             <div>
-                                                <span style="color: var(--text-muted); display: block; font-size: 0.68rem;">Masterfile Qty:</span>
+                                                <span style="color: var(--text-muted); display: block; font-size: 0.68rem;">Store Qty:</span>
                                                 <span style="font-weight: 700; color: #2ea44f;">${item.master_qty}</span>
                                             </div>
                                             <div>
