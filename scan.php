@@ -28,6 +28,14 @@ if (isMobileDevice() && !isset($_SESSION['user_id'])) {
 }
 
 checkAuth(); // HOST user accounts require login; mobile scanner users bypass login
+
+// Authenticated Host Accounts (system_admin or admin) operate in Host Dashboard view unless view=mobile is explicitly requested
+if (isAdmin() || (isset($_SESSION['role']) && ($_SESSION['role'] === 'system_admin' || $_SESSION['role'] === 'admin'))) {
+    if (!isset($_GET['mobile']) && (!isset($_GET['view']) || $_GET['view'] !== 'mobile')) {
+        unset($_SESSION['is_mobile_scanner']);
+    }
+}
+
 $config = loadConfig();
 $marginTop = isset($config['print_margin_top']) ? (int) $config['print_margin_top'] : 0;
 $marginLeft = isset($config['print_margin_left']) ? (int) $config['print_margin_left'] : 10;

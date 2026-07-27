@@ -151,28 +151,35 @@ function getServerLocalIP() {
 
 // Authentication Check Helpers
 function isMobileDevice() {
+    // Authenticated Host Accounts (system_admin or admin) operate in Host Mode unless explicitly requesting mobile view
+    if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['system_admin', 'admin'])) {
+        if (isset($_GET['mobile']) || isset($_GET['autologin']) || (isset($_GET['view']) && $_GET['view'] === 'mobile')) {
+            return true;
+        }
+        return false;
+    }
+
     if (!empty($_SESSION['is_mobile_scanner'])) {
         return true;
     }
     if (isset($_GET['autologin']) || isset($_GET['mobile']) || isset($_GET['operator']) || (isset($_GET['store_code']) && !isset($_SESSION['user_id']))) {
         return true;
     }
+    $script = strtolower($_SERVER['SCRIPT_NAME'] ?? '');
+    if (strpos($script, 'mobile_ce.php') !== false) {
+        return true;
+    }
     $ua = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
     if (!empty($ua)) {
         $mobileKeywords = [
-            'windows ce', 'wm', 'android', 'iphone', 'ipad', 'ipod', 'mobile',
-            'handheld', 'casio', 'symbol', 'zebra', 'honeywell', 'intermec',
-            'datalogic', 'pda', 'iemobile', 'opera mini', 'armv4', 'wce'
+            'windows ce', 'wm', 'handheld', 'casio', 'symbol', 'zebra', 'honeywell', 'intermec',
+            'datalogic', 'pda', 'iemobile', 'armv4', 'wce'
         ];
         foreach ($mobileKeywords as $keyword) {
             if (strpos($ua, $keyword) !== false) {
                 return true;
             }
         }
-    }
-    $script = strtolower($_SERVER['SCRIPT_NAME'] ?? '');
-    if (strpos($script, 'mobile_ce.php') !== false) {
-        return true;
     }
     return false;
 }
@@ -234,7 +241,7 @@ function checkAuth($requireAdmin = false) {
     }
 
     // Exclude mobile scanner users from mandatory login
-    if (!$requireAdmin && isMobileDevice()) {
+    if (!$requireAdmin && !isAdmin() && isMobileDevice()) {
         if (!isset($_SESSION['user_id'])) {
             $_SESSION['user_id'] = 999;
             $_SESSION['username'] = isset($_GET['user']) ? urldecode($_GET['user']) : (isset($_GET['operator']) ? urldecode($_GET['operator']) : 'Mobile Scanner');
