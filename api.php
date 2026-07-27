@@ -1010,15 +1010,35 @@ try {
                 }
 
                 $searchParam = "%{$q}%";
-                $searchUnpadded = "%{$unpadded}%";
-                $searchPadded = "%{$padded6}%";
+                $searchPrefix = "{$q}%";
+                $searchUnpaddedPrefix = "{$unpadded}%";
 
                 $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` 
-                        WHERE UPC LIKE ? OR SKU LIKE ? OR Descr LIKE ? 
-                           OR UPC LIKE ? OR SKU LIKE ?
-                           OR UPC LIKE ? OR SKU LIKE ?
-                        LIMIT 150";
-                $params = [$searchParam, $searchParam, $searchParam, $searchUnpadded, $searchUnpadded, $searchPadded, $searchPadded];
+                        WHERE UPC = ? OR SKU = ? OR UPC = ? OR SKU = ?
+                           OR TRIM(LEADING '0' FROM SKU) = ? OR TRIM(LEADING '0' FROM UPC) = ?
+                           OR SKU LIKE ? OR UPC LIKE ? OR Descr LIKE ?
+                        ORDER BY 
+                            CASE 
+                                WHEN SKU = ? OR SKU = ? OR TRIM(LEADING '0' FROM SKU) = ? THEN 1
+                                WHEN SKU LIKE ? OR SKU LIKE ? THEN 2
+                                WHEN UPC = ? OR UPC = ? OR TRIM(LEADING '0' FROM UPC) = ? THEN 3
+                                WHEN UPC LIKE ? OR UPC LIKE ? THEN 4
+                                WHEN Descr LIKE ? THEN 5
+                                ELSE 6
+                            END ASC, Descr ASC
+                        LIMIT 100";
+
+                $params = [
+                    $q, $q, $padded6, $padded6,
+                    $unpadded, $unpadded,
+                    $searchParam, $searchParam, $searchParam,
+                    $q, $padded6, $unpadded,
+                    $searchPrefix, $searchUnpaddedPrefix,
+                    $q, $padded6, $unpadded,
+                    $searchPrefix, $searchUnpaddedPrefix,
+                    $searchPrefix
+                ];
+
                 $rows = $db->query($sql, $params);
                 if (!empty($rows)) {
                     $items = $rows;
