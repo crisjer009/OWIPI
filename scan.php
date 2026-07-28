@@ -174,6 +174,8 @@ $hasActiveStores = !empty($existingStoresList);
             padding: 15px;
             margin-bottom: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 0;
+            box-sizing: border-box;
         }
 
         .card-title {
@@ -535,16 +537,15 @@ $hasActiveStores = !empty($existingStoresList);
         /* Responsive Host Dashboard Grid Classes */
         .host-top-grid {
             display: grid;
-            grid-template-columns: 1.3fr 0.7fr;
+            grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
             gap: 15px;
             align-items: stretch;
-            height: 320px;
             min-height: 320px;
         }
 
         .host-sub-grid {
             display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
             gap: 15px;
             align-items: stretch;
             height: 100%;
@@ -552,7 +553,7 @@ $hasActiveStores = !empty($existingStoresList);
 
         .host-bottom-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: 15px;
             align-items: stretch;
             margin-top: 15px;
@@ -560,7 +561,7 @@ $hasActiveStores = !empty($existingStoresList);
             min-height: 320px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1280px) {
             #host-dashboard {
                 height: auto !important;
             }
@@ -572,7 +573,7 @@ $hasActiveStores = !empty($existingStoresList);
             }
 
             .host-sub-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 height: auto;
             }
 
@@ -580,6 +581,12 @@ $hasActiveStores = !empty($existingStoresList);
                 grid-template-columns: 1fr;
                 height: auto;
                 min-height: 0;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .host-sub-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -1336,12 +1343,12 @@ $hasActiveStores = !empty($existingStoresList);
         <div class="host-bottom-grid">
             <!-- Left Side: Locator Progress Dashboard Card -->
             <div class="card" id="host-widget-card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0;">
+                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0; min-width: 0;">
                 <div class="card-title"
-                    style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
                     <span>Locator Completion Progress</span>
                     <div
-                        style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.02); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.02); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
                         <span id="metric-total-qty" style="display: none;">0</span>
                         <span style="color: var(--text-muted);">INF: <span id="metric-unique-barcodes"
                                 style="color: #2ea44f;">0</span></span>
@@ -1410,11 +1417,11 @@ $hasActiveStores = !empty($existingStoresList);
 
             <!-- Right Side: Locator Manager & Count Sheet (takes 50% width) -->
             <div class="card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0;">
+                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0; min-width: 0;">
                 <div class="card-title"
-                    style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
                     <span>Count Sheet & Locators</span>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                         <button id="btn-export-excel" class="btn" onclick="exportStoreVarianceExcel()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#21262d; border: 1px solid #30363d; color:#c9d1d9; display:flex; align-items:center; gap:4px;">
                             <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;">
