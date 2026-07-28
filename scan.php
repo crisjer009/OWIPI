@@ -89,12 +89,34 @@ $hasActiveStores = !empty($existingStoresList);
             --warning-color: #d29922;
         }
 
+        /* Custom Sleek Dark Mode Scrollbars (Global) */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(88, 166, 255, 0.45);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.18) rgba(0, 0, 0, 0.15);
         }
 
         body {
@@ -1186,7 +1208,7 @@ $hasActiveStores = !empty($existingStoresList);
         </div>
     </div> <!-- Close mobile-scanner-view --> <!-- Host Dashboard View (Desktop Host Mode Only) -->
     <div id="host-dashboard"
-        style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; height: calc(100vh - 90px); flex-direction: column; overflow-y: auto;">
+        style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; flex-direction: column;">
 
         <!-- Top Section Grid: equal height log and connect/spacing cards -->
         <div class="host-top-grid">
@@ -1204,7 +1226,7 @@ $hasActiveStores = !empty($existingStoresList);
                         oninput="filterHostScans()">
                 </div>
                 <div
-                    style="overflow-x: auto; overflow-y: auto; margin-top: 10px; padding-right: 5px; flex-grow: 1; min-height: 0;">
+                    style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; margin-top: 10px; padding-right: 5px; flex-grow: 1; min-height: 0;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;"
                         id="host-scans-table">
                         <thead>
@@ -1410,7 +1432,7 @@ $hasActiveStores = !empty($existingStoresList);
                             onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
                     </div>
                     <div id="locator-progress-search-results"
-                        style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
+                        style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; overscroll-behavior: contain; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
                     </div>
                 </div>
             </div>
@@ -1444,7 +1466,7 @@ $hasActiveStores = !empty($existingStoresList);
                     oninput="filterHostLocators()">
 
                 <!-- Scrollable Table Container -->
-                <div style="overflow-x: auto; overflow-y: auto; padding-right: 5px; flex-grow: 1; min-height: 0;">
+                <div style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; padding-right: 5px; flex-grow: 1; min-height: 0;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                         <thead>
                             <tr
