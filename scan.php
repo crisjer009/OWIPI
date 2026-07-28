@@ -3721,15 +3721,6 @@ $hasActiveStores = !empty($existingStoresList);
                             </body>
                             </html>
                         `);
-                                \x3Cscript\x3E
-                                    window.onload = function() {
-                                        window.print();
-                                        window.close();
-                                    }
-                                <\/script>
-                            </body>
-                            </html>
-                        `);
                         printWin.document.close();
                         sessionStorage.setItem('summary_printed_' + storeCode, 'true');
                     }
@@ -3959,15 +3950,6 @@ $hasActiveStores = !empty($existingStoresList);
                                 <div class="signature-footer">
                                     <pre>${footerText}</pre>
                                 </div>
-                                \x3Cscript\x3E
-                                    window.onload = function() {
-                                        window.print();
-                                        window.close();
-                                    }
-                                <\/script>
-                            </body>
-                            </html>
-                        `);
                                 \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
