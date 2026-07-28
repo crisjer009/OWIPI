@@ -556,58 +556,44 @@ $hasActiveStores = !empty($existingStoresList);
             margin-bottom: 4px;
         }
 
-        /* Responsive Host Dashboard Grid Classes */
-        .host-top-grid {
+        /* Premium Executive Widescreen Laptop Dashboard Grid */
+        .host-laptop-dashboard {
             display: grid;
-            grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+            grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
             gap: 15px;
-            align-items: stretch;
-            min-height: 320px;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 15px 15px 15px;
+            box-sizing: border-box;
         }
 
-        .host-sub-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        .host-main-tables-col {
+            display: flex;
+            flex-direction: column;
             gap: 15px;
-            align-items: stretch;
-            height: 100%;
+            min-width: 0;
         }
 
-        .host-bottom-grid {
+        .host-side-controls-col {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 0;
+        }
+
+        .host-sub-control-grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: 15px;
-            align-items: stretch;
-            margin-top: 15px;
-            flex-grow: 1;
-            min-height: 320px;
+            min-width: 0;
         }
 
-        @media (max-width: 1280px) {
-            #host-dashboard {
-                height: auto !important;
-            }
-
-            .host-top-grid {
+        @media (max-width: 1024px) {
+            .host-laptop-dashboard {
                 grid-template-columns: 1fr;
-                height: auto;
-                min-height: 0;
             }
-
-            .host-sub-grid {
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-                height: auto;
-            }
-
-            .host-bottom-grid {
-                grid-template-columns: 1fr;
-                height: auto;
-                min-height: 0;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .host-sub-grid {
+            .host-sub-control-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -1206,16 +1192,16 @@ $hasActiveStores = !empty($existingStoresList);
                 </label>
             </div>
         </div>
-    </div> <!-- Close mobile-scanner-view --> <!-- Host Dashboard View (Desktop Host Mode Only) -->
-    <div id="host-dashboard"
-        style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>; width: 100%; max-width: 100%; margin: 0 auto; padding: 0 15px 15px 15px; box-sizing: border-box; flex-direction: column;">
+    </div> <!-- Close mobile-scanner-view --> 
 
-        <!-- Top Section Grid: equal height log and connect/spacing cards -->
-        <div class="host-top-grid">
+    <div id="host-dashboard" class="host-laptop-dashboard"
+        style="display: <?= $isMobileScanner ? 'none' : 'grid' ?>;">
 
-            <!-- Left Column: Live Logs Table Card -->
+        <!-- LEFT COLUMN: Primary Workspace Tables (Live Scans Log & Count Sheet Locators) -->
+        <div class="host-main-tables-col">
+            <!-- Left Card 1: Live Incoming Scans Log -->
             <div class="card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; height: 100%; min-height: 0;">
+                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box;">
                 <div class="card-title"
                     style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
                     <span>Live Incoming Scans Log</span>
@@ -1252,120 +1238,63 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
             </div>
 
-            <!-- Right Column: Connect Scanner and Print Spacing Settings Side-by-Side -->
-            <div class="host-sub-grid">
-                <!-- Connect Cellphone Card -->
-                <div class="card" id="host-connect-card"
-                    style="margin-bottom: 0; padding: 1.25rem; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div>
-                        <div class="card-title"
-                            style="font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; margin-bottom: 0.75rem; text-align: left; display: flex; align-items: center; gap: 6px;">
-                            <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;">
+            <!-- Left Card 2: Count Sheet & Locators Manager -->
+            <div class="card"
+                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; min-width: 0;">
+                <div class="card-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
+                    <span>Count Sheet & Locators</span>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button id="btn-export-excel" class="btn" onclick="exportStoreVarianceExcel()"
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#21262d; border: 1px solid #30363d; color:#c9d1d9; display:flex; align-items:center; gap:4px;">
+                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;">
                                 <path
-                                    d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M20 5h-6v6h6V5zm-2 11-2 2h2v-2zm2-2h-2v2h2v-2zm-2 4h-2v2h2v-2zm2 2h-2v-2h-2v2h-2v-2h3v-2h-3v-2h5v4zM11.5 9h-1V8h1v1zm0-3h-1V5h1v1zm-6 3h-1V8h1v1zm0-3h-1V5h1v1zm0 9h-1v-1h1v1zm0 3h-1v-1h1v1zm9-9h-1V8h1v1zm0-3h-1V5h1v1zm-6 9h-1v-1h1v1zm1.5-1.5h-1v-1h1v1zm1.5 1.5h-1v-1h1v1z" />
+                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z" />
                             </svg>
-                            <span>Connect Scanner</span>
-                        </div>
-
-                        <div id="host-https-tip"
-                            style="background:rgba(210,153,34,0.1); border:1px solid rgba(210,153,34,0.3); border-radius:6px; padding:8px; margin-bottom:12px; font-size:0.75rem; text-align:left; color:#d29922; display:none;">
-                            ⚠️ Host console is loaded via <strong>HTTP</strong>. Scanner QR code will open
-                            insecurely on
-                            phones.
-                            <br><a id="host-https-link" href=""
-                                style="color:#58a6ff; font-weight:600; text-decoration:underline;">Switch Host to
-                                HTTPS</a>
-                            to enable direct "Allow" camera prompts on phones!
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
-                        <div id="qrcode"
-                            style="background: white; padding: 6px; border-radius: 6px; min-width: 150px; min-height: 150px; display: inline-flex; align-items: center; justify-content: center;">
-                        </div>
-                        <p
-                            style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.3; margin: 5px 0 0 0; text-align: center;">
-                            Scan QR code with phone to connect. Ensure same Wi-Fi.
-                        </p>
-
-                        <?php
-                        $detectedLocalIPs = getServerLocalIPs();
-                        ?>
-                        <div style="margin-top: 8px; width: 100%; max-width: 210px; text-align: left;">
-                            <label for="qr-ip-select"
-                                style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 2px; text-align: center;">Host
-                                Network IP (Local or Wi-Fi):</label>
-                            <select id="qr-ip-select"
-                                style="font-size: 0.75rem; padding: 4px 6px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
-                                onchange="handleQrIpChange(this)">
-                                <?php foreach ($detectedLocalIPs as $ipItem):
-                                    $adapterName = $ipItem['adapter'];
-                                    $lower = strtolower($adapterName);
-                                    $typeLabel = 'LOCAL';
-                                    if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
-                                        $typeLabel = 'WIFI';
-                                    }
-                                    $displayName = $adapterName;
-                                    $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
-                                    $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
-                                    $displayName = str_ireplace('adapter ', '', $displayName);
-                                    ?>
-                                    <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>:
-                                        <?= htmlspecialchars($displayName) ?>)<?= $ipItem['has_gateway'] ? ' 🌐' : '' ?>
-                                    </option>
-                                <?php endforeach; ?>
-                                <option value="custom">✏️ Enter Custom IP Address...</option>
-                            </select>
-                        </div>
+                            Export Excel</button>
+                        <button id="btn-print-summary" class="btn btn-success" onclick="openPrintSummaryModal()"
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
+                            Summary</button>
+                        <button class="btn btn-primary" onclick="autoAddNextLocator()"
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer;">+
+                            Add Locator</button>
                     </div>
                 </div>
 
-                <!-- Print Spacing Settings Card -->
-                <div class="card"
-                    style="margin-bottom: 0; padding: 1.25rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="card-title"
-                        style="font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; margin-bottom: 0.75rem; text-align: left; display: flex; align-items: center; gap: 6px;">
-                        <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;">
-                            <path
-                                d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                        </svg>
-                        <span>Print Spacing Settings</span>
-                    </div>
-                    <form id="host-print-config-form" onsubmit="saveHostPrintConfig(event)"
-                        style="display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; margin: 0; height: 100%;">
-                        <div style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px;">
-                            <div>
-                                <label
-                                    style="display:block; font-size:0.7rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">TOP
-                                    MARGIN (MM)</label>
-                                <input type="number" id="host_print_margin_top" class="form-control"
-                                    value="<?= htmlspecialchars($marginTop) ?>" min="0" max="200" required
-                                    style="height:32px; padding:0 8px; font-size:0.8rem; box-sizing:border-box;">
-                            </div>
-                            <div>
-                                <label
-                                    style="display:block; font-size:0.7rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">LEFT
-                                    MARGIN (MM)</label>
-                                <input type="number" id="host_print_margin_left" class="form-control"
-                                    value="<?= htmlspecialchars($marginLeft) ?>" min="0" max="200" required
-                                    style="height:32px; padding:0 8px; font-size:0.8rem; box-sizing:border-box;">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary"
-                            style="width:100%; height:32px; font-size:0.8rem; padding:0; font-weight:600; cursor:pointer;">
-                            Save Spacing
-                        </button>
-                    </form>
+                <!-- Search Input -->
+                <input type="text" id="host-locator-search" placeholder="🔍 Search locators..."
+                    style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); color: white; margin-bottom: 12px; box-sizing: border-box; outline:none;"
+                    oninput="filterHostLocators()">
+
+                <!-- Scrollable Table Container -->
+                <div style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; padding-right: 5px; max-height: 250px;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                        <thead>
+                            <tr
+                                style="border-bottom: 2px solid rgba(255,255,255,0.08); color: var(--text-white); font-weight: 600; position: sticky; top: 0; background: #161b22; z-index: 1;">
+                                <th style="padding: 8px 6px;">Locator</th>
+                                <th style="padding: 8px 6px;">Status</th>
+                                <th style="padding: 8px 6px;">Operator</th>
+                                <th style="padding: 8px 6px; text-align: center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="host-locators-tbody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                                    Loading locators...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
         </div>
 
-        <!-- Bottom Section Grid: 2 columns (50% / 50%) -->
-        <div class="host-bottom-grid">
-            <!-- Left Side: Locator Progress Dashboard Card -->
+        <!-- RIGHT COLUMN: Dashboard Metrics & Side Controls -->
+        <div class="host-side-controls-col">
+            <!-- Right Card 1: Locator Progress Dashboard Card -->
             <div class="card" id="host-widget-card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0; min-width: 0;">
+                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; min-width: 0;">
                 <div class="card-title"
                     style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
                     <span>Locator Completion Progress</span>
@@ -1437,61 +1366,105 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
             </div>
 
-            <!-- Right Side: Locator Manager & Count Sheet (takes 50% width) -->
-            <div class="card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; height: 100%; min-height: 0; min-width: 0;">
-                <div class="card-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
-                    <span>Count Sheet & Locators</span>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                        <button id="btn-export-excel" class="btn" onclick="exportStoreVarianceExcel()"
-                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#21262d; border: 1px solid #30363d; color:#c9d1d9; display:flex; align-items:center; gap:4px;">
-                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;">
+            <!-- Sub Grid: Connect Scanner and Print Spacing Settings Side-by-Side -->
+            <div class="host-sub-control-grid">
+                <!-- Connect Cellphone Card -->
+                <div class="card" id="host-connect-card"
+                    style="margin-bottom: 0; padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div>
+                        <div class="card-title"
+                            style="font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; gap: 6px;">
+                            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
                                 <path
-                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z" />
+                                    d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M20 5h-6v6h6V5zm-2 11-2 2h2v-2zm2-2h-2v2h2v-2zm-2 4h-2v2h2v-2zm2 2h-2v-2h-2v2h-2v-2h3v-2h-3v-2h5v4zM11.5 9h-1V8h1v1zm0-3h-1V5h1v1zm-6 3h-1V8h1v1zm0-3h-1V5h1v1zm0 9h-1v-1h1v1zm0 3h-1v-1h1v1zm9-9h-1V8h1v1zm0-3h-1V5h1v1zm-6 9h-1v-1h1v1zm1.5-1.5h-1v-1h1v1zm1.5 1.5h-1v-1h1v1z" />
                             </svg>
-                            Export Excel</button>
-                        <button id="btn-print-summary" class="btn btn-success" onclick="openPrintSummaryModal()"
-                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
-                            Summary</button>
-                        <button class="btn btn-primary" onclick="autoAddNextLocator()"
-                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer;">+
-                            Add Locator</button>
+                            <span>Connect Scanner</span>
+                        </div>
+
+                        <div id="host-https-tip"
+                            style="background:rgba(210,153,34,0.1); border:1px solid rgba(210,153,34,0.3); border-radius:6px; padding:6px; margin-bottom:8px; font-size:0.7rem; text-align:left; color:#d29922; display:none;">
+                            ⚠️ Host console is loaded via <strong>HTTP</strong>. Scanner QR code will open insecurely on phones.
+                            <br><a id="host-https-link" href="" style="color:#58a6ff; font-weight:600; text-decoration:underline;">Switch Host to HTTPS</a>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%;">
+                        <div id="qrcode"
+                            style="background: white; padding: 4px; border-radius: 6px; min-width: 120px; min-height: 120px; display: inline-flex; align-items: center; justify-content: center;">
+                        </div>
+                        <p style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.2; margin: 2px 0 0 0; text-align: center;">
+                            Scan QR code with phone.
+                        </p>
+
+                        <?php
+                        $detectedLocalIPs = getServerLocalIPs();
+                        ?>
+                        <div style="margin-top: 4px; width: 100%; text-align: left;">
+                            <label for="qr-ip-select"
+                                style="font-size: 0.6rem; color: var(--text-muted); display: block; margin-bottom: 2px; text-align: center;">Host Network IP:</label>
+                            <select id="qr-ip-select"
+                                style="font-size: 0.7rem; padding: 3px 4px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
+                                onchange="handleQrIpChange(this)">
+                                <?php foreach ($detectedLocalIPs as $ipItem):
+                                    $adapterName = $ipItem['adapter'];
+                                    $lower = strtolower($adapterName);
+                                    $typeLabel = 'LOCAL';
+                                    if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
+                                        $typeLabel = 'WIFI';
+                                    }
+                                    $displayName = $adapterName;
+                                    $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
+                                    $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
+                                    $displayName = str_ireplace('adapter ', '', $displayName);
+                                    ?>
+                                    <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                                <option value="custom">✏️ Enter Custom IP...</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Search Input -->
-                <input type="text" id="host-locator-search" placeholder="🔍 Search locators..."
-                    style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); color: white; margin-bottom: 12px; box-sizing: border-box; outline:none;"
-                    oninput="filterHostLocators()">
-
-                <!-- Scrollable Table Container -->
-                <div style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; padding-right: 5px; max-height: 250px;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-                        <thead>
-                            <tr
-                                style="border-bottom: 2px solid rgba(255,255,255,0.08); color: var(--text-white); font-weight: 600; position: sticky; top: 0; background: #161b22; z-index: 1;">
-                                <th style="padding: 8px 6px;">Locator</th>
-                                <th style="padding: 8px 6px;">Status</th>
-                                <th style="padding: 8px 6px;">Operator</th>
-                                <th style="padding: 8px 6px; text-align: center;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="host-locators-tbody">
-                            <tr>
-                                <td colspan="4" style="text-align: center; padding: 20px; color: var(--text-muted);">
-                                    Loading locators...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <!-- Print Spacing Settings Card -->
+                <div class="card"
+                    style="margin-bottom: 0; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                    <div class="card-title"
+                        style="font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
+                            <path
+                                d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                        </svg>
+                        <span>Print Spacing Settings</span>
+                    </div>
+                    <form id="host-print-config-form" onsubmit="saveHostPrintConfig(event)"
+                        style="display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; margin: 0;">
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 8px;">
+                            <div>
+                                <label
+                                    style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">TOP MARGIN (MM)</label>
+                                <input type="number" id="host_print_margin_top" class="form-control"
+                                    value="<?= htmlspecialchars($marginTop) ?>" min="0" max="200" required
+                                    style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
+                            </div>
+                            <div>
+                                <label
+                                    style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">LEFT MARGIN (MM)</label>
+                                <input type="number" id="host_print_margin_left" class="form-control"
+                                    value="<?= htmlspecialchars($marginLeft) ?>" min="0" max="200" required
+                                    style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"
+                            style="width:100%; height:30px; font-size:0.75rem; padding:0; font-weight:600; cursor:pointer;">
+                            Save Spacing
+                        </button>
+                    </form>
                 </div>
             </div>
+
         </div>
-
     </div>
-
-    <!-- Modal for viewing/editing scans in a specific locator -->
     <div class="modal-overlay" id="host-view-locator-scans-modal-overlay">
         <div class="modal" style="max-width: 600px; width: 95%; padding: 20px;">
             <h3 class="modal-title" id="view-scans-locator-title"
