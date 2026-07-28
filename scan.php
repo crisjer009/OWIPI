@@ -3403,13 +3403,13 @@ $hasActiveStores = !empty($existingStoresList);
                                 cleanDescr = cleanDescr.substring(0, 52);
                             }
 
-                            tableHtml += `<tr style="line-height: 1.25;">
-                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(recNo, 8)}</td>
-                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 15ch;">${padRight(barcode, 15)}</td>
-                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(sku, 8)}</td>
-                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 52ch;">${padRight(cleanDescr, 52)}</td>
-                                <td style="padding: 2px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 6ch;">${padRight(qtyStr, 6)}</td>
-                                <td style="padding: 2px 0; vertical-align: bottom;">_______</td>
+                            tableHtml += `<tr style="line-height: 1.18;">
+                                <td style="padding: 1px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(recNo, 8)}</td>
+                                <td style="padding: 1px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 15ch;">${padRight(barcode, 15)}</td>
+                                <td style="padding: 1px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 8ch;">${padRight(sku, 8)}</td>
+                                <td style="padding: 1px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 52ch;">${padRight(cleanDescr, 52)}</td>
+                                <td style="padding: 1px 0; border-bottom: 1px dashed #000; vertical-align: bottom; width: 6ch;">${padRight(qtyStr, 6)}</td>
+                                <td style="padding: 1px 0; vertical-align: bottom;">_______</td>
                             </tr>`;
                         });
 
@@ -3431,9 +3431,9 @@ $hasActiveStores = !empty($existingStoresList);
                         footerText += padRight(`Number of Records Scanned: ${scans.length}`, 69) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
                         footerText += `No. of INF Found : ${infCount}\r\n\r\n`;
 
-                        footerText += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
+                        footerText += '       <span style="position:relative; top:10px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
                         footerText += '       ____________            ____________               ____________\r\n';
-                        footerText += '        Scanned  By             Counted By                 Checked By\r\n\r\n\r\n\r\n';
+                        footerText += '        Scanned  By             Counted By                 Checked By\r\n\r\n';
                         footerText += '              ____________                    ____________\r\n';
                         footerText += '               Team Leader                     Posted By\r\n';
 
@@ -3452,7 +3452,7 @@ $hasActiveStores = !empty($existingStoresList);
                                         margin-top: ${pageTopMargin}mm;
                                         margin-left: ${pageLeftMargin}mm;
                                         margin-right: 0mm;
-                                        margin-bottom: 10mm;
+                                        margin-bottom: 8mm;
                                     }
                                     @media print {
                                         body { 
@@ -3480,15 +3480,15 @@ $hasActiveStores = !empty($existingStoresList);
                                     .signature-footer {
                                         page-break-inside: avoid !important;
                                         break-inside: avoid !important;
-                                        margin-top: 10px;
+                                        margin-top: 6px;
                                     }
                                 </style>
                             </head>
                             <body>
-                                <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${headerText}</pre>
+                                <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 12.5px; line-height: 1.25; background: white; color: black;">${headerText}</pre>
                                 ${tableHtml}
                                 <div class="signature-footer">
-                                    <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${footerText}</pre>
+                                    <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 12.5px; line-height: 1.25; background: white; color: black;">${footerText}</pre>
                                 </div>
                                 \x3Cscript\x3E
                                     window.onload = function() {
@@ -3895,13 +3895,13 @@ $hasActiveStores = !empty($existingStoresList);
 
                         let footerText = '\r\n';
                         footerText += `Number of Records Edited : ${numEdited}\r\n`;
-                        footerText += `Number of Records Added : ${numAdded}\r\n\r\n`;
+                        footerText += `Number of Records Added : ${numAdded}\r\n`;
                         footerText += padRight(`Number of Records Scanned: ${allScans.length}`, 52) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
-                        footerText += `No. of INF Found : ${infCount}\r\n\r\n\r\n`;
+                        footerText += `No. of INF Found : ${infCount}\r\n\r\n`;
 
-                        footerText += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
+                        footerText += '       <span style="position:relative; top:10px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
                         footerText += '       ____________            ____________               ____________\r\n';
-                        footerText += '        Scanned  By             Counted By                 Checked By\r\n\r\n\r\n\r\n';
+                        footerText += '        Scanned  By             Counted By                 Checked By\r\n\r\n';
                         footerText += '              ____________                    ____________\r\n';
                         footerText += '               Team Leader                     Posted By\r\n';
 
