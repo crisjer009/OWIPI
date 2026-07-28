@@ -559,7 +559,7 @@ $hasActiveStores = !empty($existingStoresList);
         /* Premium Executive Widescreen Laptop Dashboard Grid */
         .host-laptop-dashboard {
             display: grid;
-            grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
+            grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
             gap: 15px;
             width: 100%;
             max-width: 100%;
@@ -602,9 +602,10 @@ $hasActiveStores = !empty($existingStoresList);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            flex-grow: 1;
+            flex-grow: 0;
             min-height: 0;
             gap: 15px;
+            margin-bottom: 4px;
         }
 
         @media (max-width: 480px) {
@@ -1450,15 +1451,13 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
 
                 <!-- Item Search in Locator Progress Card -->
-                <div style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
-                    <div style="position: relative;">
-                        <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
-                            style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
-                            oninput="searchLocatorProgressItem()"
-                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
-                    </div>
+                <div style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; position: relative;">
+                    <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
+                        style="width: 100%; height: 32px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
+                        oninput="searchLocatorProgressItem()"
+                        onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
                     <div id="locator-progress-search-results"
-                        style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; overscroll-behavior: contain; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
+                        style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 50; margin-top: 4px; max-height: 180px; overflow-y: auto; overscroll-behavior: contain; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.55);">
                     </div>
                 </div>
             </div>
