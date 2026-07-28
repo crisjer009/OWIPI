@@ -1226,7 +1226,7 @@ $hasActiveStores = !empty($existingStoresList);
                         oninput="filterHostScans()">
                 </div>
                 <div
-                    style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; margin-top: 10px; padding-right: 5px; flex-grow: 1; min-height: 0;">
+                    style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; margin-top: 10px; padding-right: 5px; max-height: 260px;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;"
                         id="host-scans-table">
                         <thead>
@@ -1466,7 +1466,7 @@ $hasActiveStores = !empty($existingStoresList);
                     oninput="filterHostLocators()">
 
                 <!-- Scrollable Table Container -->
-                <div style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; padding-right: 5px; flex-grow: 1; min-height: 0;">
+                <div style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; padding-right: 5px; max-height: 250px;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                         <thead>
                             <tr
