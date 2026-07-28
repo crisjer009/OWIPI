@@ -1292,81 +1292,7 @@ $hasActiveStores = !empty($existingStoresList);
 
         <!-- RIGHT COLUMN: Dashboard Metrics & Side Controls -->
         <div class="host-side-controls-col">
-            <!-- Right Card 1: Locator Progress Dashboard Card -->
-            <div class="card" id="host-widget-card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; min-width: 0;">
-                <div class="card-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                    <span>Locator Completion Progress</span>
-                    <div
-                        style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.02); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
-                        <span id="metric-total-qty" style="display: none;">0</span>
-                        <span style="color: var(--text-muted);">INF: <span id="metric-unique-barcodes"
-                                style="color: #2ea44f;">0</span></span>
-                        <span style="color: var(--text-muted);">Scanners: <span id="metric-active-scanners"
-                                style="color: #d29922;">0</span></span>
-                    </div>
-                </div>
-
-                <div class="host-metric-flex">
-                    <!-- SVG Progress Ring -->
-                    <div style="position: relative; width: 120px; height: 120px; flex-shrink: 0;">
-                        <svg width="120" height="120" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
-                            <!-- Background Circle -->
-                            <circle r="48" cx="60" cy="60" fill="transparent" stroke="rgba(255,255,255,0.04)"
-                                stroke-width="8"></circle>
-                            <!-- Progress Circle -->
-                            <circle id="widget-progress-circle" r="48" cx="60" cy="60" fill="transparent"
-                                stroke="#2ea44f" stroke-width="8" stroke-linecap="round" stroke-dasharray="301.6"
-                                stroke-dashoffset="301.6"
-                                style="transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
-                        </svg>
-                        <div id="widget-progress-text"
-                            style="position: absolute; top: 0; left: 0; width: 120px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Outfit', sans-serif;">
-                            <span style="font-size: 1.45rem; font-weight: 800; color: white; line-height: 1;">0%</span>
-                            <span
-                                style="font-size: 0.6rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Closed</span>
-                        </div>
-                    </div>
-
-                    <!-- Metrics Details Panel -->
-                    <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1; max-width: 180px;">
-                        <div
-                            style="background: rgba(46,164,79,0.06); border: 1px solid rgba(46,164,79,0.15); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Closed (Done)</span>
-                            <span id="widget-closed-count"
-                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #2ea44f;">0</span>
-                        </div>
-                        <div
-                            style="background: rgba(210,153,34,0.06); border: 1px solid rgba(210,153,34,0.15); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Active / Open</span>
-                            <span id="widget-open-count"
-                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #d29922;">0</span>
-                        </div>
-                        <div
-                            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Total Locators</span>
-                            <span id="widget-total-count"
-                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: white;">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Item Search in Locator Progress Card -->
-                <div style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
-                    <div style="position: relative;">
-                        <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
-                            style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
-                            oninput="searchLocatorProgressItem()"
-                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
-                    </div>
-                    <div id="locator-progress-search-results"
-                        style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; overscroll-behavior: contain; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sub Grid: Connect Scanner and Print Spacing Settings Side-by-Side -->
+            <!-- TOP RIGHT: Connect Scanner and Print Spacing Settings Side-by-Side -->
             <div class="host-sub-control-grid">
                 <!-- Connect Cellphone Card -->
                 <div class="card" id="host-connect-card"
@@ -1463,6 +1389,79 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
             </div>
 
+            <!-- BOTTOM RIGHT: Locator Progress Dashboard Card -->
+            <div class="card" id="host-widget-card"
+                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; min-width: 0;">
+                <div class="card-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                    <span>Locator Completion Progress</span>
+                    <div
+                        style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.02); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
+                        <span id="metric-total-qty" style="display: none;">0</span>
+                        <span style="color: var(--text-muted);">INF: <span id="metric-unique-barcodes"
+                                style="color: #2ea44f;">0</span></span>
+                        <span style="color: var(--text-muted);">Scanners: <span id="metric-active-scanners"
+                                style="color: #d29922;">0</span></span>
+                    </div>
+                </div>
+
+                <div class="host-metric-flex">
+                    <!-- SVG Progress Ring -->
+                    <div style="position: relative; width: 120px; height: 120px; flex-shrink: 0;">
+                        <svg width="120" height="120" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
+                            <!-- Background Circle -->
+                            <circle r="48" cx="60" cy="60" fill="transparent" stroke="rgba(255,255,255,0.04)"
+                                stroke-width="8"></circle>
+                            <!-- Progress Circle -->
+                            <circle id="widget-progress-circle" r="48" cx="60" cy="60" fill="transparent"
+                                stroke="#2ea44f" stroke-width="8" stroke-linecap="round" stroke-dasharray="301.6"
+                                stroke-dashoffset="301.6"
+                                style="transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
+                        </svg>
+                        <div id="widget-progress-text"
+                            style="position: absolute; top: 0; left: 0; width: 120px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Outfit', sans-serif;">
+                            <span style="font-size: 1.45rem; font-weight: 800; color: white; line-height: 1;">0%</span>
+                            <span
+                                style="font-size: 0.6rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Closed</span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Details Panel -->
+                    <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1; max-width: 180px;">
+                        <div
+                            style="background: rgba(46,164,79,0.06); border: 1px solid rgba(46,164,79,0.15); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Closed (Done)</span>
+                            <span id="widget-closed-count"
+                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #2ea44f;">0</span>
+                        </div>
+                        <div
+                            style="background: rgba(210,153,34,0.06); border: 1px solid rgba(210,153,34,0.15); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Active / Open</span>
+                            <span id="widget-open-count"
+                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #d29922;">0</span>
+                        </div>
+                        <div
+                            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Total Locators</span>
+                            <span id="widget-total-count"
+                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: white;">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item Search in Locator Progress Card -->
+                <div style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
+                    <div style="position: relative;">
+                        <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
+                            style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
+                            oninput="searchLocatorProgressItem()"
+                            onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
+                    </div>
+                    <div id="locator-progress-search-results"
+                        style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; overscroll-behavior: contain; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 4px;">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="modal-overlay" id="host-view-locator-scans-modal-overlay">
