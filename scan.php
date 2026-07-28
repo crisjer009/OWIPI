@@ -3437,6 +3437,9 @@ $hasActiveStores = !empty($existingStoresList);
                         footerText += '              ____________                    ____________\r\n';
                         footerText += '               Team Leader                     Posted By\r\n';
 
+                        const pageTopMargin = Math.max(10, parseInt(printMarginTop || 0));
+                        const pageLeftMargin = parseInt(printMarginLeft || 0);
+
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
                         printWin.document.open();
@@ -3446,13 +3449,15 @@ $hasActiveStores = !empty($existingStoresList);
                                 <title>Print Locator Scans - ${locatorName}</title>
                                 <style>
                                     @page {
-                                        margin: 0;
+                                        margin-top: ${pageTopMargin}mm;
+                                        margin-left: ${pageLeftMargin}mm;
+                                        margin-right: 0mm;
+                                        margin-bottom: 10mm;
                                     }
                                     @media print {
                                         body { 
                                             margin: 0; 
-                                            padding-top: ${printMarginTop}mm; 
-                                            padding-left: ${printMarginLeft}mm; 
+                                            padding: 0;
                                             background: white; 
                                             color: black; 
                                         }
@@ -3469,9 +3474,8 @@ $hasActiveStores = !empty($existingStoresList);
                                         font-family: monospace;
                                         background: white;
                                         color: black;
-                                        padding-top: ${printMarginTop}mm;
-                                        padding-left: ${printMarginLeft}mm;
                                         margin: 0;
+                                        padding: 0;
                                     }
                                     .signature-footer {
                                         page-break-inside: avoid !important;
@@ -3659,6 +3663,9 @@ $hasActiveStores = !empty($existingStoresList);
                             padQtyCenter(varianceTotalStr, 10) + '\r\n' +
                             '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
+                        const pageTopMargin = Math.max(10, parseInt(printMarginTop || 0));
+                        const pageLeftMargin = parseInt(printMarginLeft || 0);
+
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
                         printWin.document.open();
@@ -3668,13 +3675,15 @@ $hasActiveStores = !empty($existingStoresList);
                                 <title>Inventory Count Summary - ${storeCode}</title>
                                 <style>
                                     @page {
-                                        margin: 0;
+                                        margin-top: ${pageTopMargin}mm;
+                                        margin-left: ${pageLeftMargin}mm;
+                                        margin-right: 0mm;
+                                        margin-bottom: 10mm;
                                     }
                                     @media print {
                                         body { 
                                             margin: 0; 
-                                            padding-top: ${printMarginTop}mm; 
-                                            padding-left: ${printMarginLeft}mm; 
+                                            padding: 0;
                                             background: white; 
                                             color: black; 
                                         }
@@ -3690,9 +3699,8 @@ $hasActiveStores = !empty($existingStoresList);
                                         line-height: 1.1;
                                         background: white;
                                         color: black;
-                                        padding-top: ${printMarginTop}mm;
-                                        padding-left: ${printMarginLeft}mm;
                                         margin: 0;
+                                        padding: 0;
                                     }
                                     pre {
                                         margin: 0;
@@ -3897,6 +3905,9 @@ $hasActiveStores = !empty($existingStoresList);
                         footerText += '              ____________                    ____________\r\n';
                         footerText += '               Team Leader                     Posted By\r\n';
 
+                        const pageTopMargin = Math.max(10, parseInt(printMarginTop || 0));
+                        const pageLeftMargin = parseInt(printMarginLeft || 0);
+
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
                         printWin.document.open();
@@ -3906,13 +3917,15 @@ $hasActiveStores = !empty($existingStoresList);
                                 <title>Print Edited Count Sheet - ${locatorName}</title>
                                 <style>
                                     @page {
-                                        margin: 0;
+                                        margin-top: ${pageTopMargin}mm;
+                                        margin-left: ${pageLeftMargin}mm;
+                                        margin-right: 0mm;
+                                        margin-bottom: 10mm;
                                     }
                                     @media print {
                                         body { 
                                             margin: 0; 
-                                            padding-top: ${printMarginTop}mm; 
-                                            padding-left: ${printMarginLeft}mm; 
+                                            padding: 0;
                                             background: white; 
                                             color: black; 
                                         }
@@ -3928,9 +3941,8 @@ $hasActiveStores = !empty($existingStoresList);
                                         line-height: 1.35;
                                         background: white;
                                         color: black;
-                                        padding-top: ${printMarginTop}mm;
-                                        padding-left: ${printMarginLeft}mm;
                                         margin: 0;
+                                        padding: 0;
                                     }
                                     pre {
                                         margin: 0;
