@@ -3456,6 +3456,14 @@ $hasActiveStores = !empty($existingStoresList);
                                             background: white; 
                                             color: black; 
                                         }
+                                        .signature-footer {
+                                            page-break-inside: avoid !important;
+                                            break-inside: avoid !important;
+                                        }
+                                        tr {
+                                            page-break-inside: avoid !important;
+                                            break-inside: avoid !important;
+                                        }
                                     }
                                     body {
                                         font-family: monospace;
@@ -3465,12 +3473,19 @@ $hasActiveStores = !empty($existingStoresList);
                                         padding-left: ${printMarginLeft}mm;
                                         margin: 0;
                                     }
+                                    .signature-footer {
+                                        page-break-inside: avoid !important;
+                                        break-inside: avoid !important;
+                                        margin-top: 10px;
+                                    }
                                 </style>
                             </head>
                             <body>
                                 <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${headerText}</pre>
                                 ${tableHtml}
-                                <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${footerText}</pre>
+                                <div class="signature-footer">
+                                    <pre style="margin: 0; padding: 0; font-family: monospace; font-size: 13px; line-height: 1.35; background: white; color: black;">${footerText}</pre>
+                                </div>
                                 \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
@@ -3637,20 +3652,12 @@ $hasActiveStores = !empty($existingStoresList);
                             text += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
                         });
 
-                        text += '\r\n';
-                        text += '<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>';
-                        const totalInfStr = padRight(`Total INF items: ${infCount}`, 40);
-                        const grandTotalLabel = padRight("GRAND TOTAL :", 27);
-
-                        const mstTotalStr = grandTotalMaster.toFixed(0);
-                        const scannedTotalStr = grandTotalScanned.toFixed(0);
-                        const varianceTotalStr = (grandTotalVariance >= 0 ? '+' : '') + grandTotalVariance.toFixed(0);
-
-                        text += totalInfStr + grandTotalLabel +
+                        let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
+                            totalInfStr + grandTotalLabel +
                             padQtyCenter(mstTotalStr, 10) +
                             padQtyCenter(scannedTotalStr, 10) +
-                            padQtyCenter(varianceTotalStr, 10) + '\r\n';
-                        text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
+                            padQtyCenter(varianceTotalStr, 10) + '\r\n' +
+                            '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
@@ -3671,6 +3678,10 @@ $hasActiveStores = !empty($existingStoresList);
                                             background: white; 
                                             color: black; 
                                         }
+                                        .signature-footer {
+                                            page-break-inside: avoid !important;
+                                            break-inside: avoid !important;
+                                        }
                                     }
                                     body {
                                         font-family: monospace;
@@ -3689,10 +3700,27 @@ $hasActiveStores = !empty($existingStoresList);
                                         font-family: monospace;
                                         line-height: 1.1;
                                     }
+                                    .signature-footer {
+                                        page-break-inside: avoid !important;
+                                        break-inside: avoid !important;
+                                        margin-top: 10px;
+                                    }
                                 </style>
                             </head>
                             <body>
                                 <pre>${text}</pre>
+                                <div class="signature-footer">
+                                    <pre>${footerText}</pre>
+                                </div>
+                                \x3Cscript\x3E
+                                    window.onload = function() {
+                                        window.print();
+                                        window.close();
+                                    }
+                                <\/script>
+                            </body>
+                            </html>
+                        `);
                                 \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
@@ -3866,17 +3894,17 @@ $hasActiveStores = !empty($existingStoresList);
                         const operators = [...new Set(allScans.map(scan => scan.scanned_by).filter(Boolean))];
                         const scannedByNames = operators.join(', ').toUpperCase();
 
-                        text += '\r\n';
-                        text += `Number of Records Edited : ${numEdited}\r\n`;
-                        text += `Number of Records Added : ${numAdded}\r\n\r\n`;
-                        text += padRight(`Number of Records Scanned: ${allScans.length}`, 52) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
-                        text += `No. of INF Found : ${infCount}\r\n\r\n\r\n`;
+                        let footerText = '\r\n';
+                        footerText += `Number of Records Edited : ${numEdited}\r\n`;
+                        footerText += `Number of Records Added : ${numAdded}\r\n\r\n`;
+                        footerText += padRight(`Number of Records Scanned: ${allScans.length}`, 52) + `GRAND TOTAL : ${grandTotal.toFixed(0)}\r\n`;
+                        footerText += `No. of INF Found : ${infCount}\r\n\r\n\r\n`;
 
-                        text += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
-                        text += '       ____________            ____________               ____________\r\n';
-                        text += '        Scanned  By             Counted By                 Checked By\r\n\r\n\r\n\r\n';
-                        text += '              ____________                    ____________\r\n';
-                        text += '               Team Leader                     Posted By\r\n';
+                        footerText += '       <span style="position:relative; top:12px; font-weight:600;">' + padCenter(scannedByNames, 12) + '</span>                          \r\n';
+                        footerText += '       ____________            ____________               ____________\r\n';
+                        footerText += '        Scanned  By             Counted By                 Checked By\r\n\r\n\r\n\r\n';
+                        footerText += '              ____________                    ____________\r\n';
+                        footerText += '               Team Leader                     Posted By\r\n';
 
                         // Open print frame window
                         const printWin = window.open('', '', 'width=800,height=600');
@@ -3897,6 +3925,10 @@ $hasActiveStores = !empty($existingStoresList);
                                             background: white; 
                                             color: black; 
                                         }
+                                        .signature-footer {
+                                            page-break-inside: avoid !important;
+                                            break-inside: avoid !important;
+                                        }
                                     }
                                     body {
                                         font-family: monospace;
@@ -3915,10 +3947,27 @@ $hasActiveStores = !empty($existingStoresList);
                                         font-family: monospace;
                                         line-height: 1.35;
                                     }
+                                    .signature-footer {
+                                        page-break-inside: avoid !important;
+                                        break-inside: avoid !important;
+                                        margin-top: 10px;
+                                    }
                                 </style>
                             </head>
                             <body>
                                 <pre>${text}</pre>
+                                <div class="signature-footer">
+                                    <pre>${footerText}</pre>
+                                </div>
+                                \x3Cscript\x3E
+                                    window.onload = function() {
+                                        window.print();
+                                        window.close();
+                                    }
+                                <\/script>
+                            </body>
+                            </html>
+                        `);
                                 \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
