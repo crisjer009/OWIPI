@@ -2191,15 +2191,41 @@ try {
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
 
-            $cloudStore = $resData['store'];
+            $cloudStore = $resData['store'] ?? [];
             $locators = $resData['locators'] ?? [];
             $products = $resData['products'] ?? [];
             $scans = $resData['scans'] ?? [];
 
             $db = new OWI_DB();
 
-            // Create the local store and tables
-            $db->createStoreTables($store, $cloudStore['created_by'] ?? null);
+            // Resolve Cloud Creator Username to Local User ID so store ownership is preserved on local download
+            $creatorUsername = $cloudStore['creator_username'] ?? $cloudStore['creator'] ?? '';
+            $localCreatorId = null;
+
+            if (!empty($creatorUsername)) {
+                $userRows = $db->query("SELECT id FROM users WHERE LOWER(username) = ?", [strtolower($creatorUsername)]);
+                if (!empty($userRows)) {
+                    $localCreatorId = (int) $userRows[0]['id'];
+                } else {
+                    try {
+                        $hashedPass = password_hash('123456', PASSWORD_BCRYPT);
+                        $db->execute("INSERT INTO users (username, password, role) VALUES (?, ?, 'user')", [strtoupper($creatorUsername), $hashedPass]);
+                        $localCreatorId = (int) $db->lastInsertId();
+                    } catch (Exception $exU) {
+                    }
+                }
+            }
+
+            if ($localCreatorId === null && isset($cloudStore['created_by']) && is_numeric($cloudStore['created_by'])) {
+                $localCreatorId = (int) $cloudStore['created_by'];
+            }
+
+            // Create the local store and tables with creator ID
+            $db->createStoreTables($store, $localCreatorId);
+
+            if ($localCreatorId !== null) {
+                $db->execute("UPDATE stores SET created_by = ? WHERE LOWER(store_code) = ?", [$localCreatorId, $store]);
+            }
 
             // Sync the closed status
             if ($cloudStore && isset($cloudStore['closed'])) {
@@ -2614,7 +2640,11 @@ try {
             
             $storeRows = [];
             try {
-                $storeRows = $db->query("SELECT * FROM stores WHERE LOWER(store_code) = ?", [$store]);
+                $storeRows = $db->query("
+                    SELECT s.*, u.username as creator_username 
+                    FROM stores s 
+                    LEFT JOIN users u ON s.created_by = u.id 
+                    WHERE LOWER(s.store_code) = ?", [$store]);
             } catch (Exception $e) {
                 // Table 'stores' or column doesn't exist on cloud
             }
