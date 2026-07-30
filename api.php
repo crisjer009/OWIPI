@@ -30,12 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/config.php';
 
-$action = isset($_GET['action']) ? $_GET['action'] : '';
+if (function_exists('opcache_reset')) {
+    @opcache_reset();
+}
 
 $rawInput = json_decode(file_get_contents('php://input'), true);
 if (!$rawInput) {
     $rawInput = $_POST;
 }
+
+$action = $_GET['action'] ?? $_POST['action'] ?? $rawInput['action'] ?? '';
 
 if ($action === 'receive_sync') {
     handleReceiveSync();
@@ -2793,7 +2797,8 @@ try {
             break;
 
         case 'create_manual_backup':
-            $storeCode = trim($_POST['store_code'] ?? ($_GET['store_code'] ?? ''));
+        case 'create_backup':
+            $storeCode = trim($_POST['store_code'] ?? ($_GET['store_code'] ?? ($rawInput['store_code'] ?? '')));
             if (empty($storeCode)) {
                 $storeCode = $_SESSION['store_code'] ?? '';
             }
