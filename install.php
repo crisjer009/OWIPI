@@ -237,6 +237,52 @@ $step = $_GET['step'] ?? 'form';
                 file_put_contents($zipFile, $data);
                 echo "<div class='log-item' style='color: #10b981;'>✓ Codebase package downloaded successfully.</div>";
 
+                // Helper functions for safe deletion & copy without permission issues on Windows read-only files
+                if (!function_exists('safeDeleteRecursive')) {
+                    function safeDeleteRecursive($dirPath) {
+                        if (!is_dir($dirPath)) return;
+                        $items = array_diff(scandir($dirPath), array('.', '..'));
+                        foreach ($items as $item) {
+                            $path = "$dirPath/$item";
+                            if (is_dir($path)) {
+                                safeDeleteRecursive($path);
+                            } else {
+                                @chmod($path, 0777);
+                                @unlink($path);
+                            }
+                        }
+                        @chmod($dirPath, 0777);
+                        @rmdir($dirPath);
+                    }
+                }
+
+                if (!function_exists('safeCopyDirectory')) {
+                    function safeCopyDirectory($src, $dst) {
+                        if (!is_dir($dst)) {
+                            @mkdir($dst, 0777, true);
+                        }
+                        $dir = opendir($src);
+                        if ($dir) {
+                            while (false !== ($file = readdir($dir))) {
+                                if ($file !== '.' && $file !== '..') {
+                                    $srcFile = $src . '/' . $file;
+                                    $dstFile = $dst . '/' . $file;
+                                    if (is_dir($srcFile)) {
+                                        safeCopyDirectory($srcFile, $dstFile);
+                                    } else {
+                                        if (file_exists($dstFile)) {
+                                            @chmod($dstFile, 0777);
+                                            @unlink($dstFile);
+                                        }
+                                        @copy($srcFile, $dstFile);
+                                    }
+                                }
+                            }
+                            closedir($dir);
+                        }
+                    }
+                }
+
                 // 2. Extract ZIP
                 echo "<div class='log-item'>2. Extracting package archive...</div>";
                 $zip = new ZipArchive;
@@ -248,58 +294,16 @@ $step = $_GET['step'] ?? 'form';
                     $zip->close();
                     
                     $extractedFolders = glob($tempExtractDir . "/*", GLOB_ONLYDIR);
-                    if (!empty($extractedFolders)) {
-                        $sourceDir = $extractedFolders[0];
-                        if (is_dir($targetDir)) {
-                            // Delete old folder
-                            function deleteFolder($dir) {
-                                if (!is_dir($dir)) return;
-                                $files = array_diff(scandir($dir), array('.', '..'));
-                                foreach ($files as $file) {
-                                    (is_dir("$dir/$file")) ? deleteFolder("$dir/$file") : unlink("$dir/$file");
-                                }
-                                rmddir($dir);
-                            }
-                            // Custom recursive helper for directory deletion
-                            function rmddir($dirPath) {
-                                if (!is_dir($dirPath)) return;
-                                $files = array_diff(scandir($dirPath), array('.', '..'));
-                                foreach ($files as $file) {
-                                    (is_dir("$dirPath/$file")) ? rmddir("$dirPath/$file") : unlink("$dirPath/$file");
-                                }
-                                rmdir($dirPath);
-                            }
-                            rmddir($targetDir);
-                        }
-                        rename($sourceDir, $targetDir);
-                        echo "<div class='log-item' style='color: #10b981;'>✓ Files extracted and deployed to C:/xampp/htdocs/OWIPI.</div>";
-                    } else {
-                        // Zip directly contains the files without subdirectory (from api.php packager)
-                        if (is_dir($targetDir)) {
-                            function rmddir($dirPath) {
-                                if (!is_dir($dirPath)) return;
-                                $files = array_diff(scandir($dirPath), array('.', '..'));
-                                foreach ($files as $file) {
-                                    (is_dir("$dirPath/$file")) ? rmddir("$dirPath/$file") : unlink("$dirPath/$file");
-                                }
-                                rmdir($dirPath);
-                            }
-                            rmddir($targetDir);
-                        }
-                        rename($tempExtractDir, $targetDir);
-                        echo "<div class='log-item' style='color: #10b981;'>✓ Files extracted and deployed directly to C:/xampp/htdocs/OWIPI.</div>";
-                    }
+                    $sourceDir = !empty($extractedFolders) ? $extractedFolders[0] : $tempExtractDir;
+                    
+                    // Safely copy & update files into C:/xampp/htdocs/OWIPI without breaking Windows permission locks
+                    safeCopyDirectory($sourceDir, $targetDir);
+
+                    echo "<div class='log-item' style='color: #10b981;'>✓ Files extracted and deployed successfully to C:/xampp/htdocs/OWIPI.</div>";
+                    
                     @unlink($zipFile);
                     if (is_dir($tempExtractDir)) {
-                        function rmddir($dirPath) {
-                            if (!is_dir($dirPath)) return;
-                            $files = array_diff(scandir($dirPath), array('.', '..'));
-                            foreach ($files as $file) {
-                                (is_dir("$dirPath/$file")) ? rmddir("$dirPath/$file") : unlink("$dirPath/$file");
-                            }
-                            rmdir($dirPath);
-                        }
-                        rmddir($tempExtractDir);
+                        safeDeleteRecursive($tempExtractDir);
                     }
                 } else {
                     die("<div class='log-item' style='color: #ef4444;'>❌ Error: Failed to open ZIP archive.</div>");
