@@ -2781,8 +2781,9 @@ try {
             } catch (Exception $eF) {
             }
 
+            // Safely sort backups by created_at descending
             usort($backups, function ($a, $b) {
-                return strcmp($b['timestamp'], $a['timestamp']);
+                return strcmp($b['created_at'] ?? '', $a['created_at'] ?? '');
             });
 
             sendResponse([
