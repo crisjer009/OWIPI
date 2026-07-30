@@ -1979,10 +1979,10 @@ try {
                 }
             }
 
-            // Fetch unsynced locators
-            $locators = $db->query("SELECT * FROM `{$store}_locators` WHERE synced = 0");
+            // Fetch all locators for this store
+            $locators = $db->query("SELECT * FROM `{$store}_locators`");
 
-            // Fetch unsynced scans
+            // Fetch all scan records for this store
             $scans = $db->query("
                 SELECT RecNo as id, UPC as barcode, Qty as original_qty, 
                        IF(Edited = 1, EditedQty, Qty) as quantity, 
@@ -1992,7 +1992,6 @@ try {
                        Added as added, Edited as edited, EditedQty as edited_qty,
                        Posted as posted, Variance as variance
                 FROM `{$store}_countsheet`
-                WHERE synced = 0
             ");
 
             // Fetch items catalog
@@ -2455,6 +2454,81 @@ try {
             sendResponse([
                 'status' => 'success',
                 'stores' => $stores
+            ]);
+            break;
+
+        case 'receive_sync':
+            verifySyncToken();
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (!$input) {
+                throw new Exception("Invalid sync payload.");
+            }
+            $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($input['store_code'] ?? ''));
+            if (empty($storeCode)) {
+                throw new Exception("Invalid store code.");
+            }
+            $db = new OWI_DB();
+            $createdBy = $input['store_details']['created_by'] ?? null;
+            $db->createStoreTables($storeCode, $createdBy);
+
+            if (isset($input['store_details']['closed'])) {
+                $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $input['store_details']['closed'], $storeCode]);
+            }
+
+            foreach ($input['locators'] ?? [] as $loc) {
+                $locName = $loc['locator_name'];
+                $status = $loc['status'] ?? 'open';
+                $operator = $loc['assigned_operator'] ?? null;
+                $check = $db->query("SELECT id FROM `{$storeCode}_locators` WHERE locator_name = ?", [$locName]);
+                if (empty($check)) {
+                    $db->execute("INSERT INTO `{$storeCode}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)", [$locName, $status, $operator]);
+                } else {
+                    $db->execute("UPDATE `{$storeCode}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?", [$status, $operator, $locName]);
+                }
+            }
+
+            foreach ($input['scans'] ?? [] as $scan) {
+                $recNo = isset($scan['id']) ? (int) $scan['id'] : 0;
+                $slotNo = $scan['location'];
+                $upc = $scan['barcode'];
+                $sku = $scan['sku'] ?? '';
+                $descr = $scan['product_name'] ?? '';
+                $qty = (float) $scan['original_qty'];
+                $editedQty = isset($scan['edited_qty']) ? (float) $scan['edited_qty'] : null;
+                $posted = (int) ($scan['posted'] ?? 0);
+                $added = (int) ($scan['added'] ?? 0);
+                $edited = (int) ($scan['edited'] ?? 0);
+                $scannedBy = !empty($scan['scanned_by']) ? $scan['scanned_by'] : 'Handheld';
+                $countDate = $scan['scanned_at'] ?? date('Y-m-d H:i:s');
+                $variance = (float) ($scan['variance'] ?? 0.00);
+
+                $checkScan = [];
+                if ($recNo > 0) {
+                    $checkScan = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE RecNo = ?", [$recNo]);
+                }
+                if (empty($checkScan)) {
+                    $checkScan = $db->query("SELECT RecNo FROM `{$storeCode}_countsheet` WHERE SlotNo = ? AND UPC = ? AND CountDate = ?", [$slotNo, $upc, $countDate]);
+                }
+
+                if (!empty($checkScan)) {
+                    $targetRecNo = $checkScan[0]['RecNo'];
+                    $db->execute(
+                        "UPDATE `{$storeCode}_countsheet` 
+                         SET SlotNo = ?, CountDate = ?, UPC = ?, SKU = ?, Descr = ?, Qty = ?, EditedQty = ?, Posted = ?, Added = ?, Edited = ?, ScannedBy = ?, Variance = ?, synced = 1
+                         WHERE RecNo = ?",
+                        [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance, $targetRecNo]
+                    );
+                } else {
+                    $db->execute(
+                        "INSERT INTO `{$storeCode}_countsheet` (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                        [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
+                    );
+                }
+            }
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Store '" . strtoupper($storeCode) . "' synchronized successfully to Cloud!"
             ]);
             break;
 
