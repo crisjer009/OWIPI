@@ -2640,6 +2640,195 @@ try {
             ]);
             break;
 
+        case 'get_cloud_backups':
+            $db = new OWI_DB();
+            $backups = [];
+
+            // 1. Scan MySQL database for snapshot tables: _backup_{store}_countsheet_{timestamp}
+            try {
+                $tables = $db->query("SHOW TABLES LIKE '\_backup\_%\_countsheet\_%'");
+                foreach ($tables as $tRow) {
+                    $tableName = current($tRow);
+                    if (preg_match('/^_backup_([a-zA-Z0-9]+)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
+                        $storeCode = strtoupper($matches[1]);
+                        $tsStr = $matches[2];
+                        $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
+                        $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
+
+                        $scansCount = 0;
+                        try {
+                            $scansCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$tableName}`")[0]['c'] ?? 0);
+                        } catch (Exception $eC) {
+                        }
+
+                        $locsCount = 0;
+                        $locTable = "_backup_" . strtolower($storeCode) . "_locators_" . $tsStr;
+                        try {
+                            $locsCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$locTable}`")[0]['c'] ?? 0);
+                        } catch (Exception $eL) {
+                        }
+
+                        $backups[] = [
+                            'id' => $tableName,
+                            'type' => 'mysql_table',
+                            'store_code' => $storeCode,
+                            'timestamp' => $tsStr,
+                            'created_at' => $formattedDate,
+                            'scans_count' => $scansCount,
+                            'locators_count' => $locsCount
+                        ];
+                    }
+                }
+            } catch (Exception $eT) {
+            }
+
+            // 2. Scan backups/ directory for JSON snapshot files
+            try {
+                $backupDir = __DIR__ . '/backups';
+                if (is_dir($backupDir)) {
+                    $files = glob($backupDir . "/cloud_backup_*.json");
+                    foreach ($files as $file) {
+                        $basename = basename($file);
+                        if (preg_match('/^cloud_backup_([a-zA-Z0-9]+)_(\d{8}_\d{6})\.json$/', $basename, $matches)) {
+                            $storeCode = strtoupper($matches[1]);
+                            $tsStr = $matches[2];
+                            $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
+                            $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
+
+                            $existsInSql = false;
+                            foreach ($backups as $b) {
+                                if ($b['store_code'] === $storeCode && $b['timestamp'] === $tsStr) {
+                                    $existsInSql = true;
+                                    break;
+                                }
+                            }
+                            if ($existsInSql) continue;
+
+                            $data = json_decode(file_get_contents($file), true);
+                            $scansCount = count($data['scans'] ?? []);
+                            $locsCount = count($data['locators'] ?? []);
+
+                            $backups[] = [
+                                'id' => $basename,
+                                'type' => 'json_file',
+                                'store_code' => $storeCode,
+                                'timestamp' => $tsStr,
+                                'created_at' => $formattedDate,
+                                'scans_count' => $scansCount,
+                                'locators_count' => $locsCount
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $eF) {
+            }
+
+            usort($backups, function ($a, $b) {
+                return strcmp($b['timestamp'], $a['timestamp']);
+            });
+
+            sendResponse([
+                'status' => 'success',
+                'backups' => $backups
+            ]);
+            break;
+
+        case 'restore_cloud_backup':
+            $backupId = trim($_POST['backup_id'] ?? ($_GET['backup_id'] ?? ''));
+            if (empty($backupId)) {
+                throw new Exception("Invalid backup ID specified.");
+            }
+
+            $db = new OWI_DB();
+            $storeCode = '';
+            $restoredScans = 0;
+            $restoredLocs = 0;
+
+            if (strpos($backupId, '_backup_') === 0 && preg_match('/^_backup_([a-zA-Z0-9]+)_countsheet_(\d{8}_\d{6})$/', $backupId, $matches)) {
+                $storeCode = strtolower($matches[1]);
+                $tsStr = $matches[2];
+                $locTable = "_backup_{$storeCode}_locators_{$tsStr}";
+
+                // 1. Restore locators table
+                $checkLocBackup = $db->query("SHOW TABLES LIKE '{$locTable}'");
+                if (!empty($checkLocBackup)) {
+                    $db->execute("DROP TABLE IF EXISTS `{$storeCode}_locators`");
+                    $db->execute("CREATE TABLE `{$storeCode}_locators` AS SELECT * FROM `{$locTable}`");
+                }
+
+                // 2. Restore countsheet table
+                $db->execute("DROP TABLE IF EXISTS `{$storeCode}_countsheet`");
+                $db->execute("CREATE TABLE `{$storeCode}_countsheet` AS SELECT * FROM `{$backupId}`");
+
+                $restoredScans = (int) ($db->query("SELECT COUNT(*) as c FROM `{$storeCode}_countsheet`")[0]['c'] ?? 0);
+                $restoredLocs = (int) ($db->query("SELECT COUNT(*) as c FROM `{$storeCode}_locators`")[0]['c'] ?? 0);
+            } else if (strpos($backupId, 'cloud_backup_') === 0 && strpos($backupId, '.json') !== false) {
+                $filePath = __DIR__ . '/backups/' . basename($backupId);
+                if (!file_exists($filePath)) {
+                    throw new Exception("Backup JSON file not found.");
+                }
+                $content = json_decode(file_get_contents($filePath), true);
+                if (!$content) {
+                    throw new Exception("Invalid backup JSON format.");
+                }
+                $storeCode = strtolower($content['store_code'] ?? '');
+                if (empty($storeCode)) {
+                    throw new Exception("Store code missing from backup file.");
+                }
+
+                $db->createStoreTables($storeCode);
+
+                if (!empty($content['locators']) && is_array($content['locators'])) {
+                    $db->execute("TRUNCATE TABLE `{$storeCode}_locators`");
+                    foreach ($content['locators'] as $loc) {
+                        $locName = $loc['locator_name'];
+                        $status = $loc['status'] ?? 'open';
+                        $operator = $loc['assigned_operator'] ?? null;
+                        $db->execute("INSERT INTO `{$storeCode}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)", [$locName, $status, $operator]);
+                    }
+                    $restoredLocs = count($content['locators']);
+                }
+
+                if (isset($content['scans']) && is_array($content['scans'])) {
+                    $db->execute("TRUNCATE TABLE `{$storeCode}_countsheet`");
+                    foreach ($content['scans'] as $scan) {
+                        $slotNo = $scan['SlotNo'] ?? ($scan['location'] ?? '1');
+                        $upc = $scan['UPC'] ?? ($scan['barcode'] ?? '');
+                        $sku = $scan['SKU'] ?? ($scan['sku'] ?? '');
+                        $descr = $scan['Descr'] ?? ($scan['product_name'] ?? '');
+                        $qty = (float) ($scan['Qty'] ?? ($scan['original_qty'] ?? 1));
+                        $editedQty = isset($scan['EditedQty']) ? (float) $scan['EditedQty'] : null;
+                        $posted = (int) ($scan['Posted'] ?? 0);
+                        $added = (int) ($scan['Added'] ?? 0);
+                        $edited = (int) ($scan['Edited'] ?? 0);
+                        $scannedBy = $scan['ScannedBy'] ?? 'Handheld';
+                        $countDate = $scan['CountDate'] ?? date('Y-m-d H:i:s');
+                        $variance = (float) ($scan['Variance'] ?? 0.00);
+
+                        $db->execute(
+                            "INSERT INTO `{$storeCode}_countsheet` (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+                            [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
+                        );
+                    }
+                    $restoredScans = count($content['scans']);
+                }
+            } else {
+                throw new Exception("Unrecognized backup ID format.");
+            }
+
+            $totLoc = (int) ($db->query("SELECT COUNT(*) as count FROM `{$storeCode}_locators`")[0]['count'] ?? 0);
+            $clsLoc = (int) ($db->query("SELECT COUNT(*) as count FROM `{$storeCode}_locators` WHERE status = 'closed'")[0]['count'] ?? 0);
+            $isClosed = ($totLoc > 0 && $clsLoc === $totLoc) ? 1 : 0;
+            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [$isClosed, $storeCode]);
+
+            logAudit('Restore Cloud Backup', "Restored store '" . strtoupper($storeCode) . "' to backup state '{$backupId}' ({$restoredScans} scans, {$restoredLocs} locators).", strtoupper($storeCode));
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Store '" . strtoupper($storeCode) . "' successfully restored from backup snapshot! Restored {$restoredLocs} locators and {$restoredScans} scan records."
+            ]);
+            break;
+
         case 'approve_sync_request':
             $id = (int) ($_POST['id'] ?? ($_GET['id'] ?? 0));
             if ($id <= 0) {

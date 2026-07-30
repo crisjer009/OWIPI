@@ -1225,6 +1225,85 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
+        function fetchCloudBackups() {
+            const listEl = document.getElementById('cloud-backups-list');
+            if (!listEl) return;
+
+            listEl.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">Loading cloud backups...</p>';
+
+            fetch('api.php?action=get_cloud_backups')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.backups && data.backups.length > 0) {
+                        let html = `
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; font-size: 0.8rem; color: var(--text-secondary);">
+                                        <th style="padding: 0.75rem;">Store Code</th>
+                                        <th style="padding: 0.75rem;">Backup Timestamp</th>
+                                        <th style="padding: 0.75rem;">Backup Format</th>
+                                        <th style="padding: 0.75rem;">Records Saved</th>
+                                        <th style="padding: 0.75rem; text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+                        data.backups.forEach(b => {
+                            const typeBadge = b.type === 'mysql_table' 
+                                ? '<span class="badge" style="background: rgba(59,130,246,0.15); color:#60a5fa; font-weight:600;">MySQL Table</span>'
+                                : '<span class="badge" style="background: rgba(16,185,129,0.15); color:#34d399; font-weight:600;">JSON Snapshot File</span>';
+                            
+                            html += `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+                                    <td style="padding: 0.75rem; font-weight: 700; color: var(--accent-color);">${b.store_code}</td>
+                                    <td style="padding: 0.75rem; color: white;">${b.created_at}</td>
+                                    <td style="padding: 0.75rem;">${typeBadge}</td>
+                                    <td style="padding: 0.75rem; color: #9ca3af;">${b.locators_count} Locators • ${b.scans_count} Scans</td>
+                                    <td style="padding: 0.75rem; text-align: right;">
+                                        <button type="button" onclick="restoreCloudBackup('${b.id}', '${b.store_code}', '${b.created_at}')" class="btn" style="background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid #ef4444; width: auto; font-size: 0.75rem; padding: 6px 14px; font-weight: 600; cursor: pointer;">🔄 Restore Backup Data</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        html += '</tbody></table>';
+                        listEl.innerHTML = html;
+                    } else {
+                        listEl.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 1rem;">No pre-sync backup snapshots found on cloud.</p>';
+                    }
+                })
+                .catch(err => {
+                    listEl.innerHTML = '<p style="color: #ef4444; font-size: 0.85rem; padding: 1rem;">Failed to load cloud backups: ' + err + '</p>';
+                });
+        }
+
+        async function restoreCloudBackup(backupId, storeCode, dateStr) {
+            const ok = await showCustomConfirm(
+                `Are you sure you want to restore store '${storeCode}' to the backup state from ${dateStr}?\n\nCurrent active store data on cloud will be rolled back to this backup snapshot point.`,
+                "Restore Cloud Backup Snapshot",
+                "Yes, Restore Store Data",
+                "Cancel"
+            );
+            if (!ok) return;
+
+            showToast(`Restoring store '${storeCode}' from backup snapshot...`, 'info');
+
+            fetch('api.php?action=restore_cloud_backup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `backup_id=${encodeURIComponent(backupId)}`
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showCustomAlert("Restoration failed: " + data.message, "Restore Error");
+                    }
+                })
+                .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
+        }
+
         function fetchExistingStores() {
             fetch('api.php?action=get_stores')
                 .then(res => res.json())
@@ -1469,6 +1548,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
                         </svg>
                         Audit Logs
+                    </div>
+                    <div class="nav-item" onclick="switchView('backups', this)">
+                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                        Cloud Backup Logs
                     </div>
                 <?php endif; ?>
                 <a class="nav-item" href="scan.php" target="_blank">
@@ -2150,6 +2235,27 @@ if ($driverLoaded && $dbStatus === 'connected') {
             </div>
         </div>
 
+        <!-- View: Cloud Backup Logs & Data Restore -->
+        <div id="view-backups" class="view-content">
+            <header>
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <div>
+                        <h1>Cloud Pre-Sync Backup Logs</h1>
+                        <div class="header-desc">Automatic snapshot backups created on cloud prior to store data overwrites. System Admin can restore any store session to its previous backup point.</div>
+                    </div>
+                    <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄 Refresh Backup Logs</button>
+                </div>
+            </header>
+
+            <div class="card" style="margin: 0; padding: 1.15rem; display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 350px;">
+                <div class="table-container" style="flex-grow: 1; overflow-y: auto; max-height: 100%;">
+                    <div id="cloud-backups-list">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">Loading cloud backups...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- View: Test Scan Checker Simulator -->
         <div id="view-checker" class="view-content">
             <header>
@@ -2340,6 +2446,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
             }
             if (viewId === 'audit') {
                 loadAuditLogs();
+            }
+            if (viewId === 'backups') {
+                fetchCloudBackups();
             }
             if (viewId === 'checker') {
                 setTimeout(() => {
