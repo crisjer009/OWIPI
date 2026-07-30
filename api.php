@@ -2792,17 +2792,21 @@ try {
             ]);
             break;
 
-        case 'git_pull':
-            $output = [];
-            $returnCode = 0;
-            @exec("git pull origin main 2>&1", $output, $returnCode);
-            $msg = implode("\n", $output);
-            if (empty($msg)) {
-                $msg = "git pull command executed (exit code {$returnCode}).";
+        case 'create_manual_backup':
+            $storeCode = trim($_POST['store_code'] ?? ($_GET['store_code'] ?? ''));
+            if (empty($storeCode)) {
+                $storeCode = $_SESSION['store_code'] ?? '';
             }
+            if (empty($storeCode)) {
+                throw new Exception("Please specify a Store Code to back up.");
+            }
+
+            $db = new OWI_DB();
+            createCloudStoreBackup($db, $storeCode);
+
             sendResponse([
-                'status' => ($returnCode === 0 || strpos($msg, 'Already up to date') !== false || strpos($msg, 'Updating') !== false) ? 'success' : 'error',
-                'message' => $msg
+                'status' => 'success',
+                'message' => "Successfully created automatic backup snapshot for store '" . strtoupper($storeCode) . "'!"
             ]);
             break;
 

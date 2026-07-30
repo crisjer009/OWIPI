@@ -1276,28 +1276,33 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
-        async function updateSystemCode() {
-            const ok = await showCustomConfirm(
-                "Do you want to pull the latest code updates from GitHub onto this server?",
-                "Update System Code",
-                "Pull Latest Updates",
-                "Cancel"
+        async function triggerManualBackup() {
+            let storeCode = await showCustomPrompt(
+                "Enter the Store Code to create an instant snapshot backup for:",
+                "Create Manual Backup Snapshot",
+                "<?= htmlspecialchars($_SESSION['store_code'] ?? 'TES') ?>"
             );
-            if (!ok) return;
+            if (!storeCode) return;
+            storeCode = storeCode.trim().toUpperCase();
+            if (!storeCode) return;
 
-            showToast("Pulling latest system code from GitHub...", "info");
+            showToast(`Creating backup snapshot for store '${storeCode}'...`, 'info');
 
-            fetch('api.php?action=git_pull')
+            fetch('api.php?action=create_manual_backup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `store_code=${encodeURIComponent(storeCode)}`
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        showCustomAlert("System Code Updated:\n\n" + data.message, "Update Successful");
-                        setTimeout(() => window.location.reload(), 1500);
+                        showToast(data.message, 'success');
+                        fetchCloudBackups();
                     } else {
-                        showCustomAlert("Update Output:\n\n" + data.message, "Update Result");
+                        showCustomAlert("Backup failed: " + data.message, "Backup Error");
                     }
                 })
-                .catch(err => showCustomAlert("Update request failed: " + err, "Network Error"));
+                .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
         async function restoreCloudBackup(backupId, storeCode, dateStr) {
@@ -2268,7 +2273,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <div class="header-desc">Automatic snapshot backups created on cloud prior to store data overwrites. System Admin can restore any store session to its previous backup point.</div>
                     </div>
                     <div style="display:flex; gap: 8px;">
-                        <button type="button" onclick="updateSystemCode()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(16,185,129,0.15); color:#34d399; border:1px solid #10b981; cursor:pointer;">⚡ Update System Code (Git Pull)</button>
+                        <button type="button" onclick="triggerManualBackup()" class="btn" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: var(--success-color); color:white; border:none; font-weight:600; cursor:pointer;">📸 Create Backup Snapshot Now</button>
                         <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄 Refresh Backup Logs</button>
                     </div>
                 </div>
