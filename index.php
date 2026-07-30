@@ -1276,6 +1276,30 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
+        async function updateSystemCode() {
+            const ok = await showCustomConfirm(
+                "Do you want to pull the latest code updates from GitHub onto this server?",
+                "Update System Code",
+                "Pull Latest Updates",
+                "Cancel"
+            );
+            if (!ok) return;
+
+            showToast("Pulling latest system code from GitHub...", "info");
+
+            fetch('api.php?action=git_pull')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showCustomAlert("System Code Updated:\n\n" + data.message, "Update Successful");
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showCustomAlert("Update Output:\n\n" + data.message, "Update Result");
+                    }
+                })
+                .catch(err => showCustomAlert("Update request failed: " + err, "Network Error"));
+        }
+
         async function restoreCloudBackup(backupId, storeCode, dateStr) {
             const ok = await showCustomConfirm(
                 `Are you sure you want to restore store '${storeCode}' to the backup state from ${dateStr}?\n\nCurrent active store data on cloud will be rolled back to this backup snapshot point.`,
@@ -2243,7 +2267,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <h1>Cloud Pre-Sync Backup Logs</h1>
                         <div class="header-desc">Automatic snapshot backups created on cloud prior to store data overwrites. System Admin can restore any store session to its previous backup point.</div>
                     </div>
-                    <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄 Refresh Backup Logs</button>
+                    <div style="display:flex; gap: 8px;">
+                        <button type="button" onclick="updateSystemCode()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(16,185,129,0.15); color:#34d399; border:1px solid #10b981; cursor:pointer;">⚡ Update System Code (Git Pull)</button>
+                        <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄 Refresh Backup Logs</button>
+                    </div>
                 </div>
             </header>
 

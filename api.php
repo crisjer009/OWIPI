@@ -2792,6 +2792,20 @@ try {
             ]);
             break;
 
+        case 'git_pull':
+            $output = [];
+            $returnCode = 0;
+            @exec("git pull origin main 2>&1", $output, $returnCode);
+            $msg = implode("\n", $output);
+            if (empty($msg)) {
+                $msg = "git pull command executed (exit code {$returnCode}).";
+            }
+            sendResponse([
+                'status' => ($returnCode === 0 || strpos($msg, 'Already up to date') !== false || strpos($msg, 'Updating') !== false) ? 'success' : 'error',
+                'message' => $msg
+            ]);
+            break;
+
         case 'restore_cloud_backup':
             $backupId = trim($_POST['backup_id'] ?? ($_GET['backup_id'] ?? ''));
             if (empty($backupId)) {
