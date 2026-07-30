@@ -63,6 +63,61 @@ function logAudit($action, $details, $storeCode = null, $overrideUsername = null
     }
 }
 
+// Helper function to create automatic backups on Cloud before overwriting store tables
+function createCloudStoreBackup($db, $storeCode) {
+    $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+    if (empty($clean)) return;
+
+    $ts = date('Ymd_His');
+
+    // 1. Create SQL snapshot tables on Cloud before overwriting
+    try {
+        $checkLoc = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
+        if (!empty($checkLoc)) {
+            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_locators_{$ts}` AS SELECT * FROM `{$clean}_locators`");
+        }
+    } catch (Exception $e1) {
+    }
+
+    try {
+        $checkCs = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
+        if (!empty($checkCs)) {
+            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_countsheet_{$ts}` AS SELECT * FROM `{$clean}_countsheet`");
+        }
+    } catch (Exception $e2) {
+    }
+
+    // 2. Export JSON backup snapshot file on Cloud before overwriting
+    try {
+        $backupDir = __DIR__ . '/backups';
+        if (!is_dir($backupDir)) {
+            @mkdir($backupDir, 0777, true);
+        }
+        $backupFile = $backupDir . "/cloud_backup_{$clean}_" . $ts . ".json";
+        $existingLocs = [];
+        $existingScans = [];
+        try {
+            $existingLocs = $db->query("SELECT * FROM `{$clean}_locators`");
+        } catch (Exception $eL) {
+        }
+        try {
+            $existingScans = $db->query("SELECT * FROM `{$clean}_countsheet`");
+        } catch (Exception $eS) {
+        }
+
+        if (!empty($existingLocs) || !empty($existingScans)) {
+            $payload = [
+                'store_code' => strtoupper($clean),
+                'backed_up_at' => date('Y-m-d H:i:s'),
+                'locators' => $existingLocs,
+                'scans' => $existingScans
+            ];
+            @file_put_contents($backupFile, json_encode($payload, JSON_PRETTY_PRINT));
+        }
+    } catch (Exception $eJson) {
+    }
+}
+
 // Helper function to format product description by appending Attr and Size if not already present
 function formatProductDescription($descr, $attr, $size)
 {
@@ -2445,61 +2500,6 @@ try {
                 'stores' => $stores
             ]);
             break;
-
-// Helper function to create automatic backups on Cloud before overwriting store tables
-function createCloudStoreBackup($db, $storeCode) {
-    $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
-    if (empty($clean)) return;
-
-    $ts = date('Ymd_His');
-
-    // 1. Create SQL snapshot tables on Cloud before overwriting
-    try {
-        $checkLoc = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
-        if (!empty($checkLoc)) {
-            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_locators_{$ts}` AS SELECT * FROM `{$clean}_locators`");
-        }
-    } catch (Exception $e1) {
-    }
-
-    try {
-        $checkCs = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
-        if (!empty($checkCs)) {
-            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_countsheet_{$ts}` AS SELECT * FROM `{$clean}_countsheet`");
-        }
-    } catch (Exception $e2) {
-    }
-
-    // 2. Export JSON backup snapshot file on Cloud before overwriting
-    try {
-        $backupDir = __DIR__ . '/backups';
-        if (!is_dir($backupDir)) {
-            @mkdir($backupDir, 0777, true);
-        }
-        $backupFile = $backupDir . "/cloud_backup_{$clean}_" . $ts . ".json";
-        $existingLocs = [];
-        $existingScans = [];
-        try {
-            $existingLocs = $db->query("SELECT * FROM `{$clean}_locators`");
-        } catch (Exception $eL) {
-        }
-        try {
-            $existingScans = $db->query("SELECT * FROM `{$clean}_countsheet`");
-        } catch (Exception $eS) {
-        }
-
-        if (!empty($existingLocs) || !empty($existingScans)) {
-            $payload = [
-                'store_code' => strtoupper($clean),
-                'backed_up_at' => date('Y-m-d H:i:s'),
-                'locators' => $existingLocs,
-                'scans' => $existingScans
-            ];
-            @file_put_contents($backupFile, json_encode($payload, JSON_PRETTY_PRINT));
-        }
-    } catch (Exception $eJson) {
-    }
-}
 
         case 'receive_sync':
             verifySyncToken();
