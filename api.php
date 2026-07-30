@@ -2475,6 +2475,14 @@ try {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $input['store_details']['closed'], $storeCode]);
             }
 
+            $syncedLocNames = array_map(function ($l) {
+                return $l['locator_name'];
+            }, $input['locators'] ?? []);
+            if (!empty($syncedLocNames)) {
+                $placeholders = implode(',', array_fill(0, count($syncedLocNames), '?'));
+                $db->execute("DELETE FROM `{$storeCode}_locators` WHERE locator_name NOT IN ($placeholders)", $syncedLocNames);
+            }
+
             foreach ($input['locators'] ?? [] as $loc) {
                 $locName = $loc['locator_name'];
                 $status = $loc['status'] ?? 'open';
@@ -2524,6 +2532,13 @@ try {
                         [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
                     );
                 }
+            }
+
+            // Verify store completion status on Cloud after sync
+            $totLoc = (int) ($db->query("SELECT COUNT(*) as count FROM `{$storeCode}_locators`")[0]['count'] ?? 0);
+            $clsLoc = (int) ($db->query("SELECT COUNT(*) as count FROM `{$storeCode}_locators` WHERE status = 'closed'")[0]['count'] ?? 0);
+            if ($totLoc > 0 && $clsLoc === $totLoc) {
+                $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
             }
 
             sendResponse([
@@ -2610,6 +2625,14 @@ try {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $payload['store_details']['closed'], $storeCode]);
             }
 
+            $syncedLocNames = array_map(function ($l) {
+                return $l['locator_name'];
+            }, $payload['locators'] ?? []);
+            if (!empty($syncedLocNames)) {
+                $placeholders = implode(',', array_fill(0, count($syncedLocNames), '?'));
+                $db->execute("DELETE FROM `{$storeCode}_locators` WHERE locator_name NOT IN ($placeholders)", $syncedLocNames);
+            }
+
             foreach ($payload['locators'] ?? [] as $loc) {
                 $locName = $loc['locator_name'];
                 $status = $loc['status'] ?? 'open';
@@ -2660,6 +2683,13 @@ try {
                         [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
                     );
                 }
+            }
+
+            // Verify store completion status on Cloud after sync
+            $totLoc = (int) ($db->query("SELECT COUNT(*) as count FROM `{$storeCode}_locators`")[0]['count'] ?? 0);
+            $clsLoc = (int) ($db->query("SELECT COUNT(*) as count FROM `{$storeCode}_locators` WHERE status = 'closed'")[0]['count'] ?? 0);
+            if ($totLoc > 0 && $clsLoc === $totLoc) {
+                $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
             }
 
             $adminUser = $_SESSION['username'] ?? 'sys_admin';
