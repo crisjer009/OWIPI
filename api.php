@@ -1994,23 +1994,13 @@ try {
                 FROM `{$store}_countsheet`
             ");
 
-            // Fetch items catalog
-            $products = [];
-            $checkItemsTbl = $db->query("SHOW TABLES LIKE ?", ["{$store}_items"]);
-            if (!empty($checkItemsTbl)) {
-                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items` WHERE Qty > 0");
-                if (empty($products)) {
-                    $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items` LIMIT 500");
-                }
-            }
-
             // Fetch users table
             $usersList = $db->query("SELECT username, password, role FROM users");
 
-            // Fetch local audit logs
-            $auditLogs = $db->query("SELECT store_code, username, action, details, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM audit_logs WHERE store_code = ? OR store_code IS NULL", [$_SESSION['store_code']]);
+            // Fetch local audit logs (limit 50 to keep payload lightweight)
+            $auditLogs = $db->query("SELECT store_code, username, action, details, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM audit_logs WHERE store_code = ? OR store_code IS NULL ORDER BY id DESC LIMIT 50", [$_SESSION['store_code']]);
 
-            if (empty($locators) && empty($scans) && empty($products) && empty($usersList) && empty($auditLogs)) {
+            if (empty($locators) && empty($scans) && empty($usersList) && empty($auditLogs)) {
                 sendResponse([
                     'status' => 'success',
                     'message' => 'Everything is already synchronized with the cloud.'
@@ -2018,7 +2008,7 @@ try {
                 break;
             }
 
-            // Prepare payload
+            // Prepare lightweight payload focused on store session, locators, and scan records
             $payload = [
                 'secret_token' => $secretToken,
                 'store_code' => $_SESSION['store_code'],
@@ -2026,7 +2016,6 @@ try {
                 'store_details' => $storeDetails,
                 'locators' => $locators,
                 'scans' => $scans,
-                'products' => $products,
                 'users' => $usersList,
                 'audit_logs' => $auditLogs
             ];
@@ -2607,12 +2596,14 @@ function createCloudStoreBackup($db, $storeCode) {
             $cloudScans = (int) ($input['cloud_scans_count'] ?? 0);
 
             $db = new OWI_DB();
-            if (isset($input['products']) && is_array($input['products']) && count($input['products']) > 500) {
-                $input['products'] = array_values(array_filter($input['products'], function ($p) {
-                    return (float) ($p['Qty'] ?? 0) > 0;
-                }));
-            }
+            // Remove bulky products catalog array from payload to prevent max_allowed_packet error
+            unset($input['products']);
             $jsonPayload = json_encode($input);
+
+            try {
+                $db->execute("SET SESSION max_allowed_packet = 67108864");
+            } catch (Exception $eP) {
+            }
 
             $db->execute(
                 "INSERT INTO pending_sync_requests (store_code, requested_by, payload, local_scans_count, cloud_scans_count, status) VALUES (?, ?, ?, ?, ?, 'pending')",
