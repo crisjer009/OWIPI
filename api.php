@@ -2121,10 +2121,10 @@ try {
         case 'fetch_cloud_stores':
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
-            $secretToken = trim($config['sync_secret_token'] ?? '');
             if (empty($cloudUrl)) {
-                throw new Exception("Cloud Sync URL is not configured.");
+                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
             }
+            $secretToken = trim($config['sync_secret_token'] ?? '');
 
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_stores&secret_token=' . urlencode($secretToken);
 
@@ -2163,10 +2163,10 @@ try {
 
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
-            $secretToken = trim($config['sync_secret_token'] ?? '');
             if (empty($cloudUrl)) {
-                throw new Exception("Cloud Sync URL is not configured.");
+                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
             }
+            $secretToken = trim($config['sync_secret_token'] ?? '');
 
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_store_details&store_code=' . urlencode($store) . '&secret_token=' . urlencode($secretToken);
 
@@ -2307,10 +2307,10 @@ try {
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
-            $secretToken = trim($config['sync_secret_token'] ?? '');
             if (empty($cloudUrl)) {
-                throw new Exception("Cloud Sync URL is not configured.");
+                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
             }
+            $secretToken = trim($config['sync_secret_token'] ?? '');
 
             $db = new OWI_DB();
 
@@ -2688,10 +2688,10 @@ try {
         case 'import_cloud_users':
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
-            $secretToken = trim($config['sync_secret_token'] ?? '');
             if (empty($cloudUrl)) {
-                throw new Exception("Cloud Sync URL is not configured.");
+                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
             }
+            $secretToken = trim($config['sync_secret_token'] ?? '');
 
             $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_users&secret_token=' . urlencode($secretToken);
 

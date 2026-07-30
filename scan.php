@@ -4375,7 +4375,17 @@ $hasActiveStores = !empty($existingStoresList);
                                     window.location.reload();
                                 });
                             } else {
-                                customAlert("Error: " + data.message, "Download Failed");
+                                if (data.message && (data.message.includes("Cloud Sync URL is not configured") || data.message.includes("Secret Token"))) {
+                                    customConfirm(
+                                        "Cloud Sync URL or Secret Token needs to be configured. Would you like to open Cloud Sync Settings now?",
+                                        function () {
+                                            openCloudSyncModal();
+                                        },
+                                        "Configure Cloud Sync"
+                                    );
+                                } else {
+                                    customAlert("Error: " + data.message, "Download Failed");
+                                }
                             }
                         })
                         .catch(err => {
