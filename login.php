@@ -71,9 +71,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $clientIP = getLoginClientIP();
 
+            // Helper closure to sync user credentials from Cloud if local auth fails
+            $attemptCloudSync = function () use ($db) {
+                try {
+                    $config = loadConfig();
+                    $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/');
+                    $secretToken = trim($config['sync_secret_token'] ?? '');
+                    if (empty($cloudUrl)) return false;
+
+                    $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_users&secret_token=' . urlencode($secretToken);
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $targetUrl);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    $result = curl_exec($ch);
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+
+                    if ($httpCode === 200 && $result) {
+                        $resData = json_decode($result, true);
+                        if (($resData['status'] ?? '') === 'success' && !empty($resData['users'])) {
+                            foreach ($resData['users'] as $u) {
+                                $existing = $db->query("SELECT id FROM users WHERE LOWER(username) = ?", [strtolower($u['username'])]);
+                                if (!empty($existing)) {
+                                    $db->execute("UPDATE users SET password = ?, role = ? WHERE id = ?", [$u['password'], $u['role'], $existing[0]['id']]);
+                                } else {
+                                    $db->execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [strtoupper($u['username']), $u['password'], $u['role']]);
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                } catch (Exception $eEx) {
+                }
+                return false;
+            };
+
             // Query the master users table
             $sql = "SELECT id, username, password, role, session_token, last_activity, login_ip FROM users WHERE username = ?";
             $rows = $db->query($sql, [$username]);
+
+            if (empty($rows) || !password_verify($password, $rows[0]['password'] ?? '')) {
+                // If user missing or password failed, sync latest user accounts & password hashes from Cloud
+                if ($attemptCloudSync()) {
+                    $rows = $db->query($sql, [$username]);
+                }
+            }
 
             if (!empty($rows)) {
                 $user = $rows[0];

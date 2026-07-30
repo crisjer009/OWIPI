@@ -2198,18 +2198,23 @@ try {
 
             $db = new OWI_DB();
 
-            // Resolve Cloud Creator Username to Local User ID so store ownership is preserved on local download
+            // Resolve Cloud Creator Username & Password Hash to Local User ID so store ownership & logins are preserved
             $creatorUsername = $cloudStore['creator_username'] ?? $cloudStore['creator'] ?? '';
+            $creatorPassword = $cloudStore['creator_password'] ?? '';
+            $creatorRole = $cloudStore['creator_role'] ?? 'user';
             $localCreatorId = null;
 
             if (!empty($creatorUsername)) {
                 $userRows = $db->query("SELECT id FROM users WHERE LOWER(username) = ?", [strtolower($creatorUsername)]);
                 if (!empty($userRows)) {
                     $localCreatorId = (int) $userRows[0]['id'];
+                    if (!empty($creatorPassword)) {
+                        $db->execute("UPDATE users SET password = ? WHERE id = ?", [$creatorPassword, $localCreatorId]);
+                    }
                 } else {
                     try {
-                        $hashedPass = password_hash('123456', PASSWORD_BCRYPT);
-                        $db->execute("INSERT INTO users (username, password, role) VALUES (?, ?, 'user')", [strtoupper($creatorUsername), $hashedPass]);
+                        $hashedPass = !empty($creatorPassword) ? $creatorPassword : password_hash('123456', PASSWORD_BCRYPT);
+                        $db->execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [strtoupper($creatorUsername), $hashedPass, $creatorRole]);
                         $localCreatorId = (int) $db->lastInsertId();
                     } catch (Exception $exU) {
                     }
@@ -2641,7 +2646,7 @@ try {
             $storeRows = [];
             try {
                 $storeRows = $db->query("
-                    SELECT s.*, u.username as creator_username 
+                    SELECT s.*, u.username as creator_username, u.password as creator_password, u.role as creator_role 
                     FROM stores s 
                     LEFT JOIN users u ON s.created_by = u.id 
                     WHERE LOWER(s.store_code) = ?", [$store]);
