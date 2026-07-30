@@ -92,6 +92,25 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 try {
                     $checkTbl = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
                     if (!empty($checkTbl)) {
+                        // Automatically clean up unused 0-scan default locators if active locators are closed
+                        try {
+                            $checkCsTbl = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
+                            if (!empty($checkCsTbl)) {
+                                $closedCount = (int) ($db->query("SELECT COUNT(*) as count FROM `{$clean}_locators` WHERE status = 'closed'")[0]['count'] ?? 0);
+                                if ($closedCount > 0) {
+                                    $unscannedLocs = $db->query("SELECT locator_name FROM `{$clean}_locators` WHERE status = 'open' AND (assigned_operator IS NULL OR assigned_operator = '')");
+                                    foreach ($unscannedLocs as $unLoc) {
+                                        $locNameLower = strtolower(trim($unLoc['locator_name']));
+                                        $cnt = (int) ($db->query("SELECT COUNT(*) as count FROM `{$clean}_countsheet` WHERE LOWER(TRIM(SlotNo)) = ?", [$locNameLower])[0]['count'] ?? 0);
+                                        if ($cnt === 0) {
+                                            $db->execute("DELETE FROM `{$clean}_locators` WHERE locator_name = ?", [$unLoc['locator_name']]);
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception $eClean) {
+                        }
+
                         $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$clean}_locators`");
                         $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
 
