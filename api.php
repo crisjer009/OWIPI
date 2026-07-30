@@ -70,10 +70,29 @@ function createCloudStoreBackup($db, $storeCode) {
 
     $ts = date('Ymd_His');
 
+    // Ensure log table exists
+    try {
+        $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            backup_id VARCHAR(255) NOT NULL,
+            store_code VARCHAR(50) NOT NULL,
+            backup_type VARCHAR(50) NOT NULL,
+            scans_count INT DEFAULT 0,
+            locators_count INT DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )");
+    } catch (Exception $eTbl) {
+    }
+
+    $locsCount = 0;
+    $scansCount = 0;
+
     // 1. Create SQL snapshot tables on Cloud before overwriting
     try {
         $checkLoc = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
         if (!empty($checkLoc)) {
+            $locs = $db->query("SELECT * FROM `{$clean}_locators`");
+            $locsCount = count($locs);
             $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_locators_{$ts}` AS SELECT * FROM `{$clean}_locators`");
         }
     } catch (Exception $e1) {
@@ -82,6 +101,8 @@ function createCloudStoreBackup($db, $storeCode) {
     try {
         $checkCs = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
         if (!empty($checkCs)) {
+            $scans = $db->query("SELECT * FROM `{$clean}_countsheet`");
+            $scansCount = count($scans);
             $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_countsheet_{$ts}` AS SELECT * FROM `{$clean}_countsheet`");
         }
     } catch (Exception $e2) {
@@ -105,17 +126,27 @@ function createCloudStoreBackup($db, $storeCode) {
         } catch (Exception $eS) {
         }
 
-        if (!empty($existingLocs) || !empty($existingScans)) {
-            $payload = [
-                'store_code' => strtoupper($clean),
-                'backed_up_at' => date('Y-m-d H:i:s'),
-                'locators' => $existingLocs,
-                'scans' => $existingScans
-            ];
-            @file_put_contents($backupFile, json_encode($payload, JSON_PRETTY_PRINT));
-        }
+        $payload = [
+            'store_code' => strtoupper($clean),
+            'backed_up_at' => date('Y-m-d H:i:s'),
+            'locators' => $existingLocs,
+            'scans' => $existingScans
+        ];
+        @file_put_contents($backupFile, json_encode($payload, JSON_PRETTY_PRINT));
     } catch (Exception $eJson) {
     }
+
+    // 3. Register entry in cloud_backups_log
+    try {
+        $backupId = "_backup_{$clean}_countsheet_{$ts}";
+        $db->execute(
+            "INSERT INTO cloud_backups_log (backup_id, store_code, backup_type, scans_count, locators_count, created_at) VALUES (?, ?, 'mysql_table', ?, ?, NOW())",
+            [$backupId, strtoupper($clean), $scansCount, $locsCount]
+        );
+    } catch (Exception $eLog) {
+    }
+
+    logAudit('Cloud Pre-Sync Backup', "Created automatic backup snapshot for store '" . strtoupper($clean) . "' prior to cloud overwrite.");
 }
 
 // Helper function to format product description by appending Attr and Size if not already present
@@ -2644,14 +2675,42 @@ try {
             $db = new OWI_DB();
             $backups = [];
 
-            // 1. Scan MySQL database for snapshot tables: _backup_{store}_countsheet_{timestamp}
+            // 1. Ensure log table exists and query logged backups
             try {
-                $tables = $db->query("SHOW TABLES LIKE '\_backup\_%\_countsheet\_%'");
+                $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    backup_id VARCHAR(255) NOT NULL,
+                    store_code VARCHAR(50) NOT NULL,
+                    backup_type VARCHAR(50) NOT NULL,
+                    scans_count INT DEFAULT 0,
+                    locators_count INT DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )");
+                $loggedBackups = $db->query("SELECT backup_id as id, backup_type as type, store_code, scans_count, locators_count, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM cloud_backups_log ORDER BY id DESC");
+                if (!empty($loggedBackups)) {
+                    $backups = $loggedBackups;
+                }
+            } catch (Exception $eL) {
+            }
+
+            // 2. Scan MySQL database for any unlogged snapshot tables matching _backup_%
+            try {
+                $tables = $db->query("SHOW TABLES LIKE '_backup_%_countsheet_%'");
                 foreach ($tables as $tRow) {
                     $tableName = current($tRow);
                     if (preg_match('/^_backup_([a-zA-Z0-9]+)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
                         $storeCode = strtoupper($matches[1]);
                         $tsStr = $matches[2];
+
+                        $alreadyInList = false;
+                        foreach ($backups as $b) {
+                            if ($b['id'] === $tableName) {
+                                $alreadyInList = true;
+                                break;
+                            }
+                        }
+                        if ($alreadyInList) continue;
+
                         $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
                         $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
 
@@ -2665,14 +2724,13 @@ try {
                         $locTable = "_backup_" . strtolower($storeCode) . "_locators_" . $tsStr;
                         try {
                             $locsCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$locTable}`")[0]['c'] ?? 0);
-                        } catch (Exception $eL) {
+                        } catch (Exception $eLoc) {
                         }
 
                         $backups[] = [
                             'id' => $tableName,
                             'type' => 'mysql_table',
                             'store_code' => $storeCode,
-                            'timestamp' => $tsStr,
                             'created_at' => $formattedDate,
                             'scans_count' => $scansCount,
                             'locators_count' => $locsCount
@@ -2682,7 +2740,7 @@ try {
             } catch (Exception $eT) {
             }
 
-            // 2. Scan backups/ directory for JSON snapshot files
+            // 3. Scan backups/ directory for JSON files
             try {
                 $backupDir = __DIR__ . '/backups';
                 if (is_dir($backupDir)) {
@@ -2692,17 +2750,18 @@ try {
                         if (preg_match('/^cloud_backup_([a-zA-Z0-9]+)_(\d{8}_\d{6})\.json$/', $basename, $matches)) {
                             $storeCode = strtoupper($matches[1]);
                             $tsStr = $matches[2];
-                            $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
-                            $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
 
-                            $existsInSql = false;
+                            $alreadyInList = false;
                             foreach ($backups as $b) {
-                                if ($b['store_code'] === $storeCode && $b['timestamp'] === $tsStr) {
-                                    $existsInSql = true;
+                                if (strpos($b['id'], $tsStr) !== false && $b['store_code'] === $storeCode) {
+                                    $alreadyInList = true;
                                     break;
                                 }
                             }
-                            if ($existsInSql) continue;
+                            if ($alreadyInList) continue;
+
+                            $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
+                            $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
 
                             $data = json_decode(file_get_contents($file), true);
                             $scansCount = count($data['scans'] ?? []);
@@ -2712,7 +2771,6 @@ try {
                                 'id' => $basename,
                                 'type' => 'json_file',
                                 'store_code' => $storeCode,
-                                'timestamp' => $tsStr,
                                 'created_at' => $formattedDate,
                                 'scans_count' => $scansCount,
                                 'locators_count' => $locsCount
