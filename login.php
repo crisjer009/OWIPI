@@ -47,18 +47,19 @@ if (isLoggedIn()) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = isset($_POST['username']) ? strtoupper(trim($_POST['username'])) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
-    
+
     if (empty($username) || empty($password)) {
         $error = 'Please enter Username and Password.';
     } else {
         try {
             $db = new OWI_DB();
-            
+
             // Connect to MySQL server and provision the master database dynamically
             $db->initializeDatabase();
-            
+
             // Helper function to resolve client IP
-            function getLoginClientIP() {
+            function getLoginClientIP()
+            {
                 if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
                     return $_SERVER['HTTP_CLIENT_IP'];
                 } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -69,17 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $clientIP = getLoginClientIP();
-            
+
             // Query the master users table
             $sql = "SELECT id, username, password, role, session_token, last_activity, login_ip FROM users WHERE username = ?";
             $rows = $db->query($sql, [$username]);
-            
+
             if (!empty($rows)) {
                 $user = $rows[0];
                 if (password_verify($password, $user['password'])) {
                     $existingToken = $user['session_token'] ?? null;
                     $existingIP = $user['login_ip'] ?? null;
-                    $lastActive = (int)($user['last_activity'] ?? 0);
+                    $lastActive = (int) ($user['last_activity'] ?? 0);
                     $activeTimeout = 3 * 60; // 3 minutes of inactivity timeout
 
                     $isSessionActive = !empty($existingToken) && ($lastActive > 0) && ((time() - $lastActive) < $activeTimeout);
@@ -99,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['username'] = $user['username'];
                         $_SESSION['role'] = $user['role'];
                         $_SESSION['session_token'] = $token;
-                        
+
                         // Do not auto-select store, let them choose or create it in index.php/scan.php
                         if ($user['role'] === 'system_admin' || $user['role'] === 'admin') {
                             header('Location: index.php');
@@ -122,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         body {
             background-color: var(--bg-color);
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(29, 78, 216, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
             background-attachment: fixed;
@@ -317,17 +319,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
 
     <div class="login-card">
         <div class="logo-area">
             <div class="logo-icon">
                 <svg viewBox="0 0 24 24">
-                    <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/>
+                    <path
+                        d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
                 </svg>
             </div>
             <div class="logo-text">OWI PHYSICAL</div>
-            <div class="logo-subtitle">HOST ACCOUNT LOGIN</div>
+            <div
+                style="margin-top: 6px; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.04); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+                <span
+                    style="width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #3b82f6;"></span>
+                Version: <span style="color: #60a5fa; font-weight: 700;">Beta</span>
+            </div>
         </div>
 
         <?php if (!empty($error)): ?>
@@ -337,15 +346,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST" action="login.php">
-            
+
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" placeholder="Enter username" value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>" required autocomplete="username" autofocus oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="username" name="username" class="form-control" placeholder="Enter username"
+                    value="<?= isset($_POST['username']) ? htmlspecialchars($_POST['username']) : '' ?>" required
+                    autocomplete="username" autofocus oninput="this.value = this.value.toUpperCase()">
             </div>
-            
+
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••"
+                    required autocomplete="current-password">
             </div>
 
             <!-- Server Connection Settings Hidden inputs -->
@@ -353,40 +365,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <button type="submit" class="btn">Log In</button>
 
-            <div style="text-align:center; margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);">
-                <a href="scan.php?mobile=1" style="font-size: 0.8rem; color: #3b82f6; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+            <div
+                style="text-align:center; margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08);">
+                <a href="scan.php?mobile=1"
+                    style="font-size: 0.8rem; color: #3b82f6; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
                     📱 Handheld Scanner Mode (No Login Required)
                 </a>
             </div>
 
             <?php if (isset($_GET['sysadmin'])): ?>
-            <!-- Collapsible Settings Section -->
-            <div class="collapsible-settings">
-                <div class="collapsible-header" onclick="toggleSettings()">
-                    <span>🛠️ MySQL Server Settings</span>
-                    <span id="settings-arrow">▼</span>
-                </div>
-                <div class="collapsible-body" id="settings-body">
-                    <div class="form-group" style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px;">
-                        <div>
-                            <label style="font-size: 0.75rem;">MySQL Host</label>
-                            <input type="text" name="db_server" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" value="<?= htmlspecialchars($config['server']) ?>">
+                <!-- Collapsible Settings Section -->
+                <div class="collapsible-settings">
+                    <div class="collapsible-header" onclick="toggleSettings()">
+                        <span>🛠️ MySQL Server Settings</span>
+                        <span id="settings-arrow">▼</span>
+                    </div>
+                    <div class="collapsible-body" id="settings-body">
+                        <div class="form-group"
+                            style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px; margin-bottom: 8px;">
+                            <div>
+                                <label style="font-size: 0.75rem;">MySQL Host</label>
+                                <input type="text" name="db_server" class="form-control"
+                                    style="padding: 0.5rem 0.75rem; font-size: 0.85rem;"
+                                    value="<?= htmlspecialchars($config['server']) ?>">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem;">Port</label>
+                                <input type="text" name="db_port" class="form-control"
+                                    style="padding: 0.5rem 0.75rem; font-size: 0.85rem;"
+                                    value="<?= htmlspecialchars($config['port'] ?? '3306') ?>">
+                            </div>
                         </div>
-                        <div>
-                            <label style="font-size: 0.75rem;">Port</label>
-                            <input type="text" name="db_port" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" value="<?= htmlspecialchars($config['port'] ?? '3306') ?>">
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <label style="font-size: 0.75rem;">MySQL User</label>
+                            <input type="text" name="db_username" class="form-control"
+                                style="padding: 0.5rem 0.75rem; font-size: 0.85rem;"
+                                value="<?= htmlspecialchars($config['username']) ?>">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.75rem;">MySQL Password</label>
+                            <input type="password" name="db_password" class="form-control"
+                                style="padding: 0.5rem 0.75rem; font-size: 0.85rem;"
+                                value="<?= htmlspecialchars($config['password']) ?>" placeholder="Empty if none">
                         </div>
                     </div>
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <label style="font-size: 0.75rem;">MySQL User</label>
-                        <input type="text" name="db_username" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" value="<?= htmlspecialchars($config['username']) ?>">
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label style="font-size: 0.75rem;">MySQL Password</label>
-                        <input type="password" name="db_password" class="form-control" style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" value="<?= htmlspecialchars($config['password']) ?>" placeholder="Empty if none">
-                    </div>
                 </div>
-            </div>
             <?php endif; ?>
         </form>
     </div>
@@ -396,7 +419,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const body = document.getElementById('settings-body');
             const arrow = document.getElementById('settings-arrow');
             const activeInput = document.getElementById('server_settings_active');
-            
+
             if (body.classList.contains('show')) {
                 body.classList.remove('show');
                 arrow.innerText = '▼';
@@ -409,4 +432,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </script>
 </body>
+
 </html>
