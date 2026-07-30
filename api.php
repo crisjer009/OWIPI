@@ -2031,43 +2031,6 @@ try {
                 'audit_logs' => $auditLogs
             ];
 
-            // If store already exists on cloud and logged-in user is NOT an Admin/System Admin, submit for approval
-            if ($isStoreOnCloud && !$isAdminOrSystem) {
-                $submitUrl = rtrim($cloudUrl, '/');
-                if (preg_match('/\/api\.php$/i', $submitUrl)) {
-                    $submitUrl = preg_replace('/\/api\.php$/i', '', $submitUrl);
-                }
-                $submitUrl = rtrim($submitUrl, '/') . '/api.php?action=submit_sync_request';
-
-                $payload['local_scans_count'] = $totalScans;
-                $payload['cloud_scans_count'] = $cloudScansCount;
-
-                $chReq = curl_init();
-                curl_setopt($chReq, CURLOPT_URL, $submitUrl);
-                curl_setopt($chReq, CURLOPT_POST, true);
-                curl_setopt($chReq, CURLOPT_POSTFIELDS, json_encode($payload));
-                curl_setopt($chReq, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-                curl_setopt($chReq, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($chReq, CURLOPT_TIMEOUT, 30);
-                curl_setopt($chReq, CURLOPT_SSL_VERIFYPEER, false);
-
-                $reqResult = curl_exec($chReq);
-                $reqHttp = curl_getinfo($chReq, CURLINFO_HTTP_CODE);
-                curl_close($chReq);
-
-                $reqData = json_decode($reqResult, true);
-                if ($reqHttp === 200 && ($reqData['status'] ?? '') === 'success') {
-                    sendResponse([
-                        'status' => 'pending_approval',
-                        'message' => "Sync request for store '" . strtoupper($_SESSION['store_code']) . "' submitted to Cloud! Waiting for System Admin or Admin approval on the Cloud Dashboard."
-                    ]);
-                    break;
-                } else {
-                    $errMsg = $reqData['message'] ?? 'Failed to submit sync request for approval.';
-                    throw new Exception("Sync Request Submission Failed: " . $errMsg);
-                }
-            }
-
             // Clean Cloud Sync URL (strip api.php if user included it in settings)
             $targetUrl = rtrim($cloudUrl, '/');
             if (preg_match('/\/api\.php$/i', $targetUrl)) {
@@ -2475,23 +2438,13 @@ try {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $input['store_details']['closed'], $storeCode]);
             }
 
-            $syncedLocNames = array_map(function ($l) {
-                return $l['locator_name'];
-            }, $input['locators'] ?? []);
-            if (!empty($syncedLocNames)) {
-                $placeholders = implode(',', array_fill(0, count($syncedLocNames), '?'));
-                $db->execute("DELETE FROM `{$storeCode}_locators` WHERE locator_name NOT IN ($placeholders)", $syncedLocNames);
-            }
-
-            foreach ($input['locators'] ?? [] as $loc) {
-                $locName = $loc['locator_name'];
-                $status = $loc['status'] ?? 'open';
-                $operator = $loc['assigned_operator'] ?? null;
-                $check = $db->query("SELECT id FROM `{$storeCode}_locators` WHERE locator_name = ?", [$locName]);
-                if (empty($check)) {
+            if (!empty($input['locators']) && is_array($input['locators'])) {
+                $db->execute("TRUNCATE TABLE `{$storeCode}_locators`");
+                foreach ($input['locators'] as $loc) {
+                    $locName = $loc['locator_name'];
+                    $status = $loc['status'] ?? 'open';
+                    $operator = $loc['assigned_operator'] ?? null;
                     $db->execute("INSERT INTO `{$storeCode}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)", [$locName, $status, $operator]);
-                } else {
-                    $db->execute("UPDATE `{$storeCode}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?", [$status, $operator, $locName]);
                 }
             }
 
@@ -2625,23 +2578,13 @@ try {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $payload['store_details']['closed'], $storeCode]);
             }
 
-            $syncedLocNames = array_map(function ($l) {
-                return $l['locator_name'];
-            }, $payload['locators'] ?? []);
-            if (!empty($syncedLocNames)) {
-                $placeholders = implode(',', array_fill(0, count($syncedLocNames), '?'));
-                $db->execute("DELETE FROM `{$storeCode}_locators` WHERE locator_name NOT IN ($placeholders)", $syncedLocNames);
-            }
-
-            foreach ($payload['locators'] ?? [] as $loc) {
-                $locName = $loc['locator_name'];
-                $status = $loc['status'] ?? 'open';
-                $operator = $loc['assigned_operator'] ?? null;
-                $check = $db->query("SELECT id FROM `{$storeCode}_locators` WHERE locator_name = ?", [$locName]);
-                if (empty($check)) {
+            if (!empty($payload['locators']) && is_array($payload['locators'])) {
+                $db->execute("TRUNCATE TABLE `{$storeCode}_locators`");
+                foreach ($payload['locators'] as $loc) {
+                    $locName = $loc['locator_name'];
+                    $status = $loc['status'] ?? 'open';
+                    $operator = $loc['assigned_operator'] ?? null;
                     $db->execute("INSERT INTO `{$storeCode}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)", [$locName, $status, $operator]);
-                } else {
-                    $db->execute("UPDATE `{$storeCode}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?", [$status, $operator, $locName]);
                 }
             }
 
