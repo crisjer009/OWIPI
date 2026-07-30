@@ -78,6 +78,10 @@ $hasActiveStores = !empty($existingStoresList);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OWI Physical Inventory - Mobile Scanner</title>
+    <!-- Custom Application Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="assets/favicon.png">
+    <link rel="shortcut icon" href="favicon.ico">
     <!-- Local Offline Fonts (100% Instant Offline Load) -->
     <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <g fill="#ffffff" filter="url(#glow)">
+    <!-- OWI Physical Inventory 3x3 Barcode Matrix Grid -->
+    <rect x="110" y="110" width="80" height="80" rx="16"/>
+    <rect x="216" y="110" width="80" height="80" rx="16"/>
+    <rect x="322" y="110" width="80" height="80" rx="16"/>
+
+    <rect x="110" y="216" width="80" height="80" rx="16"/>
+    <rect x="216" y="216" width="80" height="80" rx="16"/>
+    <rect x="322" y="216" width="80" height="80" rx="16"/>
+
+    <rect x="110" y="322" width="80" height="80" rx="16"/>
+    <rect x="216" y="322" width="80" height="80" rx="16"/>
+    <rect x="322" y="322" width="80" height="80" rx="16"/>
+  </g>
+</svg>

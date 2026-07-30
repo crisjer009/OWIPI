@@ -8,6 +8,10 @@ checkAuth();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OWIPI - Screen Resolution Testing Sandbox</title>
+    <!-- Custom Application Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="assets/favicon.png">
+    <link rel="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
         :root {

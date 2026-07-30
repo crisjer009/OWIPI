@@ -128,6 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - OWI Physical Inventory Gateway</title>
+    <!-- Custom Application Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="alternate icon" type="image/png" href="assets/favicon.png">
+    <link rel="shortcut icon" href="favicon.ico">
     <!-- Local Offline Fonts (100% Instant Offline Load) -->
     <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
@@ -330,7 +334,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
                 </svg>
             </div>
-            <div class="logo-text">OWI PHYSICAL</div>
+            <div class="logo-text">OWI PHYSICAL INVENTORY</div>
             <div
                 style="margin-top: 6px; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.04); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 <span
