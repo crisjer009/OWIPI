@@ -360,8 +360,16 @@ try {
 
         case 'get_stores':
             $db = new OWI_DB();
-            $sql = "SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC";
-            $stores = $db->query($sql);
+            $userId = (int) ($_SESSION['user_id'] ?? 0);
+            $role = $_SESSION['role'] ?? 'user';
+
+            if ($role === 'system_admin' || $role === 'admin') {
+                $sql = "SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC";
+                $stores = $db->query($sql);
+            } else {
+                $sql = "SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY store_code ASC";
+                $stores = $db->query($sql, [$userId]);
+            }
             sendResponse([
                 'status' => 'success',
                 'stores' => $stores

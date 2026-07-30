@@ -56,11 +56,17 @@ $scriptDir = rtrim($scriptDir, '/');
 $isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '');
 
-// Pre-fetch active non-closed stores for instant store selection on load
+// Pre-fetch active non-closed stores for instant store selection on load (filtered by user)
 $existingStoresList = [];
 try {
     $dbStoreHelper = new OWI_DB();
-    $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
+    $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
+    $currentUserRole = $_SESSION['role'] ?? 'user';
+    if ($currentUserRole === 'system_admin' || $currentUserRole === 'admin') {
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
+    } else {
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY store_code ASC", [$currentUserId]);
+    }
 } catch (Exception $e) {
 }
 $hasActiveStores = !empty($existingStoresList);
@@ -556,44 +562,154 @@ $hasActiveStores = !empty($existingStoresList);
             margin-bottom: 4px;
         }
 
-        /* Premium Executive Widescreen Laptop Dashboard Grid */
+        /* Single-Page Executive Widescreen Dashboard (100% Zero Page Scroll) */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh !important;
+            overflow: hidden !important;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-color);
+            color: var(--text-white);
+        }
+
+        header {
+            flex-shrink: 0;
+        }
+
         .host-laptop-dashboard {
-            display: grid;
-            grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
-            gap: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             width: 100%;
             max-width: 100%;
-            margin: 0 auto;
-            padding: 0 15px 15px 15px;
+            margin: 0;
+            padding: 0 12px 10px 12px;
             box-sizing: border-box;
+            overflow: hidden;
+            min-height: 0;
         }
 
-        .host-main-tables-col {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            min-width: 0;
-        }
-
-        .host-side-controls-col {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            min-width: 0;
-        }
-
-        .host-sub-control-grid {
+        /* Top Control & Analytics Row (Compact 3 Equal 33.3% Cards) */
+        .host-top-widgets-row {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 15px;
-            min-width: 0;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            flex-shrink: 0;
         }
 
-        @media (max-width: 1024px) {
-            .host-laptop-dashboard {
-                grid-template-columns: 1fr;
+        /* Bottom Tables Row (2 Equal 50% / 50% Cards - Fits 100% Viewport Height) */
+        .host-tables-50-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            align-items: stretch;
+            overflow: hidden;
+        }
+
+        .card {
+            background: rgba(22, 27, 34, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(88, 166, 255, 0.25);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .host-sym-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            margin-bottom: 0;
+            box-sizing: border-box;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .host-sym-table-container {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding-right: 5px;
+            min-height: 0;
+        }
+
+        .host-sym-table-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .host-sym-table-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+
+        .host-sym-table-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.18);
+            border-radius: 4px;
+        }
+
+        .host-sym-table-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(88, 166, 255, 0.4);
+        }
+
+        #host-scans-table tbody tr,
+        #host-locators-tbody tr {
+            transition: background 0.15s ease;
+        }
+
+        #host-scans-table tbody tr:hover,
+        #host-locators-tbody tr:hover {
+            background: rgba(255, 255, 255, 0.045);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #58a6ff !important;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2) !important;
+            outline: none !important;
+        }
+
+        /* Responsive Breakpoints for all screen sizes */
+        @media (max-width: 1200px) {
+            html, body {
+                overflow: auto !important;
+                height: auto !important;
             }
-            .host-sub-control-grid {
+            .host-laptop-dashboard {
+                overflow: visible;
+            }
+            .host-top-widgets-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .host-tables-50-row {
+                grid-template-columns: 1fr;
+                overflow: visible;
+            }
+            .host-sym-table-container {
+                max-height: 350px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .host-top-widgets-row {
                 grid-template-columns: 1fr;
             }
         }
@@ -602,10 +718,10 @@ $hasActiveStores = !empty($existingStoresList);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            flex-grow: 0;
+            flex-grow: 1;
             min-height: 0;
             gap: 15px;
-            margin-bottom: 4px;
+            margin: 12px 0;
         }
 
         @media (max-width: 480px) {
@@ -822,7 +938,7 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
 
                 <form onsubmit="handleSelectStore(event)" id="store-select-form">
-                    <div class="form-group" id="existing-stores-group" style="display:none;">
+                    <div class="form-group" id="existing-stores-group" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                         <label for="active_store_select">Choose Open Store</label>
                         <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
                             <?php foreach ($existingStoresList as $st): ?>
@@ -832,11 +948,11 @@ $hasActiveStores = !empty($existingStoresList);
                         </select>
                     </div>
 
-                    <div class="form-group" id="new-store-group" style="display:block;">
+                    <div class="form-group" id="new-store-group" style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
                         <div style="margin-bottom: 1rem;">
                             <label for="active_store_input" id="store-input-label">Create / Connect New Store Code</label>
                             <input type="text" id="active_store_input" class="form-control" placeholder="STORE CODE"
-                                style="text-transform: uppercase;" autocomplete="off" required>
+                                style="text-transform: uppercase;" autocomplete="off" <?= $hasActiveStores ? '' : 'required' ?>>
                         </div>
                         <div>
                             <label for="active_store_locators">Number of Locators Needed</label>
@@ -851,7 +967,7 @@ $hasActiveStores = !empty($existingStoresList);
                         style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                         <a href="javascript:void(0)" onclick="toggleStoreInputMode()"
                             style="font-size:0.8rem; color:#3b82f6; text-decoration:none; font-weight:600;"
-                            id="toggle-store-mode-btn">Choose from existing stores</a>
+                            id="toggle-store-mode-btn"><?= $hasActiveStores ? 'Or Create New Store' : 'Choose from existing stores' ?></a>
                     </div>
 
                     <div
@@ -878,7 +994,7 @@ $hasActiveStores = !empty($existingStoresList);
             </div>
         </div>
         <script>
-            let storeInputMode = 'create';
+            let storeInputMode = <?= $hasActiveStores ? "'select'" : "'create'" ?>;
 
             window.addEventListener('DOMContentLoaded', () => {
                 fetchExistingStores();
@@ -899,8 +1015,10 @@ $hasActiveStores = !empty($existingStoresList);
                                 select.appendChild(opt);
                             });
                             if (toggleContainer) toggleContainer.style.display = 'block';
+                            setStoreMode('select');
                         } else {
                             if (toggleContainer) toggleContainer.style.display = 'none';
+                            setStoreMode('create');
                         }
                     })
                     .catch(err => console.error("Error loading stores:", err));
@@ -969,22 +1087,35 @@ $hasActiveStores = !empty($existingStoresList);
         </script>
     <?php endif; ?>
 
-    <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 8px 15px;">
         <div>
             <h1
-                style="font-size: 1.1rem; line-height: 1.2; margin: 0; display:flex; align-items:center; gap:6px; text-transform: uppercase;">
-                OWI PHYSICAL INVENTORY STORE CODE : <?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>
+                style="font-size: 1.05rem; line-height: 1.2; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">
+                OWI PHYSICAL INVENTORY
             </h1>
+            <div style="font-size: 0.85rem; font-weight: 700; color: #58a6ff; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
+                STORE CODE : <?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>
+            </div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">User:
-                <?= htmlspecialchars($_SESSION['username'] ?? 'Operator') ?>
+                <span style="color: #c9d1d9; font-weight: 600;"><?= htmlspecialchars($_SESSION['username'] ?? 'Operator') ?></span>
             </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-            <?php if (!$isMobileScanner): ?>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <?php 
+            $loggedInUsername = strtolower(trim($_SESSION['username'] ?? ''));
+            $isAllanUser = ($loggedInUsername === 'allan');
+            if (!$isMobileScanner && $isAllanUser): 
+            ?>
+                <a href="sandbox.php" class="btn"
+                    style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; color: #c084fc; font-weight:600; text-decoration: none;">
+                    🧪 Resolution Sandbox
+                </a>
                 <button id="switch-view-btn" class="btn" onclick="toggleHostMobileView()"
                     style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(139, 148, 158, 0.15); border: 1px solid rgba(255,255,255,0.2); color: #c9d1d9; font-weight:600;">
                     🖥️ Host Console
                 </button>
+            <?php endif; ?>
+            <?php if (!$isMobileScanner): ?>
                 <button id="btn-upload-masterfile" class="btn btn-secondary" onclick="openHostMasterfileModal()"
                     style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
                     📁 Upload Masterfile
@@ -1196,13 +1327,185 @@ $hasActiveStores = !empty($existingStoresList);
     </div> <!-- Close mobile-scanner-view --> 
 
     <div id="host-dashboard" class="host-laptop-dashboard"
-        style="display: <?= $isMobileScanner ? 'none' : 'grid' ?>;">
+        style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>;">
 
-        <!-- LEFT COLUMN: Primary Workspace Tables (Live Scans Log & Count Sheet Locators) -->
-        <div class="host-main-tables-col">
-            <!-- Left Card 1: Live Incoming Scans Log -->
+        <!-- TOP ROW: Control & Analytics Widgets (3 Equal Columns - 100% Symmetrical) -->
+        <div class="host-top-widgets-row">
+            <!-- Top Widget 1: Locator Completion Progress -->
+            <div class="card" id="host-widget-card"
+                style="margin-bottom: 0; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; position: relative; z-index: 100;">
+                <div class="card-title"
+                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; font-size: 0.85rem;">
+                    <span>Locator Progress</span>
+                    <div
+                        style="display: flex; gap: 8px; font-size: 0.7rem; font-weight: 600; background: rgba(255,255,255,0.02); padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                        <span id="metric-total-qty" style="display: none;">0</span>
+                        <span style="color: var(--text-muted);">INF: <span id="metric-unique-barcodes"
+                                style="color: #2ea44f;">0</span></span>
+                        <span style="color: var(--text-muted);">Scanners: <span id="metric-active-scanners"
+                                style="color: #d29922;">0</span></span>
+                    </div>
+                </div>
+
+                <div class="host-metric-flex" style="margin: 4px 0;">
+                    <!-- SVG Progress Ring -->
+                    <div style="position: relative; width: 85px; height: 85px; flex-shrink: 0;">
+                        <svg width="85" height="85" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
+                            <!-- Background Circle -->
+                            <circle r="48" cx="60" cy="60" fill="transparent" stroke="rgba(255,255,255,0.04)"
+                                stroke-width="8"></circle>
+                            <!-- Progress Circle -->
+                            <circle id="widget-progress-circle" r="48" cx="60" cy="60" fill="transparent"
+                                stroke="#2ea44f" stroke-width="8" stroke-linecap="round" stroke-dasharray="301.6"
+                                stroke-dashoffset="301.6"
+                                style="transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
+                        </svg>
+                        <div id="widget-progress-text"
+                            style="position: absolute; top: 0; left: 0; width: 85px; height: 85px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Outfit', sans-serif;">
+                            <span style="font-size: 1.15rem; font-weight: 800; color: white; line-height: 1;">0%</span>
+                            <span
+                                style="font-size: 0.55rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px;">Closed</span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Details Panel -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; max-width: 170px;">
+                        <div
+                            style="background: rgba(46,164,79,0.06); border: 1px solid rgba(46,164,79,0.15); border-radius: 6px; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.7rem; color: #8b949e; font-weight: 500;">Closed (Done)</span>
+                            <span id="widget-closed-count"
+                                style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; color: #2ea44f;">0</span>
+                        </div>
+                        <div
+                            style="background: rgba(210,153,34,0.06); border: 1px solid rgba(210,153,34,0.15); border-radius: 6px; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.7rem; color: #8b949e; font-weight: 500;">Active / Open</span>
+                            <span id="widget-open-count"
+                                style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; color: #d29922;">0</span>
+                        </div>
+                        <div
+                            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.7rem; color: #8b949e; font-weight: 500;">Total Locators</span>
+                            <span id="widget-total-count"
+                                style="font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700; color: white;">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item Search in Locator Progress Card -->
+                <div style="margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; position: relative;">
+                    <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU)..."
+                        style="width: 100%; height: 28px; padding: 0 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
+                        oninput="searchLocatorProgressItem()"
+                        onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
+                    <div id="locator-progress-search-results"
+                        style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; margin-top: 6px; max-height: 280px; overflow-y: auto; overscroll-behavior: contain; background: #161b22; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 8px; padding: 8px; box-shadow: 0 16px 36px rgba(0,0,0,0.9);">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Widget 2: Connect Scanner -->
+            <div class="card" id="host-connect-card"
+                style="margin-bottom: 0; padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div>
+                    <div class="card-title"
+                        style="font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
+                            <path
+                                d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M20 5h-6v6h6V5zm-2 11-2 2h2v-2zm2-2h-2v2h2v-2zm-2 4h-2v2h2v-2zm2 2h-2v-2h-2v2h-2v-2h3v-2h-3v-2h5v4zM11.5 9h-1V8h1v1zm0-3h-1V5h1v1zm-6 3h-1V8h1v1zm0-3h-1V5h1v1zm0 9h-1v-1h1v1zm0 3h-1v-1h1v1zm9-9h-1V8h1v1zm0-3h-1V5h1v1zm-6 9h-1v-1h1v1zm1.5-1.5h-1v-1h1v1zm1.5 1.5h-1v-1h1v1z" />
+                        </svg>
+                        <span>Connect Scanner</span>
+                    </div>
+
+                    <div id="host-https-tip"
+                        style="background:rgba(210,153,34,0.1); border:1px solid rgba(210,153,34,0.3); border-radius:6px; padding:6px; margin-bottom:8px; font-size:0.7rem; text-align:left; color:#d29922; display:none;">
+                        ⚠️ Host console is loaded via <strong>HTTP</strong>. Scanner QR code will open insecurely on phones.
+                        <br><a id="host-https-link" href="" style="color:#58a6ff; font-weight:600; text-decoration:underline;">Switch Host to HTTPS</a>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-around; gap: 10px; width: 100%;">
+                    <div id="qrcode"
+                        style="background: white; padding: 3px; border-radius: 6px; min-width: 95px; min-height: 95px; display: inline-flex; align-items: center; justify-content: center;">
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex-grow: 1;">
+                        <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0; text-align: left;">
+                            Scan QR code with phone.
+                        </p>
+
+                        <?php
+                        $detectedLocalIPs = getServerLocalIPs();
+                        ?>
+                        <div style="width: 100%; text-align: left;">
+                            <label for="qr-ip-select"
+                                style="font-size: 0.6rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Host Network IP:</label>
+                            <select id="qr-ip-select"
+                                style="font-size: 0.7rem; padding: 3px 4px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer;"
+                                onchange="handleQrIpChange(this)">
+                                <?php foreach ($detectedLocalIPs as $ipItem):
+                                    $adapterName = $ipItem['adapter'];
+                                    $lower = strtolower($adapterName);
+                                    $typeLabel = 'LOCAL';
+                                    if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
+                                        $typeLabel = 'WIFI';
+                                    }
+                                    $displayName = $adapterName;
+                                    $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
+                                    $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
+                                    $displayName = str_ireplace('adapter ', '', $displayName);
+                                    ?>
+                                    <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                                <option value="custom">✏️ Enter Custom IP...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Widget 3: Print Spacing Settings -->
             <div class="card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box;">
+                style="margin-bottom: 0; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
+                <div class="card-title"
+                    style="font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
+                        <path
+                            d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                    </svg>
+                    <span>Print Spacing Settings</span>
+                </div>
+                <form id="host-print-config-form" onsubmit="saveHostPrintConfig(event)"
+                    style="display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; margin: 0;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                        <div>
+                            <label
+                                style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">TOP MARGIN (MM)</label>
+                            <input type="number" id="host_print_margin_top" class="form-control"
+                                value="<?= htmlspecialchars($marginTop) ?>" min="0" max="200" required
+                                style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
+                        </div>
+                        <div>
+                            <label
+                                style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">LEFT MARGIN (MM)</label>
+                            <input type="number" id="host_print_margin_left" class="form-control"
+                                value="<?= htmlspecialchars($marginLeft) ?>" min="0" max="200" required
+                                style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"
+                        style="width:100%; height:30px; font-size:0.75rem; padding:0; font-weight:600; cursor:pointer;">
+                        Save Spacing
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- BOTTOM ROW: Primary Workspace Tables (2 Equal 50% / 50% Columns - 100% Symmetrical) -->
+        <div class="host-tables-50-row">
+            <!-- Bottom Table 1: Live Incoming Scans Log -->
+            <div class="card host-sym-card" style="padding: 1.25rem;">
                 <div class="card-title"
                     style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
                     <span>Live Incoming Scans Log</span>
@@ -1212,8 +1515,7 @@ $hasActiveStores = !empty($existingStoresList);
                         style="width: 100%; height: 34px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); color: white; box-sizing: border-box; outline:none;"
                         oninput="filterHostScans()">
                 </div>
-                <div
-                    style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; margin-top: 10px; padding-right: 5px; max-height: 260px;">
+                <div class="host-sym-table-container" style="margin-top: 10px;">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;"
                         id="host-scans-table">
                         <thead>
@@ -1239,9 +1541,8 @@ $hasActiveStores = !empty($existingStoresList);
                 </div>
             </div>
 
-            <!-- Left Card 2: Count Sheet & Locators Manager -->
-            <div class="card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; min-width: 0;">
+            <!-- Bottom Table 2: Count Sheet & Locators Manager -->
+            <div class="card host-sym-card" style="padding: 1.25rem;">
                 <div class="card-title"
                     style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom:1rem;">
                     <span>Count Sheet & Locators</span>
@@ -1268,7 +1569,7 @@ $hasActiveStores = !empty($existingStoresList);
                     oninput="filterHostLocators()">
 
                 <!-- Scrollable Table Container -->
-                <div style="overflow-x: auto; overflow-y: auto; overscroll-behavior: contain; padding-right: 5px; max-height: 250px;">
+                <div class="host-sym-table-container">
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
                         <thead>
                             <tr
@@ -1287,178 +1588,6 @@ $hasActiveStores = !empty($existingStoresList);
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT COLUMN: Dashboard Metrics & Side Controls -->
-        <div class="host-side-controls-col">
-            <!-- TOP RIGHT: Connect Scanner and Print Spacing Settings Side-by-Side -->
-            <div class="host-sub-control-grid">
-                <!-- Connect Cellphone Card -->
-                <div class="card" id="host-connect-card"
-                    style="margin-bottom: 0; padding: 1rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div>
-                        <div class="card-title"
-                            style="font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; gap: 6px;">
-                            <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
-                                <path
-                                    d="M9.5 6.5v3h-3v-3h3M11 5H5v6h6V5zm-1.5 9.5v3h-3v-3h3M11 13H5v6h6v-6zm9.5-6.5v3h-3v-3h3M20 5h-6v6h6V5zm-2 11-2 2h2v-2zm2-2h-2v2h2v-2zm-2 4h-2v2h2v-2zm2 2h-2v-2h-2v2h-2v-2h3v-2h-3v-2h5v4zM11.5 9h-1V8h1v1zm0-3h-1V5h1v1zm-6 3h-1V8h1v1zm0-3h-1V5h1v1zm0 9h-1v-1h1v1zm0 3h-1v-1h1v1zm9-9h-1V8h1v1zm0-3h-1V5h1v1zm-6 9h-1v-1h1v1zm1.5-1.5h-1v-1h1v1zm1.5 1.5h-1v-1h1v1z" />
-                            </svg>
-                            <span>Connect Scanner</span>
-                        </div>
-
-                        <div id="host-https-tip"
-                            style="background:rgba(210,153,34,0.1); border:1px solid rgba(210,153,34,0.3); border-radius:6px; padding:6px; margin-bottom:8px; font-size:0.7rem; text-align:left; color:#d29922; display:none;">
-                            ⚠️ Host console is loaded via <strong>HTTP</strong>. Scanner QR code will open insecurely on phones.
-                            <br><a id="host-https-link" href="" style="color:#58a6ff; font-weight:600; text-decoration:underline;">Switch Host to HTTPS</a>
-                        </div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%;">
-                        <div id="qrcode"
-                            style="background: white; padding: 4px; border-radius: 6px; min-width: 120px; min-height: 120px; display: inline-flex; align-items: center; justify-content: center;">
-                        </div>
-                        <p style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.2; margin: 2px 0 0 0; text-align: center;">
-                            Scan QR code with phone.
-                        </p>
-
-                        <?php
-                        $detectedLocalIPs = getServerLocalIPs();
-                        ?>
-                        <div style="margin-top: 4px; width: 100%; text-align: left;">
-                            <label for="qr-ip-select"
-                                style="font-size: 0.6rem; color: var(--text-muted); display: block; margin-bottom: 2px; text-align: center;">Host Network IP:</label>
-                            <select id="qr-ip-select"
-                                style="font-size: 0.7rem; padding: 3px 4px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer; text-align: center;"
-                                onchange="handleQrIpChange(this)">
-                                <?php foreach ($detectedLocalIPs as $ipItem):
-                                    $adapterName = $ipItem['adapter'];
-                                    $lower = strtolower($adapterName);
-                                    $typeLabel = 'LOCAL';
-                                    if (strpos($lower, 'wireless') !== false || strpos($lower, 'wi-fi') !== false || strpos($lower, 'wlan') !== false) {
-                                        $typeLabel = 'WIFI';
-                                    }
-                                    $displayName = $adapterName;
-                                    $displayName = str_ireplace('Wireless LAN adapter ', '', $displayName);
-                                    $displayName = str_ireplace('Ethernet adapter ', '', $displayName);
-                                    $displayName = str_ireplace('adapter ', '', $displayName);
-                                    ?>
-                                    <option value="<?= htmlspecialchars($ipItem['ip']) ?>" <?= ($ipItem['ip'] === $localIP) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($ipItem['ip']) ?> (<?= htmlspecialchars($typeLabel) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                                <option value="custom">✏️ Enter Custom IP...</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Print Spacing Settings Card -->
-                <div class="card"
-                    style="margin-bottom: 0; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box;">
-                    <div class="card-title"
-                        style="font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; gap: 6px;">
-                        <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;">
-                            <path
-                                d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                        </svg>
-                        <span>Print Spacing Settings</span>
-                    </div>
-                    <form id="host-print-config-form" onsubmit="saveHostPrintConfig(event)"
-                        style="display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; margin: 0;">
-                        <div style="display: grid; grid-template-columns: 1fr; gap: 6px; margin-bottom: 8px;">
-                            <div>
-                                <label
-                                    style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">TOP MARGIN (MM)</label>
-                                <input type="number" id="host_print_margin_top" class="form-control"
-                                    value="<?= htmlspecialchars($marginTop) ?>" min="0" max="200" required
-                                    style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
-                            </div>
-                            <div>
-                                <label
-                                    style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">LEFT MARGIN (MM)</label>
-                                <input type="number" id="host_print_margin_left" class="form-control"
-                                    value="<?= htmlspecialchars($marginLeft) ?>" min="0" max="200" required
-                                    style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary"
-                            style="width:100%; height:30px; font-size:0.75rem; padding:0; font-weight:600; cursor:pointer;">
-                            Save Spacing
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- BOTTOM RIGHT: Locator Progress Dashboard Card -->
-            <div class="card" id="host-widget-card"
-                style="margin-bottom: 0; padding: 1.25rem; display: flex; flex-direction: column; box-sizing: border-box; min-width: 0;">
-                <div class="card-title"
-                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                    <span>Locator Completion Progress</span>
-                    <div
-                        style="display: flex; gap: 12px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.02); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;">
-                        <span id="metric-total-qty" style="display: none;">0</span>
-                        <span style="color: var(--text-muted);">INF: <span id="metric-unique-barcodes"
-                                style="color: #2ea44f;">0</span></span>
-                        <span style="color: var(--text-muted);">Scanners: <span id="metric-active-scanners"
-                                style="color: #d29922;">0</span></span>
-                    </div>
-                </div>
-
-                <div class="host-metric-flex">
-                    <!-- SVG Progress Ring -->
-                    <div style="position: relative; width: 120px; height: 120px; flex-shrink: 0;">
-                        <svg width="120" height="120" viewBox="0 0 120 120" style="transform: rotate(-90deg);">
-                            <!-- Background Circle -->
-                            <circle r="48" cx="60" cy="60" fill="transparent" stroke="rgba(255,255,255,0.04)"
-                                stroke-width="8"></circle>
-                            <!-- Progress Circle -->
-                            <circle id="widget-progress-circle" r="48" cx="60" cy="60" fill="transparent"
-                                stroke="#2ea44f" stroke-width="8" stroke-linecap="round" stroke-dasharray="301.6"
-                                stroke-dashoffset="301.6"
-                                style="transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);"></circle>
-                        </svg>
-                        <div id="widget-progress-text"
-                            style="position: absolute; top: 0; left: 0; width: 120px; height: 120px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: 'Outfit', sans-serif;">
-                            <span style="font-size: 1.45rem; font-weight: 800; color: white; line-height: 1;">0%</span>
-                            <span
-                                style="font-size: 0.6rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.5px;">Closed</span>
-                        </div>
-                    </div>
-
-                    <!-- Metrics Details Panel -->
-                    <div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1; max-width: 180px;">
-                        <div
-                            style="background: rgba(46,164,79,0.06); border: 1px solid rgba(46,164,79,0.15); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Closed (Done)</span>
-                            <span id="widget-closed-count"
-                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #2ea44f;">0</span>
-                        </div>
-                        <div
-                            style="background: rgba(210,153,34,0.06); border: 1px solid rgba(210,153,34,0.15); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Active / Open</span>
-                            <span id="widget-open-count"
-                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: #d29922;">0</span>
-                        </div>
-                        <div
-                            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 6px 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; color: #8b949e; font-weight: 500;">Total Locators</span>
-                            <span id="widget-total-count"
-                                style="font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700; color: white;">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Item Search in Locator Progress Card -->
-                <div style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; position: relative;">
-                    <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU, Description)..."
-                        style="width: 100%; height: 32px; padding: 0 10px; font-size: 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
-                        oninput="searchLocatorProgressItem()"
-                        onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
-                    <div id="locator-progress-search-results"
-                        style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 50; margin-top: 4px; max-height: 180px; overflow-y: auto; overscroll-behavior: contain; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.55);">
-                    </div>
                 </div>
             </div>
         </div>
@@ -3437,7 +3566,7 @@ $hasActiveStores = !empty($existingStoresList);
                         footerText += '              ____________                    ____________\r\n';
                         footerText += '               Team Leader                     Posted By\r\n';
 
-                        const pageTopMargin = Math.max(10, parseInt(printMarginTop || 0));
+                        const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
                         const pageLeftMargin = parseInt(printMarginLeft || 0);
 
                         // Open print frame window
@@ -3656,14 +3785,22 @@ $hasActiveStores = !empty($existingStoresList);
                             text += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
                         });
 
+                        const mstTotalStr = grandTotalMaster.toFixed(0);
+                        const scannedTotalStr = grandTotalScanned.toFixed(0);
+                        const varianceTotalStr = (grandTotalVariance >= 0 ? '+' : '') + grandTotalVariance.toFixed(0);
+
+                        const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
+                        const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
+
                         let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
-                            totalInfStr + grandTotalLabel +
+                            grandTotalLabel +
                             padQtyCenter(mstTotalStr, 10) +
                             padQtyCenter(scannedTotalStr, 10) +
                             padQtyCenter(varianceTotalStr, 10) + '\r\n' +
-                            '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
+                            '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>\r\n' +
+                            totalInfStr;
 
-                        const pageTopMargin = Math.max(10, parseInt(printMarginTop || 0));
+                        const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
                         const pageLeftMargin = parseInt(printMarginLeft || 0);
 
                         // Open print frame window
@@ -3678,7 +3815,7 @@ $hasActiveStores = !empty($existingStoresList);
                                         margin-top: ${pageTopMargin}mm;
                                         margin-left: ${pageLeftMargin}mm;
                                         margin-right: 0mm;
-                                        margin-bottom: 10mm;
+                                        margin-bottom: 5mm;
                                     }
                                     @media print {
                                         body { 
@@ -3687,7 +3824,13 @@ $hasActiveStores = !empty($existingStoresList);
                                             background: white; 
                                             color: black; 
                                         }
+                                        .summary-print-container {
+                                            widows: 5 !important;
+                                            orphans: 5 !important;
+                                            page-break-inside: auto;
+                                        }
                                         .signature-footer {
+                                            page-break-before: auto !important;
                                             page-break-inside: avoid !important;
                                             break-inside: avoid !important;
                                         }
@@ -3695,8 +3838,8 @@ $hasActiveStores = !empty($existingStoresList);
                                     body {
                                         font-family: monospace;
                                         white-space: pre;
-                                        font-size: 13px;
-                                        line-height: 1.1;
+                                        font-size: 12px;
+                                        line-height: 1.12;
                                         background: white;
                                         color: black;
                                         margin: 0;
@@ -3706,19 +3849,20 @@ $hasActiveStores = !empty($existingStoresList);
                                         margin: 0;
                                         padding: 0;
                                         font-family: monospace;
-                                        line-height: 1.1;
+                                        font-size: 12px;
+                                        line-height: 1.12;
+                                        white-space: pre;
                                     }
                                     .signature-footer {
                                         page-break-inside: avoid !important;
                                         break-inside: avoid !important;
-                                        margin-top: 10px;
+                                        margin-top: 4px;
                                     }
                                 </style>
                             </head>
                             <body>
-                                <pre>${text}</pre>
-                                <div class="signature-footer">
-                                    <pre>${footerText}</pre>
+                                <div class="summary-print-container">
+                                    <pre>${text}${footerText}</pre>
                                 </div>
                                 \x3Cscript\x3E
                                     window.onload = function() {
