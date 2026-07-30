@@ -2031,6 +2031,43 @@ try {
                 'audit_logs' => $auditLogs
             ];
 
+            // If store already exists on cloud, submit for Admin approval on Cloud Dashboard before overwriting
+            if ($isStoreOnCloud) {
+                $submitUrl = rtrim($cloudUrl, '/');
+                if (preg_match('/\/api\.php$/i', $submitUrl)) {
+                    $submitUrl = preg_replace('/\/api\.php$/i', '', $submitUrl);
+                }
+                $submitUrl = rtrim($submitUrl, '/') . '/api.php?action=submit_sync_request';
+
+                $payload['local_scans_count'] = $totalScans;
+                $payload['cloud_scans_count'] = $cloudScansCount;
+
+                $chReq = curl_init();
+                curl_setopt($chReq, CURLOPT_URL, $submitUrl);
+                curl_setopt($chReq, CURLOPT_POST, true);
+                curl_setopt($chReq, CURLOPT_POSTFIELDS, json_encode($payload));
+                curl_setopt($chReq, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($chReq, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($chReq, CURLOPT_TIMEOUT, 30);
+                curl_setopt($chReq, CURLOPT_SSL_VERIFYPEER, false);
+
+                $reqResult = curl_exec($chReq);
+                $reqHttp = curl_getinfo($chReq, CURLINFO_HTTP_CODE);
+                curl_close($chReq);
+
+                $reqData = json_decode($reqResult, true);
+                if ($reqHttp === 200 && ($reqData['status'] ?? '') === 'success') {
+                    sendResponse([
+                        'status' => 'pending_approval',
+                        'message' => "Sync request for existing store '" . strtoupper($_SESSION['store_code']) . "' submitted to Cloud! Waiting for System Admin or Admin approval on the Cloud Dashboard before overwriting."
+                    ]);
+                    break;
+                } else {
+                    $errMsg = $reqData['message'] ?? 'Failed to submit sync request for approval.';
+                    throw new Exception("Sync Request Submission Failed: " . $errMsg);
+                }
+            }
+
             // Clean Cloud Sync URL (strip api.php if user included it in settings)
             $targetUrl = rtrim($cloudUrl, '/');
             if (preg_match('/\/api\.php$/i', $targetUrl)) {
@@ -2420,6 +2457,61 @@ try {
             ]);
             break;
 
+// Helper function to create automatic backups on Cloud before overwriting store tables
+function createCloudStoreBackup($db, $storeCode) {
+    $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+    if (empty($clean)) return;
+
+    $ts = date('Ymd_His');
+
+    // 1. Create SQL snapshot tables on Cloud before overwriting
+    try {
+        $checkLoc = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
+        if (!empty($checkLoc)) {
+            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_locators_{$ts}` AS SELECT * FROM `{$clean}_locators`");
+        }
+    } catch (Exception $e1) {
+    }
+
+    try {
+        $checkCs = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
+        if (!empty($checkCs)) {
+            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_countsheet_{$ts}` AS SELECT * FROM `{$clean}_countsheet`");
+        }
+    } catch (Exception $e2) {
+    }
+
+    // 2. Export JSON backup snapshot file on Cloud before overwriting
+    try {
+        $backupDir = __DIR__ . '/backups';
+        if (!is_dir($backupDir)) {
+            @mkdir($backupDir, 0777, true);
+        }
+        $backupFile = $backupDir . "/cloud_backup_{$clean}_" . $ts . ".json";
+        $existingLocs = [];
+        $existingScans = [];
+        try {
+            $existingLocs = $db->query("SELECT * FROM `{$clean}_locators`");
+        } catch (Exception $eL) {
+        }
+        try {
+            $existingScans = $db->query("SELECT * FROM `{$clean}_countsheet`");
+        } catch (Exception $eS) {
+        }
+
+        if (!empty($existingLocs) || !empty($existingScans)) {
+            $payload = [
+                'store_code' => strtoupper($clean),
+                'backed_up_at' => date('Y-m-d H:i:s'),
+                'locators' => $existingLocs,
+                'scans' => $existingScans
+            ];
+            @file_put_contents($backupFile, json_encode($payload, JSON_PRETTY_PRINT));
+        }
+    } catch (Exception $eJson) {
+    }
+}
+
         case 'receive_sync':
             verifySyncToken();
             $input = json_decode(file_get_contents('php://input'), true);
@@ -2433,6 +2525,9 @@ try {
             $db = new OWI_DB();
             $createdBy = $input['store_details']['created_by'] ?? null;
             $db->createStoreTables($storeCode, $createdBy);
+
+            // Automatically create backup on Cloud before overwriting data
+            createCloudStoreBackup($db, $storeCode);
 
             if (isset($input['store_details']['closed'])) {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $input['store_details']['closed'], $storeCode]);
@@ -2573,6 +2668,9 @@ try {
             $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($payload['store_code'] ?? ''));
             $createdBy = $payload['store_details']['created_by'] ?? null;
             $db->createStoreTables($storeCode, $createdBy);
+
+            // Automatically create backup on Cloud before overwriting data
+            createCloudStoreBackup($db, $storeCode);
 
             if (isset($payload['store_details']['closed'])) {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $payload['store_details']['closed'], $storeCode]);
