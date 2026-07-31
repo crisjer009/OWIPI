@@ -2699,10 +2699,26 @@ try {
 
             // 2. Scan MySQL database for any unlogged snapshot tables matching _backup_%
             try {
-                $tables = $db->query("SHOW TABLES LIKE '_backup_%_countsheet_%'");
+                $tables = [];
+                try {
+                    $tables = $db->query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME LIKE '_backup_%_countsheet_%'");
+                } catch (Exception $eInf) {
+                }
+
+                if (empty($tables)) {
+                    $rawTables = $db->query("SHOW TABLES LIKE '_backup_%_countsheet_%'");
+                    $tables = [];
+                    foreach ($rawTables as $rt) {
+                        $val = array_values($rt)[0] ?? null;
+                        if ($val) $tables[] = ['TABLE_NAME' => $val];
+                    }
+                }
+
                 foreach ($tables as $tRow) {
-                    $tableName = current($tRow);
-                    if (preg_match('/^_backup_([a-zA-Z0-9]+)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
+                    $tableName = $tRow['TABLE_NAME'] ?? (array_values($tRow)[0] ?? '');
+                    if (empty($tableName)) continue;
+
+                    if (preg_match('/^_backup_([a-zA-Z0-9_]+)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
                         $storeCode = strtoupper($matches[1]);
                         $tsStr = $matches[2];
 
