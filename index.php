@@ -1323,6 +1323,32 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => showCustomAlert("Request failed: " + err, "Network Error"));
         }
 
+        async function clearAllCloudBackups() {
+            const ok = await showCustomConfirm(
+                "Are you sure you want to clear all cloud pre-sync backup logs and delete stored backup files? This action cannot be undone.",
+                "Clear All Backup Logs",
+                "Yes, Clear All Logs",
+                "Cancel"
+            );
+            if (!ok) return;
+
+            showToast("Clearing all cloud backup logs...", "info");
+
+            fetch('api.php?action=clear_cloud_backups', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        fetchCloudBackups();
+                    } else {
+                        showCustomAlert("Failed to clear backups: " + data.message, "Clear Failed");
+                    }
+                })
+                .catch(err => {
+                    showCustomAlert("Request failed: " + err, "Network Error");
+                });
+        }
+
         async function restoreCloudBackup(backupId, storeCode, dateStr) {
             const ok = await showCustomConfirm(
                 `Are you sure you want to restore store '${storeCode}' to the backup state from ${dateStr}?\n\nCurrent active store data on cloud will be rolled back to this backup snapshot point.`,
@@ -2293,6 +2319,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <div style="display:flex; gap: 8px;">
                         <button type="button" onclick="triggerManualBackup()" class="btn" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: var(--success-color); color:white; border:none; font-weight:600; cursor:pointer;">📸 Create Backup Snapshot Now</button>
                         <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄 Refresh Backup Logs</button>
+                        <?php if (isAdmin()): ?>
+                        <button type="button" onclick="clearAllCloudBackups()" class="btn" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; font-weight:600; cursor:pointer;">🗑️ Clear All Backup Logs</button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </header>
