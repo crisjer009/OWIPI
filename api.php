@@ -2746,7 +2746,7 @@ try {
 
                             $alreadyInList = false;
                             foreach ($backups as $b) {
-                                if ($b['id'] === $basename) {
+                                if ($b['id'] === $basename || $b['id'] . '.sql' === $basename || (strpos($b['id'], $tsStr) !== false && $b['store_code'] === $storeCode)) {
                                     $alreadyInList = true;
                                     break;
                                 }
@@ -2830,6 +2830,10 @@ try {
             $file = trim($_GET['file'] ?? ($_POST['file'] ?? ''));
             $filename = basename($file);
             $filePath = __DIR__ . '/backups/' . $filename;
+            if (!file_exists($filePath) && file_exists($filePath . '.sql')) {
+                $filename .= '.sql';
+                $filePath .= '.sql';
+            }
             if (empty($filename) || !file_exists($filePath)) {
                 http_response_code(404);
                 die("Backup script file not found.");
