@@ -2898,6 +2898,9 @@ try {
 
         case 'create_manual_backup':
         case 'create_backup':
+        case 'manual_backup':
+        case 'backup':
+        case 'trigger_backup':
             $storeCode = trim($_POST['store_code'] ?? ($_GET['store_code'] ?? ($rawInput['store_code'] ?? '')));
             if (empty($storeCode)) {
                 $storeCode = $_SESSION['store_code'] ?? '';
