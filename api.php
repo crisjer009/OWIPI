@@ -70,6 +70,34 @@ function logAudit($action, $details, $storeCode = null, $overrideUsername = null
     }
 }
 
+function ensureCloudBackupsLogTable($db) {
+    try {
+        $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            backup_id VARCHAR(255) NOT NULL,
+            store_code VARCHAR(50) NOT NULL,
+            backup_type VARCHAR(50) NOT NULL DEFAULT 'sql_script',
+            scans_count INT DEFAULT 0,
+            locators_count INT DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        $colsToEnsure = [
+            'backup_id' => "VARCHAR(255) NOT NULL",
+            'store_code' => "VARCHAR(50) NOT NULL",
+            'backup_type' => "VARCHAR(50) NOT NULL DEFAULT 'sql_script'",
+            'scans_count' => "INT DEFAULT 0",
+            'locators_count' => "INT DEFAULT 0",
+            'created_at' => "DATETIME DEFAULT CURRENT_TIMESTAMP"
+        ];
+        foreach ($colsToEnsure as $col => $def) {
+            try {
+                $db->execute("ALTER TABLE cloud_backups_log ADD COLUMN `$col` $def");
+            } catch (Exception $eC) {}
+        }
+    } catch (Exception $eTbl) {}
+}
+
 // Helper function to create automatic backups on Cloud before overwriting store tables
 function createCloudStoreBackup($db, $storeCode) {
     $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
@@ -77,19 +105,8 @@ function createCloudStoreBackup($db, $storeCode) {
 
     $ts = date('Ymd_His');
 
-    // Ensure log table exists
-    try {
-        $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            backup_id VARCHAR(255) NOT NULL,
-            store_code VARCHAR(50) NOT NULL,
-            backup_type VARCHAR(50) NOT NULL,
-            scans_count INT DEFAULT 0,
-            locators_count INT DEFAULT 0,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )");
-    } catch (Exception $eTbl) {
-    }
+    // Ensure log table exists and has all required columns
+    ensureCloudBackupsLogTable($db);
 
     $locsCount = 0;
     $scansCount = 0;
@@ -2728,19 +2745,10 @@ try {
             $backups = [];
 
             $dbError = null;
-            // 1. Ensure log table exists and query logged backups
+            // 1. Ensure log table exists and has all required columns
+            ensureCloudBackupsLogTable($db);
             try {
-                $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    backup_id VARCHAR(255) NOT NULL,
-                    store_code VARCHAR(50) NOT NULL,
-                    backup_type VARCHAR(50) NOT NULL,
-                    scans_count INT DEFAULT 0,
-                    locators_count INT DEFAULT 0,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )");
-                
-                $rows = $db->query("SELECT id, backup_id, store_code, backup_type, scans_count, locators_count, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at_fmt FROM cloud_backups_log ORDER BY id DESC");
+                $rows = $db->query("SELECT * FROM cloud_backups_log ORDER BY id DESC");
                 if (!empty($rows)) {
                     foreach ($rows as $r) {
                         $bId = $r['backup_id'] ?? ($r[1] ?? '');
