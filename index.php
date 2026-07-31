@@ -1291,7 +1291,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             fetch('api.php?action=create_manual_backup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `store_code=${encodeURIComponent(storeCode)}`
+                body: `action=create_manual_backup&store_code=${encodeURIComponent(storeCode)}`
             })
                 .then(res => res.json())
                 .then(data => {
