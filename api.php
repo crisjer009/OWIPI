@@ -2718,6 +2718,7 @@ try {
             $db = new OWI_DB();
             $backups = [];
 
+            $dbError = null;
             // 1. Ensure log table exists and query logged backups
             try {
                 $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
@@ -2729,50 +2730,43 @@ try {
                     locators_count INT DEFAULT 0,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )");
-                $rows = $db->query("SELECT * FROM cloud_backups_log ORDER BY id DESC");
+                
+                $rows = $db->query("SELECT id, backup_id, store_code, backup_type, scans_count, locators_count, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at_fmt FROM cloud_backups_log ORDER BY id DESC");
                 if (!empty($rows)) {
                     foreach ($rows as $r) {
-                        $backupId = '';
-                        $type = 'sql_script';
-                        $storeCode = '';
-                        $scansCount = 0;
-                        $locsCount = 0;
-                        $createdAt = '';
+                        $bId = $r['backup_id'] ?? ($r[1] ?? '');
+                        $sCode = strtoupper($r['store_code'] ?? ($r[2] ?? ''));
+                        $bType = $r['backup_type'] ?? ($r[3] ?? 'sql_script');
+                        $sCount = (int) ($r['scans_count'] ?? ($r[4] ?? 0));
+                        $lCount = (int) ($r['locators_count'] ?? ($r[5] ?? 0));
+                        $cAt = $r['created_at_fmt'] ?? ($r['created_at'] ?? ($r[6] ?? ''));
 
-                        // 1. Try named keys (case-insensitive)
-                        foreach ($r as $k => $v) {
-                            $lk = strtolower((string)$k);
-                            if ($lk === 'backup_id') $backupId = $v;
-                            elseif ($lk === 'backup_type' || $lk === 'type') $type = $v;
-                            elseif ($lk === 'store_code') $storeCode = strtoupper($v);
-                            elseif ($lk === 'scans_count') $scansCount = (int) $v;
-                            elseif ($lk === 'locators_count') $locsCount = (int) $v;
-                            elseif ($lk === 'created_at') $createdAt = $v;
+                        if (empty($bId)) {
+                            foreach ($r as $k => $v) {
+                                $lk = strtolower((string)$k);
+                                if ($lk === 'backup_id') $bId = $v;
+                                elseif ($lk === 'store_code') $sCode = strtoupper($v);
+                                elseif ($lk === 'backup_type' || $lk === 'type') $bType = $v;
+                                elseif ($lk === 'scans_count') $sCount = (int)$v;
+                                elseif ($lk === 'locators_count') $lCount = (int)$v;
+                                elseif ($lk === 'created_at') $cAt = $v;
+                            }
                         }
 
-                        // 2. Fallback to numeric column positions if named keys were missing
-                        if (empty($backupId) && isset($r[1])) {
-                            $backupId = $r[1];
-                            $storeCode = strtoupper($r[2] ?? '');
-                            $type = $r[3] ?? 'sql_script';
-                            $scansCount = (int) ($r[4] ?? 0);
-                            $locsCount = (int) ($r[5] ?? 0);
-                            $createdAt = $r[6] ?? '';
-                        }
-
-                        if (!empty($backupId)) {
+                        if (!empty($bId)) {
                             $backups[] = [
-                                'id' => $backupId,
-                                'type' => !empty($type) ? $type : 'sql_script',
-                                'store_code' => $storeCode,
-                                'scans_count' => $scansCount,
-                                'locators_count' => $locsCount,
-                                'created_at' => $createdAt
+                                'id' => $bId,
+                                'type' => !empty($bType) ? $bType : 'sql_script',
+                                'store_code' => $sCode,
+                                'scans_count' => $sCount,
+                                'locators_count' => $lCount,
+                                'created_at' => $cAt
                             ];
                         }
                     }
                 }
             } catch (Exception $eL) {
+                $dbError = $eL->getMessage();
                 error_log("Failed to query cloud_backups_log: " . $eL->getMessage());
             }
 
@@ -2865,7 +2859,8 @@ try {
 
             sendResponse([
                 'status' => 'success',
-                'backups' => $backups
+                'backups' => $backups,
+                'db_error' => $dbError
             ]);
             break;
 

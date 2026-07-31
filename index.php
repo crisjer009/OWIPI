@@ -1285,7 +1285,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         html += '</tbody></table>';
                         listEl.innerHTML = html;
                     } else {
-                        listEl.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 1rem;">No pre-sync backup snapshots found on cloud.</p>';
+                        let errNotice = data.db_error ? `<br><small style="color:#ef4444; font-style:normal;">Database Notice: ${data.db_error}</small>` : '';
+                        listEl.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; font-style: italic; padding: 1rem;">No pre-sync backup snapshots found on cloud.${errNotice}</p>`;
                     }
                 })
                 .catch(err => {
