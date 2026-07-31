@@ -48,6 +48,22 @@ if ($action === 'receive_sync') {
     handleReceiveSync();
 }
 
+if ($action === 'create_manual_backup' || $action === 'create_backup' || $action === 'manual_backup' || $action === 'backup') {
+    $storeCode = trim($_POST['store_code'] ?? ($_GET['store_code'] ?? ($rawInput['store_code'] ?? '')));
+    if (empty($storeCode)) {
+        $storeCode = $_SESSION['store_code'] ?? '';
+    }
+    if (empty($storeCode)) {
+        sendResponse(['status' => 'error', 'message' => "Please specify a Store Code to back up."]);
+    }
+    $db = new OWI_DB();
+    createCloudStoreBackup($db, $storeCode);
+    sendResponse([
+        'status' => 'success',
+        'message' => "Successfully created automatic backup snapshot for store '" . strtoupper($storeCode) . "'!"
+    ]);
+}
+
 // Helper function to send JSON response
 function sendResponse($data)
 {
