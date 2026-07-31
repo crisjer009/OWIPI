@@ -2771,24 +2771,14 @@ try {
                 $rows = $db->query("SELECT * FROM cloud_backups_log ORDER BY id DESC");
                 if (!empty($rows)) {
                     foreach ($rows as $r) {
-                        $bId = $r['backup_id'] ?? ($r[1] ?? '');
-                        $sCode = strtoupper($r['store_code'] ?? ($r[2] ?? ''));
-                        $bType = $r['backup_type'] ?? ($r[3] ?? 'sql_script');
-                        $sCount = (int) ($r['scans_count'] ?? ($r[4] ?? 0));
-                        $lCount = (int) ($r['locators_count'] ?? ($r[5] ?? 0));
-                        $cAt = $r['created_at_fmt'] ?? ($r['created_at'] ?? ($r[6] ?? ''));
+                        $row = array_change_key_case((array)$r, CASE_LOWER);
 
-                        if (empty($bId)) {
-                            foreach ($r as $k => $v) {
-                                $lk = strtolower((string)$k);
-                                if ($lk === 'backup_id') $bId = $v;
-                                elseif ($lk === 'store_code') $sCode = strtoupper($v);
-                                elseif ($lk === 'backup_type' || $lk === 'type') $bType = $v;
-                                elseif ($lk === 'scans_count') $sCount = (int)$v;
-                                elseif ($lk === 'locators_count') $lCount = (int)$v;
-                                elseif ($lk === 'created_at') $cAt = $v;
-                            }
-                        }
+                        $bId = $row['backup_id'] ?? '';
+                        $sCode = strtoupper($row['store_code'] ?? '');
+                        $bType = $row['backup_type'] ?? 'sql_script';
+                        $sCount = (int) ($row['scans_count'] ?? 0);
+                        $lCount = (int) ($row['locators_count'] ?? 0);
+                        $cAt = $row['created_at'] ?? '';
 
                         if (!empty($bId)) {
                             $backups[] = [
