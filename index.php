@@ -2517,10 +2517,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         showCustomAlert(data.message, "Store Session Conflict", "OK", () => {
                             fetch('api.php?action=logout_store')
                                 .then(() => {
-                                    window.location.href = 'index.php';
+                                    window.close();
+                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
                                 })
                                 .catch(() => {
-                                    window.location.href = 'index.php';
+                                    window.close();
+                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
                                 });
                         });
                     }

@@ -2093,10 +2093,12 @@ $hasActiveStores = !empty($existingStoresList);
                         customAlert(data.message, "Store Session Conflict", () => {
                             fetch('api.php?action=logout_store')
                                 .then(() => {
-                                    window.location.href = 'index.php';
+                                    window.close();
+                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
                                 })
                                 .catch(() => {
-                                    window.location.href = 'index.php';
+                                    window.close();
+                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
                                 });
                         });
                     }
