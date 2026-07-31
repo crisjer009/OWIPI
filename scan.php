@@ -2055,6 +2055,21 @@ $hasActiveStores = !empty($existingStoresList);
         let scanningLock = false; // Prevent multiple triggers during network upload
         let qrCodeInstance = null;
 
+        // Unique tab/browser session token to lock scanning session to 1 active window
+        let tabDeviceToken = sessionStorage.getItem('owipi_tab_token');
+        if (!tabDeviceToken) {
+            tabDeviceToken = 'token_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            sessionStorage.setItem('owipi_tab_token', tabDeviceToken);
+        }
+
+        window.addEventListener('beforeunload', function () {
+            const savedLoc = localStorage.getItem('active_locator');
+            if (savedLoc) {
+                const payload = new Blob([JSON.stringify({ locator_name: savedLoc, device_token: tabDeviceToken })], { type: 'application/json' });
+                navigator.sendBeacon('api.php?action=release_session', payload);
+            }
+        });
+
         window.addEventListener('DOMContentLoaded', () => {
             try {
                 // Fill instructions flag text
@@ -2751,17 +2766,41 @@ $hasActiveStores = !empty($existingStoresList);
                 });
         };
 
-        // Poll active session status to detect host close/disconnect events
+        // Poll active session status & send heartbeat to enforce 1 single active host/browser lock
         function checkActiveSessionStatus() {
             const savedName = localStorage.getItem('operator_name');
             const savedLoc = localStorage.getItem('active_locator');
 
             if (!savedName || !savedLoc) return; // not connected
 
-            fetch('api.php?action=get_locators')
+            // Send heartbeat ping to lock locator session to this tab
+            fetch('api.php?action=heartbeat_locator', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ locator_name: savedLoc, device_token: tabDeviceToken })
+            })
                 .then(res => res.json())
+                .then(hb => {
+                    if (hb && hb.status === 'session_conflict') {
+                        // Preempted by another browser window!
+                        localStorage.removeItem('operator_name');
+                        localStorage.removeItem('active_locator');
+
+                        document.getElementById('scanned_by').value = '';
+                        document.getElementById('location').value = '';
+
+                        document.getElementById('active-session-card').style.display = 'none';
+                        showConnectModal();
+                        stopScanner();
+
+                        customAlert("Session Conflict: Your scanning session was opened or claimed in another browser window. This window was disconnected to prevent duplicate scanning.", "Session Conflict");
+                        return null;
+                    }
+
+                    return fetch('api.php?action=get_locators').then(res => res.json());
+                })
                 .then(data => {
-                    if (data.status === 'success' && data.locators) {
+                    if (data && data.status === 'success' && data.locators) {
                         const matched = data.locators.find(loc => loc.locator_name.toLowerCase() === savedLoc.toLowerCase());
 
                         // If locator is not found, or is not in_use, or is claimed by another operator
@@ -3393,11 +3432,11 @@ $hasActiveStores = !empty($existingStoresList);
                 }
             }
 
-            // Submit claim to api
+            // Submit claim to api with tabDeviceToken
             fetch('api.php?action=claim_locator', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ locator_name: matched.locator_name, scanned_by: operatorName })
+                body: JSON.stringify({ locator_name: matched.locator_name, scanned_by: operatorName, device_token: tabDeviceToken })
             })
                 .then(res => res.json())
                 .then(data => {

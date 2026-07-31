@@ -226,6 +226,19 @@ function createCloudStoreBackup($db, $storeCode) {
     logAudit('Cloud Pre-Sync Backup', "Created SQL backup script for store '" . strtoupper($clean) . "' prior to cloud overwrite.");
 }
 
+// Helper function to ensure active session columns exist on store locators tables
+function ensureLocatorSessionColumns($db, $storeCode)
+{
+    $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+    if (empty($clean)) return;
+    try {
+        $db->execute("ALTER TABLE `{$clean}_locators` ADD COLUMN active_device_token VARCHAR(64) NULL");
+    } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE `{$clean}_locators` ADD COLUMN last_ping_at DATETIME NULL");
+    } catch (Exception $e) {}
+}
+
 // Helper function to format product description by appending Attr and Size if not already present
 function formatProductDescription($descr, $attr, $size)
 {
@@ -328,14 +341,14 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
 try {
     $bypassAuth = false;
-    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session' || $action === 'get_cloud_backups' || $action === 'version' || $action === 'download_cloud_backup' || $action === 'create_manual_backup' || $action === 'restore_cloud_backup' || $action === 'clear_cloud_backups') {
+    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session' || $action === 'get_cloud_backups' || $action === 'version' || $action === 'download_cloud_backup' || $action === 'create_manual_backup' || $action === 'restore_cloud_backup' || $action === 'clear_cloud_backups' || $action === 'heartbeat_locator') {
         $bypassAuth = true;
     }
 
@@ -1936,6 +1949,7 @@ try {
             $data = json_decode(file_get_contents('php://input'), true);
             $name = trim($data['locator_name'] ?? '');
             $operator = trim($data['scanned_by'] ?? '');
+            $deviceToken = trim($data['device_token'] ?? '');
             if ($name === '' || $operator === '') {
                 throw new Exception("Locator name and Operator name are required.");
             }
@@ -1952,6 +1966,7 @@ try {
             }
 
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+            ensureLocatorSessionColumns($db, $store);
 
             // Validate that store countsheets are initialized
             $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_locators'");
@@ -1968,19 +1983,30 @@ try {
             if ($loc['status'] === 'closed') {
                 throw new Exception("This locator is finished/closed and needs Host approval to reopen.");
             }
-            if ($loc['status'] === 'in_use' && strtolower(trim($loc['assigned_operator'])) !== strtolower($operator)) {
+
+            // Check active session lock (if claimed on another browser session within last 15 seconds)
+            $lastPing = !empty($loc['last_ping_at']) ? strtotime($loc['last_ping_at']) : 0;
+            $isPingActive = (time() - $lastPing) < 15;
+            $activeToken = $loc['active_device_token'] ?? '';
+
+            if ($loc['status'] === 'in_use' && !empty($activeToken) && !empty($deviceToken) && $activeToken !== $deviceToken && $isPingActive) {
+                $activeOp = !empty($loc['assigned_operator']) ? $loc['assigned_operator'] : 'another browser session';
+                throw new Exception("Locator '$name' is currently active in another browser session (Operator: {$activeOp}). Multiple concurrent browser windows for the same locator are disabled.");
+            }
+
+            if ($loc['status'] === 'in_use' && strtolower(trim($loc['assigned_operator'])) !== strtolower($operator) && $isPingActive) {
                 throw new Exception("This locator is already claimed by operator: " . $loc['assigned_operator']);
             }
 
             // Check if this operator name is already claimed/active in ANY OTHER locator
-            $sqlCheckOp = "SELECT locator_name FROM `{$store}_locators` WHERE status = 'in_use' AND LOWER(TRIM(assigned_operator)) = ? AND LOWER(TRIM(locator_name)) != ?";
+            $sqlCheckOp = "SELECT locator_name FROM `{$store}_locators` WHERE status = 'in_use' AND LOWER(TRIM(assigned_operator)) = ? AND LOWER(TRIM(locator_name)) != ? AND TIMESTAMPDIFF(SECOND, last_ping_at, NOW()) < 15";
             $checkOpRows = $db->query($sqlCheckOp, [strtolower($operator), strtolower($name)]);
             if (!empty($checkOpRows)) {
                 $otherLoc = $checkOpRows[0]['locator_name'];
                 throw new Exception("Operator name '$operator' is already active in another locator: '$otherLoc'.");
             }
 
-            $db->execute("UPDATE `{$store}_locators` SET status = 'in_use', assigned_operator = ?, synced = 0 WHERE locator_name = ?", [$operator, $name]);
+            $db->execute("UPDATE `{$store}_locators` SET status = 'in_use', assigned_operator = ?, active_device_token = ?, last_ping_at = NOW(), synced = 0 WHERE locator_name = ?", [$operator, $deviceToken, $name]);
 
             // Query current scanned count (total scans count) for this locator
             $countRows = $db->query("SELECT COUNT(*) as count FROM `{$store}_countsheet` WHERE SlotNo = ?", [$name]);
@@ -1991,6 +2017,52 @@ try {
                 'message' => "Locator '$name' claimed successfully!",
                 'scanned_count' => $scanned_count
             ]);
+            break;
+
+        case 'heartbeat_locator':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $locatorName = trim($data['locator_name'] ?? '');
+            $deviceToken = trim($data['device_token'] ?? '');
+            $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
+
+            if (empty($storeCode) || empty($locatorName) || empty($deviceToken)) {
+                sendResponse(['status' => 'success']);
+                break;
+            }
+
+            $db = new OWI_DB();
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+            ensureLocatorSessionColumns($db, $store);
+
+            $locRows = $db->query("SELECT active_device_token, status FROM `{$store}_locators` WHERE locator_name = ?", [$locatorName]);
+            if (!empty($locRows)) {
+                $activeToken = $locRows[0]['active_device_token'] ?? '';
+                if (!empty($activeToken) && $activeToken !== $deviceToken) {
+                    sendResponse([
+                        'status' => 'session_conflict',
+                        'message' => 'Your scanning session was opened or taken over in another browser window.'
+                    ]);
+                    break;
+                }
+                $db->execute("UPDATE `{$store}_locators` SET last_ping_at = NOW() WHERE locator_name = ?", [$locatorName]);
+            }
+            sendResponse(['status' => 'success']);
+            break;
+
+        case 'release_session':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!$data) $data = $_POST;
+            $locatorName = trim($data['locator_name'] ?? '');
+            $deviceToken = trim($data['device_token'] ?? '');
+            $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
+
+            if (!empty($storeCode) && !empty($locatorName)) {
+                $db = new OWI_DB();
+                $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+                ensureLocatorSessionColumns($db, $store);
+                $db->execute("UPDATE `{$store}_locators` SET active_device_token = NULL, last_ping_at = NULL WHERE locator_name = ? AND (active_device_token = ? OR active_device_token IS NULL)", [$locatorName, $deviceToken]);
+            }
+            sendResponse(['status' => 'success', 'message' => 'Session released successfully.']);
             break;
 
         case 'close_locator':
