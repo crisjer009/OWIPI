@@ -328,14 +328,14 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
 try {
     $bypassAuth = false;
-    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session') {
+    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session' || $action === 'get_cloud_backups' || $action === 'version' || $action === 'download_cloud_backup' || $action === 'create_manual_backup' || $action === 'restore_cloud_backup') {
         $bypassAuth = true;
     }
 
