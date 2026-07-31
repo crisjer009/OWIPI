@@ -128,13 +128,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $activeTimeout = 3 * 60; // 3 minutes of inactivity timeout
 
                     $isSessionActive = !empty($existingToken) && ($lastActive > 0) && ((time() - $lastActive) < $activeTimeout);
-                    $isSameIP = !empty($existingIP) && ($existingIP === $clientIP);
+                    $isMySession = isset($_SESSION['session_token']) && ($_SESSION['session_token'] === $existingToken);
 
-                    if ($isSessionActive && !$isSameIP) {
-                        // Account is active at ANOTHER location/device -> Access Denied! No force override allowed.
-                        $error = '⚠️ This account is currently logged in at another location/device. Access denied.';
+                    if ($isSessionActive && !$isMySession) {
+                        // Account is active in another browser window -> Access Denied! Protect primary active host session from being disconnected.
+                        $error = '⚠️ Account "' . htmlspecialchars($username) . '" is currently active in another browser window/device. The primary active host session cannot be disconnected.';
                     } else {
-                        // Same IP re-authenticating (tab closed/rebooted) OR session expired -> Allow login & re-attach session
+                        // Session expired OR it is the same browser session re-authenticating -> Allow login & re-attach session
                         $token = md5(uniqid(rand(), true));
                         $now = time();
                         $db->execute("UPDATE users SET session_token = ?, last_activity = ?, login_ip = ? WHERE id = ?", [$token, $now, $clientIP, $user['id']]);
