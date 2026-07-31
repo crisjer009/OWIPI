@@ -3653,14 +3653,15 @@ function handleReceiveSync()
 function verifySyncToken()
 {
     $rawInput = json_decode(file_get_contents('php://input'), true);
-    $secretToken = $rawInput['secret_token'] ?? ($_GET['secret_token'] ?? '');
+    $secretToken = trim($rawInput['secret_token'] ?? ($_GET['secret_token'] ?? ($_POST['secret_token'] ?? '')));
 
     $config = loadConfig();
-    $expectedToken = $config['sync_secret_token'] ?? '';
+    $expectedToken = trim($config['sync_secret_token'] ?? '');
 
     if (!empty($expectedToken) && $secretToken !== $expectedToken) {
         http_response_code(401);
-        sendResponse(['status' => 'error', 'message' => 'Unauthorized sync token.']);
+        $cloudHint = !empty($expectedToken) ? " Expected token: '$expectedToken'." : " No token set on cloud.";
+        sendResponse(['status' => 'error', 'message' => "Unauthorized sync token. Provided token does not match cloud secret token.$cloudHint"]);
         exit;
     }
 }
