@@ -2068,7 +2068,29 @@ $hasActiveStores = !empty($existingStoresList);
                 const payload = new Blob([JSON.stringify({ locator_name: savedLoc, device_token: tabDeviceToken })], { type: 'application/json' });
                 navigator.sendBeacon('api.php?action=release_session', payload);
             }
+            if (typeof storeCode !== 'undefined' && storeCode) {
+                const payloadStore = new Blob([JSON.stringify({ store_code: storeCode, device_token: tabDeviceToken })], { type: 'application/json' });
+                navigator.sendBeacon('api.php?action=release_store_host', payloadStore);
+            }
         });
+
+        function checkStoreHostLock() {
+            if (typeof storeCode === 'undefined' || !storeCode) return;
+            fetch('api.php?action=heartbeat_store_host', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ store_code: storeCode, device_token: tabDeviceToken })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.status === 'store_locked') {
+                        customAlert(data.message, "Store Session Conflict", () => {
+                            window.location.href = 'index.php';
+                        });
+                    }
+                })
+                .catch(err => console.warn("Host store lock check error:", err));
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             try {
@@ -2127,6 +2149,10 @@ $hasActiveStores = !empty($existingStoresList);
                     // Load host locators panel
                     loadHostLocators();
                     setInterval(loadHostLocators, 3000);
+
+                    // Poll store host lock to prevent opening multiple scan.php host windows for same store
+                    checkStoreHostLock();
+                    setInterval(checkStoreHostLock, 3000);
                 } else {
                     // On Mobile (Scanner Mode)
                     document.body.style.overflow = 'auto';

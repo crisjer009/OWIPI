@@ -2482,6 +2482,40 @@ if ($driverLoaded && $dbStatus === 'connected') {
         const scanUrl = "<?= $scanUrl ?>";
         let autoPollInterval = null;
 
+        let tabDeviceToken = sessionStorage.getItem('owipi_tab_token');
+        if (!tabDeviceToken) {
+            tabDeviceToken = 'token_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            sessionStorage.setItem('owipi_tab_token', tabDeviceToken);
+        }
+
+        window.addEventListener('beforeunload', function () {
+            const currentStore = <?= json_encode($_SESSION['store_code'] ?? '') ?>;
+            if (currentStore) {
+                const payload = new Blob([JSON.stringify({ store_code: currentStore, device_token: tabDeviceToken })], { type: 'application/json' });
+                navigator.sendBeacon('api.php?action=release_store_host', payload);
+            }
+        });
+
+        function checkStoreHostLock() {
+            const currentStore = <?= json_encode($_SESSION['store_code'] ?? '') ?>;
+            if (!currentStore) return;
+
+            fetch('api.php?action=heartbeat_store_host', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ store_code: currentStore, device_token: tabDeviceToken })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.status === 'store_locked') {
+                        showCustomAlert(data.message, "Store Session Conflict", "OK", () => {
+                            window.location.href = 'index.php';
+                        });
+                    }
+                })
+                .catch(err => console.warn("Store lock check failed: ", err));
+        }
+
         // Generate QR code for cellular connection
         window.addEventListener('DOMContentLoaded', () => {
             const qrContainer = document.getElementById("qrcode");
@@ -2502,6 +2536,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             // Load products list
             loadProducts();
+
+            // Heartbeat check for single store host session lock
+            checkStoreHostLock();
+            setInterval(checkStoreHostLock, 3000);
         });
 
         // Switch Views (tabs)

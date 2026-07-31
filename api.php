@@ -239,6 +239,16 @@ function ensureLocatorSessionColumns($db, $storeCode)
     } catch (Exception $e) {}
 }
 
+function ensureStoresHostLockColumns($db)
+{
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN host_session_token VARCHAR(64) NULL");
+    } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN host_last_ping DATETIME NULL");
+    } catch (Exception $e) {}
+}
+
 // Helper function to format product description by appending Attr and Size if not already present
 function formatProductDescription($descr, $attr, $size)
 {
@@ -341,14 +351,14 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
 try {
     $bypassAuth = false;
-    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session' || $action === 'get_cloud_backups' || $action === 'version' || $action === 'download_cloud_backup' || $action === 'create_manual_backup' || $action === 'restore_cloud_backup' || $action === 'clear_cloud_backups' || $action === 'heartbeat_locator') {
+    if ($action === 'get_cloud_stores' || $action === 'get_cloud_store_details' || $action === 'get_cloud_products' || $action === 'receive_sync' || $action === 'submit_sync_request' || $action === 'release_session' || $action === 'get_cloud_backups' || $action === 'version' || $action === 'download_cloud_backup' || $action === 'create_manual_backup' || $action === 'restore_cloud_backup' || $action === 'clear_cloud_backups' || $action === 'heartbeat_locator' || $action === 'heartbeat_store_host' || $action === 'release_store_host') {
         $bypassAuth = true;
     }
 
@@ -2063,6 +2073,58 @@ try {
                 $db->execute("UPDATE `{$store}_locators` SET active_device_token = NULL, last_ping_at = NULL WHERE locator_name = ? AND (active_device_token = ? OR active_device_token IS NULL)", [$locatorName, $deviceToken]);
             }
             sendResponse(['status' => 'success', 'message' => 'Session released successfully.']);
+            break;
+
+        case 'heartbeat_store_host':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!$data) $data = $_POST;
+            $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
+            $deviceToken = trim($data['device_token'] ?? '');
+
+            if (empty($storeCode) || empty($deviceToken)) {
+                sendResponse(['status' => 'success']);
+                break;
+            }
+
+            $db = new OWI_DB();
+            ensureStoresHostLockColumns($db);
+
+            $cleanStore = strtoupper(trim($storeCode));
+            $storeRows = $db->query("SELECT host_session_token, TIMESTAMPDIFF(SECOND, host_last_ping, NOW()) as ping_diff FROM stores WHERE UPPER(store_code) = ?", [$cleanStore]);
+
+            if (!empty($storeRows)) {
+                $activeToken = $storeRows[0]['host_session_token'] ?? '';
+                $pingDiff = isset($storeRows[0]['ping_diff']) ? (int)$storeRows[0]['ping_diff'] : 999;
+                $isLockActive = !empty($activeToken) && ($pingDiff < 10);
+
+                if ($isLockActive && $activeToken !== $deviceToken) {
+                    sendResponse([
+                        'status' => 'store_locked',
+                        'message' => "Store session '" . $cleanStore . "' is currently active in another browser tab/window. Multiple host windows for the same store session are disabled."
+                    ]);
+                    break;
+                }
+
+                // Refresh/Acquire host lock
+                $db->execute("UPDATE stores SET host_session_token = ?, host_last_ping = NOW() WHERE UPPER(store_code) = ?", [$deviceToken, $cleanStore]);
+            }
+
+            sendResponse(['status' => 'success']);
+            break;
+
+        case 'release_store_host':
+            $data = json_decode(file_get_contents('php://input'), true);
+            if (!$data) $data = $_POST;
+            $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
+            $deviceToken = trim($data['device_token'] ?? '');
+
+            if (!empty($storeCode)) {
+                $db = new OWI_DB();
+                ensureStoresHostLockColumns($db);
+                $cleanStore = strtoupper(trim($storeCode));
+                $db->execute("UPDATE stores SET host_session_token = NULL, host_last_ping = NULL WHERE UPPER(store_code) = ? AND (host_session_token = ? OR host_session_token IS NULL)", [$cleanStore, $deviceToken]);
+            }
+            sendResponse(['status' => 'success']);
             break;
 
         case 'close_locator':
