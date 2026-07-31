@@ -2638,7 +2638,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
         // Download & Import Entire Store Session from Cloud (Locators, Scans, Catalog, Creator)
         async function downloadEntireStoreFromCloud(storeCode) {
             if (!storeCode) {
-                storeCode = await showCustomPrompt("Enter the Store Code to download from Cloud (e.g. TES, PSP, LBS):", "Download Store Session from Cloud", "TES");
+                storeCode = await showCustomPrompt("Enter the Store Code to download from Cloud (e.g. KQC, TES, PSP, LBS):", "KQC", "Download Store Session from Cloud");
             }
             if (!storeCode || !storeCode.trim()) return;
 
@@ -2656,11 +2656,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode)}`)
                 .then(res => res.json())
-                .then(data => {
+                .then(async data => {
                     if (data.status === 'success') {
-                        showCustomAlert(data.message, "Store Import Successful", () => {
-                            window.location.reload();
-                        });
+                        await showCustomAlert(data.message, "Store Import Successful", "OK");
+                        window.location.reload();
                     } else {
                         showCustomAlert("Download failed: " + data.message, "Import Error");
                     }
@@ -3563,7 +3562,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
             });
         }
 
-        function showCustomAlert(message, title = "Notice", btnText = "OK") {
+        function showCustomAlert(message, title = "Notice", btnText = "OK", callback = null) {
+            if (typeof btnText === 'function') {
+                callback = btnText;
+                btnText = "OK";
+            }
             return new Promise((resolve) => {
                 const overlay = document.getElementById('custom-dialog-overlay');
                 const titleEl = document.getElementById('custom-dialog-title');
@@ -3573,13 +3576,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
                 if (!overlay || !titleEl || !messageEl || !btnPrimary) {
                     alert(message);
+                    if (callback) callback();
                     resolve();
                     return;
                 }
 
                 titleEl.innerHTML = `<span style="font-size:1.2rem;">ℹ️</span> ${title}`;
                 messageEl.innerText = message;
-                btnPrimary.innerText = btnText;
+                btnPrimary.innerText = typeof btnText === 'string' ? btnText : "OK";
                 if (btnSecondary) btnSecondary.style.display = 'none';
 
                 overlay.classList.add('active');
@@ -3589,6 +3593,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     btnPrimary.onclick = null;
                     if (btnSecondary) btnSecondary.onclick = null;
                     document.removeEventListener('keydown', keyHandler);
+                    if (callback) callback();
                 };
 
                 const keyHandler = (e) => {
