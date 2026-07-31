@@ -2714,6 +2714,15 @@ try {
             ]);
             break;
 
+        case 'version':
+            sendResponse([
+                'status' => 'success',
+                'version' => '2.5.0-sql-script-backups',
+                'commit' => '71bd80e',
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            break;
+
         case 'get_cloud_backups':
             $db = new OWI_DB();
             $backups = [];
