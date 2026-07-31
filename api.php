@@ -161,21 +161,19 @@ function createCloudStoreBackup($db, $storeCode) {
     ];
     @file_put_contents($jsonFile, json_encode($payload, JSON_PRETTY_PRINT));
 
-    // 3. Create SQL snapshot tables on Cloud before overwriting
+    // 3. Automatically drop legacy _backup_ tables to keep MySQL database completely clean
     try {
-        $checkLoc = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
-        if (!empty($checkLoc)) {
-            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_locators_{$ts}` AS SELECT * FROM `{$clean}_locators`");
+        $legacyTables = $db->query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME LIKE '_backup_%'");
+        foreach ($legacyTables as $lt) {
+            $tName = $lt['TABLE_NAME'] ?? (array_values($lt)[0] ?? '');
+            if (!empty($tName) && strpos($tName, '_backup_') === 0) {
+                try {
+                    $db->execute("DROP TABLE IF EXISTS `{$tName}`");
+                } catch (Exception $eD) {
+                }
+            }
         }
-    } catch (Exception $e1) {
-    }
-
-    try {
-        $checkCs = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
-        if (!empty($checkCs)) {
-            $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_countsheet_{$ts}` AS SELECT * FROM `{$clean}_countsheet`");
-        }
-    } catch (Exception $e2) {
+    } catch (Exception $eDrop) {
     }
 
     // 4. Register entry in cloud_backups_log
@@ -2735,67 +2733,45 @@ try {
             } catch (Exception $eL) {
             }
 
-            // 2. Scan MySQL database for any unlogged snapshot tables matching _backup_%
+            // 2. Scan backups/ directory for .SQL Script files
             try {
-                $tables = [];
-                try {
-                    $tables = $db->query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME LIKE '_backup_%_countsheet_%'");
-                } catch (Exception $eInf) {
-                }
+                $backupDir = __DIR__ . '/backups';
+                if (is_dir($backupDir)) {
+                    $sqlFiles = glob($backupDir . "/backup_*.sql");
+                    foreach ($sqlFiles as $file) {
+                        $basename = basename($file);
+                        if (preg_match('/^backup_(.+?)_(\d{8}_\d{6})\.sql$/', $basename, $matches)) {
+                            $storeCode = strtoupper($matches[1]);
+                            $tsStr = $matches[2];
 
-                if (empty($tables)) {
-                    $rawTables = $db->query("SHOW TABLES LIKE '_backup_%_countsheet_%'");
-                    $tables = [];
-                    foreach ($rawTables as $rt) {
-                        $val = array_values($rt)[0] ?? null;
-                        if ($val) $tables[] = ['TABLE_NAME' => $val];
-                    }
-                }
-
-                foreach ($tables as $tRow) {
-                    $tableName = $tRow['TABLE_NAME'] ?? (array_values($tRow)[0] ?? '');
-                    if (empty($tableName)) continue;
-
-                    if (preg_match('/^_backup_(.+?)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
-                        $storeCode = strtoupper($matches[1]);
-                        $tsStr = $matches[2];
-
-                        $alreadyInList = false;
-                        foreach ($backups as $b) {
-                            if ($b['id'] === $tableName) {
-                                $alreadyInList = true;
-                                break;
+                            $alreadyInList = false;
+                            foreach ($backups as $b) {
+                                if ($b['id'] === $basename) {
+                                    $alreadyInList = true;
+                                    break;
+                                }
                             }
+                            if ($alreadyInList) continue;
+
+                            $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
+                            $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
+
+                            $content = file_get_contents($file);
+                            $scansCount = (int) preg_match_all('/INSERT INTO `[^`]+_countsheet`/', $content, $m1);
+                            $locsCount = (int) preg_match_all('/INSERT INTO `[^`]+_locators`/', $content, $m2);
+
+                            $backups[] = [
+                                'id' => $basename,
+                                'type' => 'sql_script',
+                                'store_code' => $storeCode,
+                                'created_at' => $formattedDate,
+                                'scans_count' => $scansCount,
+                                'locators_count' => $locsCount
+                            ];
                         }
-                        if ($alreadyInList) continue;
-
-                        $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
-                        $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
-
-                        $scansCount = 0;
-                        try {
-                            $scansCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$tableName}`")[0]['c'] ?? 0);
-                        } catch (Exception $eC) {
-                        }
-
-                        $locsCount = 0;
-                        $locTable = "_backup_" . strtolower($storeCode) . "_locators_" . $tsStr;
-                        try {
-                            $locsCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$locTable}`")[0]['c'] ?? 0);
-                        } catch (Exception $eLoc) {
-                        }
-
-                        $backups[] = [
-                            'id' => $tableName,
-                            'type' => 'mysql_table',
-                            'store_code' => $storeCode,
-                            'created_at' => $formattedDate,
-                            'scans_count' => $scansCount,
-                            'locators_count' => $locsCount
-                        ];
                     }
                 }
-            } catch (Exception $eT) {
+            } catch (Exception $eSqlF) {
             }
 
             // 3. Scan backups/ directory for JSON files
@@ -2837,47 +2813,6 @@ try {
                     }
                 }
             } catch (Exception $eF) {
-            }
-
-            // 4. Scan backups/ directory for .SQL Script files
-            try {
-                $backupDir = __DIR__ . '/backups';
-                if (is_dir($backupDir)) {
-                    $sqlFiles = glob($backupDir . "/backup_*.sql");
-                    foreach ($sqlFiles as $file) {
-                        $basename = basename($file);
-                        if (preg_match('/^backup_(.+?)_(\d{8}_\d{6})\.sql$/', $basename, $matches)) {
-                            $storeCode = strtoupper($matches[1]);
-                            $tsStr = $matches[2];
-
-                            $alreadyInList = false;
-                            foreach ($backups as $b) {
-                                if ($b['id'] === $basename) {
-                                    $alreadyInList = true;
-                                    break;
-                                }
-                            }
-                            if ($alreadyInList) continue;
-
-                            $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
-                            $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
-
-                            $content = file_get_contents($file);
-                            $scansCount = (int) preg_match_all('/INSERT INTO `[^`]+_countsheet`/', $content, $m1);
-                            $locsCount = (int) preg_match_all('/INSERT INTO `[^`]+_locators`/', $content, $m2);
-
-                            $backups[] = [
-                                'id' => $basename,
-                                'type' => 'sql_script',
-                                'store_code' => $storeCode,
-                                'created_at' => $formattedDate,
-                                'scans_count' => $scansCount,
-                                'locators_count' => $locsCount
-                            ];
-                        }
-                    }
-                }
-            } catch (Exception $eSqlF) {
             }
 
             // Safely sort backups by created_at descending
