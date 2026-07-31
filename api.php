@@ -3479,6 +3479,10 @@ function handleReceiveSync()
 
         $storeDetails = $input['store_details'] ?? [];
         $createdBy = $storeDetails['created_by'] ?? null;
+
+        // Automatically create backup on Cloud before overwriting store tables
+        createCloudStoreBackup($db, $storeCode);
+
         $db->createStoreTables($storeCode, $createdBy);
 
         // Sync the closed status from the local payload to the cloud
