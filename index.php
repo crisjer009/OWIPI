@@ -1781,11 +1781,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
             <?php endif; ?>
 
-            <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>;">
+            <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h1>Store Inventory Progress</h1>
-                    <div class="header-desc">Real-time locator completion metrics across all your active store
-                        databases.</div>
+                    <div class="header-desc">Real-time locator completion metrics across all your active store databases.</div>
+                </div>
+                <div>
+                    <button onclick="downloadEntireStoreFromCloud()" class="btn" style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                        ☁️ Download Store Session from Cloud
+                    </button>
                 </div>
             </header>
 
@@ -1901,7 +1905,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <span style="font-size: 0.8rem; color: var(--text-secondary);">
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
-                                <div style="display: flex; gap: 6px; align-items: center;">
+                                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                    <button onclick="downloadEntireStoreFromCloud('<?= htmlspecialchars($s['store_code']) ?>')"
+                                        class="btn btn-secondary btn-sm"
+                                        style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #10b981; color: #34d399; background: rgba(16, 185, 129, 0.1); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;"
+                                        title="Import/Sync entire store session (locators, scans, catalog) from Cloud to Local">
+                                        ☁️ Pull Cloud Session
+                                    </button>
                                     <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin']) && ($s['status'] === 'Finished' || $s['status'] === 'Closed')): ?>
                                         <button onclick="reopenStoreSession('<?= htmlspecialchars($s['store_code']) ?>')"
                                             class="btn btn-secondary btn-sm"
@@ -2623,6 +2633,45 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => {
                     showToast('Failed to download items: ' + err, 'error');
                 });
+        }
+
+        // Download & Import Entire Store Session from Cloud (Locators, Scans, Catalog, Creator)
+        async function downloadEntireStoreFromCloud(storeCode) {
+            if (!storeCode) {
+                storeCode = await showCustomPrompt("Enter the Store Code to download from Cloud (e.g. TES, PSP, LBS):", "Download Store Session from Cloud", "TES");
+            }
+            if (!storeCode || !storeCode.trim()) return;
+
+            storeCode = storeCode.trim().toUpperCase();
+
+            const ok = await showCustomConfirm(
+                `Are you sure you want to download and import the ENTIRE store session for '${storeCode}' from Cloud to Local?\n\nThis will import the store configuration, locators, all scan records, catalog products, and store ownership.`,
+                "Import Entire Store Session from Cloud",
+                "Yes, Download & Import",
+                "Cancel"
+            );
+            if (!ok) return;
+
+            showToast(`Downloading store session '${storeCode}' from Cloud...`, 'info');
+
+            fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showCustomAlert(data.message, "Store Import Successful", () => {
+                            window.location.reload();
+                        });
+                    } else {
+                        showCustomAlert("Download failed: " + data.message, "Import Error");
+                    }
+                })
+                .catch(err => {
+                    showCustomAlert("Request failed: " + err, "Network Error");
+                });
+        }
+
+        function openCloudStoreDownloader() {
+            downloadEntireStoreFromCloud();
         }
 
         // Sync User Accounts from Cloud
