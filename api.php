@@ -20,6 +20,9 @@ set_exception_handler(function ($exception) {
 });
 
 header("Content-Type: application/json");
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -2729,14 +2732,33 @@ try {
                 $rows = $db->query("SELECT * FROM cloud_backups_log ORDER BY id DESC");
                 if (!empty($rows)) {
                     foreach ($rows as $r) {
-                        $backups[] = [
-                            'id' => $r['backup_id'],
-                            'type' => $r['backup_type'],
-                            'store_code' => strtoupper($r['store_code']),
-                            'scans_count' => (int) $r['scans_count'],
-                            'locators_count' => (int) $r['locators_count'],
-                            'created_at' => $r['created_at']
-                        ];
+                        $backupId = '';
+                        $type = 'sql_script';
+                        $storeCode = '';
+                        $scansCount = 0;
+                        $locsCount = 0;
+                        $createdAt = '';
+
+                        foreach ($r as $k => $v) {
+                            $lk = strtolower($k);
+                            if ($lk === 'backup_id') $backupId = $v;
+                            elseif ($lk === 'backup_type' || $lk === 'type') $type = $v;
+                            elseif ($lk === 'store_code') $storeCode = strtoupper($v);
+                            elseif ($lk === 'scans_count') $scansCount = (int) $v;
+                            elseif ($lk === 'locators_count') $locsCount = (int) $v;
+                            elseif ($lk === 'created_at') $createdAt = $v;
+                        }
+
+                        if (!empty($backupId)) {
+                            $backups[] = [
+                                'id' => $backupId,
+                                'type' => $type,
+                                'store_code' => $storeCode,
+                                'scans_count' => $scansCount,
+                                'locators_count' => $locsCount,
+                                'created_at' => $createdAt
+                            ];
+                        }
                     }
                 }
             } catch (Exception $eL) {

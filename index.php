@@ -1231,7 +1231,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             listEl.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">Loading cloud backups...</p>';
 
-            fetch('api.php?action=get_cloud_backups')
+            fetch('api.php?action=get_cloud_backups&_t=' + Date.now())
                 .then(res => res.text())
                 .then(text => {
                     let data;
