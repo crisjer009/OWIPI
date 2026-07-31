@@ -1046,38 +1046,46 @@ try {
                 throw new Exception("Store countsheet table does not exist.");
             }
 
-            // Query items with master_qty, scanned_qty, and variance
+            // Query items with master_qty, scanned_qty, and variance matching by UPC or SKU
             $sql = "
                 SELECT 
-                    COALESCE(i.UPC, c.UPC) as upc, 
-                    COALESCE(i.SKU, c.SKU) as sku, 
-                    COALESCE(NULLIF(i.Descr, ''), c.Descr, 'Item Not Found') as description, 
+                    COALESCE(NULLIF(i.UPC, ''), i.SKU, c.item_key) as upc, 
+                    COALESCE(NULLIF(i.SKU, ''), i.UPC, c.item_key) as sku, 
+                    COALESCE(NULLIF(i.Descr, ''), c.description, 'Item Not Found') as description, 
                     COALESCE(i.Qty, 0.00) as master_qty,
                     COALESCE(c.scanned_qty, 0.00) as scanned_qty,
                     (COALESCE(c.scanned_qty, 0.00) - COALESCE(i.Qty, 0.00)) as variance
                 FROM `{$store}_items` i
                 LEFT JOIN (
-                    SELECT UPC, SKU, Descr, SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
-                    FROM `{$store}_countsheet` 
-                    GROUP BY UPC
-                ) c ON c.UPC = i.UPC
+                    SELECT 
+                        COALESCE(NULLIF(UPC, ''), SKU) as item_key,
+                        MAX(Descr) as description,
+                        SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                    FROM `{$store}_countsheet`
+                    WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
+                    GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
+                ) c ON c.item_key = COALESCE(NULLIF(i.UPC, ''), i.SKU)
 
                 UNION
 
                 SELECT 
-                    c.UPC as upc, 
-                    c.SKU as sku, 
-                    c.Descr as description, 
+                    c.item_key as upc, 
+                    c.item_key as sku, 
+                    c.description as description, 
                     0.00 as master_qty,
                     c.scanned_qty as scanned_qty,
                     c.scanned_qty as variance
                 FROM (
-                    SELECT UPC, SKU, Descr, SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
-                    FROM `{$store}_countsheet` 
-                    GROUP BY UPC
+                    SELECT 
+                        COALESCE(NULLIF(UPC, ''), SKU) as item_key,
+                        MAX(Descr) as description,
+                        SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                    FROM `{$store}_countsheet`
+                    WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
+                    GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
                 ) c
-                LEFT JOIN `{$store}_items` i ON i.UPC = c.UPC
-                WHERE i.UPC IS NULL
+                LEFT JOIN `{$store}_items` i ON c.item_key = COALESCE(NULLIF(i.UPC, ''), i.SKU)
+                WHERE i.UPC IS NULL AND i.SKU IS NULL
                 ORDER BY upc ASC
             ";
             
