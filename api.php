@@ -2739,8 +2739,9 @@ try {
                         $locsCount = 0;
                         $createdAt = '';
 
+                        // 1. Try named keys (case-insensitive)
                         foreach ($r as $k => $v) {
-                            $lk = strtolower($k);
+                            $lk = strtolower((string)$k);
                             if ($lk === 'backup_id') $backupId = $v;
                             elseif ($lk === 'backup_type' || $lk === 'type') $type = $v;
                             elseif ($lk === 'store_code') $storeCode = strtoupper($v);
@@ -2749,10 +2750,20 @@ try {
                             elseif ($lk === 'created_at') $createdAt = $v;
                         }
 
+                        // 2. Fallback to numeric column positions if named keys were missing
+                        if (empty($backupId) && isset($r[1])) {
+                            $backupId = $r[1];
+                            $storeCode = strtoupper($r[2] ?? '');
+                            $type = $r[3] ?? 'sql_script';
+                            $scansCount = (int) ($r[4] ?? 0);
+                            $locsCount = (int) ($r[5] ?? 0);
+                            $createdAt = $r[6] ?? '';
+                        }
+
                         if (!empty($backupId)) {
                             $backups[] = [
                                 'id' => $backupId,
-                                'type' => $type,
+                                'type' => !empty($type) ? $type : 'sql_script',
                                 'store_code' => $storeCode,
                                 'scans_count' => $scansCount,
                                 'locators_count' => $locsCount,
