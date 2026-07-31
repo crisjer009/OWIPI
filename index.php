@@ -2499,6 +2499,33 @@ if ($driverLoaded && $dbStatus === 'connected') {
         let isStoreLockAlertShowing = false;
         let storeHostLockTimerIndex = null;
 
+        function showStoreConflictOverlay(storeName) {
+            window.close();
+            setTimeout(() => {
+                let overlay = document.getElementById('store-conflict-paused-overlay');
+                if (!overlay) {
+                    overlay = document.createElement('div');
+                    overlay.id = 'store-conflict-paused-overlay';
+                    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:#0b0f19; z-index:999999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding:20px; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;';
+                    overlay.innerHTML = `
+                        <div style="background:#161b22; border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:2.5rem; max-width:440px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.6); text-align:center; box-sizing:border-box;">
+                            <div style="font-size:3.2rem; margin-bottom:1rem; line-height:1;">⚠️</div>
+                            <h2 style="color:#ffffff; margin:0 0 0.75rem 0; font-size:1.4rem; font-weight:700;">Store Session Active in Another Tab</h2>
+                            <p style="color:#8b949e; font-size:0.92rem; line-height:1.6; margin-bottom:1.75rem;">
+                                Store session <strong style="color:#58a6ff;">'${storeName}'</strong> is already open and running in your primary browser tab. This duplicate tab has been paused.
+                            </p>
+                            <div style="display:flex; gap:10px; justify-content:center;">
+                                <button onclick="window.close()" class="btn" style="padding:10px 24px; border-radius:8px; font-weight:600; background:#238636; color:#ffffff; border:none; cursor:pointer; font-size:0.95rem;">Close Tab</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(overlay);
+                } else {
+                    overlay.style.display = 'flex';
+                }
+            }, 200);
+        }
+
         function checkStoreHostLock() {
             const currentStore = <?= json_encode($_SESSION['store_code'] ?? '') ?>;
             if (!currentStore || isStoreLockAlertShowing) return;
@@ -2515,8 +2542,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
 
                         showCustomAlert(data.message, "Store Session Conflict", "OK", () => {
-                            window.close();
-                            setTimeout(() => { window.location.href = 'about:blank'; }, 300);
+                            showStoreConflictOverlay(currentStore);
                         });
                     }
                 })
