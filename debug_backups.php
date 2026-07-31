@@ -134,7 +134,13 @@ if ($action === 'create_test_row' && $db) {
         $backupDir = __DIR__ . '/backups';
         echo "<div><strong>Directory Path:</strong> " . htmlspecialchars($backupDir) . "</div>";
         if (is_dir($backupDir)) {
-            echo "<div class='success'>✅ Directory '/backups' exists. Perms: " . substr(sprintf('%o', fileperms($backupDir)), -4) . "</div>";
+            $perms = substr(sprintf('%o', fileperms($backupDir)), -4);
+            $hasExec = (fileperms($backupDir) & 0111);
+            if (!$hasExec) {
+                echo "<div class='error'>❌ Directory permissions ($perms) are missing the execute (x) bit! Run <code>chmod 777 backups</code> on Cloud terminal to allow PHP to read directory contents.</div>";
+            } else {
+                echo "<div class='success'>✅ Directory '/backups' exists. Perms: $perms</div>";
+            }
             $sqlFiles = glob($backupDir . "/*.sql");
             $jsonFiles = glob($backupDir . "/*.json");
             $allFiles = array_merge($sqlFiles ? $sqlFiles : [], $jsonFiles ? $jsonFiles : []);
@@ -143,7 +149,11 @@ if ($action === 'create_test_row' && $db) {
             if (!empty($allFiles)) {
                 echo "<table><tr><th>Filename</th><th>Size (Bytes)</th><th>Last Modified</th></tr>";
                 foreach ($allFiles as $f) {
-                    echo "<tr><td>" . htmlspecialchars(basename($f)) . "</td><td>" . filesize($f) . "</td><td>" . date('Y-m-d H:i:s', filemtime($f)) . "</td></tr>";
+                    $sz = @filesize($f);
+                    $mtime = @filemtime($f);
+                    $szStr = ($sz !== false) ? $sz : "<span class='error'>Access Denied</span>";
+                    $mtStr = ($mtime !== false) ? date('Y-m-d H:i:s', $mtime) : "<span class='error'>Access Denied</span>";
+                    echo "<tr><td>" . htmlspecialchars(basename($f)) . "</td><td>{$szStr}</td><td>{$mtStr}</td></tr>";
                 }
                 echo "</table>";
             } else {

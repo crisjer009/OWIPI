@@ -145,6 +145,7 @@ function createCloudStoreBackup($db, $storeCode) {
     if (!is_dir($backupDir)) {
         @mkdir($backupDir, 0777, true);
     }
+    @chmod($backupDir, 0777);
 
     // 1. Generate executable .SQL Backup Script
     $sqlFile = $backupDir . "/backup_" . $clean . "_" . $ts . ".sql";
