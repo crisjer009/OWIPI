@@ -2718,7 +2718,7 @@ try {
                     $tableName = $tRow['TABLE_NAME'] ?? (array_values($tRow)[0] ?? '');
                     if (empty($tableName)) continue;
 
-                    if (preg_match('/^_backup_([a-zA-Z0-9_]+)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
+                    if (preg_match('/^_backup_(.+?)_countsheet_(\d{8}_\d{6})$/', $tableName, $matches)) {
                         $storeCode = strtoupper($matches[1]);
                         $tsStr = $matches[2];
 
@@ -2842,7 +2842,7 @@ try {
             $restoredScans = 0;
             $restoredLocs = 0;
 
-            if (strpos($backupId, '_backup_') === 0 && preg_match('/^_backup_([a-zA-Z0-9]+)_countsheet_(\d{8}_\d{6})$/', $backupId, $matches)) {
+            if (strpos($backupId, '_backup_') === 0 && preg_match('/^_backup_(.+?)_countsheet_(\d{8}_\d{6})$/', $backupId, $matches)) {
                 $storeCode = strtolower($matches[1]);
                 $tsStr = $matches[2];
                 $locTable = "_backup_{$storeCode}_locators_{$tsStr}";
