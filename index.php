@@ -2496,9 +2496,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
             }
         });
 
+        let isStoreLockAlertShowing = false;
+        let storeHostLockTimerIndex = null;
+
         function checkStoreHostLock() {
             const currentStore = <?= json_encode($_SESSION['store_code'] ?? '') ?>;
-            if (!currentStore) return;
+            if (!currentStore || isStoreLockAlertShowing) return;
 
             fetch('api.php?action=heartbeat_store_host', {
                 method: 'POST',
@@ -2507,9 +2510,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.status === 'store_locked') {
+                    if (data && data.status === 'store_locked' && !isStoreLockAlertShowing) {
+                        isStoreLockAlertShowing = true;
+                        if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
+
                         showCustomAlert(data.message, "Store Session Conflict", "OK", () => {
-                            window.location.href = 'index.php';
+                            fetch('api.php?action=logout_store')
+                                .then(() => {
+                                    window.location.href = 'index.php';
+                                })
+                                .catch(() => {
+                                    window.location.href = 'index.php';
+                                });
                         });
                     }
                 })
@@ -2539,7 +2551,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             // Heartbeat check for single store host session lock
             checkStoreHostLock();
-            setInterval(checkStoreHostLock, 3000);
+            storeHostLockTimerIndex = setInterval(checkStoreHostLock, 3000);
         });
 
         // Switch Views (tabs)

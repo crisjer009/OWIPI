@@ -2074,8 +2074,11 @@ $hasActiveStores = !empty($existingStoresList);
             }
         });
 
+        let isHostLockAlertShowing = false;
+        let storeHostLockTimer = null;
+
         function checkStoreHostLock() {
-            if (typeof storeCode === 'undefined' || !storeCode) return;
+            if (typeof storeCode === 'undefined' || !storeCode || isHostLockAlertShowing) return;
             fetch('api.php?action=heartbeat_store_host', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2083,9 +2086,18 @@ $hasActiveStores = !empty($existingStoresList);
             })
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.status === 'store_locked') {
+                    if (data && data.status === 'store_locked' && !isHostLockAlertShowing) {
+                        isHostLockAlertShowing = true;
+                        if (storeHostLockTimer) clearInterval(storeHostLockTimer);
+
                         customAlert(data.message, "Store Session Conflict", () => {
-                            window.location.href = 'index.php';
+                            fetch('api.php?action=logout_store')
+                                .then(() => {
+                                    window.location.href = 'index.php';
+                                })
+                                .catch(() => {
+                                    window.location.href = 'index.php';
+                                });
                         });
                     }
                 })
@@ -2152,7 +2164,7 @@ $hasActiveStores = !empty($existingStoresList);
 
                     // Poll store host lock to prevent opening multiple scan.php host windows for same store
                     checkStoreHostLock();
-                    setInterval(checkStoreHostLock, 3000);
+                    storeHostLockTimer = setInterval(checkStoreHostLock, 3000);
                 } else {
                     // On Mobile (Scanner Mode)
                     document.body.style.overflow = 'auto';
