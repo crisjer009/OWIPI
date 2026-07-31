@@ -2764,6 +2764,10 @@ try {
             // 1. Ensure log table exists and has all required columns
             ensureCloudBackupsLogTable($db);
             try {
+                $db->execute("DELETE FROM cloud_backups_log WHERE store_code LIKE '%MANUAL%' OR store_code LIKE '%SNAPSHOT%'");
+            } catch (Exception $eClean) {}
+
+            try {
                 $rows = $db->query("SELECT * FROM cloud_backups_log ORDER BY id DESC");
                 if (!empty($rows)) {
                     foreach ($rows as $r) {

@@ -1297,8 +1297,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
         async function triggerManualBackup() {
             let storeCode = await showCustomPrompt(
                 "Enter the Store Code to create an instant snapshot backup for:",
-                "Create Manual Backup Snapshot",
-                "<?= htmlspecialchars($_SESSION['store_code'] ?? 'TES') ?>"
+                "<?= htmlspecialchars($_SESSION['store_code'] ?? 'TES') ?>",
+                "Create Manual Backup Snapshot"
             );
             if (!storeCode) return;
             storeCode = storeCode.trim().toUpperCase();
