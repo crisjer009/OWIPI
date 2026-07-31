@@ -2091,15 +2091,8 @@ $hasActiveStores = !empty($existingStoresList);
                         if (storeHostLockTimer) clearInterval(storeHostLockTimer);
 
                         customAlert(data.message, "Store Session Conflict", () => {
-                            fetch('api.php?action=logout_store')
-                                .then(() => {
-                                    window.close();
-                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
-                                })
-                                .catch(() => {
-                                    window.close();
-                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
-                                });
+                            window.close();
+                            setTimeout(() => { window.location.href = 'about:blank'; }, 300);
                         });
                     }
                 })

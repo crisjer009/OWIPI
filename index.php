@@ -2515,15 +2515,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
 
                         showCustomAlert(data.message, "Store Session Conflict", "OK", () => {
-                            fetch('api.php?action=logout_store')
-                                .then(() => {
-                                    window.close();
-                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
-                                })
-                                .catch(() => {
-                                    window.close();
-                                    setTimeout(() => { window.location.href = 'about:blank'; }, 300);
-                                });
+                            window.close();
+                            setTimeout(() => { window.location.href = 'about:blank'; }, 300);
                         });
                     }
                 })
