@@ -1249,10 +1249,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <tbody>
                         `;
                         data.backups.forEach(b => {
-                            const typeBadge = b.type === 'mysql_table' 
-                                ? '<span class="badge" style="background: rgba(59,130,246,0.15); color:#60a5fa; font-weight:600;">MySQL Table</span>'
-                                : '<span class="badge" style="background: rgba(16,185,129,0.15); color:#34d399; font-weight:600;">JSON Snapshot File</span>';
-                            
+                            let typeBadge = '';
+                            let downloadBtn = '';
+                            if (b.type === 'sql_script') {
+                                typeBadge = '<span class="badge" style="background: rgba(168,85,247,0.15); color:#c084fc; font-weight:600;">Executable .SQL Script</span>';
+                                downloadBtn = `<a href="api.php?action=download_cloud_backup&file=${encodeURIComponent(b.id)}" target="_blank" class="btn btn-secondary" style="width: auto; font-size: 0.75rem; padding: 6px 12px; text-decoration: none; margin-right: 6px; background: rgba(16,185,129,0.15); color:#34d399; border:1px solid #10b981; font-weight:600; display:inline-block;">📥 Download .SQL Script</a>`;
+                            } else if (b.type === 'json_file') {
+                                typeBadge = '<span class="badge" style="background: rgba(16,185,129,0.15); color:#34d399; font-weight:600;">JSON Snapshot File</span>';
+                                downloadBtn = `<a href="api.php?action=download_cloud_backup&file=${encodeURIComponent(b.id)}" target="_blank" class="btn btn-secondary" style="width: auto; font-size: 0.75rem; padding: 6px 12px; text-decoration: none; margin-right: 6px; background: rgba(16,185,129,0.15); color:#34d399; border:1px solid #10b981; font-weight:600; display:inline-block;">📥 Download JSON</a>`;
+                            } else {
+                                typeBadge = '<span class="badge" style="background: rgba(59,130,246,0.15); color:#60a5fa; font-weight:600;">MySQL Table</span>';
+                            }
+
                             html += `
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
                                     <td style="padding: 0.75rem; font-weight: 700; color: var(--accent-color);">${b.store_code}</td>
@@ -1260,6 +1268,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     <td style="padding: 0.75rem;">${typeBadge}</td>
                                     <td style="padding: 0.75rem; color: #9ca3af;">${b.locators_count} Locators • ${b.scans_count} Scans</td>
                                     <td style="padding: 0.75rem; text-align: right;">
+                                        ${downloadBtn}
                                         <button type="button" onclick="restoreCloudBackup('${b.id}', '${b.store_code}', '${b.created_at}')" class="btn" style="background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid #ef4444; width: auto; font-size: 0.75rem; padding: 6px 14px; font-weight: 600; cursor: pointer;">🔄 Restore Backup Data</button>
                                     </td>
                                 </tr>

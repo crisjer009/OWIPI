@@ -90,13 +90,81 @@ function createCloudStoreBackup($db, $storeCode) {
 
     $locsCount = 0;
     $scansCount = 0;
+    $existingLocs = [];
+    $existingScans = [];
 
-    // 1. Create SQL snapshot tables on Cloud before overwriting
+    try {
+        $existingLocs = $db->query("SELECT * FROM `{$clean}_locators`");
+        $locsCount = count($existingLocs);
+    } catch (Exception $eL) {
+    }
+
+    try {
+        $existingScans = $db->query("SELECT * FROM `{$clean}_countsheet`");
+        $scansCount = count($existingScans);
+    } catch (Exception $eS) {
+    }
+
+    $backupDir = __DIR__ . '/backups';
+    if (!is_dir($backupDir)) {
+        @mkdir($backupDir, 0777, true);
+    }
+
+    // 1. Generate executable .SQL Backup Script
+    $sqlFile = $backupDir . "/backup_" . $clean . "_" . $ts . ".sql";
+    $sqlScript = "-- OWI Physical Inventory Backup Script\n";
+    $sqlScript .= "-- Store: " . strtoupper($clean) . "\n";
+    $sqlScript .= "-- Created: " . date('Y-m-d H:i:s') . "\n";
+    $sqlScript .= "-- Locators: {$locsCount} | Scans: {$scansCount}\n\n";
+
+    if (!empty($existingLocs)) {
+        $sqlScript .= "-- Locators Table Data\n";
+        $sqlScript .= "TRUNCATE TABLE `{$clean}_locators`;\n";
+        foreach ($existingLocs as $row) {
+            $cols = array_keys($row);
+            $colNames = implode('`, `', array_map('addslashes', $cols));
+            $vals = array_map(function ($v) {
+                if ($v === null) return "NULL";
+                return "'" . addslashes($v) . "'";
+            }, array_values($row));
+            $valStr = implode(', ', $vals);
+            $sqlScript .= "INSERT INTO `{$clean}_locators` (`{$colNames}`) VALUES ({$valStr});\n";
+        }
+        $sqlScript .= "\n";
+    }
+
+    if (!empty($existingScans)) {
+        $sqlScript .= "-- Countsheet Table Data\n";
+        $sqlScript .= "TRUNCATE TABLE `{$clean}_countsheet`;\n";
+        foreach ($existingScans as $row) {
+            $cols = array_keys($row);
+            $colNames = implode('`, `', array_map('addslashes', $cols));
+            $vals = array_map(function ($v) {
+                if ($v === null) return "NULL";
+                return "'" . addslashes($v) . "'";
+            }, array_values($row));
+            $valStr = implode(', ', $vals);
+            $sqlScript .= "INSERT INTO `{$clean}_countsheet` (`{$colNames}`) VALUES ({$valStr});\n";
+        }
+        $sqlScript .= "\n";
+    }
+
+    @file_put_contents($sqlFile, $sqlScript);
+
+    // 2. Export JSON backup snapshot file
+    $jsonFile = $backupDir . "/cloud_backup_" . $clean . "_" . $ts . ".json";
+    $payload = [
+        'store_code' => strtoupper($clean),
+        'backed_up_at' => date('Y-m-d H:i:s'),
+        'locators' => $existingLocs,
+        'scans' => $existingScans
+    ];
+    @file_put_contents($jsonFile, json_encode($payload, JSON_PRETTY_PRINT));
+
+    // 3. Create SQL snapshot tables on Cloud before overwriting
     try {
         $checkLoc = $db->query("SHOW TABLES LIKE '{$clean}_locators'");
         if (!empty($checkLoc)) {
-            $locs = $db->query("SELECT * FROM `{$clean}_locators`");
-            $locsCount = count($locs);
             $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_locators_{$ts}` AS SELECT * FROM `{$clean}_locators`");
         }
     } catch (Exception $e1) {
@@ -105,52 +173,22 @@ function createCloudStoreBackup($db, $storeCode) {
     try {
         $checkCs = $db->query("SHOW TABLES LIKE '{$clean}_countsheet'");
         if (!empty($checkCs)) {
-            $scans = $db->query("SELECT * FROM `{$clean}_countsheet`");
-            $scansCount = count($scans);
             $db->execute("CREATE TABLE IF NOT EXISTS `_backup_{$clean}_countsheet_{$ts}` AS SELECT * FROM `{$clean}_countsheet`");
         }
     } catch (Exception $e2) {
     }
 
-    // 2. Export JSON backup snapshot file on Cloud before overwriting
+    // 4. Register entry in cloud_backups_log
     try {
-        $backupDir = __DIR__ . '/backups';
-        if (!is_dir($backupDir)) {
-            @mkdir($backupDir, 0777, true);
-        }
-        $backupFile = $backupDir . "/cloud_backup_{$clean}_" . $ts . ".json";
-        $existingLocs = [];
-        $existingScans = [];
-        try {
-            $existingLocs = $db->query("SELECT * FROM `{$clean}_locators`");
-        } catch (Exception $eL) {
-        }
-        try {
-            $existingScans = $db->query("SELECT * FROM `{$clean}_countsheet`");
-        } catch (Exception $eS) {
-        }
-
-        $payload = [
-            'store_code' => strtoupper($clean),
-            'backed_up_at' => date('Y-m-d H:i:s'),
-            'locators' => $existingLocs,
-            'scans' => $existingScans
-        ];
-        @file_put_contents($backupFile, json_encode($payload, JSON_PRETTY_PRINT));
-    } catch (Exception $eJson) {
-    }
-
-    // 3. Register entry in cloud_backups_log
-    try {
-        $backupId = "_backup_{$clean}_countsheet_{$ts}";
+        $backupId = "backup_" . $clean . "_" . $ts . ".sql";
         $db->execute(
-            "INSERT INTO cloud_backups_log (backup_id, store_code, backup_type, scans_count, locators_count, created_at) VALUES (?, ?, 'mysql_table', ?, ?, NOW())",
+            "INSERT INTO cloud_backups_log (backup_id, store_code, backup_type, scans_count, locators_count, created_at) VALUES (?, ?, 'sql_script', ?, ?, NOW())",
             [$backupId, strtoupper($clean), $scansCount, $locsCount]
         );
     } catch (Exception $eLog) {
     }
 
-    logAudit('Cloud Pre-Sync Backup', "Created automatic backup snapshot for store '" . strtoupper($clean) . "' prior to cloud overwrite.");
+    logAudit('Cloud Pre-Sync Backup', "Created SQL backup script for store '" . strtoupper($clean) . "' prior to cloud overwrite.");
 }
 
 // Helper function to format product description by appending Attr and Size if not already present
@@ -2801,6 +2839,47 @@ try {
             } catch (Exception $eF) {
             }
 
+            // 4. Scan backups/ directory for .SQL Script files
+            try {
+                $backupDir = __DIR__ . '/backups';
+                if (is_dir($backupDir)) {
+                    $sqlFiles = glob($backupDir . "/backup_*.sql");
+                    foreach ($sqlFiles as $file) {
+                        $basename = basename($file);
+                        if (preg_match('/^backup_(.+?)_(\d{8}_\d{6})\.sql$/', $basename, $matches)) {
+                            $storeCode = strtoupper($matches[1]);
+                            $tsStr = $matches[2];
+
+                            $alreadyInList = false;
+                            foreach ($backups as $b) {
+                                if ($b['id'] === $basename) {
+                                    $alreadyInList = true;
+                                    break;
+                                }
+                            }
+                            if ($alreadyInList) continue;
+
+                            $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
+                            $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
+
+                            $content = file_get_contents($file);
+                            $scansCount = (int) preg_match_all('/INSERT INTO `[^`]+_countsheet`/', $content, $m1);
+                            $locsCount = (int) preg_match_all('/INSERT INTO `[^`]+_locators`/', $content, $m2);
+
+                            $backups[] = [
+                                'id' => $basename,
+                                'type' => 'sql_script',
+                                'store_code' => $storeCode,
+                                'created_at' => $formattedDate,
+                                'scans_count' => $scansCount,
+                                'locators_count' => $locsCount
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $eSqlF) {
+            }
+
             // Safely sort backups by created_at descending
             usort($backups, function ($a, $b) {
                 return strcmp($b['created_at'] ?? '', $a['created_at'] ?? '');
@@ -2811,6 +2890,25 @@ try {
                 'backups' => $backups
             ]);
             break;
+
+        case 'download_cloud_backup':
+            $file = trim($_GET['file'] ?? ($_POST['file'] ?? ''));
+            $filename = basename($file);
+            $filePath = __DIR__ . '/backups/' . $filename;
+            if (empty($filename) || !file_exists($filePath)) {
+                http_response_code(404);
+                die("Backup script file not found.");
+            }
+
+            header('Content-Description: File Transfer');
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Expires: 0');
+            header('Cache-Control: must-revalidate');
+            header('Pragma: public');
+            header('Content-Length: ' . filesize($filePath));
+            readfile($filePath);
+            exit;
 
         case 'create_manual_backup':
         case 'create_backup':
@@ -2860,6 +2958,32 @@ try {
 
                 $restoredScans = (int) ($db->query("SELECT COUNT(*) as c FROM `{$storeCode}_countsheet`")[0]['c'] ?? 0);
                 $restoredLocs = (int) ($db->query("SELECT COUNT(*) as c FROM `{$storeCode}_locators`")[0]['c'] ?? 0);
+            } else if (strpos($backupId, 'backup_') === 0 && strpos($backupId, '.sql') !== false) {
+                $filePath = __DIR__ . '/backups/' . basename($backupId);
+                if (!file_exists($filePath)) {
+                    throw new Exception("Backup SQL script file not found.");
+                }
+                $sqlContent = file_get_contents($filePath);
+                $queries = array_filter(array_map('trim', explode(";\n", $sqlContent)));
+                foreach ($queries as $q) {
+                    if (!empty($q) && strpos($q, '--') !== 0) {
+                        try {
+                            $db->execute($q);
+                        } catch (Exception $eQ) {
+                        }
+                    }
+                }
+                if (preg_match('/^backup_(.+?)_(\d{8}_\d{6})\.sql$/', basename($backupId), $m)) {
+                    $storeCode = strtolower($m[1]);
+                }
+                try {
+                    $restoredScans = (int) ($db->query("SELECT COUNT(*) as c FROM `{$storeCode}_countsheet`")[0]['c'] ?? 0);
+                } catch (Exception $eC) {
+                }
+                try {
+                    $restoredLocs = (int) ($db->query("SELECT COUNT(*) as c FROM `{$storeCode}_locators`")[0]['c'] ?? 0);
+                } catch (Exception $eL) {
+                }
             } else if (strpos($backupId, 'cloud_backup_') === 0 && strpos($backupId, '.json') !== false) {
                 $filePath = __DIR__ . '/backups/' . basename($backupId);
                 if (!file_exists($filePath)) {
