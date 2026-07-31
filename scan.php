@@ -2077,20 +2077,6 @@ $hasActiveStores = !empty($existingStoresList);
         let isHostLockAlertShowing = false;
         let storeHostLockTimer = null;
 
-        function attemptCloseConflictTab(btnEl) {
-            window.close();
-            setTimeout(() => {
-                if (btnEl) {
-                    btnEl.innerText = "✕ Press Ctrl + W to Close";
-                    btnEl.style.background = "#30363d";
-                }
-                const hint = document.getElementById('close-tab-hint-msg');
-                if (hint) {
-                    hint.style.display = 'block';
-                }
-            }, 150);
-        }
-
         function showStoreConflictOverlay(storeName) {
             window.close();
             setTimeout(() => {
@@ -2107,9 +2093,8 @@ $hasActiveStores = !empty($existingStoresList);
                                 Store session <strong style="color:#58a6ff;">'${storeName}'</strong> is already open and running in your primary browser tab. This duplicate tab has been paused.
                             </p>
                             <div style="display:flex; flex-direction:column; gap:10px; align-items:stretch;">
-                                <button onclick="attemptCloseConflictTab(this)" class="btn" style="width:100%; padding:11px; border-radius:8px; font-weight:600; background:#238636; color:#ffffff; border:none; cursor:pointer; font-size:0.95rem;">Close Tab</button>
-                                <button onclick="fetch('api.php?action=logout_store').then(() => { window.location.href = 'index.php'; })" class="btn btn-secondary" style="width:100%; padding:10px; border-radius:8px; font-weight:600; font-size:0.9rem; background:rgba(255,255,255,0.05); color:#c9d1d9; border:1px solid rgba(255,255,255,0.1); cursor:pointer;">🏠 Switch Store / Back to Selection</button>
-                                <div id="close-tab-hint-msg" style="display:none; margin-top:8px; font-size:0.8rem; color:#e3b341; background:rgba(227,179,65,0.1); padding:10px 14px; border-radius:6px; border:1px solid rgba(227,179,65,0.2); line-height:1.4; text-align:center;">
+                                <button onclick="window.close()" class="btn" style="width:100%; padding:12px; border-radius:8px; font-weight:600; background:#30363d; color:#ffffff; border:1px solid rgba(255,255,255,0.15); cursor:pointer; font-size:0.95rem;">Press 'Ctrl' + 'W' to CLOSE</button>
+                                <div style="margin-top:8px; font-size:0.82rem; color:#e3b341; background:rgba(227,179,65,0.1); padding:10px 14px; border-radius:6px; border:1px solid rgba(227,179,65,0.2); line-height:1.4; text-align:center;">
                                     💡 Chrome security prevents scripts from closing main browser tabs automatically.<br>
                                     Please press <strong>Ctrl + W</strong> (or ⌘ + W) on your keyboard to close this tab.
                                 </div>
@@ -2120,7 +2105,7 @@ $hasActiveStores = !empty($existingStoresList);
                 } else {
                     overlay.style.display = 'flex';
                 }
-            }, 200);
+            }, 100);
         }
 
         function checkStoreHostLock() {
