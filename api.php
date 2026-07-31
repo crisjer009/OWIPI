@@ -2726,7 +2726,7 @@ try {
                     locators_count INT DEFAULT 0,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )");
-                $loggedBackups = $db->query("SELECT backup_id as id, backup_type as type, store_code, scans_count, locators_count, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM cloud_backups_log ORDER BY id DESC");
+                $loggedBackups = $db->query("SELECT backup_id as id, backup_type as type, store_code, scans_count, locators_count, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM cloud_backups_log ORDER BY cloud_backups_log.id DESC");
                 if (!empty($loggedBackups)) {
                     $backups = $loggedBackups;
                 }

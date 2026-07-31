@@ -1232,8 +1232,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
             listEl.innerHTML = '<p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">Loading cloud backups...</p>';
 
             fetch('api.php?action=get_cloud_backups')
-                .then(res => res.json())
-                .then(data => {
+                .then(res => res.text())
+                .then(text => {
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        listEl.innerHTML = '<div style="color: #ef4444; font-size: 0.85rem; padding: 1rem;"><strong>Failed to parse cloud response:</strong><pre style="white-space: pre-wrap; margin-top: 6px; font-size: 0.8rem;">' + text + '</pre></div>';
+                        return;
+                    }
+
                     if (data.status === 'success' && data.backups && data.backups.length > 0) {
                         let html = `
                             <table style="width: 100%; border-collapse: collapse;">
