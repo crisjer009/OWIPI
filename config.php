@@ -9,7 +9,7 @@ define('CONFIG_FILE', __DIR__ . '/db_config.json');
 // Default database configuration
 function getDefaultConfig() {
     return [
-        'server' => 'localhost',
+        'server' => '127.0.0.1',
         'port' => '3306',
         'database' => 'owi_physical_inventory', // Main master database
         'username' => 'root',

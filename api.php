@@ -32,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 require_once __DIR__ . '/config.php';
+// Release session lock immediately to allow concurrent AJAX requests
+session_write_close();
 
 if (function_exists('opcache_reset')) {
     @opcache_reset();
@@ -276,6 +278,8 @@ function formatProductDescription($descr, $attr, $size)
 // Helper function to find a product in items catalog with flexible padding/unpadding and fallback support
 function findCatalogProduct($barcode, $storeCode = null)
 {
+    static $storeTableCache = [];
+    static $storeNoCache = [];
     $db = new OWI_DB();
     $barcodeClean = trim($barcode);
     if ($barcodeClean === '') {
@@ -287,15 +291,16 @@ function findCatalogProduct($barcode, $storeCode = null)
 
     $tablesToSearch = [];
     if (!empty($cleanStore)) {
-        try {
-            $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
-            if (!empty($tableCheck)) {
-                $countCheck = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`");
-                if (!empty($countCheck) && (int) $countCheck[0]['count'] > 0) {
-                    $tablesToSearch[] = "{$cleanStore}_items";
-                }
+        if (!isset($storeTableCache[$cleanStore])) {
+            try {
+                $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
+                $storeTableCache[$cleanStore] = !empty($tableCheck);
+            } catch (Exception $e) {
+                $storeTableCache[$cleanStore] = false;
             }
-        } catch (Exception $e) {
+        }
+        if ($storeTableCache[$cleanStore]) {
+            $tablesToSearch[] = "{$cleanStore}_items";
         }
     }
     // Always include central items table as fallback
@@ -304,42 +309,48 @@ function findCatalogProduct($barcode, $storeCode = null)
     foreach ($tablesToSearch as $tableName) {
         $qtyCol = "`Qty`";
         if ($tableName === 'items' && !empty($cleanStore)) {
-            try {
-                $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
-                if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
-                    $strNo = (int) $storeLookup[0]['str_no'];
-                    $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
-                } else {
-                    $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
-                    if ($numMatch !== '') {
-                        $strNo = (int) $numMatch;
-                        $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+            if (!isset($storeNoCache[$cleanStore])) {
+                try {
+                    $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($cleanStore), $cleanStore]);
+                    if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                        $storeNoCache[$cleanStore] = (int) $storeLookup[0]['str_no'];
+                    } else {
+                        $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                        $storeNoCache[$cleanStore] = ($numMatch !== '') ? (int) $numMatch : 0;
                     }
+                } catch (Exception $exLookup) {
+                    $storeNoCache[$cleanStore] = 0;
                 }
-            } catch (Exception $exLookup) {}
+            }
+            if (!empty($storeNoCache[$cleanStore])) {
+                $strNo = $storeNoCache[$cleanStore];
+                $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+            }
         }
 
-        // 1. Direct exact match check (fastest)
-        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` WHERE UPC = ? OR SKU = ?", [$barcodeClean, $barcodeClean]);
+        // 1. Direct exact match check (lightning fast with B-Tree index)
+        $rows = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` WHERE UPC = ? OR SKU = ? OR Aux1 = ?", [$barcodeClean, $barcodeClean, $barcodeClean]);
         if (!empty($rows)) {
             return $rows;
         }
 
-        // 2. Flexible numeric matching (handles leading zeros like 016965 <-> 16965)
+        // 2. Indexed numeric variation matching (handles leading zeros without breaking indexes)
         if (ctype_digit($barcodeClean)) {
             $unpadded = ltrim($barcodeClean, '0');
             if ($unpadded === '') {
                 $unpadded = '0';
             }
             $padded6 = str_pad($unpadded, 6, '0', STR_PAD_LEFT);
+            $padded12 = str_pad($unpadded, 12, '0', STR_PAD_LEFT);
+            $padded13 = str_pad($unpadded, 13, '0', STR_PAD_LEFT);
+
+            $terms = array_values(array_unique([$barcodeClean, $unpadded, $padded6, $padded12, $padded13]));
+            $inClause = implode(',', array_fill(0, count($terms), '?'));
+            $params = array_merge($terms, $terms, $terms);
 
             $sql = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` 
-                    WHERE UPC = ? OR SKU = ? 
-                       OR UPC = ? OR SKU = ?
-                       OR TRIM(LEADING '0' FROM UPC) = ? 
-                       OR TRIM(LEADING '0' FROM SKU) = ?";
+                    WHERE UPC IN ($inClause) OR SKU IN ($inClause) OR Aux1 IN ($inClause)";
 
-            $params = [$barcodeClean, $barcodeClean, $padded6, $padded6, $unpadded, $unpadded];
             $rows = $db->query($sql, $params);
             if (!empty($rows)) {
                 return $rows;
@@ -766,13 +777,21 @@ try {
                         break;
                     }
 
-                    // Auto-claim the reopened locator back to current operator
-                    $db->execute(
-                        "UPDATE `{$store}_locators` SET status = 'in_use', assigned_operator = ?, synced = 0 WHERE locator_name = ?",
-                        [$scanned_by, $location]
-                    );
+                    // Auto-claim or retain previous assigned operator if already present
+                    if (!empty($assignedOp)) {
+                        $db->execute(
+                            "UPDATE `{$store}_locators` SET status = 'in_use', synced = 0 WHERE locator_name = ?",
+                            [$location]
+                        );
+                    } else {
+                        $db->execute(
+                            "UPDATE `{$store}_locators` SET status = 'in_use', assigned_operator = ?, synced = 0 WHERE locator_name = ?",
+                            [$scanned_by, $location]
+                        );
+                    }
                 } elseif ($locStatus === 'in_use' && !empty($assignedOp)) {
-                    if (strtolower($assignedOp) !== strtolower($scanned_by)) {
+                    $isHost = !empty($_SESSION['role']) && ($_SESSION['role'] === 'system_admin' || $_SESSION['role'] === 'admin' || $_SESSION['role'] === 'user_admin' || $_SESSION['role'] === 'host');
+                    if (!$isHost && strtolower(trim($assignedOp)) !== strtolower(trim($scanned_by))) {
                         sendResponse([
                             'status' => 'error',
                             'message' => "Locator '$location' is currently claimed by operator '$assignedOp'."
@@ -1998,19 +2017,21 @@ try {
             $lastPing = !empty($loc['last_ping_at']) ? strtotime($loc['last_ping_at']) : 0;
             $isPingActive = (time() - $lastPing) < 15;
             $activeToken = $loc['active_device_token'] ?? '';
+            $assignedOp = strtolower(trim($loc['assigned_operator'] ?? ''));
+            $currentOp = strtolower(trim($operator));
 
-            if ($loc['status'] === 'in_use' && !empty($activeToken) && !empty($deviceToken) && $activeToken !== $deviceToken && $isPingActive) {
+            if ($loc['status'] === 'in_use' && !empty($activeToken) && !empty($deviceToken) && $activeToken !== $deviceToken && $isPingActive && $assignedOp !== $currentOp) {
                 $activeOp = !empty($loc['assigned_operator']) ? $loc['assigned_operator'] : 'another browser session';
                 throw new Exception("Locator '$name' is currently active in another browser session (Operator: {$activeOp}). Multiple concurrent browser windows for the same locator are disabled.");
             }
 
-            if ($loc['status'] === 'in_use' && strtolower(trim($loc['assigned_operator'])) !== strtolower($operator) && $isPingActive) {
+            if ($loc['status'] === 'in_use' && $assignedOp !== $currentOp && $isPingActive) {
                 throw new Exception("This locator is already claimed by operator: " . $loc['assigned_operator']);
             }
 
             // Check if this operator name is already claimed/active in ANY OTHER locator
             $sqlCheckOp = "SELECT locator_name FROM `{$store}_locators` WHERE status = 'in_use' AND LOWER(TRIM(assigned_operator)) = ? AND LOWER(TRIM(locator_name)) != ? AND TIMESTAMPDIFF(SECOND, last_ping_at, NOW()) < 15";
-            $checkOpRows = $db->query($sqlCheckOp, [strtolower($operator), strtolower($name)]);
+            $checkOpRows = $db->query($sqlCheckOp, [$currentOp, strtolower($name)]);
             if (!empty($checkOpRows)) {
                 $otherLoc = $checkOpRows[0]['locator_name'];
                 throw new Exception("Operator name '$operator' is already active in another locator: '$otherLoc'.");
@@ -2162,7 +2183,7 @@ try {
             }
             $db = new OWI_DB();
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_SESSION['store_code']));
-            $db->execute("UPDATE `{$store}_locators` SET status = 'open', assigned_operator = NULL, synced = 0 WHERE id = ?", [$id]);
+            $db->execute("UPDATE `{$store}_locators` SET status = 'open', synced = 0 WHERE id = ?", [$id]);
             sendResponse(['status' => 'success', 'message' => "Locator approved and reopened successfully!"]);
             break;
 

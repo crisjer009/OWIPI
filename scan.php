@@ -11,9 +11,10 @@ if (isset($_GET['autologin']) && isset($_GET['store'])) {
     $_SESSION['store_code'] = strtoupper($_GET['store']);
     $_SESSION['role'] = 'user';
     $_SESSION['is_mobile_scanner'] = true;
+    $_SESSION['qr_scan'] = true;
 
     // Redirect to clean scan.php URL to hide credentials in browser history
-    header('Location: scan.php');
+    header('Location: scan.php?from_qr=1');
     exit;
 }
 
@@ -54,7 +55,7 @@ if ($hostOnly === 'localhost' || $hostOnly === '127.0.0.1' || $hostOnly === '::1
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $scriptDir = rtrim($scriptDir, '/');
 $isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
-$scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '');
+$scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '') . "&from_qr=1";
 
 // Pre-fetch active non-closed stores for instant store selection on load (filtered by user)
 $existingStoresList = [];
@@ -1580,7 +1581,7 @@ $hasActiveStores = !empty($existingStoresList);
                                 style="border-bottom: 2px solid rgba(255,255,255,0.08); color: var(--text-white); font-weight: 600; position: sticky; top: 0; background: #161b22; z-index: 1;">
                                 <th style="padding: 8px 6px;">Locator</th>
                                 <th style="padding: 8px 6px;">Status</th>
-                                <th style="padding: 8px 6px;">Operator</th>
+                                <th style="padding: 8px 6px;">Scanned By</th>
                                 <th style="padding: 8px 6px; text-align: center;">Action</th>
                             </tr>
                         </thead>
@@ -1598,9 +1599,14 @@ $hasActiveStores = !empty($existingStoresList);
     </div>
     <div class="modal-overlay" id="host-view-locator-scans-modal-overlay">
         <div class="modal" style="max-width: 600px; width: 95%; padding: 20px;">
-            <h3 class="modal-title" id="view-scans-locator-title"
-                style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
-                Items in Locator</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 class="modal-title" id="view-scans-locator-title" style="margin: 0;">Items in Locator</h3>
+                <button type="button" class="btn btn-primary" onclick="openAddManualScanModal()"
+                    style="width: auto; height: 32px; padding: 0 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: #0969da; border-color: #0969da; border-radius: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add Item
+                </button>
+            </div>
 
             <div
                 style="overflow-x: auto; max-height: 350px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
@@ -1621,7 +1627,7 @@ $hasActiveStores = !empty($existingStoresList);
                 </table>
             </div>
 
-            <div class="form-row" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="form-row" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
                 <button type="button" class="btn btn-primary"
                     onclick="printEditedCountSheet(window.currentEditingLocatorName)"
                     style="width: auto; height: 38px; padding: 0 20px; margin: 0; background:#3b82f6; border-color:#3b82f6; font-weight:600; cursor:pointer;">Print
@@ -1672,6 +1678,46 @@ $hasActiveStores = !empty($existingStoresList);
                     style="width: auto; height: 38px; padding: 0 15px; margin: 0;">Cancel</button>
                 <button type="button" class="btn btn-success" onclick="submitEditScan()"
                     style="width: auto; height: 38px; padding: 0 15px; margin: 0;">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Host Add Manual Scan (called from locator inspector modal) -->
+    <div class="modal-overlay" id="host-add-manual-scan-modal-overlay" style="z-index: 100001;">
+        <div class="modal" style="max-width: 420px; padding: 20px;">
+            <h3 class="modal-title" id="add-manual-scan-modal-title"
+                style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">Add Manual Scan</h3>
+
+            <div class="form-group" style="margin-bottom: 12px;">
+                <label
+                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU / SKU or UPC</label>
+                <input type="text" id="add-manual-scan-barcode" class="form-control" placeholder="Enter ALU, SKU or UPC..." required
+                    style="width: 100%; height: 36px; box-sizing: border-box;"
+                    oninput="updateAddManualScanProductInfo(this.value.trim())"
+                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); const q = document.getElementById('add-manual-scan-qty'); if(q){ q.focus(); q.select(); } }">
+            </div>
+
+            <div id="add-manual-scan-product-info"
+                style="background:rgba(255,255,255,0.03); border-radius:6px; padding:10px; margin-bottom:12px; font-size:0.8rem; border:1px dashed var(--card-border);">
+                <strong style="color:var(--text-white); display:block; margin-bottom:2px;"
+                    id="add-manual-scan-prod-name">Item Preview</strong>
+                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU or UPC to check catalog...</span>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label
+                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">Quantity (QTY)</label>
+                <input type="number" id="add-manual-scan-qty" class="form-control" placeholder="Enter quantity..." value="1" min="1" step="1"
+                    required style="width: 100%; height: 36px; box-sizing: border-box;"
+                    onfocus="this.select()"
+                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); submitAddManualScan(); }">
+            </div>
+
+            <div class="form-row" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="closeAddManualScanModal()"
+                    style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="submitAddManualScan()" id="add-manual-scan-submit-btn"
+                    style="width: auto; height: 38px; padding: 0 20px; margin: 0; cursor:pointer; font-weight:600; background:#2ea44f; border-color:#2ea44f;">Save Scan</button>
             </div>
         </div>
     </div>
@@ -2047,6 +2093,7 @@ $hasActiveStores = !empty($existingStoresList);
         };
 
         const storeCode = <?= json_encode($_SESSION['store_code'] ?? 'TES') ?>;
+        const hostUsername = <?= json_encode($_SESSION['username'] ?? 'Host') ?>;
         let printMarginTop = <?= json_encode($marginTop) ?>;
         let printMarginLeft = <?= json_encode($marginLeft) ?>;
         let html5QrCode = null;
@@ -2179,29 +2226,38 @@ $hasActiveStores = !empty($existingStoresList);
                         renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
-                    // Continuous scans polling for Host Console
+                    // Continuous scans polling for Host Console (1s interval for real-time mobile scan updates)
                     loadHostScans();
-                    setInterval(loadHostScans, 3000);
+                    setInterval(loadHostScans, 1000);
 
-                    // Load host locators panel
+                    // Load host locators panel (1s interval for real-time status updates)
                     loadHostLocators();
-                    setInterval(loadHostLocators, 3000);
+                    setInterval(loadHostLocators, 1000);
 
                     // Poll store host lock to prevent opening multiple scan.php host windows for same store
                     checkStoreHostLock();
-                    storeHostLockTimer = setInterval(checkStoreHostLock, 3000);
+                    storeHostLockTimer = setInterval(checkStoreHostLock, 5000);
                 } else {
                     // On Mobile (Scanner Mode)
                     document.body.style.overflow = 'auto';
                     document.getElementById('host-connect-card').style.display = 'none';
                     document.getElementById('scanner-section').style.display = 'block';
 
-                    if (!isSecure && !navigator.mediaDevices) {
+                    const isInsecureOrigin = !isSecure && !navigator.mediaDevices;
+                    if (isInsecureOrigin) {
+                        const mobileView = document.getElementById('mobile-scanner-view');
+                        if (mobileView) mobileView.style.display = 'none';
                         document.getElementById('secure-warning').classList.add('active');
                         const switchLink = document.getElementById('secure-switch-link');
                         if (switchLink) {
                             switchLink.href = window.location.href.replace('http://', 'https://');
                         }
+                    } else {
+                        const mobileView = document.getElementById('mobile-scanner-view');
+                        if (mobileView) mobileView.style.display = 'block';
+                        document.getElementById('scanner-section').style.display = 'block';
+                        const secureWarn = document.getElementById('secure-warning');
+                        if (secureWarn) secureWarn.classList.remove('active');
                     }
 
                     // Fetch available cameras
@@ -2230,6 +2286,8 @@ $hasActiveStores = !empty($existingStoresList);
                         select.innerHTML = '<option value="">Permission denied / Camera issue</option>';
                         if (!isSecure) {
                             document.getElementById('secure-warning').classList.add('active');
+                            const mobileView = document.getElementById('mobile-scanner-view');
+                            if (mobileView) mobileView.style.display = 'none';
                         }
                     });
 
@@ -2255,10 +2313,23 @@ $hasActiveStores = !empty($existingStoresList);
                     setInterval(checkActiveSessionStatus, 5000);
 
                     // Check active session status to determine if we show the Connect Modal
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const isQRScan = urlParams.has('from_qr') || urlParams.has('autologin') || urlParams.has('qr') || <?php echo !empty($_SESSION['qr_scan']) ? 'true' : 'false'; ?>;
+                    <?php unset($_SESSION['qr_scan']); ?>
+
+                    if (isQRScan) {
+                        // When scanning the host QR code, always clear any existing active locator to force the Scanner Setup modal
+                        localStorage.removeItem('active_locator');
+                        // Clean up query parameter from URL bar without reloading
+                        if (window.history && window.history.replaceState) {
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                    }
+
                     const savedName = localStorage.getItem('operator_name');
                     const savedLoc = localStorage.getItem('active_locator');
 
-                    if (savedName && savedLoc) {
+                    if (!isQRScan && savedName && savedLoc && !isInsecureOrigin) {
                         // Populate hidden main fields
                         document.getElementById('scanned_by').value = savedName;
                         document.getElementById('location').value = savedLoc;
@@ -2276,12 +2347,17 @@ $hasActiveStores = !empty($existingStoresList);
                         document.getElementById('active-session-card').style.display = 'flex';
                         loadMobileScanLogFromServer(savedLoc);
                     } else {
-                        showConnectModal();
+                        // Show Scanner Setup modal FIRST on HTTPS, or only if HTTP warning is not blocking
+                        if (!isInsecureOrigin) {
+                            showConnectModal();
+                        }
                     }
                 }
             } catch (e) {
                 console.error("Initialization error:", e);
             }
+
+
 
             // Listen for window online/offline
             window.addEventListener('online', updateNetworkStatus);
@@ -4352,6 +4428,135 @@ $hasActiveStores = !empty($existingStoresList);
                 })
                 .catch(err => {
                     alert("Failed to edit scan: " + err);
+                });
+        }
+
+        // Sub-modal for Add Manual Scan in Locator
+        function openAddManualScanModal() {
+            const locatorName = window.currentEditingLocatorName;
+            if (!locatorName) {
+                alert("No locator selected.");
+                return;
+            }
+            document.getElementById('add-manual-scan-modal-title').innerText = `Add Item to Locator: ${locatorName}`;
+            document.getElementById('add-manual-scan-barcode').value = '';
+            document.getElementById('add-manual-scan-qty').value = '1';
+            document.getElementById('add-manual-scan-prod-name').innerText = "Item Preview";
+            document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU or UPC to check catalog...";
+            
+            document.getElementById('host-add-manual-scan-modal-overlay').classList.add('active');
+            setTimeout(() => {
+                const inputEl = document.getElementById('add-manual-scan-barcode');
+                if (inputEl) inputEl.focus();
+            }, 100);
+        }
+
+        function closeAddManualScanModal() {
+            document.getElementById('host-add-manual-scan-modal-overlay').classList.remove('active');
+        }
+
+        let addManualScanTimer = null;
+        function updateAddManualScanProductInfo(barcode) {
+            clearTimeout(addManualScanTimer);
+            if (!barcode) {
+                document.getElementById('add-manual-scan-prod-name').innerText = "Item Preview";
+                document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU or UPC to check catalog...";
+                return;
+            }
+
+            document.getElementById('add-manual-scan-prod-name').innerText = "Checking Catalog...";
+            document.getElementById('add-manual-scan-prod-desc').innerText = "Querying catalog database...";
+
+            addManualScanTimer = setTimeout(() => {
+                fetch(`api.php?action=get_product_info&barcode=${encodeURIComponent(barcode)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.product_found) {
+                            document.getElementById('add-manual-scan-prod-name').innerText = data.product_name || "Product Found";
+                            let skuText = data.sku ? `SKU: ${data.sku}` : '';
+                            let barcodeText = data.barcode ? `UPC: ${data.barcode}` : '';
+                            let details = [skuText, barcodeText].filter(Boolean).join(' | ');
+                            document.getElementById('add-manual-scan-prod-desc').innerText = details || "Found in catalog";
+                        } else {
+                            document.getElementById('add-manual-scan-prod-name').innerText = "Item Not Found";
+                            document.getElementById('add-manual-scan-prod-desc').innerText = "Not found in catalog. Will be logged as Item Not Found.";
+                        }
+                    })
+                    .catch(err => {
+                        document.getElementById('add-manual-scan-prod-name').innerText = "Catalog Check Failed";
+                        document.getElementById('add-manual-scan-prod-desc').innerText = "Network or database connection error.";
+                    });
+            }, 250);
+        }
+
+        function submitAddManualScan() {
+            const locatorName = window.currentEditingLocatorName;
+            const barcode = document.getElementById('add-manual-scan-barcode').value.trim();
+            const qty = parseFloat(document.getElementById('add-manual-scan-qty').value);
+
+            if (!locatorName) {
+                alert("No locator selected!");
+                return;
+            }
+            if (barcode === '') {
+                alert("Please enter an ALU, SKU or UPC!");
+                document.getElementById('add-manual-scan-barcode').focus();
+                return;
+            }
+            if (isNaN(qty) || qty <= 0) {
+                alert("Quantity must be a valid positive number!");
+                document.getElementById('add-manual-scan-qty').focus();
+                return;
+            }
+
+            const submitBtn = document.getElementById('add-manual-scan-submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Saving...';
+            }
+
+            fetch('api.php?action=submit_scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    barcode: barcode,
+                    quantity: qty,
+                    location: locatorName,
+                    scanned_by: (typeof hostUsername !== 'undefined' && hostUsername) ? hostUsername : 'Host'
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'Save Scan';
+                    }
+                    if (data.status === 'success') {
+                        closeAddManualScanModal();
+
+                        const activeLoc = localStorage.getItem('active_locator');
+                        if (activeLoc && activeLoc.toLowerCase() === locatorName.toLowerCase()) {
+                            loadMobileScanLogFromServer(activeLoc);
+                        }
+                        if (window.currentEditingLocatorName) {
+                            loadLocatorScansTable(window.currentEditingLocatorName);
+                        }
+                        if (typeof loadHostLocators === 'function') {
+                            loadHostLocators();
+                        }
+                        if (typeof loadHostScans === 'function') {
+                            loadHostScans();
+                        }
+                    } else {
+                        alert(data.message || "Failed to add manual scan.");
+                    }
+                })
+                .catch(err => {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'Save Scan';
+                    }
+                    alert("Failed to submit scan: " + err);
                 });
         }
 
