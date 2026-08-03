@@ -14,6 +14,7 @@ $diagnostics = OWI_DB::getDiagnostics();
 $localIP = getServerLocalIP();
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
 $systemHost = $_SERVER['HTTP_HOST'] ?? $localIP;
+$isCloudHost = (strpos($_SERVER['HTTP_HOST'] ?? '', 'officewarehouse.com.ph') !== false) || (strpos($_SERVER['SERVER_NAME'] ?? '', 'officewarehouse.com.ph') !== false);
 
 // Override loopback addresses with active network IP so cellphones can connect
 $hostParts = explode(':', $systemHost);
@@ -1906,12 +1907,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
                                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                    <button onclick="downloadEntireStoreFromCloud('<?= htmlspecialchars($s['store_code']) ?>')"
+                                <?php if (!$isCloudHost && $s['status'] !== 'Finished' && $s['status'] !== 'Closed'): ?>
+                                    <button onclick="downloadEntireStoreFromCloud('<?= htmlspecialchars($s['store_code']) ?>', '<?= htmlspecialchars($s['status']) ?>')"
                                         class="btn btn-secondary btn-sm"
                                         style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #10b981; color: #34d399; background: rgba(16, 185, 129, 0.1); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;"
                                         title="Import/Sync entire store session (locators, scans, catalog) from Cloud to Local">
                                         ☁️ Pull Cloud Session
                                     </button>
+                                <?php endif; ?>
                                     <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin']) && ($s['status'] === 'Finished' || $s['status'] === 'Closed')): ?>
                                         <button onclick="reopenStoreSession('<?= htmlspecialchars($s['store_code']) ?>')"
                                             class="btn btn-secondary btn-sm"
@@ -2711,7 +2714,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Download & Import Entire Store Session from Cloud (Locators, Scans, Catalog, Creator)
-        async function downloadEntireStoreFromCloud(storeCode) {
+        async function downloadEntireStoreFromCloud(storeCode, storeStatus = '') {
             if (!storeCode) {
                 storeCode = await showCustomPrompt("Enter the Store Code to download from Cloud (e.g. KQC, TES, PSP, LBS):", "KQC", "Download Store Session from Cloud");
             }
@@ -2719,8 +2722,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             storeCode = storeCode.trim().toUpperCase();
 
+            let confirmMsg = `Are you sure you want to download and import the ENTIRE store session for '${storeCode}' from Cloud to Local?\n\nThis will import the store configuration, locators, all scan records, catalog products, and store ownership.`;
+            if (storeStatus === 'Finished' || storeStatus === 'Closed') {
+                confirmMsg = `⚠️ WARNING: Store '${storeCode}' is marked as ${storeStatus.toUpperCase()} (100% Complete).\n\nDownloading from Cloud will OVERWRITE all your local locators and scan records. Are you sure you want to proceed?`;
+            }
+
             const ok = await showCustomConfirm(
-                `Are you sure you want to download and import the ENTIRE store session for '${storeCode}' from Cloud to Local?\n\nThis will import the store configuration, locators, all scan records, catalog products, and store ownership.`,
+                confirmMsg,
                 "Import Entire Store Session from Cloud",
                 "Yes, Download & Import",
                 "Cancel"
