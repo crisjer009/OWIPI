@@ -1904,11 +1904,12 @@ try {
             break;
 
         case 'get_users':
-            if ($_SESSION['role'] !== 'system_admin' && $_SESSION['role'] !== 'admin') {
+            $currentRole = strtolower(trim($_SESSION['role'] ?? ''));
+            if (!in_array($currentRole, ['system_admin', 'sys_admin', 'admin'])) {
                 sendResponse(['status' => 'error', 'message' => 'Unauthorized access.']);
             }
             $db = new OWI_DB();
-            if ($_SESSION['role'] === 'admin') {
+            if ($currentRole === 'admin') {
                 $sql = "SELECT id, username, role, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM users WHERE role = 'user' ORDER BY username ASC";
             } else {
                 $sql = "SELECT id, username, role, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM users ORDER BY username ASC";
@@ -1921,23 +1922,24 @@ try {
             break;
 
         case 'add_user':
-            if ($_SESSION['role'] !== 'system_admin' && $_SESSION['role'] !== 'admin') {
+            $currentRole = strtolower(trim($_SESSION['role'] ?? ''));
+            if (!in_array($currentRole, ['system_admin', 'sys_admin', 'admin'])) {
                 sendResponse(['status' => 'error', 'message' => 'Unauthorized access.']);
             }
             $input = json_decode(file_get_contents('php://input'), true);
             $username = isset($input['username']) ? strtoupper(trim($input['username'])) : '';
             $password = isset($input['password']) ? trim($input['password']) : '';
-            $role = isset($input['role']) ? trim($input['role']) : 'user';
+            $role = isset($input['role']) ? strtolower(trim($input['role'])) : 'user';
 
             if (empty($username) || empty($password)) {
                 throw new Exception("Username and password are required.");
             }
 
-            if ($_SESSION['role'] === 'admin') {
+            if ($currentRole === 'admin') {
                 $role = 'user';
             }
 
-            if ($role !== 'system_admin' && $role !== 'admin' && $role !== 'user') {
+            if (!in_array($role, ['system_admin', 'sys_admin', 'admin', 'user'])) {
                 throw new Exception("Invalid user role.");
             }
 
@@ -1959,7 +1961,8 @@ try {
             break;
 
         case 'delete_user':
-            if ($_SESSION['role'] !== 'system_admin' && $_SESSION['role'] !== 'admin') {
+            $currentRole = strtolower(trim($_SESSION['role'] ?? ''));
+            if (!in_array($currentRole, ['system_admin', 'sys_admin', 'admin'])) {
                 sendResponse(['status' => 'error', 'message' => 'Unauthorized access.']);
             }
             $input = json_decode(file_get_contents('php://input'), true);

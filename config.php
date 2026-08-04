@@ -236,7 +236,9 @@ function isLoggedIn() {
 }
 
 function isAdmin() {
-    return isset($_SESSION['role']) && in_array($_SESSION['role'], ['system_admin', 'admin']);
+    if (!isset($_SESSION['role'])) return false;
+    $role = strtolower(trim($_SESSION['role']));
+    return in_array($role, ['system_admin', 'sys_admin', 'admin']);
 }
 
 function hasActiveStore() {
