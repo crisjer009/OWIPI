@@ -1043,7 +1043,8 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
                         <?php foreach ($existingStoresList as $st): ?>
                             <option value="<?= htmlspecialchars($st['store_code']) ?>">Store:
-                                <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
+                                <?= htmlspecialchars(strtoupper($st['store_code'])) ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -1731,37 +1732,49 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <?php endif; ?>
 
                 <!-- System Administrator Control Center -->
-                <div class="card" style="margin-top: 1rem; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 1.75rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); position: relative; overflow: hidden;">
+                <div class="card"
+                    style="margin-top: 1rem; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 1.75rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); position: relative; overflow: hidden;">
                     <!-- Top Glow Accent Line -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #ef4444);"></div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
+                    <div
+                        style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #ef4444);">
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                                <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-size: 1.1rem; border: 1px solid rgba(59, 130, 246, 0.3);">⚙️</span>
-                                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.3px;">
+                                <span
+                                    style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-size: 1.1rem; border: 1px solid rgba(59, 130, 246, 0.3);">⚙️</span>
+                                <h2
+                                    style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.3px;">
                                     System Administrator Control Center
                                 </h2>
-                                <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px;">
+                                <span class="badge"
+                                    style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px;">
                                     SYS_ADMIN
                                 </span>
                             </div>
                             <div style="font-size: 0.85rem; color: #94a3b8; margin-left: 42px;">
-                                Manage database connections, table schemas, backups, and execute administrative maintenance operations.
+                                Manage database connections, table schemas, backups, and execute administrative maintenance
+                                operations.
                             </div>
                         </div>
 
                         <!-- Connection Quick Status Pill -->
-                        <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div
+                            style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
                             <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">MySQL Host</span>
+                                <span
+                                    style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">MySQL
+                                    Host</span>
                                 <span style="font-size: 0.85rem; color: #f8fafc; font-family: monospace; font-weight: 700;">
                                     <?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?>
                                 </span>
                             </div>
                             <div style="height: 24px; width: 1px; background: rgba(255,255,255,0.1);"></div>
                             <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Database</span>
+                                <span
+                                    style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Database</span>
                                 <span style="font-size: 0.85rem; color: #38bdf8; font-family: monospace; font-weight: 700;">
                                     <?= htmlspecialchars($config['database']) ?>
                                 </span>
@@ -1769,12 +1782,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             <div style="height: 24px; width: 1px; background: rgba(255,255,255,0.1);"></div>
                             <div>
                                 <?php if ($dbStatus === 'connected'): ?>
-                                    <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
-                                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px #10b981;"></span> Connected
+                                    <span
+                                        style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                                        <span
+                                            style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px #10b981;"></span>
+                                        Connected
                                     </span>
                                 <?php else: ?>
-                                    <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
-                                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block; box-shadow: 0 0 8px #ef4444;"></span> Offline
+                                    <span
+                                        style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                                        <span
+                                            style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block; box-shadow: 0 0 8px #ef4444;"></span>
+                                        Offline
                                     </span>
                                 <?php endif; ?>
                             </div>
@@ -1808,13 +1827,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
             <?php endif; ?>
 
-            <header style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <header
+                style="margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <h1>Store Inventory Progress</h1>
-                    <div class="header-desc">Real-time locator completion metrics across all your active store databases.</div>
+                    <div class="header-desc">Real-time locator completion metrics across all your active store
+                        databases.</div>
                 </div>
                 <div>
-                    <button onclick="downloadEntireStoreFromCloud()" class="btn" style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                    <button onclick="downloadEntireStoreFromCloud()" class="btn"
+                        style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
                         ☁️ Download Store Session from Cloud
                     </button>
                 </div>
@@ -1933,14 +1955,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                     <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
                                 </span>
                                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                <?php if (!$isCloudHost && $s['status'] !== 'Finished' && $s['status'] !== 'Closed'): ?>
-                                    <button onclick="downloadEntireStoreFromCloud('<?= htmlspecialchars($s['store_code']) ?>', '<?= htmlspecialchars($s['status']) ?>')"
-                                        class="btn btn-secondary btn-sm"
-                                        style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #10b981; color: #34d399; background: rgba(16, 185, 129, 0.1); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;"
-                                        title="Import/Sync entire store session (locators, scans, catalog) from Cloud to Local">
-                                        ☁️ Pull Cloud Session
-                                    </button>
-                                <?php endif; ?>
+                                    <?php if (!$isCloudHost && $s['status'] !== 'Finished' && $s['status'] !== 'Closed'): ?>
+                                        <button
+                                            onclick="downloadEntireStoreFromCloud('<?= htmlspecialchars($s['store_code']) ?>', '<?= htmlspecialchars($s['status']) ?>')"
+                                            class="btn btn-secondary btn-sm"
+                                            style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #10b981; color: #34d399; background: rgba(16, 185, 129, 0.1); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;"
+                                            title="Import/Sync entire store session (locators, scans, catalog) from Cloud to Local">
+                                            ☁️ Pull Cloud Session
+                                        </button>
+                                    <?php endif; ?>
                                     <?php if (in_array($_SESSION['role'] ?? '', ['system_admin', 'admin']) && ($s['status'] === 'Finished' || $s['status'] === 'Closed')): ?>
                                         <button onclick="reopenStoreSession('<?= htmlspecialchars($s['store_code']) ?>')"
                                             class="btn btn-secondary btn-sm"
@@ -1969,7 +1992,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
             <header>
                 <div>
                     <h1><?= $isSysAdmin ? 'MySQL Connection Setup' : 'Security & Synchronization Token' ?></h1>
-                    <div class="header-desc"><?= $isSysAdmin ? 'Define credentials to connect to your local or remote MySQL database' : 'Configure your Secret Sync Token for local and cloud authorization' ?></div>
+                    <div class="header-desc">
+                        <?= $isSysAdmin ? 'Define credentials to connect to your local or remote MySQL database' : 'Configure your Secret Sync Token for local and cloud authorization' ?>
+                    </div>
                 </div>
             </header>
 
@@ -2355,22 +2380,31 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
                     <div>
                         <h1>Cloud Pre-Sync Backup Logs</h1>
-                        <div class="header-desc">Automatic snapshot backups created on cloud prior to store data overwrites. System Admin can restore any store session to its previous backup point.</div>
+                        <div class="header-desc">Automatic snapshot backups created on cloud prior to store data
+                            overwrites. System Admin can restore any store session to its previous backup point.</div>
                     </div>
                     <div style="display:flex; gap: 8px;">
-                        <button type="button" onclick="triggerManualBackup()" class="btn" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: var(--success-color); color:white; border:none; font-weight:600; cursor:pointer;">📸 Create Backup Snapshot Now</button>
-                        <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄 Refresh Backup Logs</button>
+                        <button type="button" onclick="triggerManualBackup()" class="btn"
+                            style="width:auto; font-size:0.85rem; padding: 8px 16px; background: var(--success-color); color:white; border:none; font-weight:600; cursor:pointer;">📸
+                            Create Backup Snapshot Now</button>
+                        <button type="button" onclick="fetchCloudBackups()" class="btn btn-secondary"
+                            style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(59,130,246,0.2); color:#60a5fa; border:1px solid #3b82f6; cursor:pointer;">🔄
+                            Refresh Backup Logs</button>
                         <?php if (isAdmin()): ?>
-                        <button type="button" onclick="clearAllCloudBackups()" class="btn" style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; font-weight:600; cursor:pointer;">🗑️ Clear All Backup Logs</button>
+                            <button type="button" onclick="clearAllCloudBackups()" class="btn"
+                                style="width:auto; font-size:0.85rem; padding: 8px 16px; background: rgba(239,68,68,0.2); color:#f87171; border:1px solid #ef4444; font-weight:600; cursor:pointer;">🗑️
+                                Clear All Backup Logs</button>
                         <?php endif; ?>
                     </div>
                 </div>
             </header>
 
-            <div class="card" style="margin: 0; padding: 1.15rem; display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 350px;">
+            <div class="card"
+                style="margin: 0; padding: 1.15rem; display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 350px;">
                 <div class="table-container" style="flex-grow: 1; overflow-y: auto; max-height: 100%;">
                     <div id="cloud-backups-list">
-                        <p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">Loading cloud backups...</p>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem;">Loading cloud
+                            backups...</p>
                     </div>
                 </div>
             </div>
@@ -2503,6 +2537,135 @@ if ($driverLoaded && $dbStatus === 'connected') {
             </svg>
         </div>
         <div id="toast-message" class="toast-msg">Notification Message</div>
+    </div>
+
+    <!-- Cloud Store Download Loading Overlay Modal -->
+    <style>
+        @keyframes spinRing {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spinRingReverse {
+            0% {
+                transform: rotate(360deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes pulseCloud {
+
+            0%,
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
+            }
+
+            50% {
+                transform: scale(1.15);
+                filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.95));
+            }
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        @keyframes shimmerBar {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes blinkDot {
+            0% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <div id="cloud-download-loader-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15, 23, 42, 0.88); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); z-index:999999; justify-content:center; align-items:center; flex-direction:column; padding:20px; box-sizing:border-box; pointer-events:all; user-select:none;">
+        <div
+            style="background:linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%); border:1px solid rgba(56, 189, 248, 0.35); border-radius:20px; padding:2.5rem 2rem; max-width:460px; width:100%; box-shadow:0 25px 60px -10px rgba(0,0,0,0.8), 0 0 30px rgba(56, 189, 248, 0.18); text-align:center; box-sizing:border-box; position:relative; overflow:hidden;">
+
+            <!-- Glowing Ambient Top Accent Line -->
+            <div
+                style="position:absolute; top:0; left:0; right:0; height:4px; background:linear-gradient(90deg, #38bdf8, #3b82f6, #10b981, #38bdf8); background-size:200% 100%; animation:gradientMove 2s linear infinite;">
+            </div>
+
+            <!-- Animated Cloud & Spinner Visual -->
+            <div
+                style="position:relative; width:90px; height:90px; margin:0 auto 1.5rem auto; display:flex; align-items:center; justify-content:center;">
+                <!-- Outer Rotating Glow Ring -->
+                <div
+                    style="position:absolute; inset:0; border-radius:50%; border:3px solid transparent; border-top-color:#38bdf8; border-right-color:#3b82f6; animation:spinRing 1.2s linear infinite;">
+                </div>
+                <!-- Inner Counter-rotating Pulse Ring -->
+                <div
+                    style="position:absolute; inset:10px; border-radius:50%; border:2px solid transparent; border-bottom-color:#10b981; border-left-color:#38bdf8; animation:spinRingReverse 1.5s linear infinite;">
+                </div>
+                <!-- Central Glowing Cloud Icon -->
+                <div
+                    style="font-size:2.5rem; filter:drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)); animation:pulseCloud 1.8s ease-in-out infinite;">
+                    ☁️</div>
+            </div>
+
+            <h3
+                style="color:#ffffff; font-family:'Outfit', sans-serif; font-size:1.35rem; font-weight:800; margin:0 0 0.5rem 0; letter-spacing:-0.3px;">
+                Downloading Store Session
+            </h3>
+
+            <div id="cloud-loader-store-code"
+                style="display:inline-block; background:rgba(56, 189, 248, 0.15); color:#38bdf8; border:1px solid rgba(56, 189, 248, 0.35); font-weight:800; font-size:0.9rem; padding:4px 14px; border-radius:20px; margin-bottom:1.25rem; letter-spacing:0.5px;">
+                STORE: --
+            </div>
+
+            <p id="cloud-loader-status-text"
+                style="color:#94a3b8; font-size:0.9rem; line-height:1.6; margin:0 0 1.5rem 0;">
+                Connecting to Cloud server and transferring store payload...
+            </p>
+
+            <!-- Dynamic Animated Step Progress Bar -->
+            <div
+                style="background:rgba(255,255,255,0.06); border-radius:10px; height:8px; width:100%; overflow:hidden; border:1px solid rgba(255,255,255,0.1); margin-bottom:1.25rem; position:relative;">
+                <div id="cloud-loader-progress-bar"
+                    style="height:100%; width:30%; background:linear-gradient(90deg, #38bdf8, #10b981); border-radius:10px; transition:width 0.4s ease; position:relative; overflow:hidden;">
+                    <div
+                        style="position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation:shimmerBar 1.5s infinite;">
+                    </div>
+                </div>
+            </div>
+
+            <div
+                style="font-size:0.78rem; color:#64748b; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <span
+                    style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#eab308; box-shadow:0 0 8px #eab308; animation:blinkDot 1s infinite alternate;"></span>
+                Please wait. Do not close or refresh this tab while download is in progress.
+            </div>
+        </div>
     </div>
 
     <!-- QR Code Library -->
@@ -2716,6 +2879,36 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
+        // Cloud Store Download Loading Overlay Helper Functions
+        function showCloudDownloadLoader(storeCode) {
+            const overlay = document.getElementById('cloud-download-loader-overlay');
+            const storeBadge = document.getElementById('cloud-loader-store-code');
+            const statusText = document.getElementById('cloud-loader-status-text');
+            const progressBar = document.getElementById('cloud-loader-progress-bar');
+
+            if (storeBadge) storeBadge.innerText = 'STORE: ' + (storeCode || '--').toUpperCase();
+            if (statusText) statusText.innerText = `Connecting to Cloud server and downloading store payload...`;
+            if (progressBar) progressBar.style.width = '35%';
+
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function updateCloudDownloadProgress(percent, text) {
+            const statusText = document.getElementById('cloud-loader-status-text');
+            const progressBar = document.getElementById('cloud-loader-progress-bar');
+            if (statusText && text) statusText.innerText = text;
+            if (progressBar && percent) progressBar.style.width = percent + '%';
+        }
+
+        function hideCloudDownloadLoader() {
+            const overlay = document.getElementById('cloud-download-loader-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+
         // Sync items specific to a store from the cloud
         async function downloadStoreItemsFromCloud(storeCode) {
             const ok = await showCustomConfirm(
@@ -2725,26 +2918,30 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 "Cancel"
             );
             if (!ok) return;
-            showToast(`Downloading items for ${storeCode.toUpperCase()} from cloud...`, 'info');
-            fetch(`api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        showToast(data.message, 'success');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast(data.message, 'error');
-                    }
-                })
-                .catch(err => {
-                    showToast('Failed to download items: ' + err, 'error');
-                });
+
+            showCloudDownloadLoader(storeCode);
+            updateCloudDownloadProgress(50, `Downloading catalog items for '${storeCode.toUpperCase()}' from cloud...`);
+
+            try {
+                const res = await fetch(`api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode)}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    updateCloudDownloadProgress(100, `✓ Store items imported successfully! Reloading...`);
+                    setTimeout(() => window.location.reload(), 600);
+                } else {
+                    hideCloudDownloadLoader();
+                    showToast(data.message, 'error');
+                }
+            } catch (err) {
+                hideCloudDownloadLoader();
+                showToast('Failed to download items: ' + err, 'error');
+            }
         }
 
         // Download & Import Entire Store Session from Cloud (Locators, Scans, Catalog, Creator)
         async function downloadEntireStoreFromCloud(storeCode, storeStatus = '') {
             if (!storeCode) {
-                storeCode = await showCustomPrompt("Enter the Store Code to download from Cloud (e.g. KQC, TES, PSP, LBS):", "KQC", "Download Store Session from Cloud");
+                storeCode = await showCustomPrompt("Enter the Store Code to download from Cloud ", "", "Download Store Session from Cloud");
             }
             if (!storeCode || !storeCode.trim()) return;
 
@@ -2763,21 +2960,27 @@ if ($driverLoaded && $dbStatus === 'connected') {
             );
             if (!ok) return;
 
-            showToast(`Downloading store session '${storeCode}' from Cloud...`, 'info');
+            // Show full-screen glowing animated loading overlay (disables all clicks/inputs on screen)
+            showCloudDownloadLoader(storeCode);
+            updateCloudDownloadProgress(45, `Connecting to Cloud server and downloading '${storeCode}' store session payload...`);
 
-            fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode)}`)
-                .then(res => res.json())
-                .then(async data => {
-                    if (data.status === 'success') {
-                        await showCustomAlert(data.message, "Store Import Successful", "OK");
+            try {
+                const res = await fetch(`api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode)}`);
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    updateCloudDownloadProgress(100, `✓ Store Session '${storeCode}' imported successfully! Finalizing database...`);
+                    setTimeout(() => {
                         window.location.reload();
-                    } else {
-                        showCustomAlert("Download failed: " + data.message, "Import Error");
-                    }
-                })
-                .catch(err => {
-                    showCustomAlert("Request failed: " + err, "Network Error");
-                });
+                    }, 600);
+                } else {
+                    hideCloudDownloadLoader();
+                    showCustomAlert("Download failed: " + data.message, "Import Error");
+                }
+            } catch (err) {
+                hideCloudDownloadLoader();
+                showCustomAlert("Request failed: " + err, "Network Error");
+            }
         }
 
         function openCloudStoreDownloader() {
@@ -3740,7 +3943,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 titleEl.innerHTML = `<span style="font-size:1.2rem;">✏️</span> ${title}`;
                 messageEl.innerHTML = `
                     <div style="margin-bottom:10px;">${message}</div>
-                    <input type="text" id="custom-dialog-input" value="${defaultValue}" style="width:100%; padding:8px 12px; font-size:0.9rem; border-radius:6px; background:rgba(0,0,0,0.4); color:white; border:1px solid rgba(255,255,255,0.2); outline:none; box-sizing:border-box;">
+                    <input type="text" id="custom-dialog-input" value="${defaultValue}" oninput="this.value = this.value.toUpperCase()" style="width:100%; padding:8px 12px; font-size:0.9rem; border-radius:6px; background:rgba(0,0,0,0.4); color:white; border:1px solid rgba(255,255,255,0.2); outline:none; box-sizing:border-box; text-transform:uppercase;">
                 `;
                 btnPrimary.innerText = btnText;
                 if (btnSecondary) {
@@ -3812,18 +4015,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             })
-            .then(res => res.json())
-            .then(async data => {
-                if (data.status === 'success') {
-                    await showCustomAlert(data.message, "Fresh Database Reset Complete", "OK");
-                    window.location.reload();
-                } else {
-                    showCustomAlert("Reset failed: " + data.message, "Purge Error");
-                }
-            })
-            .catch(err => {
-                showCustomAlert("Request failed: " + err, "Network Error");
-            });
+                .then(res => res.json())
+                .then(async data => {
+                    if (data.status === 'success') {
+                        await showCustomAlert(data.message, "Fresh Database Reset Complete", "OK");
+                        window.location.reload();
+                    } else {
+                        showCustomAlert("Reset failed: " + data.message, "Purge Error");
+                    }
+                })
+                .catch(err => {
+                    showCustomAlert("Request failed: " + err, "Network Error");
+                });
         }
     </script>
 
