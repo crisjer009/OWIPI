@@ -2635,7 +2635,10 @@ try {
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
 
-            $cloudStore = $resData['store'] ?? [];
+            $cloudStore = $resData['store'] ?? null;
+            if (empty($cloudStore)) {
+                throw new Exception("Store session '" . strtoupper($store) . "' does not exist on the Cloud server.");
+            }
             $locators = $resData['locators'] ?? [];
             $products = $resData['products'] ?? [];
             $scans = $resData['scans'] ?? [];
@@ -3582,9 +3585,50 @@ try {
             ]);
             break;
 
+        case 'get_cloud_stores':
+            verifySyncToken();
+            $db = new OWI_DB();
+            $stores = [];
+            try {
+                $storeRows = $db->query("
+                    SELECT s.*, u.username as creator_name 
+                    FROM stores s 
+                    LEFT JOIN users u ON s.created_by = u.id 
+                    ORDER BY s.id DESC
+                ");
+                foreach ($storeRows as $s) {
+                    $sCode = strtolower($s['store_code']);
+                    $scansCount = 0;
+                    $locsCount = 0;
+                    try {
+                        $scansCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$sCode}_countsheet`")[0]['c'] ?? 0);
+                    } catch (Exception $eS) {}
+                    try {
+                        $locsCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$sCode}_locators`")[0]['c'] ?? 0);
+                    } catch (Exception $eL) {}
+
+                    $stores[] = [
+                        'id' => $s['id'],
+                        'store_code' => strtoupper($s['store_code']),
+                        'creator_name' => $s['creator_name'] ?? 'SYSTEM',
+                        'created_at' => $s['created_at'],
+                        'scans_count' => $scansCount,
+                        'locators_count' => $locsCount,
+                        'synced' => (int) ($s['synced'] ?? 0),
+                        'closed' => (int) ($s['closed'] ?? 0)
+                    ];
+                }
+            } catch (Exception $e) {}
+
+            sendResponse([
+                'status' => 'success',
+                'stores' => $stores
+            ]);
+            break;
+
         case 'get_cloud_store_details':
             verifySyncToken();
-            $store = $_GET['store_code'] ?? '';
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
             if (empty($store)) {
                 throw new Exception("Store code required.");
             }
@@ -3599,6 +3643,10 @@ try {
                     WHERE LOWER(s.store_code) = ?", [$store]);
             } catch (Exception $e) {
                 // Table 'stores' or column doesn't exist on cloud
+            }
+
+            if (empty($storeRows)) {
+                throw new Exception("Store session '" . strtoupper($store) . "' does not exist on the Cloud server.");
             }
 
             $locators = [];
