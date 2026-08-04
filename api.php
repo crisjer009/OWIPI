@@ -1443,6 +1443,7 @@ try {
             break;
 
         case 'get_products':
+            session_write_close();
             $db = new OWI_DB();
             $storeInput = $_GET['store_code'] ?? ($_SESSION['store_code'] ?? '');
             $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));

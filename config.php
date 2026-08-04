@@ -45,6 +45,11 @@ function saveConfig($config) {
 
 // Detect server local IP address
 function getServerLocalIPs() {
+    static $cachedIPs = null;
+    if ($cachedIPs !== null) {
+        return $cachedIPs;
+    }
+
     $ips = [];
     $defaultIp = gethostbyname(gethostname());
 
@@ -106,6 +111,7 @@ function getServerLocalIPs() {
         }
     }
 
+    $cachedIPs = $ips;
     return $ips;
 }
 

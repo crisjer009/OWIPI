@@ -54,9 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $db = new OWI_DB();
 
-            // Connect to MySQL server and provision the master database dynamically
-            $db->initializeDatabase();
-
             // Helper function to resolve client IP
             function getLoginClientIP()
             {

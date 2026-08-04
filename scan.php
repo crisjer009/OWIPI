@@ -2712,37 +2712,21 @@ $hasActiveStores = !empty($existingStoresList);
 
         // Resolve scanned/typed code to catalog barcode if it matches a SKU
         function resolveBarcodeOrSku(inputVal, callback) {
-            fetch('api.php?action=get_products')
+            fetch('api.php?action=get_product_info&barcode=' + encodeURIComponent(inputVal))
                 .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success' && data.products) {
-                        const matched = data.products.find(p => matchBarcodeOrSku(p, inputVal));
-                        if (matched) {
-                            callback(matched.barcode, matched);
-                            return;
-                        }
+                .then(info => {
+                    if (info.status === 'success' && info.product_found) {
+                        callback(info.barcode, {
+                            barcode: info.barcode,
+                            sku: info.sku,
+                            product_name: info.product_name,
+                            master_qty: info.master_qty
+                        });
+                    } else {
+                        callback(inputVal, null);
                     }
-                    // Fallback to get_product_info server API query
-                    fetch('api.php?action=get_product_info&barcode=' + encodeURIComponent(inputVal))
-                        .then(res => res.json())
-                        .then(info => {
-                            if (info.status === 'success' && info.product_found) {
-                                callback(info.barcode, {
-                                    barcode: info.barcode,
-                                    sku: info.sku,
-                                    product_name: info.product_name,
-                                    master_qty: info.master_qty
-                                });
-                            } else {
-                                callback(inputVal, null);
-                            }
-                        })
-                        .catch(() => callback(inputVal, null));
                 })
-                .catch(err => {
-                    console.error("Resolve barcode/sku error:", err);
-                    callback(inputVal, null);
-                });
+                .catch(err => callback(inputVal, null));
         }
 
         // Display manual confirm modal
@@ -4362,18 +4346,15 @@ $hasActiveStores = !empty($existingStoresList);
                 document.getElementById('edit-scan-prod-desc').innerText = "No barcode entered.";
                 return;
             }
-            fetch('api.php?action=get_products')
+            fetch('api.php?action=get_product_info&barcode=' + encodeURIComponent(barcode))
                 .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'success' && data.products) {
-                        const matched = data.products.find(p => p.barcode === barcode || (p.sku && p.sku.toLowerCase() === barcode.toLowerCase()));
-                        if (matched) {
-                            document.getElementById('edit-scan-prod-name').innerText = matched.product_name;
-                            document.getElementById('edit-scan-prod-desc').innerText = `SKU: ${matched.sku || 'N/A'}`;
-                        } else {
-                            document.getElementById('edit-scan-prod-name').innerText = "Item Not Found";
-                            document.getElementById('edit-scan-prod-desc').innerText = "Item not found in catalog.";
-                        }
+                .then(info => {
+                    if (info.status === 'success' && info.product_found) {
+                        document.getElementById('edit-scan-prod-name').innerText = info.product_name || "Product Found";
+                        document.getElementById('edit-scan-prod-desc').innerText = `SKU: ${info.sku || 'N/A'}`;
+                    } else {
+                        document.getElementById('edit-scan-prod-name').innerText = "Item Not Found";
+                        document.getElementById('edit-scan-prod-desc').innerText = "Item not found in catalog.";
                     }
                 })
                 .catch(err => {
