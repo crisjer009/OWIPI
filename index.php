@@ -1776,6 +1776,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <button onclick="restoreDatabaseBackup()" class="btn btn-danger btn-sm"
                                     style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #d73a49; border-color: #cb2431;">Import
                                     database.sql Backup</button>
+                                <button onclick="purgeFreshDatabase()" class="btn btn-secondary btn-sm"
+                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: rgba(239, 68, 68, 0.15); color: #f85149; border: 1px solid #ef4444; font-weight: 600;">
+                                    🧹 Fresh Inventory Reset
+                                </button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -3757,7 +3761,40 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     };
                 }
 
-                document.addEventListener('keydown', keyHandler);
+        // Fresh Inventory Reset (System Admin)
+        async function purgeFreshDatabase() {
+            const promptMsg = "⚠️ WARNING: SYSTEM ADMIN ACTION - FRESH INVENTORY RESET\n\nThis will PERMANENTLY DROP all dynamic store locators, countsheet scan logs, and active store sessions across the entire database.\n\n✅ PRESERVED TABLES INTACT:\n- items (Master Product Catalog)\n- stores_id (Store ID Mapping)\n- users (Admin & Operator Accounts)\n\nTo confirm, please type RESET below:";
+
+            const confirmation = await showCustomPrompt(
+                promptMsg,
+                "",
+                "Fresh Inventory Database Reset"
+            );
+
+            if (!confirmation || confirmation.trim().toUpperCase() !== 'RESET') {
+                if (confirmation !== null) {
+                    showCustomAlert("Reset cancelled. Confirmation text did not match 'RESET'.", "Action Cancelled");
+                }
+                return;
+            }
+
+            showToast("Purging store sessions and locators...", "info");
+
+            fetch('api.php?action=purge_inventory_data', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(async data => {
+                if (data.status === 'success') {
+                    await showCustomAlert(data.message, "Fresh Database Reset Complete", "OK");
+                    window.location.reload();
+                } else {
+                    showCustomAlert("Reset failed: " + data.message, "Purge Error");
+                }
+            })
+            .catch(err => {
+                showCustomAlert("Request failed: " + err, "Network Error");
             });
         }
     </script>

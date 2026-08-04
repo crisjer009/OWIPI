@@ -366,7 +366,7 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
 $userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
@@ -708,6 +708,53 @@ try {
             sendResponse([
                 'status' => 'success',
                 'message' => "Successfully and permanently deleted store session '" . strtoupper($store) . "'!"
+            ]);
+            break;
+
+        case 'purge_inventory_data':
+            checkAuth(true); // Requires system_admin
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'system_admin') {
+                throw new Exception("Only System Administrators (sys_admin) can perform a Fresh Inventory Reset.");
+            }
+
+            $db = new OWI_DB();
+            $tables = $db->query("SHOW TABLES");
+
+            $droppedTables = [];
+            if (!empty($tables)) {
+                foreach ($tables as $tRow) {
+                    $tbl = array_values($tRow)[0];
+                    $lower = strtolower($tbl);
+
+                    // Protect core infrastructure tables from being dropped
+                    if (in_array($lower, ['items', 'stores_id', 'users', 'stores_id_backup'])) {
+                        continue;
+                    }
+
+                    // Dynamic store tables: *_countsheet, *_locators, *_items
+                    if (preg_match('/^[a-z0-9_]+_(countsheet|locators|items)$/', $lower)) {
+                        $db->execute("DROP TABLE IF EXISTS `{$tbl}`");
+                        $droppedTables[] = $tbl;
+                    }
+                }
+            }
+
+            // Truncate active store sessions & pending sync requests
+            try {
+                $db->execute("TRUNCATE TABLE stores");
+            } catch (Exception $eS) {}
+            try {
+                $db->execute("TRUNCATE TABLE pending_sync_requests");
+            } catch (Exception $eP) {}
+
+            // Clear current active store session
+            unset($_SESSION['store_code']);
+
+            logAudit('FRESH_INVENTORY_PURGE', "System Admin performed Fresh Inventory Reset. Dropped " . count($droppedTables) . " dynamic store tables while preserving items, stores_id, and users.");
+
+            sendResponse([
+                'status' => 'success',
+                'message' => "Fresh Inventory Reset successful! Dropped " . count($droppedTables) . " store tables. Master items catalog, stores_id, and users remain 100% intact."
             ]);
             break;
 
