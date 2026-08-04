@@ -510,22 +510,8 @@ class OWI_DB {
             // Column already exists
         }
 
-        // Dynamically add session_token and last_activity columns to users table for concurrent login checks
-        try {
-            $this->execute("ALTER TABLE users ADD COLUMN session_token VARCHAR(255) NULL");
-        } catch (Exception $ex) {
-            // Column already exists
-        }
-        try {
-            $this->execute("ALTER TABLE users ADD COLUMN last_activity INT NULL");
-        } catch (Exception $ex) {
-            // Column already exists
-        }
-        try {
-            $this->execute("ALTER TABLE users ADD COLUMN login_ip VARCHAR(100) NULL");
-        } catch (Exception $ex) {
-            // Column already exists
-        }
+        // Dynamically add session_token, last_activity, and login_ip columns to users table for concurrent login checks
+        $this->ensureUsersColumnsExist();
 
         // Ensure all masterfile columns (Price, Aux1, QTY_STORE_1..125) exist on items table
         $this->ensureItemsColumnsExist('items');
@@ -749,6 +735,19 @@ class OWI_DB {
         }
         
         return true;
+    }
+
+    // Ensure session_token, last_activity, login_ip exist on users table
+    public function ensureUsersColumnsExist() {
+        try {
+            $this->execute("ALTER TABLE users ADD COLUMN session_token VARCHAR(255) NULL");
+        } catch (Exception $ex) {}
+        try {
+            $this->execute("ALTER TABLE users ADD COLUMN last_activity INT NULL");
+        } catch (Exception $ex) {}
+        try {
+            $this->execute("ALTER TABLE users ADD COLUMN login_ip VARCHAR(100) NULL");
+        } catch (Exception $ex) {}
     }
 
     // Ensure all 125 store quantity columns + Price + Aux1 exist on an items table, and allow duplicate UPCs

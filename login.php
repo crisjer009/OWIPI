@@ -105,6 +105,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 return false;
             };
 
+            // Ensure users table has session_token, last_activity, login_ip columns
+            $db->ensureUsersColumnsExist();
+
             // Query the master users table
             $sql = "SELECT id, username, password, role, session_token, last_activity, login_ip FROM users WHERE username = ?";
             $rows = $db->query($sql, [$username]);
