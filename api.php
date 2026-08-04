@@ -31,7 +31,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
@@ -134,6 +134,7 @@ function createCloudStoreBackup($db, $storeCode) {
     $scansCount = 0;
     $existingLocs = [];
     $existingScans = [];
+    $existingItems = [];
 
     try {
         $existingLocs = $db->query("SELECT * FROM `{$clean}_locators`");
@@ -147,6 +148,11 @@ function createCloudStoreBackup($db, $storeCode) {
     } catch (Exception $eS) {
     }
 
+    try {
+        $existingItems = $db->query("SELECT * FROM `{$clean}_items`");
+    } catch (Exception $eI) {
+    }
+
     $backupDir = __DIR__ . '/backups';
     if (!is_dir($backupDir)) {
         @mkdir($backupDir, 0777, true);
@@ -158,7 +164,7 @@ function createCloudStoreBackup($db, $storeCode) {
     $sqlScript = "-- OWI Physical Inventory Backup Script\n";
     $sqlScript .= "-- Store: " . strtoupper($clean) . "\n";
     $sqlScript .= "-- Created: " . date('Y-m-d H:i:s') . "\n";
-    $sqlScript .= "-- Locators: {$locsCount} | Scans: {$scansCount}\n\n";
+    $sqlScript .= "-- Locators: {$locsCount} | Scans: {$scansCount} | Items: " . count($existingItems) . "\n\n";
 
     if (!empty($existingLocs)) {
         $sqlScript .= "-- Locators Table Data\n";
@@ -192,6 +198,22 @@ function createCloudStoreBackup($db, $storeCode) {
         $sqlScript .= "\n";
     }
 
+    if (!empty($existingItems)) {
+        $sqlScript .= "-- Store Items Catalog Data\n";
+        $sqlScript .= "TRUNCATE TABLE `{$clean}_items`;\n";
+        foreach ($existingItems as $row) {
+            $cols = array_keys($row);
+            $colNames = implode('`, `', array_map('addslashes', $cols));
+            $vals = array_map(function ($v) {
+                if ($v === null) return "NULL";
+                return "'" . addslashes($v) . "'";
+            }, array_values($row));
+            $valStr = implode(', ', $vals);
+            $sqlScript .= "INSERT INTO `{$clean}_items` (`{$colNames}`) VALUES ({$valStr});\n";
+        }
+        $sqlScript .= "\n";
+    }
+
     @file_put_contents($sqlFile, $sqlScript);
 
     // 2. Export JSON backup snapshot file
@@ -200,7 +222,9 @@ function createCloudStoreBackup($db, $storeCode) {
         'store_code' => strtoupper($clean),
         'backed_up_at' => date('Y-m-d H:i:s'),
         'locators' => $existingLocs,
-        'scans' => $existingScans
+        'scans' => $existingScans,
+        'products' => $existingItems,
+        'items' => $existingItems
     ];
     @file_put_contents($jsonFile, json_encode($payload, JSON_PRETTY_PRINT));
 
@@ -2413,13 +2437,24 @@ try {
                 FROM `{$store}_countsheet`
             ");
 
+            // Fetch store catalog items table for this store
+            $storeItems = [];
+            try {
+                $itemCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
+                if (!empty($itemCheck)) {
+                    $storeItems = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
+                }
+            } catch (Exception $exItem) {
+                $storeItems = [];
+            }
+
             // Fetch users table
             $usersList = $db->query("SELECT username, password, role FROM users");
 
             // Fetch local audit logs (limit 50 to keep payload lightweight)
             $auditLogs = $db->query("SELECT store_code, username, action, details, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM audit_logs WHERE store_code = ? OR store_code IS NULL ORDER BY id DESC LIMIT 50", [$_SESSION['store_code']]);
 
-            if (empty($locators) && empty($scans) && empty($usersList) && empty($auditLogs)) {
+            if (empty($locators) && empty($scans) && empty($storeItems) && empty($usersList) && empty($auditLogs)) {
                 sendResponse([
                     'status' => 'success',
                     'message' => 'Everything is already synchronized with the cloud.'
@@ -2427,7 +2462,7 @@ try {
                 break;
             }
 
-            // Prepare lightweight payload focused on store session, locators, and scan records
+            // Prepare payload containing store session, locators, scans, catalog items, and users
             $payload = [
                 'secret_token' => $secretToken,
                 'store_code' => $_SESSION['store_code'],
@@ -2435,6 +2470,8 @@ try {
                 'store_details' => $storeDetails,
                 'locators' => $locators,
                 'scans' => $scans,
+                'products' => $storeItems,
+                'items' => $storeItems,
                 'users' => $usersList,
                 'audit_logs' => $auditLogs
             ];
@@ -3330,6 +3367,39 @@ try {
                     }
                     $restoredScans = count($content['scans']);
                 }
+
+                $products = $content['products'] ?? ($content['items'] ?? []);
+                if (!empty($products) && is_array($products)) {
+                    $db->execute("TRUNCATE TABLE `{$storeCode}_items`");
+
+                    $chunkSize = 200;
+                    $chunks = array_chunk($products, $chunkSize);
+
+                    $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
+                    $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                    $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
+
+                    foreach ($chunks as $chunk) {
+                        $placeholders = [];
+                        $params = [];
+                        foreach ($chunk as $row) {
+                            $placeholders[] = $singleRowPlaceholder;
+                            $params[] = $row['UPC'] ?? ($row['upc'] ?? '');
+                            $params[] = $row['SKU'] ?? ($row['sku'] ?? '');
+                            $params[] = $row['Descr'] ?? ($row['descr'] ?? ($row['product_name'] ?? ''));
+                            $params[] = $row['Type'] ?? ($row['type'] ?? '');
+                            $params[] = $row['Attr'] ?? ($row['attr'] ?? '');
+                            $params[] = $row['Size'] ?? ($row['size'] ?? '');
+                            $params[] = isset($row['Price']) ? (float)$row['Price'] : (isset($row['price']) ? (float)$row['price'] : 0.00);
+                            $params[] = $row['Aux1'] ?? ($row['aux1'] ?? '');
+                            $params[] = isset($row['Qty']) ? (float)$row['Qty'] : (isset($row['qty']) ? (float)$row['qty'] : 0);
+                        }
+                        if (!empty($placeholders)) {
+                            $sql = "INSERT INTO `{$storeCode}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
+                            $db->execute($sql, $params);
+                        }
+                    }
+                }
             } else {
                 throw new Exception("Unrecognized backup ID format.");
             }
@@ -3421,6 +3491,40 @@ try {
                         "INSERT INTO `{$storeCode}_countsheet` (SlotNo, CountDate, UPC, SKU, Descr, Qty, EditedQty, Posted, Added, Edited, ScannedBy, Variance, synced) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
                         [$slotNo, $countDate, $upc, $sku, $descr, $qty, $editedQty, $posted, $added, $edited, $scannedBy, $variance]
                     );
+                }
+            }
+
+            // Sync items catalog for the store to the cloud
+            $products = $payload['products'] ?? ($payload['items'] ?? []);
+            if (!empty($products) && is_array($products)) {
+                $db->execute("TRUNCATE TABLE `{$storeCode}_items`");
+
+                $chunkSize = 200;
+                $chunks = array_chunk($products, $chunkSize);
+
+                $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
+                $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
+
+                foreach ($chunks as $chunk) {
+                    $placeholders = [];
+                    $params = [];
+                    foreach ($chunk as $row) {
+                        $placeholders[] = $singleRowPlaceholder;
+                        $params[] = $row['UPC'] ?? ($row['upc'] ?? '');
+                        $params[] = $row['SKU'] ?? ($row['sku'] ?? '');
+                        $params[] = $row['Descr'] ?? ($row['descr'] ?? ($row['product_name'] ?? ''));
+                        $params[] = $row['Type'] ?? ($row['type'] ?? '');
+                        $params[] = $row['Attr'] ?? ($row['attr'] ?? '');
+                        $params[] = $row['Size'] ?? ($row['size'] ?? '');
+                        $params[] = isset($row['Price']) ? (float)$row['Price'] : (isset($row['price']) ? (float)$row['price'] : 0.00);
+                        $params[] = $row['Aux1'] ?? ($row['aux1'] ?? '');
+                        $params[] = isset($row['Qty']) ? (float)$row['Qty'] : (isset($row['qty']) ? (float)$row['qty'] : 0);
+                    }
+                    if (!empty($placeholders)) {
+                        $sql = "INSERT INTO `{$storeCode}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
+                        $db->execute($sql, $params);
+                    }
                 }
             }
 
