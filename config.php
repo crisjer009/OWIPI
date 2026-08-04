@@ -325,6 +325,9 @@ class OWI_DB {
     // Connect to MySQL
     public function connect($selectDatabase = true) {
         $server = $this->config['server'];
+        if (empty($server) || $server === 'localhost') {
+            $server = '127.0.0.1';
+        }
         $port = !empty($this->config['port']) ? $this->config['port'] : '3306';
         $db = $this->config['database']; // Connect to main database owi_physical_inventory
         $username = $this->config['username'];

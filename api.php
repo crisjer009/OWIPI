@@ -621,9 +621,14 @@ try {
                 }
             }
 
-            // Provision store tables dynamically (creates e.g. tes_countsheet and tes_items)
+            // Provision store tables dynamically only if not initialized yet
             $userId = (int) ($_SESSION['user_id'] ?? 0);
-            $db->createStoreTables($cleanStore, $userId, $locatorsCount);
+            $tblCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_locators'");
+            if (empty($tblCheck) || $mode === 'create') {
+                $db->createStoreTables($cleanStore, $userId, $locatorsCount);
+            } else {
+                $db->execute("INSERT INTO stores (store_code, created_by) VALUES (?, ?) ON DUPLICATE KEY UPDATE created_by = COALESCE(created_by, VALUES(created_by))", [strtoupper($cleanStore), $userId]);
+            }
 
             $_SESSION['store_code'] = strtoupper($cleanStore);
 
@@ -869,33 +874,10 @@ try {
             break;
 
         case 'get_scans':
+            session_write_close();
             $db = new OWI_DB();
             $store = strtolower($_SESSION['store_code']);
             $location = isset($_GET['location']) ? trim($_GET['location']) : '';
-
-            // Self-healing: Update descriptions & SKUs for any previous "Item Not Found" scans that now exist in the items tables
-            try {
-                $countsheetCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
-                if (!empty($countsheetCheck)) {
-                    $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
-                    if (!empty($tableCheck)) {
-                        $db->execute("
-                            UPDATE `{$store}_countsheet` c
-                            INNER JOIN `{$store}_items` i ON i.UPC = c.UPC OR i.SKU = c.UPC
-                            SET c.Descr = i.Descr, c.SKU = i.SKU
-                            WHERE c.Descr IN ('Item Not Found', 'Unknown Product', 'N/A', '') OR c.SKU = '' OR c.SKU IS NULL
-                        ");
-                    }
-                    $db->execute("
-                        UPDATE `{$store}_countsheet` c
-                        INNER JOIN `items` i ON i.UPC = c.UPC OR i.SKU = c.UPC
-                        SET c.Descr = i.Descr, c.SKU = i.SKU
-                        WHERE c.Descr IN ('Item Not Found', 'Unknown Product', 'N/A', '') OR c.SKU = '' OR c.SKU IS NULL
-                    ");
-                }
-            } catch (Exception $exHeal) {
-                // Ignore
-            }
 
             // Fetch scans from dynamic store countsheet table
             $sqlScans = "
@@ -1904,6 +1886,7 @@ try {
             break;
 
         case 'get_locators':
+            session_write_close();
             $db = new OWI_DB();
             $storeCode = $_SESSION['store_code'] ?? '';
             if (empty($storeCode)) {
