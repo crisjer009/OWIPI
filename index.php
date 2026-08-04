@@ -1729,59 +1729,80 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     </div>
                 <?php endif; ?>
 
-                <!-- MySQL Integration Info Panel -->
-                <div class="card" style="max-width: 600px; margin-bottom: 2rem;">
-                    <div class="card-header">
-                        <h2 class="card-title">
-                            <svg viewBox="0 0 24 24">
-                                <path
-                                    d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73-1.69-.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
-                            </svg>
-                            MySQL (OWI PHYSICAL INVENTORY) Integration
-                        </h2>
-                    </div>
-                    <div style="font-size: 0.9rem; line-height: 1.6;">
-                        <p style="margin-bottom: 0.75rem; color: var(--text-secondary);">
-                            The system database integration status and active parameters.
-                        </p>
-                        <div
-                            style="background: rgba(0,0,0,0.15); border-radius: 8px; padding: 1rem; border: 1px solid var(--card-border);">
-                            <div style="margin-bottom: 0.4rem;"><strong>Host Host/IP:</strong> <span
-                                    class="badge"><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></span>
+                <!-- System Administrator Control Center -->
+                <div class="card" style="margin-top: 1rem; margin-bottom: 2rem; background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 1.75rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5); backdrop-filter: blur(16px); position: relative; overflow: hidden;">
+                    <!-- Top Glow Accent Line -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #ef4444);"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 1.25rem; margin-bottom: 1.25rem;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                                <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; font-size: 1.1rem; border: 1px solid rgba(59, 130, 246, 0.3);">⚙️</span>
+                                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.3px;">
+                                    System Administrator Control Center
+                                </h2>
+                                <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; padding: 3px 8px; border-radius: 20px;">
+                                    SYS_ADMIN
+                                </span>
                             </div>
-                            <div style="margin-bottom: 0.4rem;"><strong>Database Name:</strong> <span
-                                    class="badge"><?= htmlspecialchars($config['database']) ?></span></div>
-                            <div style="margin-bottom: 0.4rem;"><strong>MySQL User:</strong> <span
-                                    class="badge"><?= htmlspecialchars($config['username']) ?></span></div>
-                            <?php if ($dbStatus === 'connected'): ?>
-                                <div
-                                    style="color: var(--success-color); font-weight: 600; margin-top: 0.75rem; display: flex; align-items: center; gap: 0.25rem;">
-                                    <span style="font-size: 1.25rem; line-height: 1;">●</span> Gateway successfully connected to
-                                    MySQL.
-                                </div>
-                            <?php else: ?>
-                                <div
-                                    style="color: var(--danger-color); font-weight: 600; margin-top: 0.75rem; display: flex; align-items: center; gap: 0.25rem;">
-                                    <span style="font-size: 1.25rem; line-height: 1;">●</span> DB Connection Error:
-                                    <?= htmlspecialchars($dbError) ?>
-                                </div>
-                            <?php endif; ?>
+                            <div style="font-size: 0.85rem; color: #94a3b8; margin-left: 42px;">
+                                Manage database connections, table schemas, backups, and execute administrative maintenance operations.
+                            </div>
                         </div>
-                        <div style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 1rem;">
-                            <button onclick="switchView('database')" class="btn btn-secondary btn-sm"
-                                style="padding: 0.5rem 1rem; font-size: 0.85rem;">Modify Config</button>
-                            <?php if ($driverLoaded): ?>
-                                <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
-                                    style="padding: 0.5rem 1rem; font-size: 0.85rem;">Initialize DB Tables</button>
-                                <button onclick="restoreDatabaseBackup()" class="btn btn-danger btn-sm"
-                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #d73a49; border-color: #cb2431;">Import
-                                    database.sql Backup</button>
-                                <button onclick="purgeFreshDatabase()" class="btn btn-secondary btn-sm"
-                                    style="padding: 0.5rem 1rem; font-size: 0.85rem; background: rgba(239, 68, 68, 0.15); color: #f85149; border: 1px solid #ef4444; font-weight: 600;">
-                                    🧹 Fresh Inventory Reset
-                                </button>
-                            <?php endif; ?>
+
+                        <!-- Connection Quick Status Pill -->
+                        <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">MySQL Host</span>
+                                <span style="font-size: 0.85rem; color: #f8fafc; font-family: monospace; font-weight: 700;">
+                                    <?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?>
+                                </span>
+                            </div>
+                            <div style="height: 24px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.68rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Database</span>
+                                <span style="font-size: 0.85rem; color: #38bdf8; font-family: monospace; font-weight: 700;">
+                                    <?= htmlspecialchars($config['database']) ?>
+                                </span>
+                            </div>
+                            <div style="height: 24px; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                            <div>
+                                <?php if ($dbStatus === 'connected'): ?>
+                                    <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: 0 0 8px #10b981;"></span> Connected
+                                    </span>
+                                <?php else: ?>
+                                    <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+                                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; display: inline-block; box-shadow: 0 0 8px #ef4444;"></span> Offline
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Action Controls Grid Bar -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+                        <button onclick="switchView('database')" class="btn btn-secondary btn-sm"
+                            style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #f1f5f9; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                            ⚙️ Modify Configuration
+                        </button>
+
+                        <?php if ($driverLoaded): ?>
+                            <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
+                                style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 1px solid #059669; color: #ffffff; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;">
+                                ⚡ Initialize DB Tables
+                            </button>
+
+                            <button onclick="restoreDatabaseBackup()" class="btn btn-danger btn-sm"
+                                style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+                                📦 Import database.sql Backup
+                            </button>
+
+                            <button onclick="purgeFreshDatabase()" class="btn btn-secondary btn-sm"
+                                style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 700; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px; cursor: pointer; margin-left: auto; transition: all 0.2s ease;">
+                                🧹 Fresh Inventory Reset
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endif; ?>
