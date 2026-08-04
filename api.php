@@ -19,6 +19,10 @@ set_exception_handler(function ($exception) {
     exit;
 });
 
+if (!in_array('ob_gzhandler', ob_list_handlers()) && extension_loaded('zlib') && !headers_sent()) {
+    @ob_start('ob_gzhandler');
+}
+
 header("Content-Type: application/json");
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
@@ -876,8 +880,29 @@ try {
         case 'get_scans':
             session_write_close();
             $db = new OWI_DB();
-            $store = strtolower($_SESSION['store_code']);
+            $store = strtolower($_SESSION['store_code'] ?? ($_GET['store_code'] ?? ''));
             $location = isset($_GET['location']) ? trim($_GET['location']) : '';
+
+            if (empty($store)) {
+                sendResponse(['status' => 'success', 'scans' => []]);
+            }
+
+            // Fast ETag fingerprint check to avoid redundant data transfer when no new scans exist
+            $dataHash = '';
+            try {
+                $fpRow = $db->query("SELECT MAX(RecNo) as max_id, COUNT(*) as cnt FROM `{$store}_countsheet`");
+                $dataHash = md5(($fpRow[0]['max_id'] ?? '0') . '_' . ($fpRow[0]['cnt'] ?? '0') . '_' . $location);
+                $clientHash = $_SERVER['HTTP_IF_NONE_MATCH'] ?? ($_GET['hash'] ?? '');
+                if (!empty($clientHash) && $clientHash === $dataHash) {
+                    sendResponse([
+                        'status' => 'unchanged',
+                        'hash' => $dataHash,
+                        'scans' => null
+                    ]);
+                }
+            } catch (Exception $eFp) {
+                $dataHash = '';
+            }
 
             // Fetch scans from dynamic store countsheet table
             $sqlScans = "
@@ -906,6 +931,7 @@ try {
 
             sendResponse([
                 'status' => 'success',
+                'hash' => $dataHash,
                 'scans' => $scans
             ]);
             break;
@@ -1888,12 +1914,30 @@ try {
         case 'get_locators':
             session_write_close();
             $db = new OWI_DB();
-            $storeCode = $_SESSION['store_code'] ?? '';
+            $storeCode = $_SESSION['store_code'] ?? ($_GET['store_code'] ?? '');
             if (empty($storeCode)) {
                 sendResponse(['status' => 'error', 'message' => 'No active store selected.']);
             }
 
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+
+            // Fast ETag fingerprint check to avoid redundant data transfer when locators have not changed
+            $dataHash = '';
+            try {
+                $fpRow = $db->query("SELECT COUNT(*) as cnt, SUM(IF(status='closed',1,0)) as cls FROM `{$store}_locators`");
+                $csFpRow = $db->query("SELECT MAX(RecNo) as max_scan FROM `{$store}_countsheet`");
+                $dataHash = md5(($fpRow[0]['cnt'] ?? '0') . '_' . ($fpRow[0]['cls'] ?? '0') . '_' . ($csFpRow[0]['max_scan'] ?? '0'));
+                $clientHash = $_SERVER['HTTP_IF_NONE_MATCH'] ?? ($_GET['hash'] ?? '');
+                if (!empty($clientHash) && $clientHash === $dataHash) {
+                    sendResponse([
+                        'status' => 'unchanged',
+                        'hash' => $dataHash,
+                        'locators' => null
+                    ]);
+                }
+            } catch (Exception $eFp) {
+                $dataHash = '';
+            }
 
             // Validate that store code exists in stores table
             $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
@@ -1924,7 +1968,7 @@ try {
                 GROUP BY l.id, l.locator_name, l.status, l.assigned_operator
                 ORDER BY l.id ASC
             ");
-            sendResponse(['status' => 'success', 'locators' => $locators]);
+            sendResponse(['status' => 'success', 'hash' => $dataHash, 'locators' => $locators]);
             break;
 
         case 'add_locator':

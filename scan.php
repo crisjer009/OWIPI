@@ -2226,13 +2226,20 @@ $hasActiveStores = !empty($existingStoresList);
                         renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
-                    // Continuous scans polling for Host Console (1s interval for real-time mobile scan updates)
-                    loadHostScans();
-                    setInterval(loadHostScans, 1000);
-
-                    // Load host locators panel (1s interval for real-time status updates)
-                    loadHostLocators();
-                    setInterval(loadHostLocators, 1000);
+                    // Adaptive scans & locators polling for Host Console
+                    let hostPollInterval = null;
+                    const runHostPoll = () => {
+                        loadHostScans();
+                        loadHostLocators();
+                    };
+                    const startHostPollTimer = () => {
+                        if (hostPollInterval) clearInterval(hostPollInterval);
+                        runHostPoll();
+                        const intervalMs = document.hidden ? 5000 : 1000;
+                        hostPollInterval = setInterval(runHostPoll, intervalMs);
+                    };
+                    startHostPollTimer();
+                    document.addEventListener('visibilitychange', startHostPollTimer);
 
                     // Poll store host lock to prevent opening multiple scan.php host windows for same store
                     checkStoreHostLock();
@@ -2965,12 +2972,16 @@ $hasActiveStores = !empty($existingStoresList);
 
         // Fetch all store scan records and display in host terminal table
         window.cachedHostScans = [];
+        window.lastScansHash = '';
 
         // Fetch all store scan records and display in host terminal table
         function loadHostScans() {
-            fetch('api.php?action=get_scans')
+            fetch('api.php?action=get_scans&hash=' + encodeURIComponent(window.lastScansHash))
                 .then(res => res.json())
                 .then(data => {
+                    if (data.hash) window.lastScansHash = data.hash;
+                    if (data.status === 'unchanged') return; // 0 payload transferred!
+
                     const totalQtyEl = document.getElementById('metric-total-qty');
                     const uniqueBarcodesEl = document.getElementById('metric-unique-barcodes');
 
