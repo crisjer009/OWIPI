@@ -2,8 +2,9 @@
 require_once __DIR__ . '/config.php';
 checkAuth(false); // Make sure user is logged in
 
-$isSysAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'system_admin');
-$isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+$userRole = strtolower(trim($_SESSION['role'] ?? ''));
+$isSysAdmin = in_array($userRole, ['system_admin', 'sys_admin']);
+$isAdmin = ($userRole === 'admin');
 if (!$isSysAdmin && !$isAdmin) {
     header('Location: scan.php');
     exit;
@@ -1586,13 +1587,13 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     </svg>
                     Dashboard
                 </div>
-                <?php if ($isSysAdmin): ?>
+                <?php if ($isSysAdmin || $isAdmin): ?>
                     <div class="nav-item" onclick="switchView('database', this)">
                         <svg viewBox="0 0 24 24">
                             <path
                                 d="M12 2C6.48 2 2 4.02 2 6.5v11c0 2.48 4.48 4.5 10 4.5s10-2.02 10-4.5v-11C22 4.02 17.52 2 12 2zm0 18c-4.41 0-8-1.79-8-4v-2.15c1.99.96 4.79 1.65 8 1.65s6.01-.69 8-1.65V16c0 2.21-3.59 4-8 4zm0-6c-4.41 0-8-1.79-8-4v-2.15c1.99.96 4.79 1.65 8 1.65s6.01-.69 8-1.65V10c0 2.21-3.59 4-8 4zm0-6c-4.41 0-8-1.79-8-4s3.59-4 8-4 8 1.79 8 4-3.59 4-8 4z" />
                         </svg>
-                        MySQL Setup
+                        <?= $isSysAdmin ? 'MySQL Setup' : 'Security Token' ?>
                     </div>
                 <?php endif; ?>
                 <div class="nav-item" onclick="switchView('checker', this)">
@@ -1963,95 +1964,97 @@ if ($driverLoaded && $dbStatus === 'connected') {
             <?php endif; ?>
         </div>
 
-        <!-- View: MySQL Setup -->
+        <!-- View: Settings / Database Setup -->
         <div id="view-database" class="view-content">
             <header>
                 <div>
-                    <h1>MySQL Connection Setup</h1>
-                    <div class="header-desc">Define credentials to connect to your local or remote MySQL database</div>
+                    <h1><?= $isSysAdmin ? 'MySQL Connection Setup' : 'Security & Synchronization Token' ?></h1>
+                    <div class="header-desc"><?= $isSysAdmin ? 'Define credentials to connect to your local or remote MySQL database' : 'Configure your Secret Sync Token for local and cloud authorization' ?></div>
                 </div>
             </header>
 
-            <!-- MySQL Server Connection Settings Card -->
-            <div class="card" style="max-width: 600px;">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 class="card-title">
-                        <svg viewBox="0 0 24 24">
-                            <path
-                                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
-                        </svg>
-                        MySQL Database Connection
-                    </h2>
-                    <?php if ($dbStatus === 'connected'): ?>
-                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-db-form"
-                            onclick="toggleDbForm()"
-                            style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Show Fields</button>
-                    <?php endif; ?>
-                </div>
+            <?php if ($isSysAdmin): ?>
+                <!-- MySQL Server Connection Settings Card (System Admin Only) -->
+                <div class="card" style="max-width: 600px;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 class="card-title">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z" />
+                            </svg>
+                            MySQL Database Connection
+                        </h2>
+                        <?php if ($dbStatus === 'connected'): ?>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-db-form"
+                                onclick="toggleDbForm()"
+                                style="width: auto; font-size: 0.8rem; padding: 4px 12px; cursor: pointer;">Show Fields</button>
+                        <?php endif; ?>
+                    </div>
 
-                <div id="db-connected-status-summary"
-                    style="display: <?php echo ($dbStatus === 'connected') ? 'block' : 'none'; ?>; padding: 0.5rem 0;">
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div id="db-connected-status-summary"
+                        style="display: <?php echo ($dbStatus === 'connected') ? 'block' : 'none'; ?>; padding: 0.5rem 0;">
                         <div
-                            style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
-                            <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected
-                            Successfully.
+                            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div
+                                style="color: var(--success-color); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem;">
+                                <span style="font-size: 1.25rem; line-height: 1;">●</span> MySQL Server Connected
+                                Successfully.
+                            </div>
+                            <button type="button" onclick="backupDatabaseLocal()" class="btn btn-secondary"
+                                style="width: auto; font-size: 0.8rem; padding: 6px 14px; border: 1px solid var(--accent-color); color: var(--accent-color); background: rgba(59, 130, 246, 0.08); font-weight: 600; cursor: pointer; border-radius: 6px;">
+                                💾 Set Current DB as Default
+                            </button>
                         </div>
-                        <button type="button" onclick="backupDatabaseLocal()" class="btn btn-secondary"
-                            style="width: auto; font-size: 0.8rem; padding: 6px 14px; border: 1px solid var(--accent-color); color: var(--accent-color); background: rgba(59, 130, 246, 0.08); font-weight: 600; cursor: pointer; border-radius: 6px;">
-                            💾 Set Current DB as Default
-                        </button>
+                        <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">
+                            Host:
+                            <code><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></code>
+                            | Database: <code><?= htmlspecialchars($config['database']) ?></code>
+                        </p>
                     </div>
-                    <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.5rem; margin-bottom: 0;">
-                        Host:
-                        <code><?= htmlspecialchars($config['server']) ?>:<?= htmlspecialchars($config['port'] ?? '3306') ?></code>
-                        | Database: <code><?= htmlspecialchars($config['database']) ?></code>
-                    </p>
+
+                    <form id="config-form" onsubmit="saveDbConfig(event)"
+                        style="display: <?php echo ($dbStatus === 'connected') ? 'none' : 'block'; ?>; margin-top: 1rem;">
+                        <div class="form-group" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="db_server">MySQL Server Host</label>
+                                <input type="text" id="db_server" class="form-control"
+                                    value="<?= htmlspecialchars($config['server']) ?>" placeholder="e.g. localhost"
+                                    required>
+                            </div>
+                            <div>
+                                <label for="db_port">Port</label>
+                                <input type="text" id="db_port" class="form-control"
+                                    value="<?= htmlspecialchars($config['port'] ?? '3306') ?>" placeholder="3306" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="db_database">Database Name</label>
+                            <input type="text" id="db_database" class="form-control"
+                                value="<?= htmlspecialchars($config['database']) ?>"
+                                placeholder="e.g. owi_physical_inventory" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="db_username">MySQL Username</label>
+                            <input type="text" id="db_username" class="form-control"
+                                value="<?= htmlspecialchars($config['username']) ?>" placeholder="e.g. root" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="db_password">MySQL Password</label>
+                            <input type="password" id="db_password" class="form-control"
+                                value="<?= htmlspecialchars($config['password']) ?>" placeholder="Leave blank if none">
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="submit" class="btn">Save & Verify Connection</button>
+                            <button type="button" onclick="testConnection()" class="btn btn-secondary">Test Connection
+                                Only</button>
+                        </div>
+                    </form>
                 </div>
+            <?php endif; ?>
 
-                <form id="config-form" onsubmit="saveDbConfig(event)"
-                    style="display: <?php echo ($dbStatus === 'connected') ? 'none' : 'block'; ?>; margin-top: 1rem;">
-                    <div class="form-group" style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
-                        <div>
-                            <label for="db_server">MySQL Server Host</label>
-                            <input type="text" id="db_server" class="form-control"
-                                value="<?= htmlspecialchars($config['server']) ?>" placeholder="e.g. localhost"
-                                required>
-                        </div>
-                        <div>
-                            <label for="db_port">Port</label>
-                            <input type="text" id="db_port" class="form-control"
-                                value="<?= htmlspecialchars($config['port'] ?? '3306') ?>" placeholder="3306" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="db_database">Database Name</label>
-                        <input type="text" id="db_database" class="form-control"
-                            value="<?= htmlspecialchars($config['database']) ?>"
-                            placeholder="e.g. owi_physical_inventory" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="db_username">MySQL Username</label>
-                        <input type="text" id="db_username" class="form-control"
-                            value="<?= htmlspecialchars($config['username']) ?>" placeholder="e.g. root" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="db_password">MySQL Password</label>
-                        <input type="password" id="db_password" class="form-control"
-                            value="<?= htmlspecialchars($config['password']) ?>" placeholder="Leave blank if none">
-                    </div>
-
-                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                        <button type="submit" class="btn">Save & Verify Connection</button>
-                        <button type="button" onclick="testConnection()" class="btn btn-secondary">Test Connection
-                            Only</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Sync Token Configuration Card -->
-            <div class="card" style="max-width: 600px; margin-top: 2rem;">
+            <!-- Sync Token Configuration Card (Visible to both System Admin and Admin) -->
+            <div class="card" style="max-width: 600px; margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>;">
                 <div class="card-header">
                     <h2 class="card-title">
                         <svg viewBox="0 0 24 24">
@@ -2075,37 +2078,37 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
             </div>
 
-
-
-            <!-- Print Spacing Settings -->
-            <div class="card" style="max-width: 600px; margin-top: 2rem;">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:var(--accent-color);">
-                            <path
-                                d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
-                        </svg>
-                        Print Spacing Settings
-                    </h2>
-                </div>
-                <form id="print-config-form" onsubmit="savePrintConfig(event)">
-                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <div>
-                            <label for="print_margin_top">Top Margin / Spacing (mm)</label>
-                            <input type="number" id="print_margin_top" class="form-control"
-                                value="<?= htmlspecialchars($config['print_margin_top'] ?? '0') ?>" min="0" max="200"
-                                required>
-                        </div>
-                        <div>
-                            <label for="print_margin_left">Left Margin / Spacing (mm)</label>
-                            <input type="number" id="print_margin_left" class="form-control"
-                                value="<?= htmlspecialchars($config['print_margin_left'] ?? '0') ?>" min="0" max="200"
-                                required>
-                        </div>
+            <?php if ($isSysAdmin): ?>
+                <!-- Print Spacing Settings (System Admin Only) -->
+                <div class="card" style="max-width: 600px; margin-top: 2rem;">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <svg viewBox="0 0 24 24" style="width:22px; height:22px; fill:var(--accent-color);">
+                                <path
+                                    d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                            </svg>
+                            Print Spacing Settings
+                        </h2>
                     </div>
-                    <button type="submit" class="btn" style="margin-top: 1rem;">Save Spacing Settings</button>
-                </form>
-            </div>
+                    <form id="print-config-form" onsubmit="savePrintConfig(event)">
+                        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label for="print_margin_top">Top Margin / Spacing (mm)</label>
+                                <input type="number" id="print_margin_top" class="form-control"
+                                    value="<?= htmlspecialchars($config['print_margin_top'] ?? '0') ?>" min="0" max="200"
+                                    required>
+                            </div>
+                            <div>
+                                <label for="print_margin_left">Left Margin / Spacing (mm)</label>
+                                <input type="number" id="print_margin_left" class="form-control"
+                                    value="<?= htmlspecialchars($config['print_margin_left'] ?? '0') ?>" min="0" max="200"
+                                    required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn" style="margin-top: 1rem;">Save Spacing Settings</button>
+                    </form>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- View: Products Catalog -->
