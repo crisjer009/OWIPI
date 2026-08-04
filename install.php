@@ -347,6 +347,12 @@ $step = $_GET['step'] ?? 'form';
                     
                     // Always initialize complete database schema & migrations
                     $db->initializeDatabase();
+
+                    // Ensure audit_logs is 100% clean on fresh installation
+                    try {
+                        $db->execute("TRUNCATE TABLE audit_logs");
+                    } catch (Exception $eAud) {}
+
                     echo "<div class='log-item' style='color: #10b981;'>✓ Local database tables and schema migrations initialized successfully.</div>";
                 } catch (Exception $e) {
                     die("<div class='log-item' style='color: #ef4444;'>❌ Database Error: " . $e->getMessage() . "</div>");

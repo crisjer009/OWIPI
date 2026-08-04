@@ -12,10 +12,7 @@ CREATE TABLE `audit_logs` (
   `details` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO `audit_logs` VALUES
-('1', NULL, 'sys_admin', 'DELETE_STORE', 'Permanently deleted store session \'LBS\' and dropped all its tables.', '2026-07-20 16:09:04');
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `items`;
 CREATE TABLE `items` (
