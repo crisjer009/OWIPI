@@ -3761,6 +3761,10 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     };
                 }
 
+                document.addEventListener('keydown', keyHandler);
+            });
+        }
+
         // Fresh Inventory Reset (System Admin)
         async function purgeFreshDatabase() {
             const promptMsg = "⚠️ WARNING: SYSTEM ADMIN ACTION - FRESH INVENTORY RESET\n\nThis will PERMANENTLY DROP all dynamic store locators, countsheet scan logs, and active store sessions across the entire database.\n\n✅ PRESERVED TABLES INTACT:\n- items (Master Product Catalog)\n- stores_id (Store ID Mapping)\n- users (Admin & Operator Accounts)\n\nTo confirm, please type RESET below:";
