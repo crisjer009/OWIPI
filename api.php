@@ -2674,10 +2674,12 @@ try {
                 throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
             }
 
-            $cloudStore = $resData['store'] ?? null;
-            if (empty($cloudStore)) {
-                throw new Exception("Store session '" . strtoupper($store) . "' does not exist on the Cloud server.");
-            }
+            $cloudStore = $resData['store'] ?? [
+                'id' => 0,
+                'store_code' => strtoupper($store),
+                'closed' => 0,
+                'creator_username' => $_SESSION['username'] ?? 'sys_admin'
+            ];
             $locators = $resData['locators'] ?? [];
             $products = $resData['products'] ?? [];
             $scans = $resData['scans'] ?? [];
@@ -3684,9 +3686,13 @@ try {
                 // Table 'stores' or column doesn't exist on cloud
             }
 
-            if (empty($storeRows)) {
-                throw new Exception("Store session '" . strtoupper($store) . "' does not exist on the Cloud server.");
-            }
+            $storeObj = !empty($storeRows) ? $storeRows[0] : [
+                'id' => 0,
+                'store_code' => strtoupper($store),
+                'closed' => 0,
+                'creator_username' => 'sys_admin',
+                'created_at' => date('Y-m-d H:i:s')
+            ];
 
             $locators = [];
             try {
@@ -3737,7 +3743,7 @@ try {
 
             sendResponse([
                 'status' => 'success',
-                'store' => $storeRows[0] ?? null,
+                'store' => $storeObj,
                 'locators' => $locators,
                 'scans' => $scans,
                 'products' => $products
