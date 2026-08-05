@@ -337,7 +337,12 @@ function findCatalogProduct($barcode, $storeCode = null)
         if (!isset($storeTableCache[$cleanStore])) {
             try {
                 $tableCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
-                $storeTableCache[$cleanStore] = !empty($tableCheck);
+                if (!empty($tableCheck)) {
+                    $cntCheck = $db->query("SELECT COUNT(*) as cnt FROM `{$cleanStore}_items`");
+                    $storeTableCache[$cleanStore] = !empty($cntCheck) && ((int) $cntCheck[0]['cnt'] > 0);
+                } else {
+                    $storeTableCache[$cleanStore] = false;
+                }
             } catch (Exception $e) {
                 $storeTableCache[$cleanStore] = false;
             }
