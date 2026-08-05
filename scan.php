@@ -1121,6 +1121,12 @@ $hasActiveStores = !empty($existingStoresList);
                 </button>
             <?php endif; ?>
             <?php if (!$isMobileScanner): ?>
+                <?php if (isset($_SESSION['role']) && in_array($_SESSION['role'], ['system_admin', 'sys_admin', 'admin'])): ?>
+                    <a href="index.php" class="btn"
+                        style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600; text-decoration:none;">
+                        🎛️ Control Dashboard
+                    </a>
+                <?php endif; ?>
                 <button id="btn-upload-masterfile" class="btn btn-secondary" onclick="openHostMasterfileModal()"
                     style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; font-weight:600;">
                     📁 Upload Masterfile
@@ -2103,10 +2109,10 @@ $hasActiveStores = !empty($existingStoresList);
         let qrCodeInstance = null;
 
         // Unique tab/browser session token to lock scanning session to 1 active window
-        let tabDeviceToken = sessionStorage.getItem('owipi_tab_token');
-        if (!tabDeviceToken) {
-            tabDeviceToken = 'token_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-            sessionStorage.setItem('owipi_tab_token', tabDeviceToken);
+        let tabDeviceToken = window.name;
+        if (!tabDeviceToken || !tabDeviceToken.startsWith('scan_tab_')) {
+            tabDeviceToken = 'scan_tab_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            window.name = tabDeviceToken;
         }
 
         window.addEventListener('beforeunload', function () {
@@ -2116,7 +2122,7 @@ $hasActiveStores = !empty($existingStoresList);
                 navigator.sendBeacon('api.php?action=release_session', payload);
             }
             if (typeof storeCode !== 'undefined' && storeCode) {
-                const payloadStore = new Blob([JSON.stringify({ store_code: storeCode, device_token: tabDeviceToken })], { type: 'application/json' });
+                const payloadStore = new Blob([JSON.stringify({ store_code: storeCode, device_token: tabDeviceToken, page_type: 'scan' })], { type: 'application/json' });
                 navigator.sendBeacon('api.php?action=release_store_host', payloadStore);
             }
         });
@@ -2135,9 +2141,9 @@ $hasActiveStores = !empty($existingStoresList);
                     overlay.innerHTML = `
                         <div style="background:#161b22; border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:2.5rem; max-width:440px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.6); text-align:center; box-sizing:border-box;">
                             <div style="font-size:3.2rem; margin-bottom:1rem; line-height:1;">⚠️</div>
-                            <h2 style="color:#ffffff; margin:0 0 0.75rem 0; font-size:1.4rem; font-weight:700;">Store Session Active in Another Tab</h2>
+                            <h2 style="color:#ffffff; margin:0 0 0.75rem 0; font-size:1.4rem; font-weight:700;">Host Store Monitor Active in Another Tab</h2>
                             <p style="color:#8b949e; font-size:0.92rem; line-height:1.6; margin-bottom:1.75rem;">
-                                Store session <strong style="color:#58a6ff;">'${storeName}'</strong> is already open and running in your primary browser tab. This duplicate tab has been paused.
+                                Host Store Monitor (scan.php) for store session <strong style="color:#58a6ff;">'${storeName}'</strong> is already open and running in your primary browser tab. This duplicate tab has been paused.
                             </p>
                             <div style="display:flex; flex-direction:column; gap:10px; align-items:stretch;">
                                 <button onclick="window.close()" class="btn" style="width:100%; padding:12px; border-radius:8px; font-weight:600; background:#30363d; color:#ffffff; border:1px solid rgba(255,255,255,0.15); cursor:pointer; font-size:0.95rem;">Press 'Ctrl' + 'W' to CLOSE</button>
@@ -2160,7 +2166,7 @@ $hasActiveStores = !empty($existingStoresList);
             fetch('api.php?action=heartbeat_store_host', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ store_code: storeCode, device_token: tabDeviceToken })
+                body: JSON.stringify({ store_code: storeCode, device_token: tabDeviceToken, page_type: 'scan' })
             })
                 .then(res => res.json())
                 .then(data => {
@@ -2168,7 +2174,7 @@ $hasActiveStores = !empty($existingStoresList);
                         isHostLockAlertShowing = true;
                         if (storeHostLockTimer) clearInterval(storeHostLockTimer);
 
-                        customAlert(data.message, "Store Session Conflict", () => {
+                        customAlert(data.message, "Host Monitor Conflict", () => {
                             showStoreConflictOverlay(storeCode);
                         });
                     }

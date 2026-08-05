@@ -1556,7 +1556,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        window.location.reload();
+                        window.location.href = 'scan.php';
                     } else {
                         alert("Error: " + data.message);
                     }
@@ -2676,16 +2676,16 @@ if ($driverLoaded && $dbStatus === 'connected') {
         const scanUrl = "<?= $scanUrl ?>";
         let autoPollInterval = null;
 
-        let tabDeviceToken = sessionStorage.getItem('owipi_tab_token');
-        if (!tabDeviceToken) {
-            tabDeviceToken = 'token_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-            sessionStorage.setItem('owipi_tab_token', tabDeviceToken);
+        let tabDeviceToken = window.name;
+        if (!tabDeviceToken || !tabDeviceToken.startsWith('index_tab_')) {
+            tabDeviceToken = 'index_tab_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+            window.name = tabDeviceToken;
         }
 
         window.addEventListener('beforeunload', function () {
             const currentStore = <?= json_encode($_SESSION['store_code'] ?? '') ?>;
             if (currentStore) {
-                const payload = new Blob([JSON.stringify({ store_code: currentStore, device_token: tabDeviceToken })], { type: 'application/json' });
+                const payload = new Blob([JSON.stringify({ store_code: currentStore, device_token: tabDeviceToken, page_type: 'index' })], { type: 'application/json' });
                 navigator.sendBeacon('api.php?action=release_store_host', payload);
             }
         });
@@ -2704,9 +2704,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     overlay.innerHTML = `
                         <div style="background:#161b22; border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:2.5rem; max-width:440px; width:100%; box-shadow:0 20px 50px rgba(0,0,0,0.6); text-align:center; box-sizing:border-box;">
                             <div style="font-size:3.2rem; margin-bottom:1rem; line-height:1;">⚠️</div>
-                            <h2 style="color:#ffffff; margin:0 0 0.75rem 0; font-size:1.4rem; font-weight:700;">Store Session Active in Another Tab</h2>
+                            <h2 style="color:#ffffff; margin:0 0 0.75rem 0; font-size:1.4rem; font-weight:700;">Control Dashboard Active in Another Tab</h2>
                             <p style="color:#8b949e; font-size:0.92rem; line-height:1.6; margin-bottom:1.75rem;">
-                                Store session <strong style="color:#58a6ff;">'${storeName}'</strong> is already open and running in your primary browser tab. This duplicate tab has been paused.
+                                Control Dashboard (index.php) for store session <strong style="color:#58a6ff;">'${storeName}'</strong> is already open and running in your primary browser tab. This duplicate tab has been paused.
                             </p>
                             <div style="display:flex; flex-direction:column; gap:10px; align-items:stretch;">
                                 <button onclick="window.close()" class="btn" style="width:100%; padding:12px; border-radius:8px; font-weight:600; background:#30363d; color:#ffffff; border:1px solid rgba(255,255,255,0.15); cursor:pointer; font-size:0.95rem;">Press 'Ctrl' + 'W' to CLOSE</button>
@@ -2731,7 +2731,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             fetch('api.php?action=heartbeat_store_host', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ store_code: currentStore, device_token: tabDeviceToken })
+                body: JSON.stringify({ store_code: currentStore, device_token: tabDeviceToken, page_type: 'index' })
             })
                 .then(res => res.json())
                 .then(data => {
@@ -2739,7 +2739,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         isStoreLockAlertShowing = true;
                         if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
 
-                        showCustomAlert(data.message, "Store Session Conflict", "OK", () => {
+                        showCustomAlert(data.message, "Control Dashboard Conflict", "OK", () => {
                             showStoreConflictOverlay(currentStore);
                         });
                     }

@@ -280,6 +280,18 @@ function ensureStoresHostLockColumns($db)
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN host_user_id INT(11) NULL");
     } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN index_host_token VARCHAR(64) NULL");
+    } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN index_last_ping DATETIME NULL");
+    } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN scan_host_token VARCHAR(64) NULL");
+    } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN scan_last_ping DATETIME NULL");
+    } catch (Exception $e) {}
 }
 
 // Helper function to format product description by appending Attr and Size if not already present
@@ -662,7 +674,7 @@ try {
             }
 
             ensureStoresHostLockColumns($db);
-            $db->execute("UPDATE stores SET host_session_token = NULL, host_user_id = ?, host_last_ping = NULL WHERE UPPER(store_code) = ?", [$userId, strtoupper($cleanStore)]);
+            $db->execute("UPDATE stores SET index_host_token = NULL, index_last_ping = NULL, scan_host_token = NULL, scan_last_ping = NULL, host_session_token = NULL, host_last_ping = NULL, host_user_id = ? WHERE UPPER(store_code) = ?", [$userId, strtoupper($cleanStore)]);
 
             $_SESSION['store_code'] = strtoupper($cleanStore);
 
@@ -2227,6 +2239,10 @@ try {
             if (!$data) $data = $_POST;
             $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
             $deviceToken = trim($data['device_token'] ?? '');
+            $pageType = strtolower(trim($data['page_type'] ?? 'index'));
+            if (!in_array($pageType, ['index', 'scan'])) {
+                $pageType = 'index';
+            }
 
             if (empty($storeCode) || empty($deviceToken)) {
                 sendResponse(['status' => 'success']);
@@ -2238,25 +2254,28 @@ try {
 
             $cleanStore = strtoupper(trim($storeCode));
             $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
-            $storeRows = $db->query("SELECT host_session_token, host_user_id, TIMESTAMPDIFF(SECOND, host_last_ping, NOW()) as ping_diff FROM stores WHERE UPPER(store_code) = ?", [$cleanStore]);
+
+            $tokenCol = ($pageType === 'scan') ? 'scan_host_token' : 'index_host_token';
+            $pingCol  = ($pageType === 'scan') ? 'scan_last_ping' : 'index_last_ping';
+
+            $storeRows = $db->query("SELECT {$tokenCol} as active_token, TIMESTAMPDIFF(SECOND, {$pingCol}, NOW()) as ping_diff FROM stores WHERE UPPER(store_code) = ?", [$cleanStore]);
 
             if (!empty($storeRows)) {
-                $activeToken = $storeRows[0]['host_session_token'] ?? '';
-                $activeUserId = isset($storeRows[0]['host_user_id']) ? (int) $storeRows[0]['host_user_id'] : 0;
+                $activeToken = $storeRows[0]['active_token'] ?? '';
                 $pingDiff = isset($storeRows[0]['ping_diff']) ? (int) $storeRows[0]['ping_diff'] : 999;
                 $isLockActive = !empty($activeToken) && ($pingDiff < 10);
 
-                // If lock is active on a DIFFERENT user account, block duplicate host session
-                if ($isLockActive && $activeToken !== $deviceToken && $activeUserId > 0 && $currentUserId > 0 && $activeUserId !== $currentUserId) {
+                if ($isLockActive && $activeToken !== $deviceToken) {
+                    $pageLabel = ($pageType === 'scan') ? 'Host Store Monitor (scan.php)' : 'Control Dashboard (index.php)';
                     sendResponse([
                         'status' => 'store_locked',
-                        'message' => "Store session '" . $cleanStore . "' is currently active on another host computer/user. Multiple host windows across different users for the same store session are disabled."
+                        'message' => "{$pageLabel} for store session '" . $cleanStore . "' is already active in another browser tab/window. Duplicate tabs for the same page are disabled."
                     ]);
                     break;
                 }
 
-                // Same user or lock expired -> Refresh/Acquire host lock for this device token
-                $db->execute("UPDATE stores SET host_session_token = ?, host_user_id = ?, host_last_ping = NOW() WHERE UPPER(store_code) = ?", [$deviceToken, $currentUserId, $cleanStore]);
+                // Refresh/Acquire host lock for this page type
+                $db->execute("UPDATE stores SET {$tokenCol} = ?, {$pingCol} = NOW(), host_user_id = ? WHERE UPPER(store_code) = ?", [$deviceToken, $currentUserId, $cleanStore]);
             }
 
             sendResponse(['status' => 'success']);
@@ -2267,12 +2286,15 @@ try {
             if (!$data) $data = $_POST;
             $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
             $deviceToken = trim($data['device_token'] ?? '');
+            $pageType = strtolower(trim($data['page_type'] ?? 'index'));
 
             if (!empty($storeCode)) {
                 $db = new OWI_DB();
                 ensureStoresHostLockColumns($db);
                 $cleanStore = strtoupper(trim($storeCode));
-                $db->execute("UPDATE stores SET host_session_token = NULL, host_last_ping = NULL WHERE UPPER(store_code) = ? AND (host_session_token = ? OR host_session_token IS NULL)", [$cleanStore, $deviceToken]);
+                $tokenCol = ($pageType === 'scan') ? 'scan_host_token' : 'index_host_token';
+                $pingCol  = ($pageType === 'scan') ? 'scan_last_ping' : 'index_last_ping';
+                $db->execute("UPDATE stores SET {$tokenCol} = NULL, {$pingCol} = NULL WHERE UPPER(store_code) = ? AND ({$tokenCol} = ? OR {$tokenCol} IS NULL)", [$cleanStore, $deviceToken]);
             }
             sendResponse(['status' => 'success']);
             break;
