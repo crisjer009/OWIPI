@@ -1053,7 +1053,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
                     <div style="margin-bottom: 1rem;">
                         <label for="active_store_input" id="store-input-label">Create / Connect New Store Code</label>
-                        <input type="text" id="active_store_input" class="form-control" placeholder="e.g. TES, HQ, CEBU"
+                        <input type="text" id="active_store_input" class="form-control" placeholder="e.g. ABC"
                             style="text-transform: uppercase;" autocomplete="off" <?= $hasActiveStores ? '' : 'required' ?>>
                     </div>
                     <div>

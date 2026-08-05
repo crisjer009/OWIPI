@@ -277,6 +277,9 @@ function ensureStoresHostLockColumns($db)
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN host_last_ping DATETIME NULL");
     } catch (Exception $e) {}
+    try {
+        $db->execute("ALTER TABLE stores ADD COLUMN host_user_id INT(11) NULL");
+    } catch (Exception $e) {}
 }
 
 // Helper function to format product description by appending Attr and Size if not already present
@@ -657,6 +660,9 @@ try {
             } else {
                 $db->execute("INSERT INTO stores (store_code, created_by) VALUES (?, ?) ON DUPLICATE KEY UPDATE created_by = COALESCE(created_by, VALUES(created_by))", [strtoupper($cleanStore), $userId]);
             }
+
+            ensureStoresHostLockColumns($db);
+            $db->execute("UPDATE stores SET host_session_token = NULL, host_user_id = ?, host_last_ping = NULL WHERE UPPER(store_code) = ?", [$userId, strtoupper($cleanStore)]);
 
             $_SESSION['store_code'] = strtoupper($cleanStore);
 
@@ -2231,23 +2237,26 @@ try {
             ensureStoresHostLockColumns($db);
 
             $cleanStore = strtoupper(trim($storeCode));
-            $storeRows = $db->query("SELECT host_session_token, TIMESTAMPDIFF(SECOND, host_last_ping, NOW()) as ping_diff FROM stores WHERE UPPER(store_code) = ?", [$cleanStore]);
+            $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
+            $storeRows = $db->query("SELECT host_session_token, host_user_id, TIMESTAMPDIFF(SECOND, host_last_ping, NOW()) as ping_diff FROM stores WHERE UPPER(store_code) = ?", [$cleanStore]);
 
             if (!empty($storeRows)) {
                 $activeToken = $storeRows[0]['host_session_token'] ?? '';
-                $pingDiff = isset($storeRows[0]['ping_diff']) ? (int)$storeRows[0]['ping_diff'] : 999;
+                $activeUserId = isset($storeRows[0]['host_user_id']) ? (int) $storeRows[0]['host_user_id'] : 0;
+                $pingDiff = isset($storeRows[0]['ping_diff']) ? (int) $storeRows[0]['ping_diff'] : 999;
                 $isLockActive = !empty($activeToken) && ($pingDiff < 10);
 
-                if ($isLockActive && $activeToken !== $deviceToken) {
+                // If lock is active on a DIFFERENT user account, block duplicate host session
+                if ($isLockActive && $activeToken !== $deviceToken && $activeUserId > 0 && $currentUserId > 0 && $activeUserId !== $currentUserId) {
                     sendResponse([
                         'status' => 'store_locked',
-                        'message' => "Store session '" . $cleanStore . "' is currently active in another browser tab/window. Multiple host windows for the same store session are disabled."
+                        'message' => "Store session '" . $cleanStore . "' is currently active on another host computer/user. Multiple host windows across different users for the same store session are disabled."
                     ]);
                     break;
                 }
 
-                // Refresh/Acquire host lock
-                $db->execute("UPDATE stores SET host_session_token = ?, host_last_ping = NOW() WHERE UPPER(store_code) = ?", [$deviceToken, $cleanStore]);
+                // Same user or lock expired -> Refresh/Acquire host lock for this device token
+                $db->execute("UPDATE stores SET host_session_token = ?, host_user_id = ?, host_last_ping = NOW() WHERE UPPER(store_code) = ?", [$deviceToken, $currentUserId, $cleanStore]);
             }
 
             sendResponse(['status' => 'success']);
