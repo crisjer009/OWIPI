@@ -1972,7 +1972,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                             🔄 Re-open Store
                                         </button>
                                     <?php endif; ?>
-                                    <?php if ($isSysAdmin): ?>
+                                    <?php if ($isSysAdmin || $isAdmin): ?>
                                         <button onclick="confirmDeleteStore('<?= htmlspecialchars($s['store_code']) ?>')"
                                             class="btn btn-secondary btn-sm"
                                             style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.08); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600;">
