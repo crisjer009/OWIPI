@@ -2748,7 +2748,8 @@ $hasActiveStores = !empty($existingStoresList);
             document.getElementById('modal-qty').value = "1";
 
             if (preResolvedProduct) {
-                document.getElementById('modal-barcode').value = preResolvedProduct.barcode || barcode;
+                const targetBarcode = (preResolvedProduct.barcode && preResolvedProduct.barcode.trim() !== '') ? preResolvedProduct.barcode : (preResolvedProduct.sku || barcode);
+                document.getElementById('modal-barcode').value = targetBarcode;
                 document.getElementById('modal-prod-name').innerText = preResolvedProduct.product_name;
                 const mQty = preResolvedProduct.store_qty !== undefined && preResolvedProduct.store_qty !== null ? preResolvedProduct.store_qty : (preResolvedProduct.master_qty !== undefined && preResolvedProduct.master_qty !== null ? preResolvedProduct.master_qty : '0');
                 document.getElementById('modal-prod-desc').innerText = `SKU: ${preResolvedProduct.sku || 'N/A'} | Store Qty: ${mQty}`;
@@ -2763,7 +2764,8 @@ $hasActiveStores = !empty($existingStoresList);
                     .then(res => res.json())
                     .then(info => {
                         if (info.status === 'success' && info.product_found) {
-                            document.getElementById('modal-barcode').value = info.barcode;
+                            const targetBarcode = (info.barcode && info.barcode.trim() !== '') ? info.barcode : (info.sku || barcode);
+                            document.getElementById('modal-barcode').value = targetBarcode;
                             document.getElementById('modal-prod-name').innerText = info.product_name;
                             const sQty = info.store_qty !== undefined ? info.store_qty : (info.master_qty !== undefined ? info.master_qty : '0');
                             document.getElementById('modal-prod-desc').innerText = `SKU: ${info.sku || 'N/A'} | Store Qty: ${sQty}`;

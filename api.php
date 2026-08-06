@@ -941,7 +941,7 @@ try {
                 $product_name = formatProductDescription($descr, $attr, $size);
                 $product_type = $productRows[0]['Type'];
                 $sku = $productRows[0]['SKU'];
-                $real_barcode = $productRows[0]['UPC'];
+                $real_barcode = !empty($productRows[0]['UPC']) ? $productRows[0]['UPC'] : (!empty($barcode) ? $barcode : ($productRows[0]['SKU'] ?? ''));
                 $masterQty = (float) ($productRows[0]['Qty'] ?? 0.00);
             }
 
@@ -1510,8 +1510,8 @@ try {
                 $descr = $productRows[0]['Descr'];
                 $attr = $productRows[0]['Attr'] ?? '';
                 $size = $productRows[0]['Size'] ?? '';
-                $resolvedBarcode = $productRows[0]['UPC'];
-                $resolvedSku = $productRows[0]['SKU'];
+                $resolvedBarcode = !empty($productRows[0]['UPC']) ? $productRows[0]['UPC'] : (!empty($barcode) ? $barcode : ($productRows[0]['SKU'] ?? ''));
+                $resolvedSku = $productRows[0]['SKU'] ?? '';
 
                 $product_name = formatProductDescription($descr, $attr, $size);
                 $masterQty = (float) ($productRows[0]['Qty'] ?? 0.00);
@@ -1519,7 +1519,7 @@ try {
                 if (!empty($store)) {
                     $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
                     if (!empty($tableCheck)) {
-                        $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$productRows[0]['UPC'], $location]);
+                        $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE (UPC = ? OR (UPC = '' AND SKU = ?)) AND SlotNo = ?", [$resolvedBarcode, $resolvedSku, $location]);
                         $totalScanned = (float) ($sumQuery[0]['total'] ?? 0.00);
                     }
                 }
