@@ -1094,7 +1094,7 @@ try {
 
             $product_name = 'Item Not Found';
             $sku = '';
-            $real_barcode = $barcode;
+            $real_barcode = !empty($productRows[0]['UPC']) ? $productRows[0]['UPC'] : (!empty($barcode) ? $barcode : ($productRows[0]['SKU'] ?? ''));
 
             if (!empty($productRows)) {
                 $descr = $productRows[0]['Descr'];
@@ -1102,17 +1102,18 @@ try {
                 $size = $productRows[0]['Size'] ?? '';
 
                 $product_name = formatProductDescription($descr, $attr, $size);
-                $sku = $productRows[0]['SKU'];
-                $real_barcode = $productRows[0]['UPC'];
+                $sku = $productRows[0]['SKU'] ?? '';
             }
 
             // Fetch old scan state for audit trail
-            $oldScanQuery = "SELECT SlotNo, UPC, Qty, EditedQty, Edited FROM `{$store}_countsheet` WHERE RecNo = ?";
+            $oldScanQuery = "SELECT SlotNo, UPC, SKU, Qty, EditedQty, Edited FROM `{$store}_countsheet` WHERE RecNo = ?";
             $oldScanRows = $db->query($oldScanQuery, [$id]);
             $oldDetails = "RecNo: {$id}";
+            $slotNo = '1';
             if (!empty($oldScanRows)) {
+                $slotNo = $oldScanRows[0]['SlotNo'];
                 $origQty = $oldScanRows[0]['Edited'] ? $oldScanRows[0]['EditedQty'] : $oldScanRows[0]['Qty'];
-                $oldDetails = "Locator: {$oldScanRows[0]['SlotNo']}, UPC: {$oldScanRows[0]['UPC']}, Qty: {$origQty}";
+                $oldDetails = "Locator: {$slotNo}, UPC: {$oldScanRows[0]['UPC']}, Qty: {$origQty}";
             }
 
             $sqlUpdateScan = "
@@ -1122,17 +1123,24 @@ try {
             ";
             $db->execute($sqlUpdateScan, [$real_barcode, $sku, $product_name, $qty, $id]);
 
+            // Consolidate duplicate scan entries for the same product in the same locator slot
+            if (!empty($real_barcode) || !empty($sku)) {
+                $db->execute(
+                    "DELETE FROM `{$store}_countsheet` WHERE SlotNo = ? AND RecNo != ? AND ((UPC = ? AND UPC != '') OR (SKU = ? AND SKU != ''))",
+                    [$slotNo, $id, $real_barcode, $sku]
+                );
+            }
+
             // Recalculate variance for this product in this slot/locator
-            $slotNo = !empty($oldScanRows) ? $oldScanRows[0]['SlotNo'] : '1';
             $masterQty = 0.00;
-            $productCheck = findCatalogProduct($real_barcode, $store);
+            $productCheck = findCatalogProduct(!empty($real_barcode) ? $real_barcode : $sku, $store);
             if (!empty($productCheck)) {
                 $masterQty = (float) ($productCheck[0]['Qty'] ?? 0.00);
             }
-            $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE UPC = ? AND SlotNo = ?", [$real_barcode, $slotNo]);
+            $sumQuery = $db->query("SELECT SUM(IF(Edited = 1, EditedQty, Qty)) as total FROM `{$store}_countsheet` WHERE (UPC = ? OR (UPC = '' AND SKU = ?)) AND SlotNo = ?", [$real_barcode, $sku, $slotNo]);
             $totalScanned = (float) ($sumQuery[0]['total'] ?? 0.00);
             $newVariance = $totalScanned - $masterQty;
-            $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE UPC = ? AND SlotNo = ?", [$newVariance, $real_barcode, $slotNo]);
+            $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE (UPC = ? OR (UPC = '' AND SKU = ?)) AND SlotNo = ?", [$newVariance, $real_barcode, $sku, $slotNo]);
 
             logAudit('Edit Scanned Item', "Updated item in {$oldDetails} -> New UPC: {$real_barcode}, New Qty: {$qty}");
 

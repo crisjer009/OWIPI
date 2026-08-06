@@ -4322,14 +4322,15 @@ $hasActiveStores = !empty($existingStoresList);
 
                             let html = '';
                             scans.forEach((scan, index) => {
+                                const displayBarcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode : (scan.sku || 'N/A');
                                 html += `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                         <td style="padding: 10px 8px; color:var(--text-muted); text-align: center;">${index + 1}</td>
-                                        <td style="padding: 10px 8px; font-family:monospace; color:#58a6ff; font-weight:600;">${scan.barcode}</td>
+                                        <td style="padding: 10px 8px; font-family:monospace; color:#58a6ff; font-weight:600;">${displayBarcode}</td>
                                         <td style="padding: 10px 8px; color:var(--text-white);">${scan.product_name || '<span style="color:var(--text-muted);">Item Not in Catalog</span>'}</td>
                                         <td style="padding: 10px 8px; text-align: center; color:var(--text-white); font-weight:700;">${parseFloat(scan.quantity).toFixed(0)}</td>
                                         <td style="padding: 10px 8px; text-align: right;">
-                                            <button class="btn btn-secondary btn-sm" onclick="openEditScanModal(${scan.id}, '${scan.barcode}', ${scan.quantity})" style="padding: 4px 8px; font-size:0.7rem; width:auto; height:auto; margin:0; border-radius:4px; cursor:pointer; font-weight:600;">Edit</button>
+                                            <button class="btn btn-secondary btn-sm" onclick="openEditScanModal(${scan.id}, '${displayBarcode}', ${scan.quantity})" style="padding: 4px 8px; font-size:0.7rem; width:auto; height:auto; margin:0; border-radius:4px; cursor:pointer; font-weight:600;">Edit</button>
                                         </td>
                                     </tr>
                                 `;
