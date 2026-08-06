@@ -3955,9 +3955,12 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         text += centerText(summaryTitle) + '\r\n\r\n';
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
+                        const lineSeparator = '-'.repeat(97) + '\r\n';
+                        const doubleLineSeparator = '='.repeat(97) + '\r\n';
+
                         // Header columns row
                         text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
-                        text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
+                        text += lineSeparator;
 
                         let grandTotalMaster = 0;
                         let grandTotalScanned = 0;
@@ -3993,7 +3996,6 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                 padQtyCenter(mstQtyStr, 10) +
                                 padQtyCenter(qtyStr, 10) +
                                 padQtyCenter(varianceStr, 10) + '\r\n';
-                            text += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
                         });
 
                         const mstTotalStr = grandTotalMaster.toFixed(0);
@@ -4003,12 +4005,12 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
                         const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
 
-                        let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
+                        let footerText = lineSeparator +
                             grandTotalLabel +
                             padQtyCenter(mstTotalStr, 10) +
                             padQtyCenter(scannedTotalStr, 10) +
                             padQtyCenter(varianceTotalStr, 10) + '\r\n' +
-                            '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>\r\n' +
+                            doubleLineSeparator + '\r\n' +
                             totalInfStr;
 
                         const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
@@ -4021,6 +4023,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
                         printWin.document.open();
                         printWin.document.write(`
+                            <!DOCTYPE html>
                             <html>
                             <head>
                                 <title>Inventory Count Summary - ${storeCode}</title>
@@ -4050,27 +4053,27 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                         }
                                     }
                                     body {
-                                        font-family: monospace;
+                                        font-family: 'Courier New', Courier, monospace;
                                         white-space: pre;
-                                        font-size: 12px;
-                                        line-height: 1.12;
+                                        font-size: 11px;
+                                        line-height: 1.15;
                                         background: white;
                                         color: black;
                                         margin: 0;
-                                        padding: 0;
+                                        padding: 10px;
                                     }
                                     pre {
                                         margin: 0;
                                         padding: 0;
-                                        font-family: monospace;
-                                        font-size: 12px;
-                                        line-height: 1.12;
+                                        font-family: 'Courier New', Courier, monospace;
+                                        font-size: 11px;
+                                        line-height: 1.15;
                                         white-space: pre;
                                     }
                                     .signature-footer {
                                         page-break-inside: avoid !important;
                                         break-inside: avoid !important;
-                                        margin-top: 4px;
+                                        margin-top: 15px;
                                     }
                                 </style>
                             </head>
@@ -4085,15 +4088,21 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
               ____________                    ____________
                Team Leader                     Posted By</pre>
                                 </div>
-                                \x3Cscript\x3E
-                                    window.onload = function() {
-                                        window.print();
-                                    }
-                                <\/script>
                             </body>
                             </html>
                         `);
                         printWin.document.close();
+
+                        setTimeout(() => {
+                            try {
+                                if (printWin && !printWin.closed) {
+                                    printWin.focus();
+                                    printWin.print();
+                                }
+                            } catch (eP) {
+                                console.error("Print trigger exception:", eP);
+                            }
+                        }, 300);
                         sessionStorage.setItem('summary_printed_' + storeCode, 'true');
                     }
                 })
