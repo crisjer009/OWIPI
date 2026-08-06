@@ -1046,9 +1046,10 @@ try {
                        c.Descr as product_name, c.SKU as sku,
                        c.Added as added, c.Edited as edited, c.EditedQty as edited_qty,
                        c.Variance as variance,
-                       COALESCE(i.Qty, 0.00) as master_qty
+                       COALESCE(i.Qty, m.Qty, 0.00) as master_qty
                 FROM `{$store}_countsheet` c
-                LEFT JOIN `{$store}_items` i ON i.UPC = c.UPC
+                LEFT JOIN `{$store}_items` i ON (i.UPC = c.UPC OR (c.UPC != '' AND i.SKU = c.UPC) OR (c.SKU != '' AND i.SKU = c.SKU))
+                LEFT JOIN `items` m ON (m.UPC = c.UPC OR (c.UPC != '' AND m.SKU = c.UPC) OR (c.SKU != '' AND m.SKU = c.SKU))
             ";
 
             if ($location !== '') {

@@ -3881,7 +3881,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         // Group scans by Barcode/UPC
                         const summaryMap = {};
                         scans.forEach(scan => {
-                            const barcode = scan.barcode;
+                            const barcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode.trim() : (scan.sku || 'N/A');
                             if (!summaryMap[barcode]) {
                                 summaryMap[barcode] = {
                                     barcode: barcode,
