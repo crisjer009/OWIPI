@@ -2484,7 +2484,7 @@ try {
             $cloudScansCount = 0;
             if ($checkHttp === 200 && $checkResult) {
                 $cloudInfo = json_decode($checkResult, true);
-                if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['store'])) {
+                if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['exists']) && !empty($cloudInfo['store']) && !empty($cloudInfo['store']['id']) && (int)$cloudInfo['store']['id'] > 0) {
                     $isStoreOnCloud = true;
                     $cloudScansCount = count($cloudInfo['scans'] ?? []);
                 }
@@ -3779,13 +3779,19 @@ try {
                 // Table 'stores' or column doesn't exist on cloud
             }
 
-            $storeObj = !empty($storeRows) ? $storeRows[0] : [
-                'id' => 0,
-                'store_code' => strtoupper($store),
-                'closed' => 0,
-                'creator_username' => 'sys_admin',
-                'created_at' => date('Y-m-d H:i:s')
-            ];
+            if (empty($storeRows)) {
+                sendResponse([
+                    'status' => 'success',
+                    'exists' => false,
+                    'store' => null,
+                    'locators' => [],
+                    'scans' => [],
+                    'products' => []
+                ]);
+                break;
+            }
+
+            $storeObj = $storeRows[0];
 
             $locators = [];
             try {
