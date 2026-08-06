@@ -2613,8 +2613,8 @@ try {
                 throw new Exception("Cloud Sync Failed (HTTP {$httpCode}): " . $msg);
             }
 
-            // Update local synced status
-            $db->execute("UPDATE stores SET synced = 1 WHERE id = ?", [$storeDetails['id']]);
+            // Update local synced status and set store session as CLOSED (closed = 1)
+            $db->execute("UPDATE stores SET synced = 1, closed = 1 WHERE id = ?", [$storeDetails['id']]);
 
             foreach ($locators as $loc) {
                 $db->execute("UPDATE `{$store}_locators` SET synced = 1 WHERE id = ?", [$loc['id']]);
@@ -3055,9 +3055,8 @@ try {
             // Automatically create backup on Cloud before overwriting data
             createCloudStoreBackup($db, $storeCode);
 
-            if (isset($input['store_details']['closed'])) {
-                $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $input['store_details']['closed'], $storeCode]);
-            }
+            // Automatically mark store session as CLOSED (closed = 1) on Cloud server upon sync
+            $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
 
             if (!empty($input['locators']) && is_array($input['locators'])) {
                 $db->execute("TRUNCATE TABLE `{$storeCode}_locators`");
@@ -3576,9 +3575,8 @@ try {
             // Automatically create backup on Cloud before overwriting data
             createCloudStoreBackup($db, $storeCode);
 
-            if (isset($payload['store_details']['closed'])) {
-                $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $payload['store_details']['closed'], $storeCode]);
-            }
+            // Automatically mark store session as CLOSED (closed = 1) on Cloud server upon sync approval
+            $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
 
             if (!empty($payload['locators']) && is_array($payload['locators'])) {
                 $db->execute("TRUNCATE TABLE `{$storeCode}_locators`");
