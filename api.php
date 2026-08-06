@@ -2910,9 +2910,20 @@ try {
                 $productsImported = count($products);
             }
 
+            $details = [];
+            if (count($locators) > 0) {
+                $details[] = count($locators) . " locators";
+            }
+            if ($scansImported > 0) {
+                $details[] = $scansImported . " scan records";
+            }
+            $details[] = $productsImported . " items";
+
+            $msg = "Successfully imported store '" . strtoupper($store) . "' with " . implode(', ', $details) . " from Cloud Masterfile!";
+
             sendResponse([
                 'status' => 'success',
-                'message' => "Successfully imported store session '" . strtoupper($store) . "' with " . count($locators) . " locators, " . $scansImported . " scan records, and " . $productsImported . " specific products!"
+                'message' => $msg
             ]);
             break;
 
