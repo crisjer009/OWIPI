@@ -429,9 +429,9 @@ function findCatalogProduct($barcode, $storeCode = null)
 
 // Enforce Authentication
 $adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_products', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'clear_audit_logs', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_store_summary', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
 
-$storeDependentActions = ['submit_scan', 'get_scans', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
+$storeDependentActions = ['submit_scan', 'get_scans', 'get_store_summary', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
 try {
     $bypassAuth = false;
@@ -440,7 +440,7 @@ try {
     }
 
     $incomingStoreCode = $rawInput['store_code'] ?? ($_GET['store_code'] ?? '');
-    if (($action === 'submit_scan' || $action === 'claim_locator' || $action === 'close_locator' || $action === 'get_product_info' || $action === 'get_scans' || $action === 'edit_scan' || $action === 'delete_scan' || $action === 'get_scans_html') && !empty($incomingStoreCode)) {
+    if (($action === 'submit_scan' || $action === 'claim_locator' || $action === 'close_locator' || $action === 'get_product_info' || $action === 'get_scans' || $action === 'get_store_summary' || $action === 'edit_scan' || $action === 'delete_scan' || $action === 'get_scans_html') && !empty($incomingStoreCode)) {
         $bypassAuth = true;
         $_SESSION['store_code'] = strtoupper($incomingStoreCode);
     }
