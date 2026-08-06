@@ -585,7 +585,8 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
         }
 
         /* Single-Page Executive Widescreen Dashboard (100% Zero Page Scroll) */
-        html, body {
+        html,
+        body {
             margin: 0;
             padding: 0;
             width: 100%;
@@ -711,20 +712,26 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
         /* Responsive Breakpoints for all screen sizes */
         @media (max-width: 1200px) {
-            html, body {
+
+            html,
+            body {
                 overflow: auto !important;
                 height: auto !important;
             }
+
             .host-laptop-dashboard {
                 overflow: visible;
             }
+
             .host-top-widgets-row {
                 grid-template-columns: 1fr 1fr;
             }
+
             .host-tables-50-row {
                 grid-template-columns: 1fr;
                 overflow: visible;
             }
+
             .host-sym-table-container {
                 max-height: 350px;
             }
@@ -960,17 +967,20 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 </div>
 
                 <form onsubmit="handleSelectStore(event)" id="store-select-form">
-                    <div class="form-group" id="existing-stores-group" style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
+                    <div class="form-group" id="existing-stores-group"
+                        style="display:<?= $hasActiveStores ? 'block' : 'none' ?>;">
                         <label for="active_store_select">Choose Open Store</label>
                         <select id="active_store_select" class="form-control" style="margin-bottom: 1rem;">
                             <?php foreach ($existingStoresList as $st): ?>
                                 <option value="<?= htmlspecialchars($st['store_code']) ?>">Store:
-                                    <?= htmlspecialchars(strtoupper($st['store_code'])) ?></option>
+                                    <?= htmlspecialchars(strtoupper($st['store_code'])) ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
-                    <div class="form-group" id="new-store-group" style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
+                    <div class="form-group" id="new-store-group"
+                        style="display:<?= $hasActiveStores ? 'none' : 'block' ?>;">
                         <div style="margin-bottom: 1rem;">
                             <label for="active_store_input" id="store-input-label">Create / Connect New Store Code</label>
                             <input type="text" id="active_store_input" class="form-control" placeholder="STORE CODE"
@@ -1115,19 +1125,21 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 style="font-size: 1.05rem; line-height: 1.2; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800;">
                 OWI PHYSICAL INVENTORY
             </h1>
-            <div style="font-size: 0.85rem; font-weight: 700; color: #58a6ff; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
+            <div
+                style="font-size: 0.85rem; font-weight: 700; color: #58a6ff; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px;">
                 STORE CODE : <?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>
             </div>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">User:
-                <span style="color: #c9d1d9; font-weight: 600;"><?= htmlspecialchars($_SESSION['username'] ?? 'Operator') ?></span>
+                <span
+                    style="color: #c9d1d9; font-weight: 600;"><?= htmlspecialchars($_SESSION['username'] ?? 'Operator') ?></span>
             </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <?php 
+            <?php
             $loggedInUsername = strtolower(trim($_SESSION['username'] ?? ''));
             $isAllanUser = ($loggedInUsername === 'allan');
-            if (!$isMobileScanner && $isAllanUser): 
-            ?>
+            if (!$isMobileScanner && $isAllanUser):
+                ?>
                 <a href="sandbox.php" class="btn"
                     style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; color: #c084fc; font-weight:600; text-decoration: none;">
                     🧪 Resolution Sandbox
@@ -1352,10 +1364,9 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 </label>
             </div>
         </div>
-    </div> <!-- Close mobile-scanner-view --> 
+    </div> <!-- Close mobile-scanner-view -->
 
-    <div id="host-dashboard" class="host-laptop-dashboard"
-        style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>;">
+    <div id="host-dashboard" class="host-laptop-dashboard" style="display: <?= $isMobileScanner ? 'none' : 'flex' ?>;">
 
         <!-- TOP ROW: Control & Analytics Widgets (3 Equal Columns - 100% Symmetrical) -->
         <div class="host-top-widgets-row">
@@ -1420,8 +1431,10 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 </div>
 
                 <!-- Item Search in Locator Progress Card -->
-                <div style="margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; position: relative;">
-                    <input type="text" id="locator-progress-item-search" placeholder="🔍 Search item (Barcode, ALU/SKU)..."
+                <div
+                    style="margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px; position: relative;">
+                    <input type="text" id="locator-progress-item-search"
+                        placeholder="🔍 Search item (Barcode, ALU/SKU)..."
                         style="width: 100%; height: 28px; padding: 0 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; box-sizing: border-box; outline: none;"
                         oninput="searchLocatorProgressItem()"
                         onkeydown="if(event.key === 'Enter') { event.preventDefault(); searchLocatorProgressItem(); }">
@@ -1446,8 +1459,10 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
                     <div id="host-https-tip"
                         style="background:rgba(210,153,34,0.1); border:1px solid rgba(210,153,34,0.3); border-radius:6px; padding:6px; margin-bottom:8px; font-size:0.7rem; text-align:left; color:#d29922; display:none;">
-                        ⚠️ Host console is loaded via <strong>HTTP</strong>. Scanner QR code will open insecurely on phones.
-                        <br><a id="host-https-link" href="" style="color:#58a6ff; font-weight:600; text-decoration:underline;">Switch Host to HTTPS</a>
+                        ⚠️ Host console is loaded via <strong>HTTP</strong>. Scanner QR code will open insecurely on
+                        phones.
+                        <br><a id="host-https-link" href=""
+                            style="color:#58a6ff; font-weight:600; text-decoration:underline;">Switch Host to HTTPS</a>
                     </div>
                 </div>
 
@@ -1455,8 +1470,9 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                     <div id="qrcode"
                         style="background: white; padding: 3px; border-radius: 6px; min-width: 95px; min-height: 95px; display: inline-flex; align-items: center; justify-content: center;">
                     </div>
-                    
-                    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex-grow: 1;">
+
+                    <div
+                        style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; flex-grow: 1;">
                         <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0; text-align: left;">
                             Scan QR code with phone.
                         </p>
@@ -1466,7 +1482,8 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         ?>
                         <div style="width: 100%; text-align: left;">
                             <label for="qr-ip-select"
-                                style="font-size: 0.6rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Host Network IP:</label>
+                                style="font-size: 0.6rem; color: var(--text-muted); display: block; margin-bottom: 2px;">Host
+                                Network IP:</label>
                             <select id="qr-ip-select"
                                 style="font-size: 0.7rem; padding: 3px 4px; border-radius: 4px; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(255,255,255,0.15); width: 100%; outline: none; cursor: pointer;"
                                 onchange="handleQrIpChange(this)">
@@ -1509,14 +1526,16 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
                         <div>
                             <label
-                                style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">TOP MARGIN (MM)</label>
+                                style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">TOP
+                                MARGIN (MM)</label>
                             <input type="number" id="host_print_margin_top" class="form-control"
                                 value="<?= htmlspecialchars($marginTop) ?>" min="0" max="200" required
                                 style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
                         </div>
                         <div>
                             <label
-                                style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">LEFT MARGIN (MM)</label>
+                                style="display:block; font-size:0.65rem; color:var(--text-muted); margin-bottom:2px; font-weight:600; text-align: left;">LEFT
+                                MARGIN (MM)</label>
                             <input type="number" id="host_print_margin_left" class="form-control"
                                 value="<?= htmlspecialchars($marginLeft) ?>" min="0" max="200" required
                                 style="height:30px; padding:0 6px; font-size:0.75rem; box-sizing:border-box;">
@@ -1622,11 +1641,16 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
     </div>
     <div class="modal-overlay" id="host-view-locator-scans-modal-overlay">
         <div class="modal" style="max-width: 600px; width: 95%; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
                 <h3 class="modal-title" id="view-scans-locator-title" style="margin: 0;">Items in Locator</h3>
                 <button type="button" class="btn btn-primary" onclick="openAddManualScanModal()"
                     style="width: auto; height: 32px; padding: 0 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: #0969da; border-color: #0969da; border-radius: 6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
                     Add Item
                 </button>
             </div>
@@ -1650,7 +1674,8 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 </table>
             </div>
 
-            <div class="form-row" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+            <div class="form-row"
+                style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
                 <button type="button" class="btn btn-primary"
                     onclick="printEditedCountSheet(window.currentEditingLocatorName)"
                     style="width: auto; height: 38px; padding: 0 20px; margin: 0; background:#3b82f6; border-color:#3b82f6; font-weight:600; cursor:pointer;">Print
@@ -1709,12 +1734,15 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
     <div class="modal-overlay" id="host-add-manual-scan-modal-overlay" style="z-index: 100001;">
         <div class="modal" style="max-width: 420px; padding: 20px;">
             <h3 class="modal-title" id="add-manual-scan-modal-title"
-                style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">Add Manual Scan</h3>
+                style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">Add
+                Manual Scan</h3>
 
             <div class="form-group" style="margin-bottom: 12px;">
                 <label
-                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU / SKU or UPC</label>
-                <input type="text" id="add-manual-scan-barcode" class="form-control" placeholder="Enter ALU, SKU or UPC..." required
+                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU
+                    / SKU or UPC</label>
+                <input type="text" id="add-manual-scan-barcode" class="form-control"
+                    placeholder="Enter ALU, SKU or UPC..." required
                     style="width: 100%; height: 36px; box-sizing: border-box;"
                     oninput="updateAddManualScanProductInfo(this.value.trim())"
                     onkeydown="if(event.key === 'Enter'){ event.preventDefault(); const q = document.getElementById('add-manual-scan-qty'); if(q){ q.focus(); q.select(); } }">
@@ -1724,14 +1752,16 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 style="background:rgba(255,255,255,0.03); border-radius:6px; padding:10px; margin-bottom:12px; font-size:0.8rem; border:1px dashed var(--card-border);">
                 <strong style="color:var(--text-white); display:block; margin-bottom:2px;"
                     id="add-manual-scan-prod-name">Item Preview</strong>
-                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU or UPC to check catalog...</span>
+                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU or UPC to check
+                    catalog...</span>
             </div>
 
             <div class="form-group" style="margin-bottom: 20px;">
                 <label
-                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">Quantity (QTY)</label>
-                <input type="number" id="add-manual-scan-qty" class="form-control" placeholder="Enter quantity..." value="1" min="1" step="1"
-                    required style="width: 100%; height: 36px; box-sizing: border-box;"
+                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">Quantity
+                    (QTY)</label>
+                <input type="number" id="add-manual-scan-qty" class="form-control" placeholder="Enter quantity..."
+                    value="1" min="1" step="1" required style="width: 100%; height: 36px; box-sizing: border-box;"
                     onfocus="this.select()"
                     onkeydown="if(event.key === 'Enter'){ event.preventDefault(); submitAddManualScan(); }">
             </div>
@@ -1739,8 +1769,10 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
             <div class="form-row" style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="button" class="btn btn-secondary" onclick="closeAddManualScanModal()"
                     style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="submitAddManualScan()" id="add-manual-scan-submit-btn"
-                    style="width: auto; height: 38px; padding: 0 20px; margin: 0; cursor:pointer; font-weight:600; background:#2ea44f; border-color:#2ea44f;">Save Scan</button>
+                <button type="button" class="btn btn-success" onclick="submitAddManualScan()"
+                    id="add-manual-scan-submit-btn"
+                    style="width: auto; height: 38px; padding: 0 20px; margin: 0; cursor:pointer; font-weight:600; background:#2ea44f; border-color:#2ea44f;">Save
+                    Scan</button>
             </div>
         </div>
     </div>
@@ -1816,7 +1848,9 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
     <div class="modal-overlay" id="print-summary-modal-overlay" style="z-index: 999999;">
         <div class="modal" style="max-width: 420px; text-align: center; padding: 1.75rem;">
             <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🖨️</div>
-            <h3 class="modal-title" style="font-size: 1.25rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">Print Store Summary</h3>
+            <h3 class="modal-title"
+                style="font-size: 1.25rem; margin-bottom: 0.5rem; border-bottom: none; padding-bottom: 0;">Print Store
+                Summary</h3>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; line-height: 1.4;">
                 Select which items to include in the count summary report:
             </p>
@@ -3160,8 +3194,8 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
                             let html = '';
                             data.results.forEach(item => {
-                                const priceStr = (item.price !== undefined && item.price !== null && item.price !== 0) 
-                                    ? '₱' + parseFloat(item.price).toFixed(2) 
+                                const priceStr = (item.price !== undefined && item.price !== null && item.price !== 0)
+                                    ? '₱' + parseFloat(item.price).toFixed(2)
                                     : 'N/A';
 
                                 html += `
@@ -3967,9 +4001,6 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         ? '*****   Inventory Count Summary (Variance Only)   *****' 
                         : '*****   Inventory Count Summary (100% Completion)   *****';
 
-                    const lineSeparator = '-'.repeat(97) + '\r\n';
-                    const doubleLineSeparator = '='.repeat(97) + '\r\n';
-
                     let text = '';
                     text += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
                     text += centerText('Annual Inventory Count') + '\r\n\r\n';
@@ -3978,12 +4009,13 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
                     // Header columns row
                     text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
-                    text += lineSeparator;
+                    text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
                     let grandTotalMaster = 0;
                     let grandTotalScanned = 0;
                     let grandTotalVariance = 0;
 
+                    let rowsArr = [];
                     items.forEach((item, index) => {
                         const recNo = index + 1;
                         const barcode = item.barcode || '';
@@ -4001,19 +4033,24 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         grandTotalScanned += qtyVal;
                         grandTotalVariance += varianceVal;
 
+                        // Truncate description if it exceeds column space to prevent pushing other columns out of alignment
                         let cleanDescr = descr;
                         if (cleanDescr.length > 35) {
                             cleanDescr = cleanDescr.substring(0, 35);
                         }
 
-                        text += padRight(recNo, 8) +
+                        let rowLine = padRight(recNo, 8) +
                             padRight(barcode, 16) +
                             padRight(sku, 8) +
                             padRight(cleanDescr, 35) +
                             padQtyCenter(mstQtyStr, 10) +
                             padQtyCenter(qtyStr, 10) +
                             padQtyCenter(varianceStr, 10) + '\r\n';
+                        rowLine += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
+                        rowsArr.push(rowLine);
                     });
+
+                    text += rowsArr.join('');
 
                     const mstTotalStr = grandTotalMaster.toFixed(0);
                     const scannedTotalStr = grandTotalScanned.toFixed(0);
@@ -4022,19 +4059,18 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                     const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
                     const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
 
-                    let footerText = lineSeparator +
+                    let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
                         grandTotalLabel +
                         padQtyCenter(mstTotalStr, 10) +
                         padQtyCenter(scannedTotalStr, 10) +
                         padQtyCenter(varianceTotalStr, 10) + '\r\n' +
-                        doubleLineSeparator + '\r\n' +
+                        '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>\r\n' +
                         totalInfStr;
 
                     const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
                     const pageLeftMargin = parseInt(printMarginLeft || 0);
 
                     const htmlDoc = `
-                        <!DOCTYPE html>
                         <html>
                         <head>
                             <title>Inventory Count Summary - ${storeCode}</title>
@@ -4046,32 +4082,45 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                     margin-bottom: 5mm;
                                 }
                                 @media print {
-                                    body { margin: 0; padding: 0; background: white; color: black; }
-                                    .summary-print-container { widows: 5 !important; orphans: 5 !important; page-break-inside: auto; }
-                                    .signature-footer { page-break-before: auto !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+                                    body { 
+                                        margin: 0; 
+                                        padding: 0;
+                                        background: white; 
+                                        color: black; 
+                                    }
+                                    .summary-print-container {
+                                        widows: 5 !important;
+                                        orphans: 5 !important;
+                                        page-break-inside: auto;
+                                    }
+                                    .signature-footer {
+                                        page-break-before: auto !important;
+                                        page-break-inside: avoid !important;
+                                        break-inside: avoid !important;
+                                    }
                                 }
                                 body {
-                                    font-family: 'Courier New', Courier, monospace;
+                                    font-family: monospace;
                                     white-space: pre;
-                                    font-size: 11px;
-                                    line-height: 1.15;
+                                    font-size: 12px;
+                                    line-height: 1.12;
                                     background: white;
                                     color: black;
                                     margin: 0;
-                                    padding: 10px;
+                                    padding: 0;
                                 }
                                 pre {
                                     margin: 0;
                                     padding: 0;
-                                    font-family: 'Courier New', Courier, monospace;
-                                    font-size: 11px;
-                                    line-height: 1.15;
+                                    font-family: monospace;
+                                    font-size: 12px;
+                                    line-height: 1.12;
                                     white-space: pre;
                                 }
                                 .signature-footer {
                                     page-break-inside: avoid !important;
                                     break-inside: avoid !important;
-                                    margin-top: 15px;
+                                    margin-top: 4px;
                                 }
                             </style>
                         </head>
@@ -4086,28 +4135,23 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
               ____________                    ____________
                Team Leader                     Posted By</pre>
                             </div>
+                            \x3Cscript\x3E
+                                window.onload = function() {
+                                    window.print();
+                                }
+                            <\/script>
                         </body>
                         </html>
                     `;
 
-                    // Open popup window or use hidden iframe fallback if popups are blocked
-                    let printWin = null;
-                    try {
-                        printWin = window.open('', '_blank', 'width=850,height=650');
-                    } catch (eW) {}
-
-                    if (printWin && !printWin.closed) {
+                    // Open print window
+                    const printWin = window.open('', '', 'width=800,height=600');
+                    if (printWin) {
                         printWin.document.open();
                         printWin.document.write(htmlDoc);
                         printWin.document.close();
-                        setTimeout(() => {
-                            try {
-                                printWin.focus();
-                                printWin.print();
-                            } catch (ePr) {}
-                        }, 250);
                     } else {
-                        // Fallback to hidden printable iframe
+                        // Fallback to hidden printable iframe if popups blocked
                         let printIframe = document.getElementById('print-summary-iframe');
                         if (!printIframe) {
                             printIframe = document.createElement('iframe');
@@ -4135,8 +4179,8 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                     sessionStorage.setItem('summary_printed_' + storeCode, 'true');
                 })
                 .catch(err => {
-                    console.error("Error generating print summary:", err);
-                    customAlert("Error generating print summary: " + err, "Print Error");
+                    console.error("Print summary error:", err);
+                    alert("Failed to load summary data: " + err);
                 });
         }
 
@@ -4520,7 +4564,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
             document.getElementById('add-manual-scan-qty').value = '1';
             document.getElementById('add-manual-scan-prod-name').innerText = "Item Preview";
             document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU or UPC to check catalog...";
-            
+
             document.getElementById('host-add-manual-scan-modal-overlay').classList.add('active');
             setTimeout(() => {
                 const inputEl = document.getElementById('add-manual-scan-barcode');

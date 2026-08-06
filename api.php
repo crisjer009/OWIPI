@@ -92,7 +92,8 @@ function logAudit($action, $details, $storeCode = null, $overrideUsername = null
     }
 }
 
-function ensureCloudBackupsLogTable($db) {
+function ensureCloudBackupsLogTable($db)
+{
     try {
         $db->execute("CREATE TABLE IF NOT EXISTS cloud_backups_log (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -115,15 +116,19 @@ function ensureCloudBackupsLogTable($db) {
         foreach ($colsToEnsure as $col => $def) {
             try {
                 $db->execute("ALTER TABLE cloud_backups_log ADD COLUMN `$col` $def");
-            } catch (Exception $eC) {}
+            } catch (Exception $eC) {
+            }
         }
-    } catch (Exception $eTbl) {}
+    } catch (Exception $eTbl) {
+    }
 }
 
 // Helper function to create automatic backups on Cloud before overwriting store tables
-function createCloudStoreBackup($db, $storeCode) {
+function createCloudStoreBackup($db, $storeCode)
+{
     $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
-    if (empty($clean)) return;
+    if (empty($clean))
+        return;
 
     $ts = date('Ymd_His');
 
@@ -173,7 +178,8 @@ function createCloudStoreBackup($db, $storeCode) {
             $cols = array_keys($row);
             $colNames = implode('`, `', array_map('addslashes', $cols));
             $vals = array_map(function ($v) {
-                if ($v === null) return "NULL";
+                if ($v === null)
+                    return "NULL";
                 return "'" . addslashes($v) . "'";
             }, array_values($row));
             $valStr = implode(', ', $vals);
@@ -189,7 +195,8 @@ function createCloudStoreBackup($db, $storeCode) {
             $cols = array_keys($row);
             $colNames = implode('`, `', array_map('addslashes', $cols));
             $vals = array_map(function ($v) {
-                if ($v === null) return "NULL";
+                if ($v === null)
+                    return "NULL";
                 return "'" . addslashes($v) . "'";
             }, array_values($row));
             $valStr = implode(', ', $vals);
@@ -205,7 +212,8 @@ function createCloudStoreBackup($db, $storeCode) {
             $cols = array_keys($row);
             $colNames = implode('`, `', array_map('addslashes', $cols));
             $vals = array_map(function ($v) {
-                if ($v === null) return "NULL";
+                if ($v === null)
+                    return "NULL";
                 return "'" . addslashes($v) . "'";
             }, array_values($row));
             $valStr = implode(', ', $vals);
@@ -260,38 +268,48 @@ function createCloudStoreBackup($db, $storeCode) {
 function ensureLocatorSessionColumns($db, $storeCode)
 {
     $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
-    if (empty($clean)) return;
+    if (empty($clean))
+        return;
     try {
         $db->execute("ALTER TABLE `{$clean}_locators` ADD COLUMN active_device_token VARCHAR(64) NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE `{$clean}_locators` ADD COLUMN last_ping_at DATETIME NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
 }
 
 function ensureStoresHostLockColumns($db)
 {
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN host_session_token VARCHAR(64) NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN host_last_ping DATETIME NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN host_user_id INT(11) NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN index_host_token VARCHAR(64) NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN index_last_ping DATETIME NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN scan_host_token VARCHAR(64) NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
     try {
         $db->execute("ALTER TABLE stores ADD COLUMN scan_last_ping DATETIME NULL");
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
 }
 
 // Helper function to format product description by appending Attr and Size if not already present
@@ -810,13 +828,16 @@ try {
             // Truncate active store sessions, pending sync requests, and audit logs
             try {
                 $db->execute("TRUNCATE TABLE stores");
-            } catch (Exception $eS) {}
+            } catch (Exception $eS) {
+            }
             try {
                 $db->execute("TRUNCATE TABLE pending_sync_requests");
-            } catch (Exception $eP) {}
+            } catch (Exception $eP) {
+            }
             try {
                 $db->execute("TRUNCATE TABLE audit_logs");
-            } catch (Exception $eA) {}
+            } catch (Exception $eA) {
+            }
 
             // Clear current active store session
             unset($_SESSION['store_code']);
@@ -837,7 +858,8 @@ try {
             $db = new OWI_DB();
             try {
                 $db->execute("TRUNCATE TABLE audit_logs");
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
             sendResponse([
                 'status' => 'success',
                 'message' => 'Audit logs cleared successfully!'
@@ -1415,7 +1437,7 @@ try {
                 WHERE i.UPC IS NULL AND i.SKU IS NULL
                 ORDER BY upc ASC
             ";
-            
+
             $rows = $db->query($sql);
 
             // Set headers to trigger file download
@@ -1429,7 +1451,7 @@ try {
             $output = fopen('php://output', 'w');
 
             // Output UTF-8 BOM for Excel compatibility
-            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+            fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
             // Write CSV headers
             fputcsv($output, ['Barcode (UPC)', 'ALU/SKU', 'Description', 'Master Qty', 'Scanned Qty', 'Variance']);
@@ -1440,9 +1462,9 @@ try {
             $totalVariance = 0.0;
 
             foreach ($rows as $row) {
-                $master = (float)$row['master_qty'];
-                $scanned = (float)$row['scanned_qty'];
-                $var = (float)$row['variance'];
+                $master = (float) $row['master_qty'];
+                $scanned = (float) $row['scanned_qty'];
+                $var = (float) $row['variance'];
 
                 $totalMaster += $master;
                 $totalScanned += $scanned;
@@ -1488,13 +1510,15 @@ try {
                         $tablesToSearch[] = "{$cleanStore}_items";
                     }
                 }
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             $tablesToSearch[] = 'items';
 
             $items = [];
             $unpadded = ctype_digit($q) ? ltrim($q, '0') : $q;
-            if ($unpadded === '') $unpadded = '0';
+            if ($unpadded === '')
+                $unpadded = '0';
             $padded6 = ctype_digit($q) ? str_pad($unpadded, 6, '0', STR_PAD_LEFT) : $q;
 
             foreach ($tablesToSearch as $tableName) {
@@ -1512,7 +1536,8 @@ try {
                                 $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
                             }
                         }
-                    } catch (Exception $exLookup) {}
+                    } catch (Exception $exLookup) {
+                    }
                 }
 
                 $searchParam = "%{$q}%";
@@ -1535,13 +1560,25 @@ try {
                         LIMIT 100";
 
                 $params = [
-                    $q, $q, $padded6, $padded6,
-                    $unpadded, $unpadded,
-                    $searchParam, $searchParam, $searchParam,
-                    $q, $padded6, $unpadded,
-                    $searchPrefix, $searchUnpaddedPrefix,
-                    $q, $padded6, $unpadded,
-                    $searchPrefix, $searchUnpaddedPrefix,
+                    $q,
+                    $q,
+                    $padded6,
+                    $padded6,
+                    $unpadded,
+                    $unpadded,
+                    $searchParam,
+                    $searchParam,
+                    $searchParam,
+                    $q,
+                    $padded6,
+                    $unpadded,
+                    $searchPrefix,
+                    $searchUnpaddedPrefix,
+                    $q,
+                    $padded6,
+                    $unpadded,
+                    $searchPrefix,
+                    $searchUnpaddedPrefix,
                     $searchPrefix
                 ];
 
@@ -1557,8 +1594,8 @@ try {
             $unpaddedLower = strtolower($unpadded);
             $padded6Lower = strtolower($padded6);
 
-            usort($items, function($a, $b) use ($qLower, $unpaddedLower, $padded6Lower) {
-                $getRank = function($item) use ($qLower, $unpaddedLower, $padded6Lower) {
+            usort($items, function ($a, $b) use ($qLower, $unpaddedLower, $padded6Lower) {
+                $getRank = function ($item) use ($qLower, $unpaddedLower, $padded6Lower) {
                     $skuRaw = trim($item['SKU'] ?? '');
                     $upcRaw = trim($item['UPC'] ?? '');
                     $descRaw = trim($item['Descr'] ?? '');
@@ -1568,10 +1605,12 @@ try {
                     $desc = strtolower($descRaw);
 
                     $skuUnpadded = ctype_digit($sku) ? ltrim($sku, '0') : $sku;
-                    if ($skuUnpadded === '') $skuUnpadded = '0';
+                    if ($skuUnpadded === '')
+                        $skuUnpadded = '0';
 
                     $upcUnpadded = ctype_digit($upc) ? ltrim($upc, '0') : $upc;
-                    if ($upcUnpadded === '') $upcUnpadded = '0';
+                    if ($upcUnpadded === '')
+                        $upcUnpadded = '0';
 
                     // Rank 1: Exact SKU match (supports 1-digit, 2-digit, 3-digit ALUs raw, unpadded, or padded6)
                     if ($sku === $qLower || $sku === $unpaddedLower || $sku === $padded6Lower || $skuUnpadded === $unpaddedLower) {
@@ -1630,14 +1669,14 @@ try {
 
             $results = [];
             foreach ($items as $item) {
-                $priceVal = isset($item['Price']) ? (float)$item['Price'] : 0.00;
+                $priceVal = isset($item['Price']) ? (float) $item['Price'] : 0.00;
                 $attrText = !empty($item['Attr']) ? $item['Attr'] : (!empty($item['Type']) ? $item['Type'] : 'MASTERFILE ITEM');
 
                 $results[] = [
                     'barcode' => $item['UPC'] ?? '',
                     'sku' => $item['SKU'] ?? 'N/A',
                     'description' => $item['Descr'] ?? 'Item Not Found',
-                    'master_qty' => (float)($item['Qty'] ?? 0),
+                    'master_qty' => (float) ($item['Qty'] ?? 0),
                     'price' => $priceVal,
                     'attributes' => $attrText
                 ];
@@ -1713,13 +1752,19 @@ try {
                 try {
                     $db = new OWI_DB();
                     $db->execute("UPDATE users SET session_token = NULL, last_activity = 0 WHERE id = ?", [$userId]);
-                } catch (Exception $ex) {}
+                } catch (Exception $ex) {
+                }
                 $_SESSION = array();
                 if (ini_get("session.use_cookies")) {
                     $params = session_get_cookie_params();
-                    setcookie(session_name(), '', time() - 42000,
-                        $params["path"], $params["domain"],
-                        $params["secure"], $params["httponly"]
+                    setcookie(
+                        session_name(),
+                        '',
+                        time() - 42000,
+                        $params["path"],
+                        $params["domain"],
+                        $params["secure"],
+                        $params["httponly"]
                     );
                 }
                 @session_destroy();
@@ -1763,7 +1808,7 @@ try {
             $type = isset($input['type']) ? trim($input['type']) : 'GENERAL';
             $attr = isset($input['attr']) ? trim($input['attr']) : null;
             $size = isset($input['size']) ? trim($input['size']) : null;
-            $price = isset($input['price']) ? (float)$input['price'] : 0.00;
+            $price = isset($input['price']) ? (float) $input['price'] : 0.00;
             $aux1 = isset($input['aux1']) ? trim($input['aux1']) : null;
 
             if (empty($barcode) || empty($name)) {
@@ -1866,7 +1911,8 @@ try {
                     if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
                         $targetStoreNo = (int) $storeLookup[0]['str_no'];
                     }
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                }
 
                 if (!$targetStoreNo) {
                     $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
@@ -1948,14 +1994,22 @@ try {
                         }
 
                         // Default positional indexes matching standard layout (ALU, LOCAL_UPC, DESCRIPTION1, DESCRIPTION2, ATTR, SIZ, PRICE, AUX1)
-                        if ($aluIdx === -1) $aluIdx = 0;
-                        if ($upcIdx === -1 && isset($cols[1])) $upcIdx = 1;
-                        if ($desc1Idx === -1 && isset($cols[2])) $desc1Idx = 2;
-                        if ($desc2Idx === -1 && isset($cols[3])) $desc2Idx = 3;
-                        if ($attrIdx === -1 && isset($cols[4])) $attrIdx = 4;
-                        if ($sizeIdx === -1 && isset($cols[5])) $sizeIdx = 5;
-                        if ($priceIdx === -1 && isset($cols[6])) $priceIdx = 6;
-                        if ($aux1Idx === -1 && isset($cols[7])) $aux1Idx = 7;
+                        if ($aluIdx === -1)
+                            $aluIdx = 0;
+                        if ($upcIdx === -1 && isset($cols[1]))
+                            $upcIdx = 1;
+                        if ($desc1Idx === -1 && isset($cols[2]))
+                            $desc1Idx = 2;
+                        if ($desc2Idx === -1 && isset($cols[3]))
+                            $desc2Idx = 3;
+                        if ($attrIdx === -1 && isset($cols[4]))
+                            $attrIdx = 4;
+                        if ($sizeIdx === -1 && isset($cols[5]))
+                            $sizeIdx = 5;
+                        if ($priceIdx === -1 && isset($cols[6]))
+                            $priceIdx = 6;
+                        if ($aux1Idx === -1 && isset($cols[7]))
+                            $aux1Idx = 7;
 
                         $headerChecked = true;
 
@@ -2038,7 +2092,8 @@ try {
                 for ($s = 1; $s <= 125; $s++) {
                     $colNames[] = "QTY_STORE_{$s}";
                 }
-                $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                $colSql = implode(', ', array_map(function ($c) {
+                    return "`{$c}`"; }, $colNames));
 
                 $updateAssignments = [];
                 foreach (['SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'] as $f) {
@@ -2390,7 +2445,8 @@ try {
 
         case 'release_session':
             $data = json_decode(file_get_contents('php://input'), true);
-            if (!$data) $data = $_POST;
+            if (!$data)
+                $data = $_POST;
             $locatorName = trim($data['locator_name'] ?? '');
             $deviceToken = trim($data['device_token'] ?? '');
             $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
@@ -2406,7 +2462,8 @@ try {
 
         case 'heartbeat_store_host':
             $data = json_decode(file_get_contents('php://input'), true);
-            if (!$data) $data = $_POST;
+            if (!$data)
+                $data = $_POST;
             $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
             $deviceToken = trim($data['device_token'] ?? '');
             $pageType = strtolower(trim($data['page_type'] ?? 'index'));
@@ -2426,7 +2483,7 @@ try {
             $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
 
             $tokenCol = ($pageType === 'scan') ? 'scan_host_token' : 'index_host_token';
-            $pingCol  = ($pageType === 'scan') ? 'scan_last_ping' : 'index_last_ping';
+            $pingCol = ($pageType === 'scan') ? 'scan_last_ping' : 'index_last_ping';
 
             $storeRows = $db->query("SELECT {$tokenCol} as active_token, TIMESTAMPDIFF(SECOND, {$pingCol}, NOW()) as ping_diff FROM stores WHERE UPPER(store_code) = ?", [$cleanStore]);
 
@@ -2453,7 +2510,8 @@ try {
 
         case 'release_store_host':
             $data = json_decode(file_get_contents('php://input'), true);
-            if (!$data) $data = $_POST;
+            if (!$data)
+                $data = $_POST;
             $storeCode = $_SESSION['store_code'] ?? ($data['store_code'] ?? '');
             $deviceToken = trim($data['device_token'] ?? '');
             $pageType = strtolower(trim($data['page_type'] ?? 'index'));
@@ -2463,7 +2521,7 @@ try {
                 ensureStoresHostLockColumns($db);
                 $cleanStore = strtoupper(trim($storeCode));
                 $tokenCol = ($pageType === 'scan') ? 'scan_host_token' : 'index_host_token';
-                $pingCol  = ($pageType === 'scan') ? 'scan_last_ping' : 'index_last_ping';
+                $pingCol = ($pageType === 'scan') ? 'scan_last_ping' : 'index_last_ping';
                 $db->execute("UPDATE stores SET {$tokenCol} = NULL, {$pingCol} = NULL WHERE UPPER(store_code) = ? AND ({$tokenCol} = ? OR {$tokenCol} IS NULL)", [$cleanStore, $deviceToken]);
             }
             sendResponse(['status' => 'success']);
@@ -2620,7 +2678,7 @@ try {
             $cloudScansCount = 0;
             if ($checkHttp === 200 && $checkResult) {
                 $cloudInfo = json_decode($checkResult, true);
-                if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['exists']) && !empty($cloudInfo['store']) && !empty($cloudInfo['store']['id']) && (int)$cloudInfo['store']['id'] > 0) {
+                if ($cloudInfo && ($cloudInfo['status'] ?? '') === 'success' && !empty($cloudInfo['exists']) && !empty($cloudInfo['store']) && !empty($cloudInfo['store']['id']) && (int) $cloudInfo['store']['id'] > 0) {
                     $isStoreOnCloud = true;
                     $cloudScansCount = count($cloudInfo['scans'] ?? []);
                 }
@@ -2850,7 +2908,7 @@ try {
                 $fbData = json_decode($fbResult, true);
                 if ($fbCode === 200 && $fbData && ($fbData['status'] ?? '') === 'success' && !empty($fbData['products'])) {
                     $allCloudProducts = $fbData['products'];
-                    
+
                     // Determine target store number for QTY_STORE_X
                     $dbTemp = new OWI_DB();
                     $strNo = null;
@@ -2862,7 +2920,8 @@ try {
                             $numMatch = preg_replace('/[^0-9]/', '', $store);
                             $strNo = ($numMatch !== '') ? (int) $numMatch : null;
                         }
-                    } catch (Exception $exFb) {}
+                    } catch (Exception $exFb) {
+                    }
 
                     $mappedProducts = [];
                     foreach ($allCloudProducts as $p) {
@@ -2986,13 +3045,13 @@ try {
                     $upc = $scan['UPC'] ?? $scan['barcode'] ?? '';
                     $sku = $scan['SKU'] ?? $scan['sku'] ?? '';
                     $descr = $scan['Descr'] ?? $scan['product_name'] ?? '';
-                    $qty = isset($scan['Qty']) ? (float)$scan['Qty'] : (isset($scan['original_qty']) ? (float)$scan['original_qty'] : 0.00);
-                    $editedQty = isset($scan['EditedQty']) ? (float)$scan['EditedQty'] : (isset($scan['edited_qty']) ? (float)$scan['edited_qty'] : 0.00);
-                    $posted = isset($scan['Posted']) ? (int)$scan['Posted'] : (isset($scan['posted']) ? (int)$scan['posted'] : 0);
-                    $added = isset($scan['Added']) ? (int)$scan['Added'] : (isset($scan['added']) ? (int)$scan['added'] : 0);
-                    $edited = isset($scan['Edited']) ? (int)$scan['Edited'] : (isset($scan['edited']) ? (int)$scan['edited'] : 0);
+                    $qty = isset($scan['Qty']) ? (float) $scan['Qty'] : (isset($scan['original_qty']) ? (float) $scan['original_qty'] : 0.00);
+                    $editedQty = isset($scan['EditedQty']) ? (float) $scan['EditedQty'] : (isset($scan['edited_qty']) ? (float) $scan['edited_qty'] : 0.00);
+                    $posted = isset($scan['Posted']) ? (int) $scan['Posted'] : (isset($scan['posted']) ? (int) $scan['posted'] : 0);
+                    $added = isset($scan['Added']) ? (int) $scan['Added'] : (isset($scan['added']) ? (int) $scan['added'] : 0);
+                    $edited = isset($scan['Edited']) ? (int) $scan['Edited'] : (isset($scan['edited']) ? (int) $scan['edited'] : 0);
                     $scannedBy = $scan['ScannedBy'] ?? $scan['scanned_by'] ?? 'CLOUD';
-                    $variance = isset($scan['Variance']) ? (float)$scan['Variance'] : (isset($scan['variance']) ? (float)$scan['variance'] : 0.00);
+                    $variance = isset($scan['Variance']) ? (float) $scan['Variance'] : (isset($scan['variance']) ? (float) $scan['variance'] : 0.00);
 
                     if ($recNo !== null) {
                         $db->execute(
@@ -3022,7 +3081,8 @@ try {
                 $chunks = array_chunk($products, $chunkSize);
 
                 $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
-                $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                $colSql = implode(', ', array_map(function ($c) {
+                    return "`{$c}`"; }, $colNames));
                 $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
 
                 foreach ($chunks as $chunk) {
@@ -3036,9 +3096,9 @@ try {
                         $params[] = $row['Type'] ?? $row['DESCRIPTION2'] ?? $row['type'] ?? 'GENERAL';
                         $params[] = $row['Attr'] ?? $row['attr'] ?? null;
                         $params[] = $row['Size'] ?? $row['SIZ'] ?? $row['size'] ?? null;
-                        $params[] = isset($row['Price']) ? (float)$row['Price'] : (isset($row['price']) ? (float)$row['price'] : 0.00);
+                        $params[] = isset($row['Price']) ? (float) $row['Price'] : (isset($row['price']) ? (float) $row['price'] : 0.00);
                         $params[] = $row['Aux1'] ?? $row['AUX1'] ?? $row['aux1'] ?? null;
-                        $params[] = isset($row['Qty']) ? (float)$row['Qty'] : (isset($row['qty']) ? (float)$row['qty'] : 0.00);
+                        $params[] = isset($row['Qty']) ? (float) $row['Qty'] : (isset($row['qty']) ? (float) $row['qty'] : 0.00);
                     }
                     $sqlChunk = "INSERT INTO `{$store}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
                     $db->execute($sqlChunk, $params);
@@ -3077,7 +3137,7 @@ try {
             if (!empty($store)) {
                 // Fetch store-specific details/products from cloud
                 $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_store_details&store_code=' . urlencode($store) . '&secret_token=' . urlencode($secretToken);
-                
+
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $targetUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -3109,7 +3169,7 @@ try {
             } else {
                 // Fetch all products from cloud master catalog
                 $targetUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
-                
+
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $targetUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -3158,9 +3218,9 @@ try {
                     $params[] = $p['Type'] ?? $p['DESCRIPTION2'] ?? $p['type'] ?? 'GENERAL';
                     $params[] = $p['Attr'] ?? $p['attr'] ?? null;
                     $params[] = $p['Size'] ?? $p['SIZ'] ?? $p['size'] ?? null;
-                    $params[] = isset($p['Price']) ? (float)$p['Price'] : (isset($p['price']) ? (float)$p['price'] : 0.00);
+                    $params[] = isset($p['Price']) ? (float) $p['Price'] : (isset($p['price']) ? (float) $p['price'] : 0.00);
                     $params[] = $p['Aux1'] ?? $p['aux1'] ?? null;
-                    $params[] = isset($p['Qty']) ? (float)$p['Qty'] : (isset($p['qty']) ? (float)$p['qty'] : 0.00);
+                    $params[] = isset($p['Qty']) ? (float) $p['Qty'] : (isset($p['qty']) ? (float) $p['qty'] : 0.00);
                 }
 
                 $sqlInsert .= implode(', ', $placeholders);
@@ -3319,7 +3379,8 @@ try {
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )");
                 $requests = $db->query("SELECT id, store_code, requested_by, local_scans_count, cloud_scans_count, status, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM pending_sync_requests WHERE status = 'pending' ORDER BY id DESC");
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
             sendResponse([
                 'status' => 'success',
                 'requests' => $requests
@@ -3343,7 +3404,8 @@ try {
             } catch (Exception $eC1) {
                 try {
                     $db->execute("DELETE FROM cloud_backups_log");
-                } catch (Exception $eC2) {}
+                } catch (Exception $eC2) {
+                }
             }
 
             // Delete physical backup files
@@ -3357,7 +3419,8 @@ try {
                         }
                     }
                 }
-            } catch (Exception $eF) {}
+            } catch (Exception $eF) {
+            }
 
             logAudit('Clear Cloud Backups', "System Admin cleared all cloud backup logs and deleted stored backup script files.");
 
@@ -3376,13 +3439,14 @@ try {
             ensureCloudBackupsLogTable($db);
             try {
                 $db->execute("DELETE FROM cloud_backups_log WHERE store_code LIKE '%MANUAL%' OR store_code LIKE '%SNAPSHOT%'");
-            } catch (Exception $eClean) {}
+            } catch (Exception $eClean) {
+            }
 
             try {
                 $rows = $db->query("SELECT * FROM cloud_backups_log ORDER BY id DESC");
                 if (!empty($rows)) {
                     foreach ($rows as $r) {
-                        $row = array_change_key_case((array)$r, CASE_LOWER);
+                        $row = array_change_key_case((array) $r, CASE_LOWER);
 
                         $bId = $row['backup_id'] ?? '';
                         $sCode = strtoupper($row['store_code'] ?? '');
@@ -3426,7 +3490,8 @@ try {
                                     break;
                                 }
                             }
-                            if ($alreadyInList) continue;
+                            if ($alreadyInList)
+                                continue;
 
                             $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
                             $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
@@ -3467,7 +3532,8 @@ try {
                                     break;
                                 }
                             }
-                            if ($alreadyInList) continue;
+                            if ($alreadyInList)
+                                continue;
 
                             $dateObj = DateTime::createFromFormat('Ymd_His', $tsStr);
                             $formattedDate = $dateObj ? $dateObj->format('Y-m-d H:i:s') : $tsStr;
@@ -3661,7 +3727,8 @@ try {
                     $chunks = array_chunk($products, $chunkSize);
 
                     $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
-                    $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                    $colSql = implode(', ', array_map(function ($c) {
+                        return "`{$c}`"; }, $colNames));
                     $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
 
                     foreach ($chunks as $chunk) {
@@ -3675,9 +3742,9 @@ try {
                             $params[] = $row['Type'] ?? ($row['type'] ?? '');
                             $params[] = $row['Attr'] ?? ($row['attr'] ?? '');
                             $params[] = $row['Size'] ?? ($row['size'] ?? '');
-                            $params[] = isset($row['Price']) ? (float)$row['Price'] : (isset($row['price']) ? (float)$row['price'] : 0.00);
+                            $params[] = isset($row['Price']) ? (float) $row['Price'] : (isset($row['price']) ? (float) $row['price'] : 0.00);
                             $params[] = $row['Aux1'] ?? ($row['aux1'] ?? '');
-                            $params[] = isset($row['Qty']) ? (float)$row['Qty'] : (isset($row['qty']) ? (float)$row['qty'] : 0);
+                            $params[] = isset($row['Qty']) ? (float) $row['Qty'] : (isset($row['qty']) ? (float) $row['qty'] : 0);
                         }
                         if (!empty($placeholders)) {
                             $sql = "INSERT INTO `{$storeCode}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
@@ -3787,7 +3854,8 @@ try {
                 $chunks = array_chunk($products, $chunkSize);
 
                 $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
-                $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+                $colSql = implode(', ', array_map(function ($c) {
+                    return "`{$c}`"; }, $colNames));
                 $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
 
                 foreach ($chunks as $chunk) {
@@ -3801,9 +3869,9 @@ try {
                         $params[] = $row['Type'] ?? ($row['type'] ?? '');
                         $params[] = $row['Attr'] ?? ($row['attr'] ?? '');
                         $params[] = $row['Size'] ?? ($row['size'] ?? '');
-                        $params[] = isset($row['Price']) ? (float)$row['Price'] : (isset($row['price']) ? (float)$row['price'] : 0.00);
+                        $params[] = isset($row['Price']) ? (float) $row['Price'] : (isset($row['price']) ? (float) $row['price'] : 0.00);
                         $params[] = $row['Aux1'] ?? ($row['aux1'] ?? '');
-                        $params[] = isset($row['Qty']) ? (float)$row['Qty'] : (isset($row['qty']) ? (float)$row['qty'] : 0);
+                        $params[] = isset($row['Qty']) ? (float) $row['Qty'] : (isset($row['qty']) ? (float) $row['qty'] : 0);
                     }
                     if (!empty($placeholders)) {
                         $sql = "INSERT INTO `{$storeCode}_items` ({$colSql}) VALUES " . implode(', ', $placeholders);
@@ -3849,16 +3917,18 @@ try {
                 throw new Exception("Invalid store code.");
             }
             $db = new OWI_DB();
-            
+
             // 1. Re-open store status in stores table
             try {
                 $db->execute("UPDATE stores SET closed = 0 WHERE LOWER(store_code) = ?", [$storeCode]);
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             // 2. Set status = 'open' for locators in {store}_locators table
             try {
                 $db->execute("UPDATE `{$storeCode}_locators` SET status = 'open'");
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             sendResponse([
                 'status' => 'success',
@@ -3883,10 +3953,12 @@ try {
                     $locsCount = 0;
                     try {
                         $scansCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$sCode}_countsheet`")[0]['c'] ?? 0);
-                    } catch (Exception $eS) {}
+                    } catch (Exception $eS) {
+                    }
                     try {
                         $locsCount = (int) ($db->query("SELECT COUNT(*) as c FROM `{$sCode}_locators`")[0]['c'] ?? 0);
-                    } catch (Exception $eL) {}
+                    } catch (Exception $eL) {
+                    }
 
                     $stores[] = [
                         'id' => $s['id'],
@@ -3899,7 +3971,8 @@ try {
                         'closed' => (int) ($s['closed'] ?? 0)
                     ];
                 }
-            } catch (Exception $e) {}
+            } catch (Exception $e) {
+            }
 
             sendResponse([
                 'status' => 'success',
@@ -3914,7 +3987,7 @@ try {
                 throw new Exception("Store code required.");
             }
             $db = new OWI_DB();
-            
+
             $storeRows = [];
             try {
                 $storeRows = $db->query("
@@ -3933,14 +4006,16 @@ try {
             if ($exists) {
                 try {
                     $locators = $db->query("SELECT * FROM `{$store}_locators`");
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                }
             }
 
             $scans = [];
             if ($exists) {
                 try {
                     $scans = $db->query("SELECT * FROM `{$store}_countsheet`");
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                }
             }
 
             // Fetch products specific to this store based on stores_id store number
@@ -4272,7 +4347,8 @@ function handleReceiveSync()
             $chunks = array_chunk($products, $chunkSize);
 
             $colNames = ['UPC', 'SKU', 'Descr', 'Type', 'Attr', 'Size', 'Price', 'Aux1', 'Qty'];
-            $colSql = implode(', ', array_map(function($c) { return "`{$c}`"; }, $colNames));
+            $colSql = implode(', ', array_map(function ($c) {
+                return "`{$c}`"; }, $colNames));
             $singleRowPlaceholder = "(" . implode(', ', array_fill(0, count($colNames), '?')) . ")";
 
             foreach ($chunks as $chunk) {
@@ -4302,7 +4378,8 @@ function handleReceiveSync()
         if (!empty($usersList)) {
             foreach ($usersList as $u) {
                 $uName = trim($u['username'] ?? '');
-                if (empty($uName)) continue;
+                if (empty($uName))
+                    continue;
 
                 $uPass = $u['password'] ?? '';
                 $uRole = $u['role'] ?? 'user';
@@ -4348,8 +4425,8 @@ function handleReceiveSync()
 
         $syncedBy = $input['synced_by'] ?? ($_SESSION['username'] ?? 'SYSTEM');
         logAudit(
-            'RECEIVE_SYNC', 
-            "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, " . count($products) . " catalog items, " . count($usersList) . " user accounts, and " . count($incomingAuditLogs) . " audit logs.", 
+            'RECEIVE_SYNC',
+            "Received sync payload for store session '" . strtoupper($storeCode) . "' containing " . count($locators) . " locators, " . count($scans) . " scan records, " . count($products) . " catalog items, " . count($usersList) . " user accounts, and " . count($incomingAuditLogs) . " audit logs.",
             strtoupper($storeCode),
             $syncedBy
         );
