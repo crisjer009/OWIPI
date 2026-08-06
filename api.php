@@ -2700,7 +2700,7 @@ try {
             }
 
             $resData = json_decode($result, true);
-            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success' || empty($resData['products'])) {
                 // Fallback: Fetch central product catalog directly via get_cloud_products from Cloud Server
                 $fallbackUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
                 $chFb = curl_init($fallbackUrl);
@@ -3779,32 +3779,21 @@ try {
                 // Table 'stores' or column doesn't exist on cloud
             }
 
-            if (empty($storeRows)) {
-                sendResponse([
-                    'status' => 'success',
-                    'exists' => false,
-                    'store' => null,
-                    'locators' => [],
-                    'scans' => [],
-                    'products' => []
-                ]);
-                break;
-            }
-
-            $storeObj = $storeRows[0];
+            $exists = !empty($storeRows);
+            $storeObj = $exists ? $storeRows[0] : null;
 
             $locators = [];
-            try {
-                $locators = $db->query("SELECT * FROM `{$store}_locators`");
-            } catch (Exception $e) {
-                // Table '{store}_locators' doesn't exist on cloud
+            if ($exists) {
+                try {
+                    $locators = $db->query("SELECT * FROM `{$store}_locators`");
+                } catch (Exception $e) {}
             }
 
             $scans = [];
-            try {
-                $scans = $db->query("SELECT * FROM `{$store}_countsheet`");
-            } catch (Exception $e) {
-                // Table '{store}_countsheet' doesn't exist on cloud
+            if ($exists) {
+                try {
+                    $scans = $db->query("SELECT * FROM `{$store}_countsheet`");
+                } catch (Exception $e) {}
             }
 
             // Fetch products specific to this store based on stores_id store number
