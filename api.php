@@ -1102,11 +1102,12 @@ try {
                         FROM `{$store}_items` i
                         LEFT JOIN (
                             SELECT 
-                                UPPER(TRIM(COALESCE(NULLIF(UPC, ''), SKU))) as item_key,
+                                UPC,
+                                SKU,
                                 SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty
                             FROM `{$store}_countsheet`
-                            GROUP BY item_key
-                        ) s ON (s.item_key = UPPER(TRIM(i.UPC)) OR s.item_key = UPPER(TRIM(i.SKU)))
+                            GROUP BY UPC, SKU
+                        ) s ON (s.UPC = i.UPC OR (i.SKU IS NOT NULL AND i.SKU != '' AND (s.SKU = i.SKU OR s.UPC = i.SKU)))
                         
                         UNION ALL
                         
@@ -1117,8 +1118,8 @@ try {
                             0.00 as master_qty,
                             SUM(IF(c.Edited = 1, c.EditedQty, c.Qty)) as total_qty
                         FROM `{$store}_countsheet` c
-                        LEFT JOIN `{$store}_items` i ON (UPPER(TRIM(i.UPC)) = UPPER(TRIM(c.UPC)) OR (c.UPC != '' AND UPPER(TRIM(i.SKU)) = UPPER(TRIM(c.UPC))) OR (c.SKU != '' AND UPPER(TRIM(i.SKU)) = UPPER(TRIM(c.SKU))))
-                        WHERE i.UPC IS NULL AND i.SKU IS NULL
+                        LEFT JOIN `{$store}_items` i ON (i.UPC = c.UPC OR (c.UPC != '' AND i.SKU = c.UPC) OR (c.SKU != '' AND i.SKU = c.SKU))
+                        WHERE i.UPC IS NULL AND (i.SKU IS NULL OR i.SKU = '')
                         GROUP BY c.UPC, c.SKU, c.Descr
                     ";
                     $summary = $db->query($sqlSummary);
@@ -1147,11 +1148,12 @@ try {
                         FROM items m
                         LEFT JOIN (
                             SELECT 
-                                UPPER(TRIM(COALESCE(NULLIF(UPC, ''), SKU))) as item_key,
+                                UPC,
+                                SKU,
                                 SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty
                             FROM `{$store}_countsheet`
-                            GROUP BY item_key
-                        ) s ON (s.item_key = UPPER(TRIM(m.UPC)) OR s.item_key = UPPER(TRIM(m.SKU)))
+                            GROUP BY UPC, SKU
+                        ) s ON (s.UPC = m.UPC OR (m.SKU IS NOT NULL AND m.SKU != '' AND (s.SKU = m.SKU OR s.UPC = m.SKU)))
                         
                         UNION ALL
                         
@@ -1162,8 +1164,8 @@ try {
                             0.00 as master_qty,
                             SUM(IF(c.Edited = 1, c.EditedQty, c.Qty)) as total_qty
                         FROM `{$store}_countsheet` c
-                        LEFT JOIN items m ON (UPPER(TRIM(m.UPC)) = UPPER(TRIM(c.UPC)) OR (c.UPC != '' AND UPPER(TRIM(m.SKU)) = UPPER(TRIM(c.UPC))) OR (c.SKU != '' AND UPPER(TRIM(m.SKU)) = UPPER(TRIM(c.SKU))))
-                        WHERE m.UPC IS NULL AND m.SKU IS NULL
+                        LEFT JOIN items m ON (m.UPC = c.UPC OR (c.UPC != '' AND m.SKU = c.UPC) OR (c.SKU != '' AND m.SKU = c.SKU))
+                        WHERE m.UPC IS NULL AND (m.SKU IS NULL OR m.SKU = '')
                         GROUP BY c.UPC, c.SKU, c.Descr
                     ";
                     $summary = $db->query($sqlSummary);
