@@ -1146,6 +1146,8 @@ try {
                     ";
                     if ($mode === 'variance_only') {
                         $sqlSummary = "SELECT * FROM ({$sqlSummary}) tmp WHERE (total_qty != master_qty)";
+                    } else {
+                        $sqlSummary = "SELECT * FROM ({$sqlSummary}) tmp WHERE (master_qty > 0 OR total_qty > 0)";
                     }
                     $summary = $db->query($sqlSummary);
                 } else {
@@ -1195,6 +1197,8 @@ try {
                     ";
                     if ($mode === 'variance_only') {
                         $sqlSummary = "SELECT * FROM ({$sqlSummary}) tmp WHERE (total_qty != master_qty)";
+                    } else {
+                        $sqlSummary = "SELECT * FROM ({$sqlSummary}) tmp WHERE (master_qty > 0 OR total_qty > 0)";
                     }
                     $summary = $db->query($sqlSummary);
                 }
@@ -1213,6 +1217,8 @@ try {
                 ";
                 if ($mode === 'variance_only') {
                     $sqlScans = "SELECT * FROM ({$sqlScans}) tmp WHERE (total_qty != master_qty)";
+                } else {
+                    $sqlScans = "SELECT * FROM ({$sqlScans}) tmp WHERE (master_qty > 0 OR total_qty > 0)";
                 }
                 try {
                     $summary = $db->query($sqlScans);
