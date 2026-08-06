@@ -3867,35 +3867,27 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 }
             }
 
-            fetch('api.php?action=get_scans')
+            fetch('api.php?action=get_store_summary')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.status === 'success' && data.scans) {
-                        const scans = data.scans;
+                    if (data.status === 'success' && data.summary) {
+                        const summary = data.summary;
 
-                        if (scans.length === 0) {
-                            alert("No scans available in the system to print.");
+                        if (summary.length === 0) {
+                            alert("No inventory data or catalog items available to print.");
                             return;
                         }
 
-                        // Group scans by Barcode/UPC
-                        const summaryMap = {};
-                        scans.forEach(scan => {
-                            const barcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode.trim() : (scan.sku || 'N/A');
-                            if (!summaryMap[barcode]) {
-                                summaryMap[barcode] = {
-                                    barcode: barcode,
-                                    sku: scan.sku || 'N/A',
-                                    description: scan.product_name || 'Item Not Found',
-                                    masterQty: parseFloat(scan.master_qty || 0),
-                                    totalQty: 0
-                                };
-                            }
-                            summaryMap[barcode].totalQty += parseFloat(scan.quantity || 0);
-                        });
+                        // Map summary records
+                        let items = summary.map(s => ({
+                            barcode: (s.barcode && String(s.barcode).trim() !== '') ? String(s.barcode).trim() : (s.sku || 'N/A'),
+                            sku: s.sku || 'N/A',
+                            description: s.product_name || 'Item Not Found',
+                            masterQty: parseFloat(s.master_qty || 0),
+                            totalQty: parseFloat(s.total_qty || 0)
+                        }));
 
-                        // Convert to array and sort by description alphabetically
-                        let items = Object.values(summaryMap);
+                        // Sort by description alphabetically
                         items.sort((a, b) => a.description.localeCompare(b.description));
 
                         // Filter for variance only if requested
