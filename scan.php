@@ -69,30 +69,24 @@ if (!empty($_SESSION['store_code'])) {
     }
 }
 
-// Pre-fetch active non-closed stores for instant store selection on load (filtered by user)
+// Pre-fetch stores for instant store selection on load (filtered by user role)
 $existingStoresList = [];
 try {
     $dbStoreHelper = new OWI_DB();
     $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
     $currentUserRole = $_SESSION['role'] ?? 'user';
     if ($currentUserRole === 'system_admin' || $currentUserRole === 'admin') {
-        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY id DESC");
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores ORDER BY id DESC");
     } else {
-        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY id DESC", [$currentUserId]);
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE created_by = ? ORDER BY id DESC", [$currentUserId]);
     }
 } catch (Exception $e) {
 }
 $hasActiveStores = !empty($existingStoresList);
 
-// If no store selected in session but active stores exist, auto-select the latest active store
-if (empty($_SESSION['store_code']) && $hasActiveStores) {
+// If no store selected in session but stores exist, auto-select the latest store
+if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
     $_SESSION['store_code'] = strtoupper($existingStoresList[0]['store_code']);
-}
-
-// Only redirect to index.php if no stores exist in the system at all
-if (empty($_SESSION['store_code']) && !isMobileDevice() && !isset($_GET['autologin'])) {
-    header('Location: index.php');
-    exit;
 }
 ?>
 <!DOCTYPE html>
