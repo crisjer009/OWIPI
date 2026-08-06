@@ -2613,8 +2613,8 @@ try {
                 throw new Exception("Cloud Sync Failed (HTTP {$httpCode}): " . $msg);
             }
 
-            // Update local synced status and set store session as CLOSED (closed = 1)
-            $db->execute("UPDATE stores SET synced = 1, closed = 1 WHERE id = ?", [$storeDetails['id']]);
+            // Update local synced status (local store session remains open until user manually clicks Close Store)
+            $db->execute("UPDATE stores SET synced = 1 WHERE id = ?", [$storeDetails['id']]);
 
             foreach ($locators as $loc) {
                 $db->execute("UPDATE `{$store}_locators` SET synced = 1 WHERE id = ?", [$loc['id']]);
