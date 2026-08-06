@@ -3867,6 +3867,21 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 }
             }
 
+            // Open window SYNCHRONOUSLY during user click gesture so browser popup blocker never blocks it
+            const printWin = window.open('', '_blank', 'width=850,height=650');
+            if (printWin) {
+                printWin.document.open();
+                printWin.document.write(`
+                    <html>
+                    <head><title>Generating Inventory Count Summary...</title></head>
+                    <body style="font-family:monospace; padding:40px; background:#161b22; color:#c9d1d9; text-align:center;">
+                        <h2 style="color:#58a6ff;">Generating Print Summary Report...</h2>
+                        <p style="color:#8b949e;">Please wait while store inventory data is processed.</p>
+                    </body>
+                    </html>
+                `);
+            }
+
             fetch('api.php?action=get_store_summary')
                 .then(res => res.json())
                 .then(data => {
@@ -3874,6 +3889,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         const summary = data.summary;
 
                         if (summary.length === 0) {
+                            if (printWin && !printWin.closed) printWin.close();
                             alert("No inventory data or catalog items available to print.");
                             return;
                         }
@@ -3895,6 +3911,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         if (isVarianceOnly) {
                             items = items.filter(item => (item.totalQty - item.masterQty) !== 0);
                             if (items.length === 0) {
+                                if (printWin && !printWin.closed) printWin.close();
                                 customAlert("No items with variance found in the store summary.", "Info");
                                 return;
                             }
@@ -3997,8 +4014,11 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
                         const pageLeftMargin = parseInt(printMarginLeft || 0);
 
-                        // Open print frame window
-                        const printWin = window.open('', '', 'width=800,height=600');
+                        if (!printWin || printWin.closed) {
+                            customAlert("Pop-up window was blocked by your browser. Please allow pop-ups for this site.", "Print Error");
+                            return;
+                        }
+
                         printWin.document.open();
                         printWin.document.write(`
                             <html>
@@ -4058,10 +4078,16 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                 <div class="summary-print-container">
                                     <pre>${text}${footerText}</pre>
                                 </div>
+                                <div class="signature-footer">
+                                    <pre>
+        Scanned  By             Counted By                 Checked By
+
+              ____________                    ____________
+               Team Leader                     Posted By</pre>
+                                </div>
                                 \x3Cscript\x3E
                                     window.onload = function() {
                                         window.print();
-                                        window.close();
                                     }
                                 <\/script>
                             </body>
