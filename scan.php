@@ -3867,221 +3867,276 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 }
             }
 
-            fetch('api.php?action=get_scans')
+            const targetUrl = (mode === 'variance_only') 
+                ? 'api.php?action=get_scans' 
+                : 'api.php?action=get_store_summary&mode=all';
+
+            fetch(targetUrl)
                 .then(res => res.json())
                 .then(data => {
-                    if (data.status === 'success' && data.scans) {
-                        const scans = data.scans;
+                    let items = [];
+                    let infCount = 0;
 
-                        if (scans.length === 0) {
-                            alert("No scans available in the system to print.");
-                            return;
-                        }
-
-                        // Group scans by Barcode/UPC
-                        const summaryMap = {};
-                        scans.forEach(scan => {
-                            const barcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode.trim() : (scan.sku || 'N/A');
-                            if (!summaryMap[barcode]) {
-                                summaryMap[barcode] = {
-                                    barcode: barcode,
-                                    sku: scan.sku || 'N/A',
-                                    description: scan.product_name || 'Item Not Found',
-                                    masterQty: parseFloat(scan.master_qty || 0),
-                                    totalQty: 0
-                                };
+                    if (mode === 'variance_only') {
+                        if (data.status === 'success' && data.scans) {
+                            const scans = data.scans;
+                            if (scans.length === 0) {
+                                customAlert("No scans available in the system to print.", "Info");
+                                return;
                             }
-                            summaryMap[barcode].totalQty += parseFloat(scan.quantity || 0);
-                        });
 
-                        // Convert to array and sort by description alphabetically
-                        let items = Object.values(summaryMap);
-                        items.sort((a, b) => a.description.localeCompare(b.description));
+                            const summaryMap = {};
+                            scans.forEach(scan => {
+                                const barcode = (scan.barcode && String(scan.barcode).trim() !== '') ? String(scan.barcode).trim() : (scan.sku || 'N/A');
+                                if (!summaryMap[barcode]) {
+                                    summaryMap[barcode] = {
+                                        barcode: barcode,
+                                        sku: scan.sku || 'N/A',
+                                        description: scan.product_name || 'Item Not Found',
+                                        masterQty: parseFloat(scan.master_qty || 0),
+                                        totalQty: 0
+                                    };
+                                }
+                                summaryMap[barcode].totalQty += parseFloat(scan.quantity || 0);
+                            });
 
-                        // Filter for variance only if requested
-                        const isVarianceOnly = (mode === 'variance_only');
-                        if (isVarianceOnly) {
+                            items = Object.values(summaryMap);
+                            items.sort((a, b) => a.description.localeCompare(b.description));
                             items = items.filter(item => (item.totalQty - item.masterQty) !== 0);
+
                             if (items.length === 0) {
                                 customAlert("No items with variance found in the store summary.", "Info");
                                 return;
                             }
+                        } else {
+                            customAlert(data.message || "Failed to load scan records.", "Error");
+                            return;
+                        }
+                    } else {
+                        // Print All Summary (100% Completion) - Include all catalog items from Store Masterfile
+                        if (data.status === 'success' && data.summary) {
+                            const summary = data.summary;
+                            if (summary.length === 0) {
+                                customAlert("No store items catalog or inventory data available to print.", "Info");
+                                return;
+                            }
+
+                            items = summary.map(s => ({
+                                barcode: (s.barcode && String(s.barcode).trim() !== '') ? String(s.barcode).trim() : (s.sku || 'N/A'),
+                                sku: s.sku || 'N/A',
+                                description: s.product_name || 'Item Not Found',
+                                masterQty: parseFloat(s.master_qty || 0),
+                                totalQty: parseFloat(s.total_qty || 0)
+                            }));
+                            items.sort((a, b) => a.description.localeCompare(b.description));
+                        } else {
+                            customAlert(data.message || "Failed to load store inventory summary.", "Error");
+                            return;
+                        }
+                    }
+
+                    items.forEach(item => {
+                        if (item.description === 'Item Not Found' || item.description === 'Unknown Product') {
+                            infCount++;
+                        }
+                    });
+
+                    const padQtyCenter = (str, len = 10) => {
+                        str = String(str || '').trim();
+                        if (str.length >= len) return str;
+                        const padLeft = Math.floor((len - str.length) / 2);
+                        return ' '.repeat(padLeft) + str + ' '.repeat(len - str.length - padLeft);
+                    };
+
+                    const now = new Date();
+                    const countDateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                    const padRight = (str, len) => {
+                        str = String(str || '');
+                        return str + ' '.repeat(Math.max(0, len - str.length));
+                    };
+                    const centerText = (str, len = 97) => {
+                        str = String(str || '').trim();
+                        if (str.length >= len) return str;
+                        const padLeft = Math.floor((len - str.length) / 2);
+                        return ' '.repeat(padLeft) + str;
+                    };
+
+                    const isVarianceOnly = (mode === 'variance_only');
+                    const summaryTitle = isVarianceOnly 
+                        ? '*****   Inventory Count Summary (Variance Only)   *****' 
+                        : '*****   Inventory Count Summary (100% Completion)   *****';
+
+                    const lineSeparator = '-'.repeat(97) + '\r\n';
+                    const doubleLineSeparator = '='.repeat(97) + '\r\n';
+
+                    let text = '';
+                    text += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
+                    text += centerText('Annual Inventory Count') + '\r\n\r\n';
+                    text += centerText(summaryTitle) + '\r\n\r\n';
+                    text += `Count Date. : ${countDateStr}\r\n\r\n`;
+
+                    // Header columns row
+                    text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
+                    text += lineSeparator;
+
+                    let grandTotalMaster = 0;
+                    let grandTotalScanned = 0;
+                    let grandTotalVariance = 0;
+
+                    items.forEach((item, index) => {
+                        const recNo = index + 1;
+                        const barcode = item.barcode || '';
+                        const sku = item.sku || '';
+                        const descr = item.description || 'Item Not Found';
+                        const mstQtyVal = item.masterQty;
+                        const qtyVal = item.totalQty;
+                        const varianceVal = qtyVal - mstQtyVal;
+
+                        const mstQtyStr = mstQtyVal.toFixed(0);
+                        const qtyStr = qtyVal.toFixed(0);
+                        const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
+
+                        grandTotalMaster += mstQtyVal;
+                        grandTotalScanned += qtyVal;
+                        grandTotalVariance += varianceVal;
+
+                        let cleanDescr = descr;
+                        if (cleanDescr.length > 35) {
+                            cleanDescr = cleanDescr.substring(0, 35);
                         }
 
-                        let infCount = 0;
-                        items.forEach(item => {
-                            if (item.description === 'Item Not Found' || item.description === 'Unknown Product') {
-                                infCount++;
-                            }
-                        });
+                        text += padRight(recNo, 8) +
+                            padRight(barcode, 16) +
+                            padRight(sku, 8) +
+                            padRight(cleanDescr, 35) +
+                            padQtyCenter(mstQtyStr, 10) +
+                            padQtyCenter(qtyStr, 10) +
+                            padQtyCenter(varianceStr, 10) + '\r\n';
+                    });
 
-                        const padQtyCenter = (str, len = 10) => {
-                            str = String(str || '').trim();
-                            if (str.length >= len) return str;
-                            const padLeft = Math.floor((len - str.length) / 2);
-                            return ' '.repeat(padLeft) + str + ' '.repeat(len - str.length - padLeft);
-                        };
+                    const mstTotalStr = grandTotalMaster.toFixed(0);
+                    const scannedTotalStr = grandTotalScanned.toFixed(0);
+                    const varianceTotalStr = (grandTotalVariance >= 0 ? '+' : '') + grandTotalVariance.toFixed(0);
 
-                        const now = new Date();
-                        const countDateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
+                    const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
 
-                        const padRight = (str, len) => {
-                            str = String(str || '');
-                            return str + ' '.repeat(Math.max(0, len - str.length));
-                        };
-                        const centerText = (str, len = 97) => {
-                            str = String(str || '').trim();
-                            if (str.length >= len) return str;
-                            const padLeft = Math.floor((len - str.length) / 2);
-                            return ' '.repeat(padLeft) + str;
-                        };
+                    let footerText = lineSeparator +
+                        grandTotalLabel +
+                        padQtyCenter(mstTotalStr, 10) +
+                        padQtyCenter(scannedTotalStr, 10) +
+                        padQtyCenter(varianceTotalStr, 10) + '\r\n' +
+                        doubleLineSeparator + '\r\n' +
+                        totalInfStr;
 
-                        const summaryTitle = isVarianceOnly 
-                            ? '*****   Inventory Count Summary (Variance Only)   *****' 
-                            : '*****   Inventory Count Summary (100% Completion)   *****';
+                    const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
+                    const pageLeftMargin = parseInt(printMarginLeft || 0);
 
-                        let text = '';
-                        text += centerText(`OFFICE WAREHOUSE INC - ${storeCode}`) + '\r\n';
-                        text += centerText('Annual Inventory Count') + '\r\n\r\n';
-                        text += centerText(summaryTitle) + '\r\n\r\n';
-                        text += `Count Date. : ${countDateStr}\r\n\r\n`;
+                    const htmlDoc = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>Inventory Count Summary - ${storeCode}</title>
+                            <style>
+                                @page {
+                                    margin-top: ${pageTopMargin}mm;
+                                    margin-left: ${pageLeftMargin}mm;
+                                    margin-right: 0mm;
+                                    margin-bottom: 5mm;
+                                }
+                                @media print {
+                                    body { margin: 0; padding: 0; background: white; color: black; }
+                                    .summary-print-container { widows: 5 !important; orphans: 5 !important; page-break-inside: auto; }
+                                    .signature-footer { page-break-before: auto !important; page-break-inside: avoid !important; break-inside: avoid !important; }
+                                }
+                                body {
+                                    font-family: 'Courier New', Courier, monospace;
+                                    white-space: pre;
+                                    font-size: 11px;
+                                    line-height: 1.15;
+                                    background: white;
+                                    color: black;
+                                    margin: 0;
+                                    padding: 10px;
+                                }
+                                pre {
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: 'Courier New', Courier, monospace;
+                                    font-size: 11px;
+                                    line-height: 1.15;
+                                    white-space: pre;
+                                }
+                                .signature-footer {
+                                    page-break-inside: avoid !important;
+                                    break-inside: avoid !important;
+                                    margin-top: 15px;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="summary-print-container">
+                                <pre>${text}${footerText}</pre>
+                            </div>
+                            <div class="signature-footer">
+                                <pre>
+        Scanned  By             Counted By                 Checked By
 
-                        // Header columns row
-                        text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
-                        text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
+              ____________                    ____________
+               Team Leader                     Posted By</pre>
+                            </div>
+                        </body>
+                        </html>
+                    `;
 
-                        let grandTotalMaster = 0;
-                        let grandTotalScanned = 0;
-                        let grandTotalVariance = 0;
+                    // Open popup window or use hidden iframe fallback if popups are blocked
+                    let printWin = null;
+                    try {
+                        printWin = window.open('', '_blank', 'width=850,height=650');
+                    } catch (eW) {}
 
-                        items.forEach((item, index) => {
-                            const recNo = index + 1;
-                            const barcode = item.barcode || '';
-                            const sku = item.sku || '';
-                            const descr = item.description || 'Item Not Found';
-                            const mstQtyVal = item.masterQty;
-                            const qtyVal = item.totalQty;
-                            const varianceVal = qtyVal - mstQtyVal;
-
-                            const mstQtyStr = mstQtyVal.toFixed(0);
-                            const qtyStr = qtyVal.toFixed(0);
-                            const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
-
-                            grandTotalMaster += mstQtyVal;
-                            grandTotalScanned += qtyVal;
-                            grandTotalVariance += varianceVal;
-
-                            // Truncate description if it exceeds column space to prevent pushing other columns out of alignment
-                            let cleanDescr = descr;
-                            if (cleanDescr.length > 35) {
-                                cleanDescr = cleanDescr.substring(0, 35);
-                            }
-
-                            text += padRight(recNo, 8) +
-                                padRight(barcode, 16) +
-                                padRight(sku, 8) +
-                                padRight(cleanDescr, 35) +
-                                padQtyCenter(mstQtyStr, 10) +
-                                padQtyCenter(qtyStr, 10) +
-                                padQtyCenter(varianceStr, 10) + '\r\n';
-                            text += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
-                        });
-
-                        const mstTotalStr = grandTotalMaster.toFixed(0);
-                        const scannedTotalStr = grandTotalScanned.toFixed(0);
-                        const varianceTotalStr = (grandTotalVariance >= 0 ? '+' : '') + grandTotalVariance.toFixed(0);
-
-                        const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
-                        const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
-
-                        let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
-                            grandTotalLabel +
-                            padQtyCenter(mstTotalStr, 10) +
-                            padQtyCenter(scannedTotalStr, 10) +
-                            padQtyCenter(varianceTotalStr, 10) + '\r\n' +
-                            '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>\r\n' +
-                            totalInfStr;
-
-                        const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
-                        const pageLeftMargin = parseInt(printMarginLeft || 0);
-
-                        // Open print frame window
-                        const printWin = window.open('', '', 'width=800,height=600');
+                    if (printWin && !printWin.closed) {
                         printWin.document.open();
-                        printWin.document.write(`
-                            <html>
-                            <head>
-                                <title>Inventory Count Summary - ${storeCode}</title>
-                                <style>
-                                    @page {
-                                        margin-top: ${pageTopMargin}mm;
-                                        margin-left: ${pageLeftMargin}mm;
-                                        margin-right: 0mm;
-                                        margin-bottom: 5mm;
-                                    }
-                                    @media print {
-                                        body { 
-                                            margin: 0; 
-                                            padding: 0;
-                                            background: white; 
-                                            color: black; 
-                                        }
-                                        .summary-print-container {
-                                            widows: 5 !important;
-                                            orphans: 5 !important;
-                                            page-break-inside: auto;
-                                        }
-                                        .signature-footer {
-                                            page-break-before: auto !important;
-                                            page-break-inside: avoid !important;
-                                            break-inside: avoid !important;
-                                        }
-                                    }
-                                    body {
-                                        font-family: monospace;
-                                        white-space: pre;
-                                        font-size: 12px;
-                                        line-height: 1.12;
-                                        background: white;
-                                        color: black;
-                                        margin: 0;
-                                        padding: 0;
-                                    }
-                                    pre {
-                                        margin: 0;
-                                        padding: 0;
-                                        font-family: monospace;
-                                        font-size: 12px;
-                                        line-height: 1.12;
-                                        white-space: pre;
-                                    }
-                                    .signature-footer {
-                                        page-break-inside: avoid !important;
-                                        break-inside: avoid !important;
-                                        margin-top: 4px;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <div class="summary-print-container">
-                                    <pre>${text}${footerText}</pre>
-                                </div>
-                                \x3Cscript\x3E
-                                    window.onload = function() {
-                                        window.print();
-                                        window.close();
-                                    }
-                                <\/script>
-                            </body>
-                            </html>
-                        `);
+                        printWin.document.write(htmlDoc);
                         printWin.document.close();
-                        sessionStorage.setItem('summary_printed_' + storeCode, 'true');
+                        setTimeout(() => {
+                            try {
+                                printWin.focus();
+                                printWin.print();
+                            } catch (ePr) {}
+                        }, 250);
+                    } else {
+                        // Fallback to hidden printable iframe
+                        let printIframe = document.getElementById('print-summary-iframe');
+                        if (!printIframe) {
+                            printIframe = document.createElement('iframe');
+                            printIframe.id = 'print-summary-iframe';
+                            printIframe.style.position = 'fixed';
+                            printIframe.style.right = '0';
+                            printIframe.style.bottom = '0';
+                            printIframe.style.width = '0';
+                            printIframe.style.height = '0';
+                            printIframe.style.border = '0';
+                            document.body.appendChild(printIframe);
+                        }
+                        const doc = printIframe.contentWindow.document;
+                        doc.open();
+                        doc.write(htmlDoc);
+                        doc.close();
+                        setTimeout(() => {
+                            try {
+                                printIframe.contentWindow.focus();
+                                printIframe.contentWindow.print();
+                            } catch (ePrI) {}
+                        }, 250);
                     }
+
+                    sessionStorage.setItem('summary_printed_' + storeCode, 'true');
                 })
                 .catch(err => {
-                    console.error("Print summary error:", err);
-                    alert("Failed to load scans for summary print: " + err);
+                    console.error("Error generating print summary:", err);
+                    customAlert("Error generating print summary: " + err, "Print Error");
                 });
         }
 
