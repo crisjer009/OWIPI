@@ -2554,6 +2554,8 @@ try {
 
                 $payload['local_scans_count'] = $totalScans;
                 $payload['cloud_scans_count'] = $cloudScansCount;
+                unset($payload['products']);
+                unset($payload['items']);
 
                 $chReq = curl_init();
                 curl_setopt($chReq, CURLOPT_URL, $submitUrl);
@@ -3132,8 +3134,9 @@ try {
             $cloudScans = (int) ($input['cloud_scans_count'] ?? 0);
 
             $db = new OWI_DB();
-            // Remove bulky products catalog array from payload to prevent max_allowed_packet error
+            // Remove bulky products/items catalog arrays from payload to prevent max_allowed_packet error
             unset($input['products']);
+            unset($input['items']);
             $jsonPayload = json_encode($input);
 
             try {
