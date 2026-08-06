@@ -4281,18 +4281,13 @@ function handleReceiveSync()
         $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
 
         $locators = $input['locators'] ?? [];
-        foreach ($locators as $loc) {
-            $locName = $loc['locator_name'];
-            $status = $loc['status'] ?? 'open';
-            $operator = $loc['assigned_operator'] ?? null;
+        if (!empty($locators)) {
+            $db->execute("TRUNCATE TABLE `{$storeCode}_locators`");
+            foreach ($locators as $loc) {
+                $locName = $loc['locator_name'];
+                $status = $loc['status'] ?? 'open';
+                $operator = $loc['assigned_operator'] ?? null;
 
-            $check = $db->query("SELECT id FROM `{$storeCode}_locators` WHERE locator_name = ?", [$locName]);
-            if (!empty($check)) {
-                $db->execute(
-                    "UPDATE `{$storeCode}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?",
-                    [$status, $operator, $locName]
-                );
-            } else {
                 $db->execute(
                     "INSERT INTO `{$storeCode}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)",
                     [$locName, $status, $operator]
