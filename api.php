@@ -1023,8 +1023,8 @@ try {
             // Fast ETag fingerprint check to avoid redundant data transfer when no new scans exist
             $dataHash = '';
             try {
-                $fpRow = $db->query("SELECT MAX(RecNo) as max_id, COUNT(*) as cnt FROM `{$store}_countsheet`");
-                $dataHash = md5(($fpRow[0]['max_id'] ?? '0') . '_' . ($fpRow[0]['cnt'] ?? '0') . '_' . $location);
+                $fpRow = $db->query("SELECT MAX(RecNo) as max_id, COUNT(*) as cnt, SUM(IF(Edited = 1, EditedQty, Qty)) as sum_qty, MAX(IF(Edited = 1, EditedQty, Qty)) as max_qty FROM `{$store}_countsheet`");
+                $dataHash = md5(($fpRow[0]['max_id'] ?? '0') . '_' . ($fpRow[0]['cnt'] ?? '0') . '_' . ($fpRow[0]['sum_qty'] ?? '0') . '_' . ($fpRow[0]['max_qty'] ?? '0') . '_' . $location);
                 $clientHash = $_SERVER['HTTP_IF_NONE_MATCH'] ?? ($_GET['hash'] ?? '');
                 if (!empty($clientHash) && $clientHash === $dataHash) {
                     sendResponse([

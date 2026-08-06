@@ -4437,8 +4437,12 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         if (window.currentEditingLocatorName) {
                             loadLocatorScansTable(window.currentEditingLocatorName);
                         }
+                        window.lastScansHash = '';
                         if (typeof loadHostScans === 'function') {
                             loadHostScans();
+                        }
+                        if (typeof loadHostLocators === 'function') {
+                            loadHostLocators();
                         }
                     } else {
                         alert(data.message);
