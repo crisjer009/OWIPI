@@ -4662,7 +4662,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
         function downloadStoreFromCloud() {
             console.log("downloadStoreFromCloud: initiating customConfirm...");
             customConfirm(
-                `Are you sure you want to download and sync the store session, locators, and product catalog for store ${storeCode.toUpperCase()} from the cloud?`,
+                `Are you sure you want to download and sync the items masterfile for store ${storeCode.toUpperCase()} from the cloud?`,
                 function () {
                     console.log("downloadStoreFromCloud callback triggered!");
                     const btn = document.getElementById('btn-download-store');
@@ -4681,7 +4681,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                     }
 
                     console.log("calling showToast...");
-                    showToast(`Initiating download for store ${storeCode.toUpperCase()} from cloud...`, 'info');
+                    showToast(`Initiating download of items masterfile for store ${storeCode.toUpperCase()} from cloud...`, 'info');
 
                     const fetchUrl = `api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`;
                     console.log("fetching url:", fetchUrl);
