@@ -747,7 +747,10 @@ try {
             break;
 
         case 'delete_store':
-            checkAuth(true); // Requires system_admin
+            $currentRole = $_SESSION['role'] ?? '';
+            if (!in_array($currentRole, ['system_admin', 'admin'])) {
+                throw new Exception("Only System Administrators or Admins can delete store sessions.");
+            }
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_GET['store_code'] ?? ''));
             if (empty($store)) {
                 throw new Exception("Invalid store code.");
@@ -762,6 +765,11 @@ try {
             $db->execute("DROP TABLE IF EXISTS `{$store}_locators`");
             $db->execute("DROP TABLE IF EXISTS `{$store}_countsheet`");
             $db->execute("DROP TABLE IF EXISTS `{$store}_items`");
+
+            // If the deleted store was active in session, clear it
+            if (!empty($_SESSION['store_code']) && strtolower($_SESSION['store_code']) === $store) {
+                unset($_SESSION['store_code']);
+            }
 
             logAudit('DELETE_STORE', "Permanently deleted store session '" . strtoupper($store) . "' and dropped all its tables.");
 

@@ -57,6 +57,23 @@ $scriptDir = rtrim($scriptDir, '/');
 $isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '') . "&from_qr=1";
 
+// Verify active store session validity (if store was deleted by Admin, clear session and redirect to dashboard)
+if (!empty($_SESSION['store_code'])) {
+    try {
+        $dbVal = new OWI_DB();
+        $storeCheck = $dbVal->query("SELECT id FROM stores WHERE LOWER(store_code) = ?", [strtolower($_SESSION['store_code'])]);
+        if (empty($storeCheck)) {
+            unset($_SESSION['store_code']);
+        }
+    } catch (Exception $eV) {
+    }
+}
+
+if (empty($_SESSION['store_code']) && !isMobileDevice() && !isset($_GET['autologin'])) {
+    header('Location: index.php');
+    exit;
+}
+
 // Pre-fetch active non-closed stores for instant store selection on load (filtered by user)
 $existingStoresList = [];
 try {
