@@ -57,7 +57,7 @@ $scriptDir = rtrim($scriptDir, '/');
 $isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '') . "&from_qr=1";
 
-// Verify active store session validity (if store was deleted by Admin, clear session and redirect to dashboard)
+// Verify active store session validity (if store was deleted by Admin, clear session)
 if (!empty($_SESSION['store_code'])) {
     try {
         $dbVal = new OWI_DB();
@@ -69,11 +69,6 @@ if (!empty($_SESSION['store_code'])) {
     }
 }
 
-if (empty($_SESSION['store_code']) && !isMobileDevice() && !isset($_GET['autologin'])) {
-    header('Location: index.php');
-    exit;
-}
-
 // Pre-fetch active non-closed stores for instant store selection on load (filtered by user)
 $existingStoresList = [];
 try {
@@ -81,13 +76,24 @@ try {
     $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
     $currentUserRole = $_SESSION['role'] ?? 'user';
     if ($currentUserRole === 'system_admin' || $currentUserRole === 'admin') {
-        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY id DESC");
     } else {
-        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY store_code ASC", [$currentUserId]);
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY id DESC", [$currentUserId]);
     }
 } catch (Exception $e) {
 }
 $hasActiveStores = !empty($existingStoresList);
+
+// If no store selected in session but active stores exist, auto-select the latest active store
+if (empty($_SESSION['store_code']) && $hasActiveStores) {
+    $_SESSION['store_code'] = strtoupper($existingStoresList[0]['store_code']);
+}
+
+// Only redirect to index.php if no stores exist in the system at all
+if (empty($_SESSION['store_code']) && !isMobileDevice() && !isset($_GET['autologin'])) {
+    header('Location: index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
