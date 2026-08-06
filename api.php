@@ -4277,10 +4277,8 @@ function handleReceiveSync()
 
         $db->createStoreTables($storeCode, $createdBy);
 
-        // Sync the closed status from the local payload to the cloud
-        if (isset($storeDetails['closed'])) {
-            $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $storeDetails['closed'], $storeCode]);
-        }
+        // Automatically mark store as CLOSED on Cloud when synced from local
+        $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
 
         $locators = $input['locators'] ?? [];
         foreach ($locators as $loc) {
