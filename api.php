@@ -692,35 +692,48 @@ try {
 
         case 'close_store':
             $input = json_decode(file_get_contents('php://input'), true);
-            $storeCode = isset($input['store_code']) ? trim($input['store_code']) : '';
+            if (!$input) {
+                $input = $_POST;
+            }
+            $storeCode = isset($input['store_code']) ? trim($input['store_code']) : ($_SESSION['store_code'] ?? '');
             if (empty($storeCode)) {
                 throw new Exception("Store Code is required.");
             }
-            $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', $storeCode);
+            $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
 
             $db = new OWI_DB();
 
             // Validate: check locator completion progress
             $checkTbl = $db->query("SHOW TABLES LIKE '{$cleanStore}_locators'");
             if (empty($checkTbl)) {
-                throw new Exception("Store is not initialized.");
+                $db->createStoreTables($cleanStore);
+                $checkTbl = $db->query("SHOW TABLES LIKE '{$cleanStore}_locators'");
+            }
+
+            if (empty($checkTbl)) {
+                $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [strtolower($cleanStore)]);
+                unset($_SESSION['store_code']);
+                sendResponse([
+                    'status' => 'success',
+                    'message' => "Store session '" . strtoupper($cleanStore) . "' closed successfully!"
+                ]);
+                break;
             }
 
             $totalRows = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_locators`");
             $totalLocators = (int) ($totalRows[0]['count'] ?? 0);
-            if ($totalLocators === 0) {
-                throw new Exception("No locators found in this store to close.");
-            }
 
-            $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_locators` WHERE status = 'closed'");
-            $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
+            if ($totalLocators > 0) {
+                $closedRows = $db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_locators` WHERE status = 'closed'");
+                $closedLocators = (int) ($closedRows[0]['count'] ?? 0);
 
-            if ($closedLocators < $totalLocators) {
-                throw new Exception("Cannot close store. All locators must be closed first (Progress is " . round(($closedLocators / $totalLocators) * 100) . "%).");
+                if ($closedLocators < $totalLocators) {
+                    throw new Exception("Cannot close store. All locators must be closed first (Progress is " . round(($closedLocators / $totalLocators) * 100) . "%).");
+                }
             }
 
             // Update stores table setting closed = 1
-            $db->execute("UPDATE stores SET closed = 1 WHERE store_code = ?", [strtoupper($cleanStore)]);
+            $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [strtolower($cleanStore)]);
 
             // Clear current store session
             unset($_SESSION['store_code']);
