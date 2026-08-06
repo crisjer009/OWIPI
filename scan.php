@@ -3867,43 +3867,35 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 }
             }
 
-            // Open window SYNCHRONOUSLY during user click gesture so browser popup blocker never blocks it
-            const printWin = window.open('', '_blank', 'width=850,height=650');
-            if (printWin) {
-                printWin.document.open();
-                printWin.document.write(`
-                    <html>
-                    <head><title>Generating Inventory Count Summary...</title></head>
-                    <body style="font-family:monospace; padding:40px; background:#161b22; color:#c9d1d9; text-align:center;">
-                        <h2 style="color:#58a6ff;">Generating Print Summary Report...</h2>
-                        <p style="color:#8b949e;">Please wait while store inventory data is processed.</p>
-                    </body>
-                    </html>
-                `);
-            }
-
-            fetch('api.php?action=get_store_summary')
+            fetch('api.php?action=get_scans')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.status === 'success' && data.summary) {
-                        const summary = data.summary;
+                    if (data.status === 'success' && data.scans) {
+                        const scans = data.scans;
 
-                        if (summary.length === 0) {
-                            if (printWin && !printWin.closed) printWin.close();
-                            alert("No inventory data or catalog items available to print.");
+                        if (scans.length === 0) {
+                            alert("No scans available in the system to print.");
                             return;
                         }
 
-                        // Map summary records
-                        let items = summary.map(s => ({
-                            barcode: (s.barcode && String(s.barcode).trim() !== '') ? String(s.barcode).trim() : (s.sku || 'N/A'),
-                            sku: s.sku || 'N/A',
-                            description: s.product_name || 'Item Not Found',
-                            masterQty: parseFloat(s.master_qty || 0),
-                            totalQty: parseFloat(s.total_qty || 0)
-                        }));
+                        // Group scans by Barcode/UPC
+                        const summaryMap = {};
+                        scans.forEach(scan => {
+                            const barcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode.trim() : (scan.sku || 'N/A');
+                            if (!summaryMap[barcode]) {
+                                summaryMap[barcode] = {
+                                    barcode: barcode,
+                                    sku: scan.sku || 'N/A',
+                                    description: scan.product_name || 'Item Not Found',
+                                    masterQty: parseFloat(scan.master_qty || 0),
+                                    totalQty: 0
+                                };
+                            }
+                            summaryMap[barcode].totalQty += parseFloat(scan.quantity || 0);
+                        });
 
-                        // Sort by description alphabetically
+                        // Convert to array and sort by description alphabetically
+                        let items = Object.values(summaryMap);
                         items.sort((a, b) => a.description.localeCompare(b.description));
 
                         // Filter for variance only if requested
@@ -3911,7 +3903,6 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         if (isVarianceOnly) {
                             items = items.filter(item => (item.totalQty - item.masterQty) !== 0);
                             if (items.length === 0) {
-                                if (printWin && !printWin.closed) printWin.close();
                                 customAlert("No items with variance found in the store summary.", "Info");
                                 return;
                             }
@@ -3955,12 +3946,9 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         text += centerText(summaryTitle) + '\r\n\r\n';
                         text += `Count Date. : ${countDateStr}\r\n\r\n`;
 
-                        const lineSeparator = '-'.repeat(97) + '\r\n';
-                        const doubleLineSeparator = '='.repeat(97) + '\r\n';
-
                         // Header columns row
                         text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
-                        text += lineSeparator;
+                        text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
 
                         let grandTotalMaster = 0;
                         let grandTotalScanned = 0;
@@ -3996,6 +3984,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                 padQtyCenter(mstQtyStr, 10) +
                                 padQtyCenter(qtyStr, 10) +
                                 padQtyCenter(varianceStr, 10) + '\r\n';
+                            text += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
                         });
 
                         const mstTotalStr = grandTotalMaster.toFixed(0);
@@ -4005,25 +3994,21 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                         const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
                         const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
 
-                        let footerText = lineSeparator +
+                        let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
                             grandTotalLabel +
                             padQtyCenter(mstTotalStr, 10) +
                             padQtyCenter(scannedTotalStr, 10) +
                             padQtyCenter(varianceTotalStr, 10) + '\r\n' +
-                            doubleLineSeparator + '\r\n' +
+                            '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>\r\n' +
                             totalInfStr;
 
                         const pageTopMargin = Math.max(5, parseInt(printMarginTop || 0));
                         const pageLeftMargin = parseInt(printMarginLeft || 0);
 
-                        if (!printWin || printWin.closed) {
-                            customAlert("Pop-up window was blocked by your browser. Please allow pop-ups for this site.", "Print Error");
-                            return;
-                        }
-
+                        // Open print frame window
+                        const printWin = window.open('', '', 'width=800,height=600');
                         printWin.document.open();
                         printWin.document.write(`
-                            <!DOCTYPE html>
                             <html>
                             <head>
                                 <title>Inventory Count Summary - ${storeCode}</title>
@@ -4053,27 +4038,27 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                         }
                                     }
                                     body {
-                                        font-family: 'Courier New', Courier, monospace;
+                                        font-family: monospace;
                                         white-space: pre;
-                                        font-size: 11px;
-                                        line-height: 1.15;
+                                        font-size: 12px;
+                                        line-height: 1.12;
                                         background: white;
                                         color: black;
                                         margin: 0;
-                                        padding: 10px;
+                                        padding: 0;
                                     }
                                     pre {
                                         margin: 0;
                                         padding: 0;
-                                        font-family: 'Courier New', Courier, monospace;
-                                        font-size: 11px;
-                                        line-height: 1.15;
+                                        font-family: monospace;
+                                        font-size: 12px;
+                                        line-height: 1.12;
                                         white-space: pre;
                                     }
                                     .signature-footer {
                                         page-break-inside: avoid !important;
                                         break-inside: avoid !important;
-                                        margin-top: 15px;
+                                        margin-top: 4px;
                                     }
                                 </style>
                             </head>
@@ -4081,28 +4066,16 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                 <div class="summary-print-container">
                                     <pre>${text}${footerText}</pre>
                                 </div>
-                                <div class="signature-footer">
-                                    <pre>
-        Scanned  By             Counted By                 Checked By
-
-              ____________                    ____________
-               Team Leader                     Posted By</pre>
-                                </div>
+                                \x3Cscript\x3E
+                                    window.onload = function() {
+                                        window.print();
+                                        window.close();
+                                    }
+                                <\/script>
                             </body>
                             </html>
                         `);
                         printWin.document.close();
-
-                        setTimeout(() => {
-                            try {
-                                if (printWin && !printWin.closed) {
-                                    printWin.focus();
-                                    printWin.print();
-                                }
-                            } catch (eP) {
-                                console.error("Print trigger exception:", eP);
-                            }
-                        }, 300);
                         sessionStorage.setItem('summary_printed_' + storeCode, 'true');
                     }
                 })
