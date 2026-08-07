@@ -2958,22 +2958,17 @@ try {
                 $db->execute("UPDATE stores SET closed = ? WHERE LOWER(store_code) = ?", [(int) $cloudStore['closed'], $store]);
             }
 
-            // Insert locators
-            foreach ($locators as $loc) {
-                $locName = $loc['locator_name'];
-                $status = $loc['status'] ?? 'open';
-                $operator = $loc['assigned_operator'] ?? null;
+            // Insert locators downloaded from cloud (clearing pre-seeded default template locators)
+            if (!empty($locators)) {
+                $db->execute("TRUNCATE TABLE `{$store}_locators`");
+                foreach ($locators as $loc) {
+                    $locName = $loc['locator_name'];
+                    $status = $loc['status'] ?? 'open';
+                    $operator = $loc['assigned_operator'] ?? null;
 
-                $check = $db->query("SELECT id FROM `{$store}_locators` WHERE locator_name = ?", [$locName]);
-                if (empty($check)) {
                     $db->execute(
                         "INSERT INTO `{$store}_locators` (locator_name, status, assigned_operator, synced) VALUES (?, ?, ?, 1)",
                         [$locName, $status, $operator]
-                    );
-                } else {
-                    $db->execute(
-                        "UPDATE `{$store}_locators` SET status = ?, assigned_operator = ?, synced = 1 WHERE locator_name = ?",
-                        [$status, $operator, $locName]
                     );
                 }
             }
