@@ -2909,12 +2909,7 @@ try {
             $storeFound = isset($resData['store_found']) ? (bool) $resData['store_found'] : ($storeObj !== null);
 
             if (!$storeFound || empty($storeObj)) {
-                $cloudStore = [
-                    'id' => 0,
-                    'store_code' => strtoupper($store),
-                    'closed' => 0,
-                    'creator_username' => $_SESSION['username'] ?? 'sys_admin'
-                ];
+                throw new Exception("Error: Store Session '" . strtoupper($store) . "' does not exist on cloud dashboard.");
             } else {
                 $cloudStore = $storeObj;
             }
