@@ -2909,10 +2909,15 @@ try {
             $storeFound = isset($resData['store_found']) ? (bool) $resData['store_found'] : ($storeObj !== null);
 
             if (!$storeFound || empty($storeObj)) {
-                throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
+                $cloudStore = [
+                    'id' => 0,
+                    'store_code' => strtoupper($store),
+                    'closed' => 0,
+                    'creator_username' => $_SESSION['username'] ?? 'sys_admin'
+                ];
+            } else {
+                $cloudStore = $storeObj;
             }
-
-            $cloudStore = $storeObj;
             $locators = $resData['locators'] ?? [];
             $products = $resData['products'] ?? [];
             $scans = $resData['scans'] ?? [];
