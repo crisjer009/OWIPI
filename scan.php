@@ -1035,6 +1035,16 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 </form>
             </div>
         </div>
+
+        <!-- Fullscreen Loading Overlay for Store Activation -->
+        <div id="activation-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.96); backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: white;">
+            <div style="text-align: center; max-width: 400px; padding: 2.5rem; background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                <div class="spinner" style="border: 4px solid rgba(59, 130, 246, 0.1); border-top: 4px solid #3b82f6; width: 48px; height: 48px; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem auto;"></div>
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.3rem; color: #fff; font-weight: 700; font-family: 'Outfit', sans-serif;">Activating Store Session...</h3>
+                <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5; font-family: 'Outfit', sans-serif;">Preparing database tables, loading locators, and initializing your workspace. Please wait...</p>
+            </div>
+        </div>
+
         <script>
             let storeInputMode = <?= $hasActiveStores ? "'select'" : "'create'" ?>;
 
@@ -1107,6 +1117,12 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     return;
                 }
 
+                // Show the premium loading overlay
+                const loadingOverlay = document.getElementById('activation-loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'flex';
+                }
+
                 fetch('api.php?action=select_store', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1121,10 +1137,18 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         if (data.status === 'success') {
                             window.location.reload();
                         } else {
+                            if (loadingOverlay) {
+                                loadingOverlay.style.display = 'none';
+                            }
                             alert("Error: " + data.message);
                         }
                     })
-                    .catch(err => alert("Request failed: " + err));
+                    .catch(err => {
+                        if (loadingOverlay) {
+                            loadingOverlay.style.display = 'none';
+                        }
+                        alert("Request failed: " + err);
+                    });
             }
         </script>
     <?php endif; ?>

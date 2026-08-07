@@ -200,7 +200,7 @@ $step = $_GET['step'] ?? 'form';
                 
                 <div class="form-group">
                     <label>Sync Secret Token</label>
-                    <input type="text" name="secret_token" placeholder="Enter your cloud sync token..." required class="form-control">
+                    <input type="text" name="secret_token" placeholder="Enter your cloud sync token (optional)..." class="form-control">
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
