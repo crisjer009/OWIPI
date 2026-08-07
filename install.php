@@ -152,6 +152,30 @@ $step = $_GET['step'] ?? 'form';
             margin: 0.5rem 0;
             font-size: 0.9rem;
         }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .installer-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(56, 189, 248, 0.15);
+            border-top-color: #38bdf8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1.25rem auto;
+        }
+        .btn-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -168,7 +192,7 @@ $step = $_GET['step'] ?? 'form';
         ?>
             <p style="font-size:0.85rem; color: #94a3b8; margin-bottom: 1.5rem; text-align: center;">Enter your Cloud credentials to automatically download the codebase, configure local credentials, and synchronize users and catalog files.</p>
             
-            <form action="install.php?step=run" method="POST">
+            <form action="install.php?step=run" method="POST" onsubmit="handleInstallerSubmit(event)">
                 <div class="form-group">
                     <label>Cloud Server URL</label>
                     <input type="url" name="cloud_url" value="<?= htmlspecialchars($defaultCloudUrl) ?>" placeholder="e.g. https://pginv.officewarehouse.com.ph/OWIPI" required class="form-control">
@@ -190,7 +214,7 @@ $step = $_GET['step'] ?? 'form';
                     </div>
                 </div>
 
-                <button type="submit" class="btn">Deploy & Initialize System</button>
+                <button type="submit" id="deploy-btn" class="btn">Deploy & Initialize System</button>
             </form>
             
         <?php elseif ($step === 'run'): ?>
@@ -450,5 +474,30 @@ $step = $_GET['step'] ?? 'form';
             </div>
         <?php endif; ?>
     </div>
+
+    <!-- Fullscreen Installation Loading Overlay -->
+    <div id="install-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.94); backdrop-filter: blur(6px); z-index: 999999; justify-content: center; align-items: center; flex-direction: column; color: white;">
+        <div style="text-align: center; max-width: 440px; padding: 2.25rem 2rem; background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
+            <div class="installer-spinner"></div>
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.35rem; color: #f8fafc; font-weight: 700;">Deploying System...</h3>
+            <p style="font-size: 0.9rem; color: #94a3b8; margin: 0; line-height: 1.5;">Downloading codebase, configuring MySQL database, and synchronizing system files. Please wait...</p>
+        </div>
+    </div>
+
+    <script>
+        function handleInstallerSubmit(e) {
+            const btn = document.getElementById('deploy-btn');
+            const overlay = document.getElementById('install-loading-overlay');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="btn-spinner"></span> Deploying & Initializing System...';
+                btn.style.opacity = '0.75';
+                btn.style.cursor = 'not-allowed';
+            }
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+    </script>
 </body>
 </html>
