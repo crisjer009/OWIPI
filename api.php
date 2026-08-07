@@ -3857,6 +3857,19 @@ try {
             }
             $db = new OWI_DB();
 
+            $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
+            $currentUserRole = strtolower(trim($_SESSION['role'] ?? ''));
+            $isSysAdmin = in_array($currentUserRole, ['system_admin', 'sys_admin']);
+
+            // Fetch store creator details
+            $storeRows = $db->query("SELECT created_by FROM stores WHERE LOWER(store_code) = ?", [$storeCode]);
+            if (!empty($storeRows) && !$isSysAdmin) {
+                $creatorId = (int) ($storeRows[0]['created_by'] ?? 0);
+                if ($creatorId > 0 && $creatorId !== $currentUserId) {
+                    throw new Exception("Permission Denied: Only the creator of store '" . strtoupper($storeCode) . "' or a System Administrator can re-open this store session.");
+                }
+            }
+
             // 1. Re-open store status in stores table
             try {
                 $db->execute("UPDATE stores SET closed = 0 WHERE LOWER(store_code) = ?", [$storeCode]);
@@ -3868,6 +3881,8 @@ try {
                 $db->execute("UPDATE `{$storeCode}_locators` SET status = 'open'");
             } catch (Exception $e) {
             }
+
+            logAudit('REOPEN_STORE', "Re-opened store session '" . strtoupper($storeCode) . "'.", strtoupper($storeCode));
 
             sendResponse([
                 'status' => 'success',
