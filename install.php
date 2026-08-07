@@ -198,10 +198,6 @@ $step = $_GET['step'] ?? 'form';
                     <input type="url" name="cloud_url" value="<?= htmlspecialchars($defaultCloudUrl) ?>" placeholder="e.g. https://pginv.officewarehouse.com.ph/OWIPI" required class="form-control">
                 </div>
                 
-                <div class="form-group">
-                    <label>Sync Secret Token</label>
-                    <input type="text" name="secret_token" placeholder="Enter your cloud sync token (optional)..." class="form-control">
-                </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
                     <div class="form-group">
