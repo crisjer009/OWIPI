@@ -57,13 +57,17 @@ $scriptDir = rtrim($scriptDir, '/');
 $isMobileScanner = !empty($_SESSION['is_mobile_scanner']);
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '') . "&from_qr=1";
 
-// Verify active store session validity (if store was deleted by Admin, clear session)
+$isClosedStore = false;
+
+// Verify active store session validity & closed status
 if (!empty($_SESSION['store_code'])) {
     try {
         $dbVal = new OWI_DB();
-        $storeCheck = $dbVal->query("SELECT id FROM stores WHERE LOWER(store_code) = ?", [strtolower($_SESSION['store_code'])]);
+        $storeCheck = $dbVal->query("SELECT id, closed FROM stores WHERE LOWER(store_code) = ?", [strtolower($_SESSION['store_code'])]);
         if (empty($storeCheck)) {
             unset($_SESSION['store_code']);
+        } else {
+            $isClosedStore = ((int) ($storeCheck[0]['closed'] ?? 0) === 1);
         }
     } catch (Exception $eV) {
     }
@@ -84,9 +88,15 @@ try {
 }
 $hasActiveStores = !empty($existingStoresList);
 
-// If no store selected in session but stores exist, auto-select the latest store
-if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
-    $_SESSION['store_code'] = strtoupper($existingStoresList[0]['store_code']);
+// Filter open/ongoing stores
+$openStoresList = array_values(array_filter($existingStoresList, function ($s) {
+    return (int) ($s['closed'] ?? 0) === 0;
+}));
+
+// If current session store is empty or closed, auto-select the latest open store if available
+if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList)) {
+    $_SESSION['store_code'] = strtoupper($openStoresList[0]['store_code']);
+    $isClosedStore = false;
 }
 ?>
 <!DOCTYPE html>

@@ -1563,6 +1563,44 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 })
                 .catch(err => alert("Request failed: " + err));
         }
+        async function handleOpenPhoneScanner(event) {
+            if (event) event.preventDefault();
+            
+            try {
+                const res = await fetch('api.php?action=get_stores');
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    const stores = data.stores || [];
+                    const activeStoreCode = '<?= htmlspecialchars($_SESSION['store_code'] ?? '') ?>';
+                    const activeStoreObj = stores.find(s => s.store_code.toUpperCase() === activeStoreCode.toUpperCase());
+                    const ongoingStores = stores.filter(s => parseInt(s.closed) === 0);
+                    
+                    if (activeStoreObj && parseInt(activeStoreObj.closed) === 1) {
+                        showCustomAlert(
+                            `⚠️ Store '${activeStoreCode.toUpperCase()}' is CLOSED (100% Finished).\n\nYou cannot open a closed store session for scanning unless you click 'Re-open Store' on the store card first.`,
+                            "Closed Store Session"
+                        );
+                        return;
+                    }
+
+                    if (!activeStoreCode || ongoingStores.length === 0) {
+                        showCustomAlert(
+                            "No active ongoing store session found. Please select an ongoing store or download/create a new store session first.",
+                            "No Active Store Session"
+                        );
+                        openStoreSelector();
+                        return;
+                    }
+
+                    window.open('scan.php', '_blank');
+                } else {
+                    window.open('scan.php', '_blank');
+                }
+            } catch (e) {
+                window.open('scan.php', '_blank');
+            }
+        }
     </script>
 
     <!-- Sidebar -->
@@ -1632,7 +1670,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         Cloud Backup Logs
                     </div>
                 <?php endif; ?>
-                <a class="nav-item" href="scan.php" target="_blank">
+                <a class="nav-item" href="javascript:void(0);" onclick="handleOpenPhoneScanner(event)">
                     <svg viewBox="0 0 24 24">
                         <path
                             d="M4 4h7V2H4c-1.1 0-2 .9-2 2v7h2V4zm6 9l-4 4h3v5h2v-5h3l-4-4zm10-9v7h2V4c0-1.1-.9-2-2-2h-7v2h7zM14 17h3v5h2v-5h3l-4-4-4 4z" />
