@@ -2845,7 +2845,7 @@ try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
             $result = curl_exec($ch);
@@ -2887,7 +2887,7 @@ try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $targetUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 180);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
             $result = curl_exec($ch);
@@ -2905,7 +2905,7 @@ try {
                 $fallbackUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
                 $chFb = curl_init($fallbackUrl);
                 curl_setopt($chFb, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($chFb, CURLOPT_TIMEOUT, 30);
+                curl_setopt($chFb, CURLOPT_TIMEOUT, 180);
                 curl_setopt($chFb, CURLOPT_SSL_VERIFYPEER, false);
                 $fbResult = curl_exec($chFb);
                 $fbCode = curl_getinfo($chFb, CURLINFO_HTTP_CODE);
@@ -3147,7 +3147,7 @@ try {
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $targetUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 180);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 $result = curl_exec($ch);
                 $err = curl_error($ch);
@@ -3179,7 +3179,7 @@ try {
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $targetUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 180);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
                 $result = curl_exec($ch);
                 $err = curl_error($ch);
