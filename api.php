@@ -391,6 +391,8 @@ function findCatalogProduct($barcode, $storeCode = null)
             if (!empty($storeNoCache[$cleanStore])) {
                 $strNo = $storeNoCache[$cleanStore];
                 $qtyCol = "`QTY_STORE_{$strNo}` as Qty";
+            } else {
+                $qtyCol = "0.00 as Qty";
             }
         }
 
@@ -1157,13 +1159,10 @@ try {
                         $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($store), $store]);
                         if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
                             $strNo = (int) $storeLookup[0]['str_no'];
-                        } else {
-                            $numMatch = preg_replace('/[^0-9]/', '', $store);
-                            $strNo = ($numMatch !== '') ? (int) $numMatch : null;
                         }
                     } catch (Exception $exFb) {}
 
-                    $qtyCol = ($strNo !== null) ? "`QTY_STORE_{$strNo}`" : "`Qty`";
+                    $qtyCol = ($strNo !== null) ? "`QTY_STORE_{$strNo}`" : "0.00";
 
                     $sqlSummary = "
                         SELECT 
@@ -4028,29 +4027,30 @@ try {
             $products = [];
             try {
                 $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($store), $store]);
-                if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
-                    $strNo = (int) $storeLookup[0]['str_no'];
-                } else {
-                    $numMatch = preg_replace('/[^0-9]/', '', $store);
-                    if ($numMatch !== '') {
-                        $strNo = (int) $numMatch;
-                    } else {
-                        $strNo = null;
-                    }
-                }
+                $strNo = (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) ? (int) $storeLookup[0]['str_no'] : null;
 
                 if ($strNo !== null) {
-                    $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, `QTY_STORE_{$strNo}` as Qty FROM items");
+                    try {
+                        $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, `QTY_STORE_{$strNo}` as Qty FROM items");
+                    } catch (Exception $eCol) {
+                        $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, 0.00 as Qty FROM items");
+                    }
                 } else {
+                    // Store does NOT exist in stores_id table -> Default all item stock quantities to 0.00
                     try {
                         $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
                         if (!empty($tableCheck)) {
-                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
+                            $cnt = (int) ($db->query("SELECT COUNT(*) as c FROM `{$store}_items`")[0]['c'] ?? 0);
+                            if ($cnt > 0) {
+                                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$store}_items`");
+                            } else {
+                                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, 0.00 as Qty FROM items");
+                            }
                         } else {
-                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items");
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, 0.00 as Qty FROM items");
                         }
                     } catch (Exception $ex) {
-                        $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items");
+                        $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, 0.00 as Qty FROM items");
                     }
                 }
             } catch (Exception $e) {
