@@ -4430,6 +4430,7 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                 .then(data => {
                     if (data.status === 'success' && data.scans) {
                         const scans = data.scans.filter(scan => scan.location.toLowerCase() === locatorName.toLowerCase());
+                        window.currentLocatorScans = scans;
                         const tbody = document.getElementById('view-scans-tbody');
 
                         if (scans.length > 0) {
@@ -4612,14 +4613,14 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
         function submitAddManualScan() {
             const locatorName = window.currentEditingLocatorName;
-            const barcode = document.getElementById('add-manual-scan-barcode').value.trim();
+            const barcodeInput = document.getElementById('add-manual-scan-barcode').value.trim();
             const qty = parseFloat(document.getElementById('add-manual-scan-qty').value);
 
             if (!locatorName) {
                 alert("No locator selected!");
                 return;
             }
-            if (barcode === '') {
+            if (barcodeInput === '') {
                 alert("Please enter an ALU, SKU or UPC!");
                 document.getElementById('add-manual-scan-barcode').focus();
                 return;
@@ -4633,51 +4634,96 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
             const submitBtn = document.getElementById('add-manual-scan-submit-btn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerText = 'Saving...';
+                submitBtn.innerText = 'Validating...';
             }
 
-            fetch('api.php?action=submit_scan', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    barcode: barcode,
-                    quantity: qty,
-                    location: locatorName,
-                    scanned_by: (typeof hostUsername !== 'undefined' && hostUsername) ? hostUsername : 'Host'
-                })
-            })
+            // Resolve product info to check exact UPC/SKU against existing locator items
+            fetch(`api.php?action=get_product_info&barcode=${encodeURIComponent(barcodeInput)}`)
                 .then(res => res.json())
-                .then(data => {
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = 'Save Scan';
-                    }
-                    if (data.status === 'success') {
-                        closeAddManualScanModal();
+                .then(prodData => {
+                    const cleanInput = barcodeInput.toLowerCase();
+                    const cleanUpc = (prodData.barcode || '').toLowerCase();
+                    const cleanSku = (prodData.sku || '').toLowerCase();
 
-                        const activeLoc = localStorage.getItem('active_locator');
-                        if (activeLoc && activeLoc.toLowerCase() === locatorName.toLowerCase()) {
-                            loadMobileScanLogFromServer(activeLoc);
+                    // Check if item already exists in current view locator
+                    const existingScans = window.currentLocatorScans || [];
+                    const duplicate = existingScans.find(scan => {
+                        const sBarcode = (scan.barcode || '').toLowerCase();
+                        const sSku = (scan.sku || '').toLowerCase();
+
+                        return (
+                            (cleanInput !== '' && (sBarcode === cleanInput || sSku === cleanInput)) ||
+                            (cleanUpc !== '' && (sBarcode === cleanUpc || sSku === cleanUpc)) ||
+                            (cleanSku !== '' && (sBarcode === cleanSku || sSku === cleanSku))
+                        );
+                    });
+
+                    if (duplicate) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = 'Save Scan';
                         }
-                        if (window.currentEditingLocatorName) {
-                            loadLocatorScansTable(window.currentEditingLocatorName);
-                        }
-                        if (typeof loadHostLocators === 'function') {
-                            loadHostLocators();
-                        }
-                        if (typeof loadHostScans === 'function') {
-                            loadHostScans();
-                        }
-                    } else {
-                        alert(data.message || "Failed to add manual scan.");
+                        const existingName = duplicate.product_name || barcodeInput;
+                        customAlert(
+                            `Item "${existingName}" (Barcode/SKU: ${barcodeInput}) already exists in Locator ${locatorName}!\n\nDuplicate items cannot be added to the same locator. Please edit the existing item's quantity instead.`,
+                            "Item Already Exists"
+                        );
+                        document.getElementById('add-manual-scan-barcode').focus();
+                        return;
                     }
+
+                    // Proceed to submit scan if no duplicate found
+                    submitBtn.innerText = 'Saving...';
+                    fetch('api.php?action=submit_scan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            barcode: barcodeInput,
+                            quantity: qty,
+                            location: locatorName,
+                            scanned_by: (typeof hostUsername !== 'undefined' && hostUsername) ? hostUsername : 'Host'
+                        })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerText = 'Save Scan';
+                            }
+                            if (data.status === 'success') {
+                                closeAddManualScanModal();
+
+                                const activeLoc = localStorage.getItem('active_locator');
+                                if (activeLoc && activeLoc.toLowerCase() === locatorName.toLowerCase()) {
+                                    loadMobileScanLogFromServer(activeLoc);
+                                }
+                                if (window.currentEditingLocatorName) {
+                                    loadLocatorScansTable(window.currentEditingLocatorName);
+                                }
+                                if (typeof loadHostLocators === 'function') {
+                                    loadHostLocators();
+                                }
+                                if (typeof loadHostScans === 'function') {
+                                    loadHostScans();
+                                }
+                            } else {
+                                alert(data.message || "Failed to add manual scan.");
+                            }
+                        })
+                        .catch(err => {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerText = 'Save Scan';
+                            }
+                            alert("Failed to submit scan: " + err);
+                        });
                 })
                 .catch(err => {
                     if (submitBtn) {
                         submitBtn.disabled = false;
                         submitBtn.innerText = 'Save Scan';
                     }
-                    alert("Failed to submit scan: " + err);
+                    alert("Failed to validate item: " + err);
                 });
         }
 
