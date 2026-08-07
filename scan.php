@@ -1673,6 +1673,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                             style="border-bottom: 2px solid rgba(255,255,255,0.08); color: var(--text-white); font-weight: 600; position: sticky; top: 0; background: #161b22; z-index: 1;">
                             <th style="padding: 10px 8px; text-align: center; width: 40px;">#</th>
                             <th style="padding: 10px 8px;">Barcode</th>
+                            <th style="padding: 10px 8px;">ALU/SKU</th>
                             <th style="padding: 10px 8px;">Description</th>
                             <th style="padding: 10px 8px; text-align: center;">Qty</th>
                             <th style="padding: 10px 8px; text-align: right;">Action</th>
@@ -4452,18 +4453,20 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         const scans = data.scans.filter(scan => scan.location.toLowerCase() === locatorName.toLowerCase());
                         window.currentLocatorScans = scans;
                         const tbody = document.getElementById('view-scans-tbody');
-
+ 
                         if (scans.length > 0) {
                             // Sort scans in chronological ASC order by RecNo matching print sheet order
                             scans.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-
+ 
                             let html = '';
                             scans.forEach((scan, index) => {
                                 const displayBarcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode : (scan.sku || 'N/A');
+                                const displaySku = scan.sku || 'N/A';
                                 html += `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                         <td style="padding: 10px 8px; color:var(--text-muted); text-align: center;">${index + 1}</td>
                                         <td style="padding: 10px 8px; font-family:monospace; color:#58a6ff; font-weight:600;">${displayBarcode}</td>
+                                        <td style="padding: 10px 8px; font-family:monospace; color:#3fb950; font-weight:600;">${displaySku}</td>
                                         <td style="padding: 10px 8px; color:var(--text-white);">${scan.product_name || '<span style="color:var(--text-muted);">Item Not in Catalog</span>'}</td>
                                         <td style="padding: 10px 8px; text-align: center; color:var(--text-white); font-weight:700;">${parseFloat(scan.quantity).toFixed(0)}</td>
                                         <td style="padding: 10px 8px; text-align: right;">
@@ -4474,7 +4477,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                             });
                             tbody.innerHTML = html;
                         } else {
-                            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">No items scanned in this locator yet.</td></tr>`;
+                            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">No items scanned in this locator yet.</td></tr>`;
                         }
                     }
                 })
