@@ -33,7 +33,13 @@ $config = loadConfig();
 $existingStoresList = [];
 try {
     $dbStoreHelper = new OWI_DB();
-    $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
+    $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
+    $userRole = strtolower(trim($_SESSION['role'] ?? ''));
+    if ($userRole === 'system_admin' || $userRole === 'sys_admin') {
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC");
+    } else {
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY store_code ASC", [$currentUserId]);
+    }
 } catch (Exception $e) {
 }
 $hasActiveStores = !empty($existingStoresList);
@@ -60,11 +66,23 @@ $isAdmin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 if ($driverLoaded && $dbStatus === 'connected') {
     try {
         $db = new OWI_DB();
-        $sql = "SELECT s.id, s.store_code, s.closed, u.username as creator 
-                FROM stores s 
-                LEFT JOIN users u ON s.created_by = u.id 
-                ORDER BY s.store_code ASC";
-        $storeRows = $db->query($sql);
+        $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
+        $userRole = strtolower(trim($_SESSION['role'] ?? ''));
+        $isSysAdmin = in_array($userRole, ['system_admin', 'sys_admin']);
+        if ($isSysAdmin) {
+            $sql = "SELECT s.id, s.store_code, s.closed, u.username as creator 
+                    FROM stores s 
+                    LEFT JOIN users u ON s.created_by = u.id 
+                    ORDER BY s.store_code ASC";
+            $storeRows = $db->query($sql);
+        } else {
+            $sql = "SELECT s.id, s.store_code, s.closed, u.username as creator 
+                    FROM stores s 
+                    LEFT JOIN users u ON s.created_by = u.id 
+                    WHERE s.created_by = ?
+                    ORDER BY s.store_code ASC";
+            $storeRows = $db->query($sql, [$currentUserId]);
+        }
 
         foreach ($storeRows as $row) {
             $code = strtoupper($row['store_code']);

@@ -78,7 +78,12 @@ $existingStoresList = [];
 try {
     $dbStoreHelper = new OWI_DB();
     $currentUserId = (int) ($_SESSION['user_id'] ?? 0);
-    $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE created_by = ? ORDER BY id DESC", [$currentUserId]);
+    $currentUserRole = strtolower(trim($_SESSION['role'] ?? ''));
+    if ($currentUserRole === 'system_admin' || $currentUserRole === 'sys_admin') {
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores ORDER BY id DESC");
+    } else {
+        $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE created_by = ? ORDER BY id DESC", [$currentUserId]);
+    }
 } catch (Exception $e) {
 }
 $hasActiveStores = !empty($existingStoresList);
