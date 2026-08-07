@@ -2900,94 +2900,19 @@ try {
 
             $resData = json_decode($result, true);
 
-            // Block download if store session does NOT exist on Cloud Dashboard
-            if (is_array($resData) && isset($resData['store_found']) && $resData['store_found'] === false) {
+            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success') {
+                $msg = is_array($resData) && !empty($resData['message']) ? $resData['message'] : 'Failed to connect to Cloud Server.';
+                throw new Exception("Cloud Download Failed: " . $msg);
+            }
+
+            $storeObj = $resData['store'] ?? null;
+            $storeFound = isset($resData['store_found']) ? (bool) $resData['store_found'] : ($storeObj !== null);
+
+            if (!$storeFound || empty($storeObj)) {
                 throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
             }
-            if (is_array($resData) && empty($resData['store']) && empty($resData['locators']) && (isset($resData['store_found']) && $resData['store_found'] === false)) {
-                throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
-            }
 
-            if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success' || empty($resData['products'])) {
-                // Check if store was verified to not exist on Cloud
-                if (is_array($resData) && empty($resData['store']) && !empty($resData['message']) && strpos($resData['message'], 'not exist') !== false) {
-                    throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
-                }
-
-                // Fallback: Fetch central product catalog directly via get_cloud_products from Cloud Server
-                $fallbackUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
-                $chFb = curl_init($fallbackUrl);
-                curl_setopt($chFb, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($chFb, CURLOPT_TIMEOUT, 180);
-                curl_setopt($chFb, CURLOPT_SSL_VERIFYPEER, false);
-                $fbResult = curl_exec($chFb);
-                $fbCode = curl_getinfo($chFb, CURLINFO_HTTP_CODE);
-                curl_close($chFb);
-
-                $fbData = json_decode($fbResult, true);
-                if ($fbCode === 200 && $fbData && ($fbData['status'] ?? '') === 'success' && !empty($fbData['products'])) {
-                    $allCloudProducts = $fbData['products'];
-
-                    // Determine target store number for QTY_STORE_X
-                    $dbTemp = new OWI_DB();
-                    $strNo = null;
-                    try {
-                        $storeLookup = $dbTemp->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($store), $store]);
-                        if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
-                            $strNo = (int) $storeLookup[0]['str_no'];
-                        } else {
-                            $numMatch = preg_replace('/[^0-9]/', '', $store);
-                            $strNo = ($numMatch !== '') ? (int) $numMatch : null;
-                        }
-                    } catch (Exception $exFb) {
-                    }
-
-                    $mappedProducts = [];
-                    foreach ($allCloudProducts as $p) {
-                        $qtyVal = 0.00;
-                        if ($strNo !== null && isset($p["QTY_STORE_{$strNo}"])) {
-                            $qtyVal = (float) $p["QTY_STORE_{$strNo}"];
-                        } elseif (isset($p['Qty'])) {
-                            $qtyVal = (float) $p['Qty'];
-                        }
-
-                        $mappedProducts[] = [
-                            'UPC' => $p['UPC'] ?? $p['LOCAL_UPC'] ?? '',
-                            'SKU' => $p['SKU'] ?? $p['ALU'] ?? '',
-                            'Descr' => $p['Descr'] ?? $p['DESCRIPTION1'] ?? '',
-                            'Type' => $p['Type'] ?? $p['DESCRIPTION2'] ?? 'GENERAL',
-                            'Attr' => $p['Attr'] ?? null,
-                            'Size' => $p['Size'] ?? $p['SIZ'] ?? null,
-                            'Price' => isset($p['Price']) ? (float) $p['Price'] : 0.00,
-                            'Aux1' => $p['Aux1'] ?? null,
-                            'Qty' => $qtyVal
-                        ];
-                    }
-
-                    $resData = [
-                        'status' => 'success',
-                        'store' => [
-                            'id' => 0,
-                            'store_code' => strtoupper($store),
-                            'closed' => 0,
-                            'creator_username' => $_SESSION['username'] ?? 'sys_admin'
-                        ],
-                        'locators' => [],
-                        'scans' => [],
-                        'products' => $mappedProducts
-                    ];
-                } else {
-                    $msg = $resData['message'] ?? 'Download from cloud failed.';
-                    throw new Exception("Cloud API Error (HTTP $httpCode): " . $msg);
-                }
-            }
-
-            $cloudStore = $resData['store'] ?? [
-                'id' => 0,
-                'store_code' => strtoupper($store),
-                'closed' => 0,
-                'creator_username' => $_SESSION['username'] ?? 'sys_admin'
-            ];
+            $cloudStore = $storeObj;
             $locators = $resData['locators'] ?? [];
             $products = $resData['products'] ?? [];
             $scans = $resData['scans'] ?? [];
