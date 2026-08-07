@@ -3780,8 +3780,13 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
 
                         tableHtml += `</tbody></table>`;
 
-                        // Get unique operators who scanned in this locator
-                        const operators = [...new Set(scans.map(scan => scan.scanned_by).filter(Boolean))];
+                        // Get unique operators who scanned in this locator (excluding host / admin usernames)
+                        const hostNameLower = (typeof hostUsername !== 'undefined' && hostUsername) ? hostUsername.toLowerCase().trim() : '';
+                        const currentOperatorLower = (typeof currentOperator !== 'undefined' && currentOperator) ? currentOperator.toLowerCase().trim() : '';
+                        const ignoreNames = new Set([hostNameLower, currentOperatorLower, 'host', 'admin', 'system admin', 'system_admin', 'sys_admin'].filter(Boolean));
+
+                        const operators = [...new Set(scans.map(scan => scan.scanned_by).filter(Boolean))]
+                            .filter(name => !ignoreNames.has(name.toLowerCase().trim()));
                         const scannedByNames = operators.join(', ').toUpperCase();
 
                         const padCenter = (str, len) => {
@@ -4334,8 +4339,13 @@ if (empty($_SESSION['store_code']) && !empty($existingStoresList)) {
                                 padLeft(editedQtyStr, 9) + '\r\n';
                         });
 
-                        // Get unique operators who scanned in this locator
-                        const operators = [...new Set(allScans.map(scan => scan.scanned_by).filter(Boolean))];
+                        // Get unique operators who scanned in this locator (excluding host / admin usernames)
+                        const hostNameLower = (typeof hostUsername !== 'undefined' && hostUsername) ? hostUsername.toLowerCase().trim() : '';
+                        const currentOperatorLower = (typeof currentOperator !== 'undefined' && currentOperator) ? currentOperator.toLowerCase().trim() : '';
+                        const ignoreNames = new Set([hostNameLower, currentOperatorLower, 'host', 'admin', 'system admin', 'system_admin', 'sys_admin'].filter(Boolean));
+
+                        const operators = [...new Set(allScans.map(scan => scan.scanned_by).filter(Boolean))]
+                            .filter(name => !ignoreNames.has(name.toLowerCase().trim()));
                         const scannedByNames = operators.join(', ').toUpperCase();
 
                         let footerText = '\r\n';
