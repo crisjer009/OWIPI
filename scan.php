@@ -4875,7 +4875,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     console.log("calling showToast...");
                     showToast(`Initiating download of items masterfile for store ${storeCode.toUpperCase()} from cloud...`, 'info');
 
-                    const fetchUrl = `api.php?action=import_cloud_store&store_code=${encodeURIComponent(storeCode.toLowerCase())}`;
+                    const fetchUrl = `api.php?action=import_cloud_products&store_code=${encodeURIComponent(storeCode.toLowerCase())}`;
                     console.log("fetching url:", fetchUrl);
                     fetch(fetchUrl)
                         .then(res => {
