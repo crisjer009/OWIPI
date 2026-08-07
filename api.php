@@ -2899,7 +2899,21 @@ try {
             }
 
             $resData = json_decode($result, true);
+
+            // Block download if store session does NOT exist on Cloud Dashboard
+            if (is_array($resData) && isset($resData['store_found']) && $resData['store_found'] === false) {
+                throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
+            }
+            if (is_array($resData) && empty($resData['store']) && empty($resData['locators']) && (isset($resData['store_found']) && $resData['store_found'] === false)) {
+                throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
+            }
+
             if ($httpCode !== 200 || !$resData || ($resData['status'] ?? 'error') !== 'success' || empty($resData['products'])) {
+                // Check if store was verified to not exist on Cloud
+                if (is_array($resData) && empty($resData['store']) && !empty($resData['message']) && strpos($resData['message'], 'not exist') !== false) {
+                    throw new Exception("Download Blocked: Store session '" . strtoupper($store) . "' does not exist on the Cloud Dashboard. Please create or start the store session on Cloud first before downloading.");
+                }
+
                 // Fallback: Fetch central product catalog directly via get_cloud_products from Cloud Server
                 $fallbackUrl = rtrim($cloudUrl, '/') . '/api.php?action=get_cloud_products&secret_token=' . urlencode($secretToken);
                 $chFb = curl_init($fallbackUrl);
@@ -4059,6 +4073,7 @@ try {
 
             sendResponse([
                 'status' => 'success',
+                'store_found' => $exists,
                 'store' => $storeObj,
                 'locators' => $locators,
                 'scans' => $scans,
