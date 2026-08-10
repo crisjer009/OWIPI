@@ -81,6 +81,14 @@ try {
     $currentUserRole = strtolower(trim($_SESSION['role'] ?? ''));
     if ($currentUserRole === 'system_admin' || $currentUserRole === 'sys_admin') {
         $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores ORDER BY id DESC");
+    } elseif ($currentUserRole === 'admin') {
+        $existingStoresList = $dbStoreHelper->query("
+            SELECT s.id, s.store_code, s.closed, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') as created_at 
+            FROM stores s
+            LEFT JOIN users u ON s.created_by = u.id
+            WHERE s.created_by = ? OR u.role = 'user'
+            ORDER BY s.id DESC
+        ", [$currentUserId]);
     } else {
         $existingStoresList = $dbStoreHelper->query("SELECT id, store_code, closed, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE created_by = ? ORDER BY id DESC", [$currentUserId]);
     }

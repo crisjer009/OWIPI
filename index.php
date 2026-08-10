@@ -79,7 +79,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             $sql = "SELECT s.id, s.store_code, s.closed, u.username as creator 
                     FROM stores s 
                     LEFT JOIN users u ON s.created_by = u.id 
-                    WHERE s.created_by = ?
+                    WHERE s.created_by = ? OR u.role = 'user'
                     ORDER BY s.store_code ASC";
             $storeRows = $db->query($sql, [$currentUserId]);
         }

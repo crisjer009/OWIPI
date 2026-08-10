@@ -631,6 +631,13 @@ try {
             if ($role === 'system_admin' || $role === 'sys_admin') {
                 $sql = "SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 ORDER BY store_code ASC";
                 $stores = $db->query($sql);
+            } elseif ($role === 'admin') {
+                $sql = "SELECT s.id, s.store_code, DATE_FORMAT(s.created_at, '%Y-%m-%d %H:%i:%s') as created_at 
+                        FROM stores s 
+                        LEFT JOIN users u ON s.created_by = u.id 
+                        WHERE s.closed = 0 AND (s.created_by = ? OR u.role = 'user') 
+                        ORDER BY s.store_code ASC";
+                $stores = $db->query($sql, [$userId]);
             } else {
                 $sql = "SELECT id, store_code, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as created_at FROM stores WHERE closed = 0 AND created_by = ? ORDER BY store_code ASC";
                 $stores = $db->query($sql, [$userId]);
