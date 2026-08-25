@@ -10,8 +10,8 @@
         :root {
             --bg-color: #0b0f19;
             --surface-color: #111827;
-            --card-bg: rgba(17, 24, 39, 0.85);
-            --card-border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(17, 24, 39, 0.95);
+            --card-border: rgba(255, 255, 255, 0.12);
             --accent-blue: #3b82f6;
             --accent-cyan: #06b6d4;
             --accent-purple: #a855f7;
@@ -44,7 +44,7 @@
 
         /* Top Navigation */
         .top-navbar {
-            background: rgba(17, 24, 39, 0.9);
+            background: rgba(17, 24, 39, 0.95);
             border-bottom: 1px solid var(--card-border);
             padding: 12px 24px;
             display: flex;
@@ -118,7 +118,7 @@
         .presentation-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 24px;
+            padding: 20px;
             flex-grow: 1;
             width: 100%;
         }
@@ -127,9 +127,9 @@
         .slide-selector-bar {
             display: flex;
             gap: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             overflow-x: auto;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
 
         .slide-tab {
@@ -154,10 +154,10 @@
         }
 
         .slide-tab.active {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2));
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(6, 182, 212, 0.25));
             border-color: var(--accent-blue);
             color: #ffffff;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
         }
 
         /* Presentation Slide Cards */
@@ -171,7 +171,7 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -183,8 +183,7 @@
             padding: 24px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             position: relative;
-            margin-bottom: 24px;
-            overflow: hidden;
+            margin-bottom: 20px;
         }
 
         /* Top Accent Glow */
@@ -201,36 +200,46 @@
         /* Interactive Hotspot Pin */
         .hotspot-pin {
             position: absolute;
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             background: #ef4444;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 800;
+            font-size: 0.85rem;
+            font-weight: 900;
             cursor: pointer;
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
             animation: pulse 2s infinite;
-            z-index: 10;
-            transition: transform 0.2s ease;
+            z-index: 20;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
         }
 
         .hotspot-pin:hover {
-            transform: scale(1.25);
+            transform: scale(1.3);
+            background: #dc2626;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
+        }
+
+        .hotspot-pin.active {
+            background: #3b82f6;
+            box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.4), 0 0 25px #3b82f6;
+            transform: scale(1.35);
+            animation: none;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+            70% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
         /* Visual Elements Simulation */
         .sim-control-box {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.85) 100%);
             border: 1px solid rgba(59, 130, 246, 0.35);
             border-radius: 14px;
             padding: 20px;
@@ -260,8 +269,8 @@
         }
 
         .sim-status-pill {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 8px;
             padding: 6px 14px;
             display: flex;
@@ -329,7 +338,7 @@
         }
 
         .sim-store-card {
-            background: rgba(17, 24, 39, 0.7);
+            background: rgba(17, 24, 39, 0.75);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             padding: 16px;
@@ -350,12 +359,191 @@
             border-radius: 4px;
         }
 
-        /* Explanatory Cards Grid */
+        /* ===================================================
+           ONE-LOOK HIGH IMPACT DETAIL CARD
+           =================================================== */
+        .detail-display-card {
+            background: linear-gradient(135deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .detail-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .detail-title-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .detail-pin-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .detail-title-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .detail-role-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 3-Column Visual Grid for Instant Scanning */
+        .detail-3col-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1.3fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .detail-3col-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-col-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-col-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-cyan);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-takeaway {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #f8fafc;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+
+        .detail-desc-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+
+        .action-item-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-item-pill strong {
+            color: #ffffff;
+        }
+
+        .pro-tip-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px dashed rgba(245, 158, 11, 0.35);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.82rem;
+            color: #fef08a;
+            line-height: 1.5;
+            margin-top: auto;
+        }
+
+        /* Mini Pin Switcher Bar */
+        .pin-switcher-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            overflow-x: auto;
+        }
+
+        .pin-switch-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .pin-switch-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .pin-switch-btn.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Explanatory Cards Grid for Other Slides */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 16px;
-            margin-top: 24px;
+            margin-top: 20px;
         }
 
         .feature-box {
@@ -396,21 +584,22 @@
         /* Workflow Step Indicator */
         .workflow-timeline {
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: space-between;
             gap: 12px;
-            margin: 24px 0;
+            margin: 20px 0;
             flex-wrap: wrap;
         }
 
         .workflow-step {
             flex: 1;
-            min-width: 180px;
+            min-width: 200px;
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--card-border);
             border-radius: 12px;
             padding: 16px;
-            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .workflow-step.active {
@@ -419,15 +608,15 @@
         }
 
         .step-number {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             background: var(--accent-blue);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 800;
             margin-bottom: 8px;
         }
@@ -444,21 +633,6 @@
             font-size: 0.8rem;
             color: var(--text-muted);
             line-height: 1.4;
-        }
-
-        /* Detail Callout */
-        .callout-box {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 4px solid var(--accent-blue);
-            padding: 14px 18px;
-            border-radius: 0 10px 10px 0;
-            margin: 16px 0;
-            font-size: 0.85rem;
-            color: #cbd5e1;
-        }
-
-        .callout-box strong {
-            color: #ffffff;
         }
     </style>
 </head>
@@ -501,24 +675,29 @@
 
         <!-- SLIDE 1: Interactive Dashboard Overview -->
         <div class="slide-pane active" id="slide-0">
-            <div style="margin-bottom: 16px;">
-                <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white;">Interactive Control Dashboard Breakdown</h1>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">Hover or click on the numbered pins to view deep-dive explanations for each core section of the administrative interface.</p>
+            <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800; color: white;">Interactive Control Dashboard Visual Guide</h1>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Click any numbered red circle marker on the interface mockup to display its instant breakdown card below.</p>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 4px 10px; border-radius: 20px;">
+                    👆 6 Interactive Hotspots Available
+                </div>
             </div>
 
             <!-- Live Mockup Container with Interactive Hotspots -->
             <div class="mockup-stage">
-                <!-- Hotspot Pins -->
-                <div class="hotspot-pin" style="top: 35px; left: 280px;" onclick="showFeatureDetail('sysadmin_bar')" title="1. System Admin Control Center">1</div>
-                <div class="hotspot-pin" style="top: 85px; left: 195px;" onclick="showFeatureDetail('sandbox_btn')" title="2. Resolution Sandbox">2</div>
-                <div class="hotspot-pin" style="top: 85px; right: 40px;" onclick="showFeatureDetail('reset_btn')" title="3. Fresh Inventory Reset">3</div>
-                <div class="hotspot-pin" style="top: 155px; left: 240px;" onclick="showFeatureDetail('sync_card')" title="4. Pending Sync Approvals">4</div>
-                <div class="hotspot-pin" style="top: 260px; left: 140px;" onclick="showFeatureDetail('store_ongoing')" title="5. Ongoing Store Session">5</div>
-                <div class="hotspot-pin" style="top: 260px; left: 460px;" onclick="showFeatureDetail('store_finished')" title="6. Finished Store Session">6</div>
+                <!-- Hotspot Pins aligned to mockup controls -->
+                <div class="hotspot-pin" id="pin-1" style="top: 25px; left: 230px;" onclick="selectPin(1)" title="Pin 1: Page Header">1</div>
+                <div class="hotspot-pin active" id="pin-2" style="top: 75px; left: 180px;" onclick="selectPin(2)" title="Pin 2: System Admin Control Center">2</div>
+                <div class="hotspot-pin" id="pin-3" style="top: 75px; right: 28px;" onclick="selectPin(3)" title="Pin 3: MySQL Connection & Database Pill">3</div>
+                <div class="hotspot-pin" id="pin-4" style="top: 130px; left: 220px;" onclick="selectPin(4)" title="Pin 4: Resolution Sandbox">4</div>
+                <div class="hotspot-pin" id="pin-5" style="top: 130px; right: 28px;" onclick="selectPin(5)" title="Pin 5: Fresh Inventory Reset">5</div>
+                <div class="hotspot-pin" id="pin-6" style="top: 205px; left: 230px;" onclick="selectPin(6)" title="Pin 6: Pending Cloud Sync Approvals">6</div>
 
                 <!-- Simulation Header -->
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: white;">Control Dashboard</h2>
+                <div style="margin-bottom: 16px;">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: white;">Control Dashboard</h2>
                     <div style="font-size: 0.8rem; color: var(--text-muted);">System configuration, integrations, and server status.</div>
                 </div>
 
@@ -652,9 +831,63 @@
                 </div>
             </div>
 
-            <!-- Dynamic Detail Callout Box for Hotspot Clicks -->
-            <div id="hotspot-detail-box" class="callout-box">
-                💡 <strong>Tip:</strong> Click any red numbered hotspot marker on the dashboard preview above to highlight its function.
+            <!-- ===================================================
+                 ONE-LOOK HIGH-IMPACT EXPLANATION CARD
+                 =================================================== -->
+            <div class="detail-display-card" id="detail-card">
+                <div class="detail-card-header">
+                    <div class="detail-title-group">
+                        <div class="detail-pin-badge" id="card-pin-num">2</div>
+                        <div>
+                            <div class="detail-title-text" id="card-title">System Administrator Control Center</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);" id="card-subtitle">Master operations & table maintenance console</div>
+                        </div>
+                    </div>
+                    <div class="detail-role-pill" id="card-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
+                        👑 System Admin Only
+                    </div>
+                </div>
+
+                <div class="detail-3col-grid">
+                    <!-- Col 1: Purpose at a glance -->
+                    <div class="detail-col-box">
+                        <div class="detail-col-title">🎯 Key Purpose at a Glance</div>
+                        <div class="detail-takeaway" id="card-takeaway">Manage core database schemas, system backups, and maintenance resets.</div>
+                        <div class="detail-desc-text" id="card-desc">
+                            The central administrative toolbar for system administrators to configure connections, initialize missing tables, import SQL data, and test multi-device responsiveness.
+                        </div>
+                    </div>
+
+                    <!-- Col 2: What actions can be done -->
+                    <div class="detail-col-box">
+                        <div class="detail-col-title">⚡ Available Actions / Controls</div>
+                        <div id="card-actions-list">
+                            <div class="action-item-pill"><strong>⚙️ Modify Config:</strong> Adjust MySQL credentials & ports.</div>
+                            <div class="action-item-pill"><strong>🧪 Sandbox:</strong> Simulate CE/mobile/tablet screens.</div>
+                            <div class="action-item-pill"><strong>⚡ Init Tables:</strong> Auto-create missing database entities.</div>
+                            <div class="action-item-pill"><strong>📦 Import Backup:</strong> Restore master items & users.</div>
+                        </div>
+                    </div>
+
+                    <!-- Col 3: Best practice & Pro-Tip -->
+                    <div class="detail-col-box">
+                        <div class="detail-col-title">💡 Pro-Tip & Best Practice</div>
+                        <div class="pro-tip-box" id="card-tip">
+                            Run <strong>Initialize DB Tables</strong> first after fresh deployments to ensure all tables exist before opening store sessions.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini Pin Selector Bar -->
+                <div class="pin-switcher-bar">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Quick Jump:</span>
+                    <button class="pin-switch-btn" id="btn-pin-1" onclick="selectPin(1)">Pin 1 • Page Header</button>
+                    <button class="pin-switch-btn active" id="btn-pin-2" onclick="selectPin(2)">Pin 2 • SysAdmin Center</button>
+                    <button class="pin-switch-btn" id="btn-pin-3" onclick="selectPin(3)">Pin 3 • MySQL Status Pill</button>
+                    <button class="pin-switch-btn" id="btn-pin-4" onclick="selectPin(4)">Pin 4 • Resolution Sandbox</button>
+                    <button class="pin-switch-btn" id="btn-pin-5" onclick="selectPin(5)">Pin 5 • Fresh Reset</button>
+                    <button class="pin-switch-btn" id="btn-pin-6" onclick="selectPin(6)">Pin 6 • Cloud Sync Approvals</button>
+                </div>
             </div>
         </div>
 
@@ -768,7 +1001,7 @@
             <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">⚠️ Pending Cloud Sync Approvals</h1>
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">How the cloud server protects active inventory counts from accidental data overwrites.</p>
 
-            <div class="callout-box" style="border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1);">
+            <div class="callout-box" style="border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
                 <strong style="color: #fbbf24;">Why Sync Approvals Exist:</strong>
                 When a local branch synchronizes to the central cloud, if that branch's data already exists on the cloud with prior scan records, the cloud server automatically holds the request in a pending state to prevent unintended overwrites.
             </div>
@@ -862,25 +1095,152 @@
             if (e.key === 'ArrowLeft') prevSlide();
         });
 
-        // Hotspot detail tooltip updater
-        const details = {
-            'sysadmin_bar': '<strong>① System Administrator Control Center:</strong> Displays active MySQL Host, Database name, and real-time connection status. Houses all master configuration, initialization, and reset buttons.',
-            'sandbox_btn': '<strong>② Resolution Sandbox:</strong> Interactive multi-device simulator allowing QA testing on Pocket PC CE (240x320), smartphones, tablets, and 1080p laptop displays without physical hardware.',
-            'reset_btn': '<strong>③ Fresh Inventory Reset:</strong> Master purge utility. Permanently drops all dynamic store scan tables while safely preserving master catalog items, store IDs, and user accounts intact.',
-            'sync_card': '<strong>④ Pending Cloud Sync Approvals:</strong> Real-time queue that catches conflicting sync requests from local stores, preventing accidental cloud data overwrites until approved.',
-            'store_ongoing': '<strong>⑤ Ongoing Store Card (e.g. RME):</strong> Shows active scanning progress percentage, locator counts, and enables downloading recent cloud syncs directly to local storage.',
-            'store_finished': '<strong>⑥ Finished Store Card (e.g. SME, TES):</strong> Indicates 100% locator closure. Enables one-click store re-opening if recount or item adjustments are needed.'
+        // Data dictionary for all 6 pins with instant-read 3-column layout
+        const pinData = {
+            1: {
+                title: "Control Dashboard Header & Status",
+                subtitle: "Mission Control title, subsystem integrations, and server overview",
+                badge: "ℹ️ System Overview",
+                badgeColor: "rgba(59, 130, 246, 0.15)",
+                badgeBorder: "rgba(59, 130, 246, 0.3)",
+                badgeText: "#60a5fa",
+                takeaway: "The primary entry point showing system readiness, integrations, and server status.",
+                desc: "Provides a top-level summary of your local inventory server, database connection health, active background processes, and direct access to administrative tools.",
+                actions: [
+                    "<strong>Role Identity:</strong> Confirms currently authenticated user privileges.",
+                    "<strong>Navigation:</strong> Direct links to configuration and testing modules.",
+                    "<strong>Server Health:</strong> Immediate visual check for offline alerts."
+                ],
+                tip: "Bookmark this page as your main administrative homepage during annual physical inventory counting periods."
+            },
+            2: {
+                title: "System Administrator Control Center",
+                subtitle: "Master operations, table initialization, and maintenance console",
+                badge: "👑 System Admin Only",
+                badgeColor: "rgba(59, 130, 246, 0.15)",
+                badgeBorder: "rgba(59, 130, 246, 0.3)",
+                badgeText: "#60a5fa",
+                takeaway: "The top command center for configuring connections, schemas, and maintenance.",
+                desc: "Houses all critical system operations including database credential updates, multi-device resolution simulations, table structure builders, and master data resets.",
+                actions: [
+                    "<strong>⚙️ Modify Config:</strong> Adjust MySQL host, credentials & ports.",
+                    "<strong>🧪 Sandbox:</strong> Launch the multi-screen resolution simulator.",
+                    "<strong>⚡ Init Tables:</strong> Auto-create missing database entities.",
+                    "<strong>📦 Import Backup:</strong> Restore master items & users from SQL."
+                ],
+                tip: "Always run <strong>Initialize DB Tables</strong> first after fresh deployments to ensure all system tables exist."
+            },
+            3: {
+                title: "MySQL Connection & Database Status Pill",
+                subtitle: "Real-time database host, schema name, and connection monitor",
+                badge: "🟢 Live Heartbeat",
+                badgeColor: "rgba(16, 185, 129, 0.15)",
+                badgeBorder: "rgba(16, 185, 129, 0.3)",
+                badgeText: "#34d399",
+                takeaway: "Instantly confirms whether PHP PDO is successfully communicating with MySQL.",
+                desc: "Displays the active MySQL host and port (<code>localhost:3306</code>), the connected database name (<code>owi_physical_inventory</code>), and a live color-coded connection status pill.",
+                actions: [
+                    "<strong>🟢 Connected:</strong> Database is active and running at 100% health.",
+                    "<strong>🔴 Offline:</strong> Connection lost. Check XAMPP MySQL service.",
+                    "<strong>Host & DB Info:</strong> Instant confirmation of target database."
+                ],
+                tip: "If status shows <strong>🔴 Offline</strong>, verify that Apache and MySQL are running in the XAMPP Control Panel."
+            },
+            4: {
+                title: "Resolution Sandbox Simulator",
+                subtitle: "Hardware simulator for Pocket PC CE, mobile phones, tablets, and laptops",
+                badge: "🧪 Testing & QA Tool",
+                badgeColor: "rgba(168, 85, 247, 0.15)",
+                badgeBorder: "rgba(168, 85, 247, 0.3)",
+                badgeText: "#c084fc",
+                takeaway: "Test scanner and dashboard UI across multiple screen resolutions in real time.",
+                desc: "Opens <code>sandbox.php</code>, allowing administrators to preview and interact with any page (Scanner, Host, Mobile CE, Login) across hardware presets including Pocket PC CE (240×320), Mobile (375p), Tablet (768p), and Laptop (1366×768).",
+                actions: [
+                    "<strong>Target Page Switching:</strong> Toggle between <code>scan.php</code>, <code>index.php</code>, etc.",
+                    "<strong>CE Preset (240×320):</strong> Verify vintage Casio/WinCE barcode scanner layouts.",
+                    "<strong>Live Zoom & Rotate:</strong> Rotate landscape/portrait with zoom scaling."
+                ],
+                tip: "Restricted strictly to <strong>system_admin</strong> and user <strong>allan</strong> for security and QA verification."
+            },
+            5: {
+                title: "Fresh Inventory Reset (Master Purge)",
+                subtitle: "Safe season reset tool that wipes dynamic counts while preserving master items",
+                badge: "⚠️ High-Safety Purge",
+                badgeColor: "rgba(239, 68, 68, 0.15)",
+                badgeBorder: "rgba(239, 68, 68, 0.3)",
+                badgeText: "#f87171",
+                takeaway: "Permanently drops dynamic store scan tables for a clean inventory season start.",
+                desc: "Cleans up all active store sessions and drops dynamic tables (<code>{store}_locators</code>, <code>{store}_scans</code>, <code>{store}_items</code>) without deleting your master catalog.",
+                actions: [
+                    "<strong>🛡️ Preserved:</strong> Master items (<code>items</code>), store IDs, and users.",
+                    "<strong>🗑️ Purged:</strong> Dynamic scan records, locators, and store sessions.",
+                    "<strong>🔒 Safety Gate:</strong> Requires explicitly typing <code>RESET</code> to execute."
+                ],
+                tip: "Use this only at the very beginning of a new inventory cycle or when clearing test counts."
+            },
+            6: {
+                title: "Pending Cloud Sync Approvals",
+                subtitle: "Safety queue protecting cloud inventory from accidental multi-store overwrites",
+                badge: "⚠️ Overwrite Protection",
+                badgeColor: "rgba(245, 158, 11, 0.15)",
+                badgeBorder: "rgba(245, 158, 11, 0.3)",
+                badgeText: "#fbbf24",
+                takeaway: "Catches and holds store sync requests when cloud data already exists.",
+                desc: "When a local store host synchronizes to the cloud and that store already contains prior scan data, the cloud halts the update in this queue until an administrator approves it.",
+                actions: [
+                    "<strong>Review Store:</strong> Inspect store code, record count, and timestamp.",
+                    "<strong>✅ Approve Overwrite:</strong> Commits the local store sync to the cloud.",
+                    "<strong>❌ Reject:</strong> Dismisses the incoming sync to preserve existing cloud data."
+                ],
+                tip: "Ensures that simultaneous uploads or accidental re-syncs never wipe out existing store counts without explicit admin review."
+            }
         };
 
-        function showFeatureDetail(key) {
-            const box = document.getElementById('hotspot-detail-box');
-            if (details[key]) {
-                box.innerHTML = details[key];
-                box.style.animation = 'none';
-                box.offsetHeight; // trigger reflow
-                box.style.animation = 'fadeIn 0.3s ease';
-            }
+        function selectPin(num) {
+            const data = pinData[num];
+            if (!data) return;
+
+            // Update pin button states
+            document.querySelectorAll('.hotspot-pin').forEach(pin => pin.classList.remove('active'));
+            const activePin = document.getElementById(`pin-${num}`);
+            if (activePin) activePin.classList.add('active');
+
+            // Update quick jump buttons
+            document.querySelectorAll('.pin-switch-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-pin-${num}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Animate card update
+            const card = document.getElementById('detail-card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(6px)';
+
+            setTimeout(() => {
+                document.getElementById('card-pin-num').innerText = num;
+                document.getElementById('card-title').innerText = data.title;
+                document.getElementById('card-subtitle').innerText = data.subtitle;
+                
+                const badge = document.getElementById('card-badge');
+                badge.innerText = data.badge;
+                badge.style.background = data.badgeColor;
+                badge.style.borderColor = data.badgeBorder;
+                badge.style.color = data.badgeText;
+
+                document.getElementById('card-takeaway').innerText = data.takeaway;
+                document.getElementById('card-desc').innerHTML = data.desc;
+
+                const actionsContainer = document.getElementById('card-actions-list');
+                actionsContainer.innerHTML = data.actions.map(act => `<div class="action-item-pill">${act}</div>`).join('');
+
+                document.getElementById('card-tip').innerHTML = data.tip;
+
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 120);
         }
+
+        // Initialize with Pin 2 selected on load
+        selectPin(2);
     </script>
 </body>
 </html>
