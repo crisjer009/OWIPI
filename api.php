@@ -449,9 +449,9 @@ function findCatalogProduct($barcode, $storeCode = null)
 
 // Enforce Authentication
 $adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'clear_audit_logs', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_store_summary', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'import_cloud_products'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_store_summary', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'import_cloud_products'];
 
-$storeDependentActions = ['submit_scan', 'get_scans', 'get_store_summary', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
+$storeDependentActions = ['submit_scan', 'get_scans', 'get_store_summary', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
 try {
     $bypassAuth = false;
@@ -2582,6 +2582,41 @@ try {
 
             $db->execute("UPDATE `{$store}_locators` SET status = 'closed', synced = 0 WHERE locator_name = ?", [$name]);
             sendResponse(['status' => 'success', 'message' => "Locator '$name' closed successfully!"]);
+            break;
+
+        case 'close_all_locators':
+            $db = new OWI_DB();
+            $storeCode = $_SESSION['store_code'] ?? '';
+            if (empty($storeCode)) {
+                throw new Exception("No active store session found.");
+            }
+
+            // Validate store code existence
+            $storeCheck = $db->query("SELECT COUNT(*) as count FROM stores WHERE LOWER(store_code) = ?", [strtolower($storeCode)]);
+            if (empty($storeCheck) || (int) $storeCheck[0]['count'] === 0) {
+                throw new Exception("Store code '" . $storeCode . "' does not exist.");
+            }
+
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+
+            // Validate that store countsheets are initialized
+            $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_locators'");
+            if (empty($tableCheck)) {
+                throw new Exception("Store code '" . $storeCode . "' has not been initialized on the server yet.");
+            }
+
+            // Count open locators before updating
+            $openCountRow = $db->query("SELECT COUNT(*) as count FROM `{$store}_locators` WHERE status = 'open'");
+            $openCount = (int) ($openCountRow[0]['count'] ?? 0);
+
+            if ($openCount === 0) {
+                sendResponse(['status' => 'success', 'message' => "All locators are already closed.", 'closed_count' => 0]);
+                break;
+            }
+
+            $db->execute("UPDATE `{$store}_locators` SET status = 'closed', synced = 0 WHERE status = 'open'");
+            logAudit('Close All Locators', "User '{$_SESSION['username']}' closed all {$openCount} remaining open locators for store '{$storeCode}'.");
+            sendResponse(['status' => 'success', 'message' => "Successfully closed {$openCount} remaining open locators!", 'closed_count' => $openCount]);
             break;
 
         case 'approve_locator':

@@ -1651,6 +1651,10 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         <button id="btn-print-summary" class="btn btn-success" onclick="openPrintSummaryModal()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background:#2ea44f; border-color:#2ea44f;">Print
                             Summary</button>
+                        <button id="btn-close-all-locators" class="btn" onclick="handleCloseAllLocators()"
+                            style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; background: rgba(217, 119, 6, 0.15); border: 1px solid #d97706; color: #fbbf24; display:flex; align-items:center; gap:4px;"
+                            title="Close all remaining open locators at once">
+                            🔒 Close All Open</button>
                         <button class="btn btn-primary" onclick="autoAddNextLocator()"
                             style="padding: 4px 8px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer;">+
                             Add Locator</button>
@@ -3527,6 +3531,42 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     })
                     .catch(err => customAlert("Error reopening locator: " + err));
             }, "Reopen Locator");
+        }
+
+        function handleCloseAllLocators() {
+            const list = window.hostLocators || [];
+            const openLocators = list.filter(loc => (loc.status || '').toLowerCase() === 'open');
+            const openCount = openLocators.length;
+
+            if (openCount === 0) {
+                customAlert("All locators in this store are already closed.", "Information");
+                return;
+            }
+
+            customConfirm(
+                `Are you sure you want to CLOSE ALL remaining ${openCount} open locator(s) at once?\n\nOperators will no longer be able to scan into these locators unless reopened.`,
+                () => {
+                    fetch('api.php?action=close_all_locators', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                customAlert(data.message, "Success", () => {
+                                    loadHostLocators();
+                                    if (typeof loadStoreSummary === 'function') {
+                                        loadStoreSummary();
+                                    }
+                                });
+                            } else {
+                                customAlert(data.message, "Error");
+                            }
+                        })
+                        .catch(err => customAlert("Error closing locators: " + err, "Error"));
+                },
+                "Close All Open Locators"
+            );
         }
 
         // Load host countsheet & locators list
