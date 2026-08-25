@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWIPI - Control Dashboard Visual Manual & Interactive Presentation</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="stylesheet" href="../assets/fonts/fonts.css">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --surface-color: #111827;
+            --card-bg: rgba(17, 24, 39, 0.85);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .top-navbar {
+            background: rgba(17, 24, 39, 0.9);
+            border-bottom: 1px solid var(--card-border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(15px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-main);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-nav:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .btn-nav.active {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Main Container */
+        .presentation-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        /* Slide Deck Tabs */
+        .slide-selector-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .slide-tab {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .slide-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .slide-tab.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2));
+            border-color: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Presentation Slide Cards */
+        .slide-pane {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .slide-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Visual Interactive Canvas Box */
+        .mockup-stage {
+            background: #090d14;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            position: relative;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        /* Top Accent Glow */
+        .mockup-stage::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #f59e0b, #ef4444);
+        }
+
+        /* Interactive Hotspot Pin */
+        .hotspot-pin {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ef4444;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse 2s infinite;
+            z-index: 10;
+            transition: transform 0.2s ease;
+        }
+
+        .hotspot-pin:hover {
+            transform: scale(1.25);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 12px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Visual Elements Simulation */
+        .sim-control-box {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .sim-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+        }
+
+        .sim-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ffffff;
+        }
+
+        .sim-status-pill {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 6px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.75rem;
+        }
+
+        .sim-actions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sim-btn {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
+            cursor: default;
+        }
+
+        .sim-btn-config {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #f1f5f9;
+        }
+
+        .sim-btn-sandbox {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+            color: #c084fc;
+        }
+
+        .sim-btn-init {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .sim-btn-import {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+        }
+
+        .sim-btn-reset {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            margin-left: auto;
+        }
+
+        /* Store Cards Grid Simulation */
+        .sim-stores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .sim-store-card {
+            background: rgba(17, 24, 39, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .sim-bar-track {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .sim-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        /* Explanatory Cards Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .feature-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 18px;
+            backdrop-filter: blur(10px);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        /* Workflow Step Indicator */
+        .workflow-timeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 24px 0;
+            flex-wrap: wrap;
+        }
+
+        .workflow-step {
+            flex: 1;
+            min-width: 180px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+        }
+
+        .workflow-step.active {
+            border-color: var(--accent-blue);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .step-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Detail Callout */
+        .callout-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .callout-box strong {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <header class="top-navbar">
+        <div class="brand-title">
+            <span>OWIPI Mission Control</span>
+            <span class="brand-badge">Interactive Visual Manual</span>
+        </div>
+        <div class="nav-controls">
+            <button class="btn-nav" onclick="prevSlide()">◀ Previous</button>
+            <span id="slide-indicator" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">Slide 1 of 5</span>
+            <button class="btn-nav" onclick="nextSlide()">Next ▶</button>
+            <a href="../index.php" class="btn-nav" style="background: rgba(46, 164, 79, 0.2); border-color: #2ea44f; color: #3fb950;">🎛️ Launch Dashboard</a>
+        </div>
+    </header>
+
+    <main class="presentation-container">
+
+        <!-- Slide Selector Bar -->
+        <div class="slide-selector-bar">
+            <button class="slide-tab active" onclick="goToSlide(0)">
+                🖥️ 1. Interactive Master View
+            </button>
+            <button class="slide-tab" onclick="goToSlide(1)">
+                ⚙️ 2. System Admin Control Center
+            </button>
+            <button class="slide-tab" onclick="goToSlide(2)">
+                📊 3. Store Inventory Progress
+            </button>
+            <button class="slide-tab" onclick="goToSlide(3)">
+                ⚠️ 4. Cloud Sync Approvals
+            </button>
+            <button class="slide-tab" onclick="goToSlide(4)">
+                🔄 5. End-to-End Count Lifecycle
+            </button>
+        </div>
+
+        <!-- SLIDE 1: Interactive Dashboard Overview -->
+        <div class="slide-pane active" id="slide-0">
+            <div style="margin-bottom: 16px;">
+                <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white;">Interactive Control Dashboard Breakdown</h1>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Hover or click on the numbered pins to view deep-dive explanations for each core section of the administrative interface.</p>
+            </div>
+
+            <!-- Live Mockup Container with Interactive Hotspots -->
+            <div class="mockup-stage">
+                <!-- Hotspot Pins -->
+                <div class="hotspot-pin" style="top: 35px; left: 280px;" onclick="showFeatureDetail('sysadmin_bar')" title="1. System Admin Control Center">1</div>
+                <div class="hotspot-pin" style="top: 85px; left: 195px;" onclick="showFeatureDetail('sandbox_btn')" title="2. Resolution Sandbox">2</div>
+                <div class="hotspot-pin" style="top: 85px; right: 40px;" onclick="showFeatureDetail('reset_btn')" title="3. Fresh Inventory Reset">3</div>
+                <div class="hotspot-pin" style="top: 155px; left: 240px;" onclick="showFeatureDetail('sync_card')" title="4. Pending Sync Approvals">4</div>
+                <div class="hotspot-pin" style="top: 260px; left: 140px;" onclick="showFeatureDetail('store_ongoing')" title="5. Ongoing Store Session">5</div>
+                <div class="hotspot-pin" style="top: 260px; left: 460px;" onclick="showFeatureDetail('store_finished')" title="6. Finished Store Session">6</div>
+
+                <!-- Simulation Header -->
+                <div style="margin-bottom: 20px;">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: white;">Control Dashboard</h2>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">System configuration, integrations, and server status.</div>
+                </div>
+
+                <!-- Sim: Sys Admin Control Center -->
+                <div class="sim-control-box">
+                    <div class="sim-header">
+                        <div class="sim-title">
+                            <span>⚙️ System Administrator Control Center</span>
+                            <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.65rem; padding: 2px 6px; border-radius: 12px; font-weight: 800;">SYS_ADMIN</span>
+                        </div>
+                        <div class="sim-status-pill">
+                            <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">MySQL:</span> <span style="color: white; font-family: monospace;">localhost:3306</span></div>
+                            <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
+                            <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">DB:</span> <span style="color: #38bdf8; font-family: monospace;">owi_physical_inventory</span></div>
+                            <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
+                            <span style="display: inline-flex; align-items: center; gap: 4px; color: #34d399; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Connected
+                            </span>
+                        </div>
+                    </div>
+                    <div class="sim-actions-grid">
+                        <span class="sim-btn sim-btn-config">⚙️ Modify Configuration</span>
+                        <span class="sim-btn sim-btn-sandbox">🧪 Resolution Sandbox</span>
+                        <span class="sim-btn sim-btn-init">⚡ Initialize DB Tables</span>
+                        <span class="sim-btn sim-btn-import">📦 Import database.sql Backup</span>
+                        <span class="sim-btn sim-btn-reset">🧹 Fresh Inventory Reset</span>
+                    </div>
+                </div>
+
+                <!-- Sim: Store Inventory Progress Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <div>
+                        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: white;">Store Inventory Progress</h3>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Real-time locator completion metrics across active store sessions.</div>
+                    </div>
+                    <span class="sim-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.75rem;">☁️ Download Store Session from Cloud</span>
+                </div>
+
+                <!-- Sim: Pending Cloud Sync Approvals -->
+                <div style="background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; color: #fef08a;">
+                        <span style="background: #eab308; color: black; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">!</span>
+                        <span>Pending Cloud Sync Approvals</span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No pending sync requests awaiting approval.</span>
+                    <span style="font-size: 0.75rem; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 4px; color: white;">Refresh</span>
+                </div>
+
+                <!-- Sim: Store Progress Cards -->
+                <div class="sim-stores-grid">
+                    <!-- Ongoing Card -->
+                    <div class="sim-store-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">RME</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">MARK</strong></div>
+                            </div>
+                            <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">ONGOING</span>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                <span style="color: var(--text-muted);">Store Completion</span>
+                                <strong style="color: white;">0%</strong>
+                            </div>
+                            <div class="sim-bar-track">
+                                <div class="sim-bar-fill" style="width: 0%; background: #3b82f6;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>0</strong> of <strong>3</strong> closed</span>
+                            <div style="display: flex; gap: 4px;">
+                                <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #34d399; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">☁️ Pull Cloud</span>
+                                <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finished Card 1 -->
+                    <div class="sim-store-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">SME</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
+                            </div>
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                <span style="color: var(--text-muted);">Store Completion</span>
+                                <strong style="color: white;">100%</strong>
+                            </div>
+                            <div class="sim-bar-track">
+                                <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>3</strong> of <strong>3</strong> closed</span>
+                            <div style="display: flex; gap: 4px;">
+                                <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
+                                <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finished Card 2 -->
+                    <div class="sim-store-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">TES</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">ALLAN</strong></div>
+                            </div>
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
+                        </div>
+                        <div style="margin-top: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                <span style="color: var(--text-muted);">Store Completion</span>
+                                <strong style="color: white;">100%</strong>
+                            </div>
+                            <div class="sim-bar-track">
+                                <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                            <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>10</strong> of <strong>10</strong> closed</span>
+                            <div style="display: flex; gap: 4px;">
+                                <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
+                                <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Detail Callout Box for Hotspot Clicks -->
+            <div id="hotspot-detail-box" class="callout-box">
+                💡 <strong>Tip:</strong> Click any red numbered hotspot marker on the dashboard preview above to highlight its function.
+            </div>
+        </div>
+
+        <!-- SLIDE 2: System Administrator Control Center Details -->
+        <div class="slide-pane" id="slide-1">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">⚙️ System Administrator Control Center</h1>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">The command center dedicated to database administration, initial deployments, and maintenance safeguards.</p>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-header">
+                        <span style="color: #60a5fa;">⚙️</span> Modify Configuration
+                    </div>
+                    <div class="feature-desc">
+                        Allows editing MySQL connection host/port, database credentials, Secret Sync Tokens, and label printing top/left margin alignments directly from the browser UI.
+                    </div>
+                    <span class="feature-tag" style="background: rgba(59,130,246,0.15); color: #60a5fa;">Configuration</span>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-header">
+                        <span style="color: #c084fc;">🧪</span> Resolution Sandbox
+                    </div>
+                    <div class="feature-desc">
+                        A real-time hardware simulator for testing scanner and dashboard UI across Pocket PC CE (240×320), mobile handsets, tablets, laptops, and desktop resolutions.
+                    </div>
+                    <span class="feature-tag" style="background: rgba(168,85,247,0.15); color: #c084fc;">Testing & QA</span>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-header">
+                        <span style="color: #34d399;">⚡</span> Initialize DB Tables
+                    </div>
+                    <div class="feature-desc">
+                        Validates the existence of all core system tables (<code>stores</code>, <code>items</code>, <code>users</code>, <code>audit_logs</code>, <code>cloud_backups</code>) and automatically builds any missing database entities.
+                    </div>
+                    <span class="feature-tag" style="background: rgba(16,185,129,0.15); color: #34d399;">Deployment</span>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-header">
+                        <span style="color: #38bdf8;">📦</span> Import database.sql Backup
+                    </div>
+                    <div class="feature-desc">
+                        Restores the baseline schema, master product catalog, store ID lookups, and default user accounts directly from the project's <code>database.sql</code> file without needing phpMyAdmin.
+                    </div>
+                    <span class="feature-tag" style="background: rgba(56,189,248,0.15); color: #38bdf8;">Database Utility</span>
+                </div>
+
+                <div class="feature-box" style="grid-column: 1 / -1; border-color: rgba(239, 68, 68, 0.4);">
+                    <div class="feature-header">
+                        <span style="color: #f87171;">🧹</span> Fresh Inventory Reset (Master Purge)
+                    </div>
+                    <div class="feature-desc">
+                        Permanently drops all dynamic store tables (<code>{store}_locators</code>, <code>{store}_scans</code>, <code>{store}_items</code>) and resets all countsheet sessions for clean season starts.
+                        <br><br>
+                        <strong>🛡️ Preserved Tables Intact (Never Deleted):</strong>
+                        <ul style="margin-left: 20px; margin-top: 6px; color: #34d399;">
+                            <li><code>items</code> — Master Product Catalog & Barcode Barcode Lookups</li>
+                            <li><code>stores_id</code> — Store ID Mapping & Branch Names</li>
+                            <li><code>users</code> — Administrator & Operator Accounts</li>
+                        </ul>
+                    </div>
+                    <span class="feature-tag" style="background: rgba(239,68,68,0.15); color: #f87171;">Destructive • Protected by 'RESET' Prompt</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: Store Inventory Progress Details -->
+        <div class="slide-pane" id="slide-2">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">📊 Store Inventory Progress & Session Cards</h1>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">Real-time tracking of branch counts, locator closures, and synchronization workflows.</p>
+
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-header">🔵 ONGOING Store Session</div>
+                    <div class="feature-desc">
+                        Indicates the physical count is currently in progress. Handheld mobile scanners are actively scanning barcodes into open locators.
+                        <br><br>
+                        <strong>Action Available:</strong> <code>☁️ Pull Cloud Session</code> allows importing cloud counts to a local workstation.
+                    </div>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-header">🟢 FINISHED Store Session (100%)</div>
+                    <div class="feature-desc">
+                        All locators in the store have been verified and closed by the host administrator. The count is ready for Excel variance export and consolidation.
+                        <br><br>
+                        <strong>Action Available:</strong> <code>🔄 Re-open Store</code> allows unlocking locators if recounts or item corrections are needed.
+                    </div>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-header">🔴 CLOSED Store Session</div>
+                    <div class="feature-desc">
+                        The session has been archived. Operators can no longer log in or scan into this branch unless an administrator explicitly clicks <strong>Re-open Store</strong>.
+                    </div>
+                </div>
+
+                <div class="feature-box">
+                    <div class="feature-header">☁️ Download Store Session from Cloud</div>
+                    <div class="feature-desc">
+                        A dedicated button located at the top-right of the progress section (visible only on local servers) that lets you download any branch session from the central cloud database by entering the 3-letter store code.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: Cloud Sync Approvals -->
+        <div class="slide-pane" id="slide-3">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">⚠️ Pending Cloud Sync Approvals</h1>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">How the cloud server protects active inventory counts from accidental data overwrites.</p>
+
+            <div class="callout-box" style="border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1);">
+                <strong style="color: #fbbf24;">Why Sync Approvals Exist:</strong>
+                When a local branch synchronizes to the central cloud, if that branch's data already exists on the cloud with prior scan records, the cloud server automatically holds the request in a pending state to prevent unintended overwrites.
+            </div>
+
+            <div class="workflow-timeline">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Branch Submits Sync</div>
+                    <div class="step-desc">Local host finishes store counts and clicks 'Sync to Cloud' in the Host Console.</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Cloud Detects Conflict</div>
+                    <div class="step-desc">Cloud checks existing record count. If records exist, a Pending Sync Request is created.</div>
+                </div>
+                <div class="workflow-step active">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Admin Review</div>
+                    <div class="step-desc">System Administrator reviews the store code, record count, and timestamp on the dashboard.</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Approve / Commit</div>
+                    <div class="step-desc">Clicking 'Approve' commits the overwrite and applies the latest local scan counts to the cloud database.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: End-to-End Count Lifecycle -->
+        <div class="slide-pane" id="slide-4">
+            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">🔄 Complete Store Inventory Lifecycle</h1>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">Recommended operational sequence from initial store setup to final variance report export.</p>
+
+            <div class="workflow-timeline">
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Initialize Store</div>
+                    <div class="step-desc">Click 'Create / Select Store' on the Dashboard and enter the 3-letter Store Code (e.g. <code>RME</code>).</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Load Masterfile</div>
+                    <div class="step-desc">Verify products in 'Items Masterfile' or click 'Sync Masterfile from Cloud' to download latest catalog.</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Perform Scans</div>
+                    <div class="step-desc">Operators log into mobile scanners and scan barcodes into their assigned locators.</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Close Locators</div>
+                    <div class="step-desc">As shelves are counted, close locators individually or click '🔒 Close All Open' to finish the store.</div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-title">Consolidate & Sync</div>
+                    <div class="step-desc">Export Excel variance report, print summary audit sheets, and sync final count to Cloud.</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 5;
+
+        function goToSlide(index) {
+            currentSlide = index;
+            document.querySelectorAll('.slide-pane').forEach((pane, i) => {
+                pane.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.slide-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+            document.getElementById('slide-indicator').innerText = `Slide ${index + 1} of ${totalSlides}`;
+        }
+
+        function nextSlide() {
+            goToSlide((currentSlide + 1) % totalSlides);
+        }
+
+        function prevSlide() {
+            goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
+        }
+
+        // Keyboard arrow navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Hotspot detail tooltip updater
+        const details = {
+            'sysadmin_bar': '<strong>① System Administrator Control Center:</strong> Displays active MySQL Host, Database name, and real-time connection status. Houses all master configuration, initialization, and reset buttons.',
+            'sandbox_btn': '<strong>② Resolution Sandbox:</strong> Interactive multi-device simulator allowing QA testing on Pocket PC CE (240x320), smartphones, tablets, and 1080p laptop displays without physical hardware.',
+            'reset_btn': '<strong>③ Fresh Inventory Reset:</strong> Master purge utility. Permanently drops all dynamic store scan tables while safely preserving master catalog items, store IDs, and user accounts intact.',
+            'sync_card': '<strong>④ Pending Cloud Sync Approvals:</strong> Real-time queue that catches conflicting sync requests from local stores, preventing accidental cloud data overwrites until approved.',
+            'store_ongoing': '<strong>⑤ Ongoing Store Card (e.g. RME):</strong> Shows active scanning progress percentage, locator counts, and enables downloading recent cloud syncs directly to local storage.',
+            'store_finished': '<strong>⑥ Finished Store Card (e.g. SME, TES):</strong> Indicates 100% locator closure. Enables one-click store re-opening if recount or item adjustments are needed.'
+        };
+
+        function showFeatureDetail(key) {
+            const box = document.getElementById('hotspot-detail-box');
+            if (details[key]) {
+                box.innerHTML = details[key];
+                box.style.animation = 'none';
+                box.offsetHeight; // trigger reflow
+                box.style.animation = 'fadeIn 0.3s ease';
+            }
+        }
+    </script>
+</body>
+</html>
