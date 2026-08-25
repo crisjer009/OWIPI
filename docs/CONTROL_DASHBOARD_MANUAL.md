@@ -126,13 +126,50 @@ sequenceDiagram
 |  | |                                                                                                         | |  |
 |  | +---------------------------------------------------------------------------------------------------------+ |  |
 |  +-------------------------------------------------------------------------------------------------------------+  |
+---
+
+### 5. MySQL Connection Setup & Configuration
+
+```
++-------------------------------------------------------------------------------------------------------------------+
+| 🗄️ MySQL Connection Setup                                                                                         |
+|    Define credentials to connect to your local or remote MySQL database                                           |
+|                                                                                                                   |
+|  +-------------------------------------------------------------------------------------------------------------+  |
+|  | 🗄️ MySQL Database Connection                                                                  [Show Fields] |  |
+|  | ● MySQL Server Connected Successfully.                             [💾 Set Current DB as Default]           |  |
+|  | Host: localhost:3306 | Database: owi_physical_inventory                                                         |  |
+|  +-------------------------------------------------------------------------------------------------------------+  |
+|                                                                                                                   |
+|  +-------------------------------------------------------------------------------------------------------------+  |
+|  | 🔒 Security & Synchronization Token                                                                           |  |
+|  | Secret Sync Token (Cloud & Local Authorization)                                                                |  |
+|  | [ e.g. my_secure_token_123                                                                                    ] |  |
+|  | Define a custom secret token here. This exact same token must be configured on local hosts to allow sync.      |  |
+|  | [Save Token Only]                                                                                              |  |
+|  +-------------------------------------------------------------------------------------------------------------+  |
+|                                                                                                                   |
+|  +-------------------------------------------------------------------------------------------------------------+  |
+|  | 🖨️ Print Spacing Settings                                                                                     |  |
+|  | Top Margin / Spacing (mm)                     Left Margin / Spacing (mm)                                       |  |
+|  | [ 0                                       ]   [ 10                                      ]                      |  |
+|  | [Save Spacing Settings]                                                                                        |  |
+|  +-------------------------------------------------------------------------------------------------------------+  |
 +-------------------------------------------------------------------------------------------------------------------+
 ```
 
+#### Detailed Breakdown of Setup Cards:
+
+| Configuration Card | Available Fields / Controls | Operational Purpose & Best Practice |
+| :--- | :--- | :--- |
+| **🗄️ MySQL Database Connection** | • `Host` (e.g. `localhost` or IP)<br>• `Port` (`3306`)<br>• `User` & `Password`<br>• `Database Name`<br>• `[💾 Set DB as Default]` | Configures PDO database connectivity. Click **Test Connection** before saving. **Set as Default** locks the database as the primary schema upon application startup. |
+| **🔒 Security & Sync Token** | • `Secret Sync Token`<br>• `[Save Token Only]` | Cryptographic handshake key. All local store servers must have the **exact same secret token** as the cloud server to authorize data synchronization and avoid unauthorized pushes. |
+| **🖨️ Print Spacing Settings** | • `Top Margin / Spacing (mm)`<br>• `Left Margin / Spacing (mm)`<br>• `[Save Spacing Settings]` | Calibrates physical margin alignment on thermal barcode label printers and countsheet reports in millimeters to prevent edge clipping. |
+
 ---
 
-## 5. Quick Reference & Keyboard Navigation
+## 6. Quick Reference & Keyboard Navigation
 
 - Open [`docs/control_dashboard_visual_manual.html`](file:///c:/xampp/htdocs/OWIPI/docs/control_dashboard_visual_manual.html) in your browser.
 - Use **Left/Right Arrow Keys** (`◀` / `▶`) on your keyboard to navigate between interactive presentation slides.
-- Click any **Red Hotspot Pin** (① through ⑥) on Slide 1 for animated feature walkthroughs.
+- Click any **Red Hotspot Pin** (① through ⑫) on Slide 1 or Slide 6 for animated feature walkthrough modals.

@@ -384,8 +384,49 @@
             border-radius: 4px;
         }
 
+        /* Setup Cards Simulation (MySQL Setup) */
+        .setup-section-card {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 18px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .setup-section-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .setup-card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .sim-input-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-family: monospace;
+            margin-bottom: 8px;
+        }
+
         /* ===================================================
-           INTERACTIVE MODAL OVERLAY
+           INTERACTIVE POPUP MODAL
            =================================================== */
         .modal-backdrop {
             position: fixed;
@@ -706,7 +747,7 @@
         </div>
         <div class="nav-controls">
             <button class="btn-nav" onclick="prevSlide()">◀ Previous</button>
-            <span id="slide-indicator" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">Slide 1 of 5</span>
+            <span id="slide-indicator" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">Slide 1 of 6</span>
             <button class="btn-nav" onclick="nextSlide()">Next ▶</button>
             <a href="../index.php" class="btn-nav" style="background: rgba(46, 164, 79, 0.2); border-color: #2ea44f; color: #3fb950;">🎛️ Launch Dashboard</a>
         </div>
@@ -730,6 +771,9 @@
             </button>
             <button class="slide-tab" onclick="goToSlide(4)">
                 🔄 5. End-to-End Count Lifecycle
+            </button>
+            <button class="slide-tab" onclick="goToSlide(5)">
+                🔒 6. MySQL & Security Setup
             </button>
         </div>
 
@@ -1103,6 +1147,101 @@
             </div>
         </div>
 
+        <!-- SLIDE 6: MySQL Connection Setup (NEW) -->
+        <div class="slide-pane" id="slide-5">
+            <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800; color: white;">MySQL Connection Setup & Configuration</h1>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Define credentials, security synchronization tokens, and barcode printer label margins.</p>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 4px 10px; border-radius: 20px;">
+                    👆 Click any section card or pin below
+                </div>
+            </div>
+
+            <!-- Setup Simulation Stage -->
+            <div class="mockup-stage" style="max-width: 900px; margin: 0 auto 20px auto;">
+                
+                <!-- 10. Database Connection Card -->
+                <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(10)">
+                    <div class="setup-section-card">
+                        <div class="setup-card-title">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px; border-radius: 6px; font-size: 0.85rem;">🗄️</span>
+                                <span>MySQL Database Connection</span>
+                            </span>
+                            <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px;">Show Fields</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.25); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div>
+                                <div style="color: #34d399; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                                    <span>MySQL Server Connected Successfully.</span>
+                                </div>
+                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-family: monospace;">
+                                    Host: localhost:3306 | Database: owi_physical_inventory
+                                </div>
+                            </div>
+                            <span style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px;">💾 Set Current DB as Default</span>
+                        </div>
+                    </div>
+                    <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 10: Database Connection Card">10</div>
+                </div>
+
+                <!-- 11. Security & Synchronization Token Card -->
+                <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(11)">
+                    <div class="setup-section-card">
+                        <div class="setup-card-title">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span style="background: rgba(6, 182, 212, 0.2); color: #06b6d4; padding: 4px; border-radius: 6px; font-size: 0.85rem;">🔒</span>
+                                <span>Security & Synchronization Token</span>
+                            </span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
+                            Secret Sync Token (Cloud & Local Authorization)
+                        </div>
+                        <div class="sim-input-box">
+                            e.g. my_secure_token_123
+                        </div>
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.4;">
+                            Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.
+                        </div>
+                        <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 0.75rem; font-weight: 700; padding: 6px 14px; border-radius: 6px; display: inline-block;">Save Token Only</span>
+                    </div>
+                    <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 11: Security & Synchronization Token">11</div>
+                </div>
+
+                <!-- 12. Print Spacing Settings Card -->
+                <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(12)">
+                    <div class="setup-section-card">
+                        <div class="setup-card-title">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span style="background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 4px; border-radius: 6px; font-size: 0.85rem;">🖨️</span>
+                                <span>Print Spacing Settings</span>
+                            </span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Top Margin / Spacing (mm)</div>
+                                <div class="sim-input-box" style="font-weight: 700; color: white;">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Left Margin / Spacing (mm)</div>
+                                <div class="sim-input-box" style="font-weight: 700; color: white;">10</div>
+                            </div>
+                        </div>
+                        <span style="background: #3b82f6; color: white; font-size: 0.75rem; font-weight: 700; padding: 8px 16px; border-radius: 6px; display: inline-block; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">Save Spacing Settings</span>
+                    </div>
+                    <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 12: Print Spacing Settings">12</div>
+                </div>
+
+            </div>
+
+            <div class="callout-box" style="text-align: center; max-width: 900px; margin: 0 auto;">
+                💡 <strong>Click any configuration card above</strong> to view its technical details, security guidelines, and printer alignment tips!
+            </div>
+        </div>
+
     </main>
 
     <!-- ===================================================
@@ -1152,7 +1291,7 @@
 
             <div class="modal-footer-nav">
                 <button class="btn-modal-nav" onclick="prevModalPin()">◀ Previous Hotspot</button>
-                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 9</span>
+                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 12</span>
                 <button class="btn-modal-nav" onclick="nextModalPin()">Next Hotspot ▶</button>
             </div>
         </div>
@@ -1160,9 +1299,9 @@
 
     <script>
         let currentSlide = 0;
-        const totalSlides = 5;
+        const totalSlides = 6;
         let currentModalPin = 1;
-        const totalPins = 9;
+        const totalPins = 12;
 
         function goToSlide(index) {
             currentSlide = index;
@@ -1183,7 +1322,7 @@
             goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
         }
 
-        // Complete 9-pin dictionary with rich content
+        // Complete 12-pin dictionary with rich content
         const pinData = {
             1: {
                 title: "Control Dashboard Header & Status",
@@ -1293,6 +1432,42 @@
                     "<strong>Smart Visibility:</strong> Automatically hidden on cloud hosts."
                 ],
                 tip: "Ideal for setting up a local offline inventory server before heading to the retail branch."
+            },
+            10: {
+                title: "MySQL Database Connection & Credentials",
+                subtitle: "Configure database host, port, credentials, and default target schema",
+                takeaway: "Sets up the MySQL PDO connection string for local or remote database servers.",
+                desc: "Allows inputting MySQL Host (<code>localhost</code> or IP), Port (<code>3306</code>), Username, Password, and Database Name without touching PHP configuration files manually.",
+                actions: [
+                    "<strong>Show Fields:</strong> Expand input fields to update credentials.",
+                    "<strong>Test Connection:</strong> Verifies PDO handshake before saving.",
+                    "<strong>💾 Set DB as Default:</strong> Saves current database as the permanent startup default."
+                ],
+                tip: "When connecting from remote mobile devices, ensure MySQL user allows connections from <code>%</code> (wildcard host)."
+            },
+            11: {
+                title: "Security & Synchronization Token (Sync Key)",
+                subtitle: "Cryptographic secret handshake authorization between Local and Cloud hosts",
+                takeaway: "Secures all multi-branch sync requests and prevents unauthorized uploads.",
+                desc: "Defines the shared private Secret Sync Token. The exact same token must be configured on both the Local Store Server and the Central Cloud Server for synchronization to be accepted.",
+                actions: [
+                    "<strong>Custom Secret Token:</strong> Enter a strong alphanumeric passphrase.",
+                    "<strong>Cloud Authorization:</strong> Blocks unauthorized devices from pushing data.",
+                    "<strong>Save Token Only:</strong> Updates sync credentials without modifying DB connection."
+                ],
+                tip: "Never share this token publicly. Keep the token identical across all branch inventory servers and headquarters."
+            },
+            12: {
+                title: "Print Spacing Settings (Margin Calibration)",
+                subtitle: "Hardware alignment margins for barcode label and countsheet thermal printers",
+                takeaway: "Calibrates physical print alignment for barcode labels and count summaries in millimeters.",
+                desc: "Provides Top Margin (mm) and Left Margin (mm) offset controls to ensure barcode labels print centered on continuous roll label printers and thermal receipts.",
+                actions: [
+                    "<strong>Top Margin (mm):</strong> Adjust vertical print offset (default 0mm).",
+                    "<strong>Left Margin (mm):</strong> Adjust horizontal indentation (default 10mm).",
+                    "<strong>Save Spacing Settings:</strong> Applies spacing parameters across all print dialogs."
+                ],
+                tip: "If barcodes are clipping on the left edge, increase <strong>Left Margin (mm)</strong> in increments of 2mm until centered."
             }
         };
 
