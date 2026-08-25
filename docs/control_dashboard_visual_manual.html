@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWIPI - Control Dashboard Visual Manual & Interactive Presentation</title>
+    <title>OWIPI - Interactive System Manual & Digital Twin Simulator</title>
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
     <link rel="stylesheet" href="../assets/fonts/fonts.css">
     <style>
         :root {
             --bg-color: #0b0f19;
             --surface-color: #111827;
-            --sidebar-bg: #0d131f;
+            --sidebar-bg: #0a0f1d;
             --card-bg: rgba(17, 24, 39, 0.95);
             --card-border: rgba(255, 255, 255, 0.12);
             --accent-blue: #3b82f6;
@@ -43,7 +43,7 @@
             flex-direction: column;
         }
 
-        /* Top Navigation */
+        /* Top Header */
         .top-navbar {
             background: rgba(17, 24, 39, 0.95);
             border-bottom: 1px solid var(--card-border);
@@ -80,106 +80,40 @@
             text-transform: uppercase;
         }
 
-        .nav-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn-nav {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: var(--text-main);
+        .btn-live-app {
+            background: rgba(46, 164, 79, 0.2);
+            border: 1px solid #2ea44f;
+            color: #3fb950;
             padding: 6px 14px;
             border-radius: 8px;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             transition: all 0.2s ease;
-            text-decoration: none;
         }
 
-        .btn-nav:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: var(--accent-blue);
-            color: #ffffff;
-        }
-
-        .btn-nav.active {
-            background: var(--accent-blue);
-            border-color: var(--accent-blue);
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-        }
-
-        /* Main Container */
-        .presentation-container {
-            max-width: 1560px;
-            margin: 0 auto;
-            padding: 20px;
-            flex-grow: 1;
-            width: 100%;
-        }
-
-        /* Slide Deck Tabs */
-        .slide-selector-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 6px;
-        }
-
-        .slide-tab {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--card-border);
-            color: var(--text-muted);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .slide-tab:hover {
-            background: rgba(255, 255, 255, 0.08);
+        .btn-live-app:hover {
+            background: #2ea44f;
             color: white;
+            box-shadow: 0 0 15px rgba(46, 164, 79, 0.4);
         }
 
-        .slide-tab.active {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(6, 182, 212, 0.25));
-            border-color: var(--accent-blue);
-            color: #ffffff;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+        /* Main Workspace Frame */
+        .workspace-wrapper {
+            max-width: 1600px;
+            margin: 16px auto;
+            padding: 0 16px;
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Presentation Slide Cards */
-        .slide-pane {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .slide-pane.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===================================================
-           REALISTIC 2-COLUMN APP STAGE (SIDEBAR + CONTENT)
-           =================================================== */
-        .app-mockup-frame {
+        .system-frame {
             background: #090d14;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
@@ -188,17 +122,17 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             overflow: hidden;
             position: relative;
-            margin-bottom: 20px;
-            min-height: 680px;
+            min-height: 760px;
+            flex-grow: 1;
         }
 
-        @media (max-width: 1024px) {
-            .app-mockup-frame {
+        @media (max-width: 1100px) {
+            .system-frame {
                 grid-template-columns: 1fr;
             }
         }
 
-        .app-mockup-frame::before {
+        .system-frame::before {
             content: '';
             position: absolute;
             top: 0;
@@ -209,7 +143,9 @@
             z-index: 30;
         }
 
-        /* Simulated Sidebar */
+        /* ===================================================
+           SIMULATED SIDEBAR NAVIGATION
+           =================================================== */
         .sim-sidebar {
             background: #0a0f1d;
             border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -226,6 +162,8 @@
             padding: 4px 8px 16px 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             margin-bottom: 8px;
+            cursor: pointer;
+            position: relative;
         }
 
         .sim-sidebar-logo {
@@ -260,18 +198,19 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 600;
             color: #94a3b8;
             cursor: pointer;
             transition: all 0.2s ease;
             position: relative;
+            user-select: none;
         }
 
         .sim-nav-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
             color: white;
         }
 
@@ -293,7 +232,7 @@
 
         /* Sidebar Gateway Status Widget */
         .sim-gateway-widget {
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 10px;
             padding: 12px;
@@ -306,6 +245,7 @@
 
         .sim-gateway-widget:hover {
             border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
         }
 
         .sim-widget-label {
@@ -337,11 +277,74 @@
             gap: 4px;
         }
 
-        /* Simulated Main Content */
-        .sim-content-area {
+        /* ===================================================
+           SIMULATED MAIN VIEWPORT
+           =================================================== */
+        .sim-viewport {
             padding: 24px;
             background: #090d14;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .module-intro-bar {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .module-intro-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-view-manual {
+            background: linear-gradient(135deg, #3b82f6, #0284c7);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-view-manual:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+        }
+
+        /* View Containers */
+        .sim-view-pane {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .sim-view-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ===================================================
@@ -386,6 +389,54 @@
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        /* Reusable Sim Components */
+        .sim-card {
+            background: rgba(17, 24, 39, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .sim-card-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 10px;
+        }
+
+        .sim-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .sim-btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         /* Sys Admin Control Center Simulation */
@@ -487,7 +538,7 @@
             margin-left: auto;
         }
 
-        /* Store Cards Grid Simulation */
+        /* Store Progress Cards Grid */
         .sim-stores-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -525,45 +576,38 @@
             border-radius: 4px;
         }
 
-        /* Setup Cards Simulation (MySQL Setup) */
-        .setup-section-card {
-            background: rgba(17, 24, 39, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 22px;
-            margin-bottom: 18px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        /* Masterfile 2-Column Simulation */
+        .sim-catalog-layout {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 18px;
         }
 
-        .setup-section-card:hover {
-            border-color: rgba(59, 130, 246, 0.4);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            transform: translateY(-2px);
+        @media (max-width: 1000px) {
+            .sim-catalog-layout {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .setup-card-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .sim-input-box {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+        .sim-table-wrap {
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
+            overflow: hidden;
+            font-size: 0.8rem;
+        }
+
+        .sim-table-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 70px 70px;
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+        }
+
+        .sim-table-header {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 700;
             color: #94a3b8;
-            font-family: monospace;
-            margin-bottom: 8px;
         }
 
         /* ===================================================
@@ -769,113 +813,6 @@
             border-color: var(--accent-blue);
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         }
-
-        /* Explanatory Cards Grid for Other Slides */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .feature-box {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 18px;
-            backdrop-filter: blur(10px);
-        }
-
-        .feature-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .feature-desc {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        .feature-tag {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 10px;
-        }
-
-        /* Workflow Step Indicator */
-        .workflow-timeline {
-            display: flex;
-            align-items: stretch;
-            justify-content: space-between;
-            gap: 12px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .workflow-step {
-            flex: 1;
-            min-width: 200px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .workflow-step.active {
-            border-color: var(--accent-blue);
-            background: rgba(59, 130, 246, 0.08);
-        }
-
-        .step-number {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: var(--accent-blue);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .step-title {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: white;
-            margin-bottom: 4px;
-        }
-
-        .step-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-
-        .callout-box {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 4px solid var(--accent-blue);
-            padding: 14px 18px;
-            border-radius: 0 10px 10px 0;
-            margin: 16px 0;
-            font-size: 0.85rem;
-            color: #cbd5e1;
-        }
     </style>
 </head>
 <body>
@@ -883,170 +820,130 @@
     <!-- Top Navigation -->
     <header class="top-navbar">
         <div class="brand-title">
-            <span>OWIPI Mission Control</span>
-            <span class="brand-badge">Interactive Visual Manual</span>
+            <span>OWIPI Digital Twin Simulator</span>
+            <span class="brand-badge">Interactive System Manual</span>
         </div>
-        <div class="nav-controls">
-            <button class="btn-nav" onclick="prevSlide()">◀ Previous</button>
-            <span id="slide-indicator" style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan);">Slide 1 of 7</span>
-            <button class="btn-nav" onclick="nextSlide()">Next ▶</button>
-            <a href="../index.php" class="btn-nav" style="background: rgba(46, 164, 79, 0.2); border-color: #2ea44f; color: #3fb950;">🎛️ Launch Dashboard</a>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Switch sidebar tabs to explore all system views:</span>
+            <a href="../index.php" class="btn-live-app">🎛️ Open Live Application</a>
         </div>
     </header>
 
-    <main class="presentation-container">
+    <div class="workspace-wrapper">
 
-        <!-- Slide Selector Bar -->
-        <div class="slide-selector-bar">
-            <button class="slide-tab active" onclick="goToSlide(0)">
-                🖥️ 1. Interactive Master View
-            </button>
-            <button class="slide-tab" onclick="goToSlide(1)">
-                🧭 2. Sidebar Navigation & Gateway
-            </button>
-            <button class="slide-tab" onclick="goToSlide(2)">
-                ⚙️ 3. System Admin Control Center
-            </button>
-            <button class="slide-tab" onclick="goToSlide(3)">
-                📊 4. Store Inventory Progress
-            </button>
-            <button class="slide-tab" onclick="goToSlide(4)">
-                ⚠️ 5. Cloud Sync Approvals
-            </button>
-            <button class="slide-tab" onclick="goToSlide(5)">
-                🔒 6. MySQL & Security Setup
-            </button>
-            <button class="slide-tab" onclick="goToSlide(6)">
-                🔄 7. End-to-End Count Lifecycle
-            </button>
-        </div>
+        <!-- Main 2-Column App Frame: Sidebar + Dynamic Content -->
+        <div class="system-frame">
 
-        <!-- SLIDE 1: Interactive Full App Mockup (Sidebar + Content) -->
-        <div class="slide-pane active" id="slide-0">
-            <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px;">
-                <div>
-                    <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800; color: white;">Interactive Full Application View</h1>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Click any numbered red pin or section across the sidebar and main control center to view its detailed manual popup.</p>
+            <!-- Left Navigation Sidebar -->
+            <div class="sim-sidebar">
+                <!-- Brand & Store Context Selector -->
+                <div class="sim-sidebar-brand pin-anchor" onclick="openModal(13)" title="Click to view Store Selector Manual">
+                    <div class="sim-sidebar-logo">❖</div>
+                    <div>
+                        <div class="sim-sidebar-title">OWI PHYSICAL</div>
+                        <div class="sim-sidebar-store">STORE [NONE]</div>
+                    </div>
+                    <div class="hotspot-pin" style="top: -6px; right: -4px;">13</div>
                 </div>
-                <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 4px 10px; border-radius: 20px;">
-                    👆 15 Accurately Positioned Interactive Hotspots
+
+                <!-- Interactive Sidebar Menu Links -->
+                <div class="sim-nav-item active" id="nav-dashboard" onclick="switchSimulatorView('dashboard')">
+                    <span>🏠</span>
+                    <span>Dashboard</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-database" onclick="switchSimulatorView('database')">
+                    <span>🗄️</span>
+                    <span>MySQL Setup</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-checker" onclick="switchSimulatorView('checker')">
+                    <span>║▌</span>
+                    <span>Test Scan Checker</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-products" onclick="switchSimulatorView('products')">
+                    <span>📦</span>
+                    <span>Items Masterfile</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-users" onclick="switchSimulatorView('users')">
+                    <span>👥</span>
+                    <span>User Accounts</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-audit" onclick="switchSimulatorView('audit')">
+                    <span>📄</span>
+                    <span>Audit Logs</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-backups" onclick="switchSimulatorView('backups')">
+                    <span>⬇️</span>
+                    <span>Cloud Backup Logs</span>
+                </div>
+
+                <div class="sim-nav-item sandbox-item" id="nav-sandbox" onclick="switchSimulatorView('sandbox')">
+                    <span>📊</span>
+                    <span>Resolution Sandbox</span>
+                </div>
+
+                <div class="sim-nav-item" id="nav-phone" onclick="switchSimulatorView('phone')">
+                    <span>📱</span>
+                    <span>Open Phone Scanner ↗</span>
+                </div>
+
+                <div class="sim-nav-item logout-item" onclick="openModal(20)">
+                    <span>🚪</span>
+                    <span>Log Out</span>
+                </div>
+
+                <!-- Bottom User Session & Gateway Widget -->
+                <div class="sim-gateway-widget pin-anchor" onclick="openModal(3)" title="Click to view Gateway & Network Manual">
+                    <div class="sim-widget-label">User Session</div>
+                    <div class="sim-widget-row">
+                        <span style="font-weight: 700; color: #60a5fa;">👤 sys_admin</span>
+                        <span style="color: #64748b; font-size: 0.65rem;">Active Store: <strong style="color: var(--accent-cyan);">[Switch]</strong></span>
+                    </div>
+                    <div class="sim-widget-label" style="margin-top: 8px;">Gateway Status</div>
+                    <div class="sim-widget-row">
+                        <span>MySQL DB:</span>
+                        <span class="sim-widget-badge">● Connected</span>
+                    </div>
+                    <div class="sim-widget-row">
+                        <span>PHP Driver:</span>
+                        <span class="sim-widget-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">● PDO MySQL</span>
+                    </div>
+                    <div style="color: #64748b; font-size: 0.65rem; margin-top: 4px; font-family: monospace;">IP: 10.0.0.4</div>
+                    <div class="hotspot-pin" style="top: -6px; right: -6px;">3</div>
                 </div>
             </div>
 
-            <!-- Realistic 2-Column App Frame: Sidebar + Content -->
-            <div class="app-mockup-frame">
+            <!-- Right Content Area (Dynamically Switches Views) -->
+            <div class="sim-viewport">
 
-                <!-- Left Column: Realistic Sidebar -->
-                <div class="sim-sidebar">
-                    <!-- Brand & Store Context -->
-                    <div class="sim-sidebar-brand pin-anchor" onclick="openModal(13)">
-                        <div class="sim-sidebar-logo">❖</div>
-                        <div>
-                            <div class="sim-sidebar-title">OWI PHYSICAL</div>
-                            <div class="sim-sidebar-store">STORE [NONE]</div>
+                <!-- ==============================================
+                     1. VIEW: DASHBOARD
+                     ============================================== -->
+                <div class="sim-view-pane active" id="view-dashboard">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>🏠 Control Dashboard</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— System configuration, integrations, and server status.</span>
                         </div>
-                        <div class="hotspot-pin" style="top: -6px; right: -4px;" title="Pin 13: Store Context Selector">13</div>
-                    </div>
-
-                    <!-- Nav Items -->
-                    <div class="sim-nav-item active pin-anchor" onclick="openModal(1)">
-                        <span>🏠</span>
-                        <span>Dashboard</span>
-                        <div class="hotspot-pin" style="top: 4px; right: 4px;" title="Pin 1: Control Dashboard">1</div>
-                    </div>
-
-                    <div class="sim-nav-item pin-anchor" onclick="openModal(10)">
-                        <span>🗄️</span>
-                        <span>MySQL Setup</span>
-                        <div class="hotspot-pin" style="top: 4px; right: 4px;" title="Pin 10: MySQL Setup View">10</div>
-                    </div>
-
-                    <div class="sim-nav-item pin-anchor" onclick="openModal(14)">
-                        <span>║▌</span>
-                        <span>Test Scan Checker</span>
-                        <div class="hotspot-pin" style="top: 4px; right: 4px;" title="Pin 14: Test Scan Checker">14</div>
-                    </div>
-
-                    <div class="sim-nav-item pin-anchor" onclick="openModal(15)">
-                        <span>📦</span>
-                        <span>Items Masterfile</span>
-                        <div class="hotspot-pin" style="top: 4px; right: 4px;" title="Pin 15: Items Masterfile">15</div>
-                    </div>
-
-                    <div class="sim-nav-item" onclick="openModal(16)">
-                        <span>👥</span>
-                        <span>User Accounts</span>
-                    </div>
-
-                    <div class="sim-nav-item" onclick="openModal(17)">
-                        <span>📄</span>
-                        <span>Audit Logs</span>
-                    </div>
-
-                    <div class="sim-nav-item" onclick="openModal(18)">
-                        <span>⬇️</span>
-                        <span>Cloud Backup Logs</span>
-                    </div>
-
-                    <div class="sim-nav-item sandbox-item pin-anchor" onclick="openModal(4)">
-                        <span>📊</span>
-                        <span>Resolution Sandbox</span>
-                        <div class="hotspot-pin" style="top: 4px; right: 4px;" title="Pin 4: Resolution Sandbox">4</div>
-                    </div>
-
-                    <div class="sim-nav-item" onclick="openModal(19)">
-                        <span>📱</span>
-                        <span>Open Phone Scanner ↗</span>
-                    </div>
-
-                    <div class="sim-nav-item logout-item" onclick="openModal(20)">
-                        <span>🚪</span>
-                        <span>Log Out</span>
-                    </div>
-
-                    <!-- Bottom Widget: User Session & Gateway Status -->
-                    <div class="sim-gateway-widget pin-anchor" onclick="openModal(3)">
-                        <div class="sim-widget-label">User Session</div>
-                        <div class="sim-widget-row">
-                            <span style="font-weight: 700; color: #60a5fa;">👤 sys_admin</span>
-                            <span style="color: #64748b; font-size: 0.65rem;">Active Store: <strong style="color: var(--accent-cyan);">[Switch]</strong></span>
-                        </div>
-                        <div class="sim-widget-label" style="margin-top: 8px;">Gateway Status</div>
-                        <div class="sim-widget-row">
-                            <span>MySQL DB:</span>
-                            <span class="sim-widget-badge">● Connected</span>
-                        </div>
-                        <div class="sim-widget-row">
-                            <span>PHP Driver:</span>
-                            <span class="sim-widget-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">● PDO MySQL</span>
-                        </div>
-                        <div style="color: #64748b; font-size: 0.65rem; margin-top: 4px; font-family: monospace;">IP: 10.0.0.4</div>
-                        <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 3: Gateway Status Monitor">3</div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Simulated Dashboard Content -->
-                <div class="sim-content-area">
-
-                    <!-- Header -->
-                    <div style="margin-bottom: 16px;">
-                        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: white;">Control Dashboard</h2>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">System configuration, integrations, and server status.</div>
+                        <button class="btn-view-manual" onclick="openModal(1)">📖 Open Dashboard Manual</button>
                     </div>
 
                     <!-- Sys Admin Control Center -->
                     <div class="sim-control-box">
                         <div class="sim-header">
-                            <!-- 2. SysAdmin Banner Title -->
                             <div class="pin-anchor" onclick="openModal(2)">
                                 <div class="sim-title" style="cursor: pointer;">
                                     <span>⚙️ System Administrator Control Center</span>
                                     <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.65rem; padding: 2px 6px; border-radius: 12px; font-weight: 800;">SYS_ADMIN</span>
                                 </div>
-                                <div class="hotspot-pin" title="Pin 2: System Administrator Control Center">2</div>
+                                <div class="hotspot-pin">2</div>
                             </div>
 
-                            <!-- 3. MySQL Status Pill -->
                             <div class="pin-anchor" onclick="openModal(3)">
                                 <div class="sim-status-pill">
                                     <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">MySQL:</span> <span style="color: white; font-family: monospace;">localhost:3306</span></div>
@@ -1057,17 +954,16 @@
                                         <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Connected
                                     </span>
                                 </div>
-                                <div class="hotspot-pin" title="Pin 3: MySQL Connection Status">3</div>
+                                <div class="hotspot-pin">3</div>
                             </div>
                         </div>
 
-                        <!-- Actions Grid -->
                         <div class="sim-actions-grid">
-                            <span class="sim-btn sim-btn-config" onclick="openModal(10)">⚙️ Modify Configuration</span>
+                            <span class="sim-btn sim-btn-config" onclick="switchSimulatorView('database')">⚙️ Modify Configuration</span>
                             
-                            <div class="pin-anchor" onclick="openModal(4)">
+                            <div class="pin-anchor" onclick="switchSimulatorView('sandbox')">
                                 <span class="sim-btn sim-btn-sandbox">🧪 Resolution Sandbox</span>
-                                <div class="hotspot-pin" title="Pin 4: Resolution Sandbox">4</div>
+                                <div class="hotspot-pin">4</div>
                             </div>
 
                             <span class="sim-btn sim-btn-init" onclick="openModal(2)">⚡ Initialize DB Tables</span>
@@ -1075,7 +971,7 @@
                             
                             <div class="pin-anchor" style="margin-left: auto;" onclick="openModal(5)">
                                 <span class="sim-btn sim-btn-reset">🧹 Fresh Inventory Reset</span>
-                                <div class="hotspot-pin" title="Pin 5: Fresh Inventory Reset">5</div>
+                                <div class="hotspot-pin">5</div>
                             </div>
                         </div>
                     </div>
@@ -1084,16 +980,16 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                         <div>
                             <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: white;">Store Inventory Progress</h3>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">Real-time locator completion metrics across active store sessions.</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Real-time locator completion metrics across active store databases.</div>
                         </div>
                         
                         <div class="pin-anchor" onclick="openModal(9)">
                             <span class="sim-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.75rem;">☁️ Download Store Session from Cloud</span>
-                            <div class="hotspot-pin" title="Pin 9: Download Store Session from Cloud">9</div>
+                            <div class="hotspot-pin">9</div>
                         </div>
                     </div>
 
-                    <!-- 6. Pending Cloud Sync Approvals -->
+                    <!-- Pending Sync Banner -->
                     <div class="pin-anchor" style="width: 100%; display: block;" onclick="openModal(6)">
                         <div style="background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; color: #fef08a;">
@@ -1103,18 +999,46 @@
                             <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No pending sync requests awaiting approval.</span>
                             <span style="font-size: 0.75rem; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 4px; color: white;">Refresh</span>
                         </div>
-                        <div class="hotspot-pin" style="top: -8px; right: 12px;" title="Pin 6: Pending Cloud Sync Approvals">6</div>
+                        <div class="hotspot-pin" style="top: -8px; right: 12px;">6</div>
                     </div>
 
                     <!-- Store Progress Cards Grid -->
                     <div class="sim-stores-grid">
-                        <!-- 7. Ongoing Card -->
+                        <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
+                            <div class="sim-store-card">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div>
+                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">KQC</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
+                                    </div>
+                                    <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">CLOSED</span>
+                                </div>
+                                <div style="margin-top: 12px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                        <span style="color: var(--text-muted);">Store Completion</span>
+                                        <strong style="color: white;">100%</strong>
+                                    </div>
+                                    <div class="sim-bar-track">
+                                        <div class="sim-bar-fill" style="width: 100%; background: #38bdf8;"></div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>5</strong> of <strong>5</strong> closed</span>
+                                    <div style="display: flex; gap: 4px;">
+                                        <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
+                                        <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hotspot-pin" style="top: -6px; right: -6px;">8</div>
+                        </div>
+
                         <div class="pin-anchor" style="display: block;" onclick="openModal(7)">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
-                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">RME</div>
-                                        <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">MARK</strong></div>
+                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">LBS</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
                                     </div>
                                     <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">ONGOING</span>
                                 </div>
@@ -1128,25 +1052,21 @@
                                     </div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>0</strong> of <strong>3</strong> closed</span>
-                                    <div style="display: flex; gap: 4px;">
-                                        <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #34d399; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">☁️ Pull Cloud</span>
-                                        <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
-                                    </div>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>0</strong> of <strong>10</strong> closed</span>
+                                    <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
                                 </div>
                             </div>
-                            <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 7: Ongoing Store Session">7</div>
+                            <div class="hotspot-pin" style="top: -6px; right: -6px;">7</div>
                         </div>
 
-                        <!-- 8. Finished Card 1 -->
                         <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
-                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">SME</div>
+                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">PSP</div>
                                         <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
                                     </div>
-                                    <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
+                                    <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">CLOSED</span>
                                 </div>
                                 <div style="margin-top: 12px;">
                                     <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
@@ -1154,394 +1074,368 @@
                                         <strong style="color: white;">100%</strong>
                                     </div>
                                     <div class="sim-bar-track">
-                                        <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+                                        <div class="sim-bar-fill" style="width: 100%; background: #38bdf8;"></div>
                                     </div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>3</strong> of <strong>3</strong> closed</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>11</strong> of <strong>11</strong> closed</span>
                                     <div style="display: flex; gap: 4px;">
                                         <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
                                         <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 8: Finished Store Session">8</div>
                         </div>
 
-                        <!-- Finished Card 2 -->
-                        <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
+                        <div class="pin-anchor" style="display: block;" onclick="openModal(7)">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
-                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">TES</div>
-                                        <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">ALLAN</strong></div>
+                                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">SLE</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
                                     </div>
-                                    <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
+                                    <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">ONGOING</span>
                                 </div>
                                 <div style="margin-top: 12px;">
                                     <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
                                         <span style="color: var(--text-muted);">Store Completion</span>
-                                        <strong style="color: white;">100%</strong>
+                                        <strong style="color: white;">0%</strong>
                                     </div>
                                     <div class="sim-bar-track">
-                                        <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+                                        <div class="sim-bar-fill" style="width: 0%; background: #3b82f6;"></div>
                                     </div>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>10</strong> of <strong>10</strong> closed</span>
-                                    <div style="display: flex; gap: 4px;">
-                                        <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
-                                        <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>0</strong> of <strong>5</strong> closed</span>
+                                    <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================
+                     2. VIEW: MYSQL SETUP & CONFIGURATION
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-database">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>🗄️ MySQL Connection Setup & Configuration</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Database credentials, sync tokens, and print margin alignment.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(10)">📖 Open MySQL Setup Manual</button>
+                    </div>
+
+                    <div style="max-width: 900px; margin: 0 auto;">
+                        <!-- Connection Card -->
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(10)">
+                            <div class="sim-card-title">
+                                <span>🗄️ MySQL Database Connection</span>
+                                <span style="font-size: 0.75rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 6px;">Show Fields</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.25); padding: 12px 16px; border-radius: 8px;">
+                                <div>
+                                    <div style="color: #34d399; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                        <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                                        <span>MySQL Server Connected Successfully.</span>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-family: monospace;">
+                                        Host: localhost:3306 | Database: owi_physical_inventory
                                     </div>
                                 </div>
+                                <span style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px;">💾 Set Current DB as Default</span>
                             </div>
+                            <div class="hotspot-pin">10</div>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="callout-box" style="text-align: center;">
-                💡 <strong>Click any red numbered pin</strong> on the sidebar or main dashboard to open its visual breakdown modal!
-            </div>
-        </div>
-
-        <!-- SLIDE 2: Sidebar Navigation & Gateway Monitor (NEW) -->
-        <div class="slide-pane" id="slide-1">
-            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">🧭 Sidebar Navigation & Gateway Monitor</h1>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">The central menu bar for navigating subsystem modules and tracking server network health.</p>
-
-            <div class="features-grid">
-                <div class="feature-box" onclick="openModal(13)" style="cursor: pointer;">
-                    <div class="feature-header">
-                        <span style="color: #38bdf8;">❖</span> Store Context Selector
-                    </div>
-                    <div class="feature-desc">
-                        Displays the currently loaded physical store database (e.g. <code>STORE [RME]</code>). Clicking <strong>[Switch]</strong> opens the session chooser modal to switch store databases in 1 click.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(56,189,248,0.15); color: #38bdf8;">Session Management</span>
-                </div>
-
-                <div class="feature-box" onclick="openModal(14)" style="cursor: pointer;">
-                    <div class="feature-header">
-                        <span style="color: #60a5fa;">║▌</span> Test Scan Checker
-                    </div>
-                    <div class="feature-desc">
-                        A real-time diagnostic testing tool to verify physical barcode scanner laser/camera inputs, product SKU lookups, and masterfile description matching before deploying to count sheets.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(59,130,246,0.15); color: #60a5fa;">Hardware QA</span>
-                </div>
-
-                <div class="feature-box" onclick="openModal(15)" style="cursor: pointer;">
-                    <div class="feature-header">
-                        <span style="color: #10b981;">📦</span> Items Masterfile Manager
-                    </div>
-                    <div class="feature-desc">
-                        Spacious 2-column catalog interface featuring instant search with clear (✕), Add/Edit product tabs, CSV/Excel bulk import, and direct cloud catalog synchronization.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(16,185,129,0.15); color: #10b981;">Product Catalog</span>
-                </div>
-
-                <div class="feature-box" onclick="openModal(3)" style="cursor: pointer;">
-                    <div class="feature-header">
-                        <span style="color: #34d399;">🌐</span> Gateway Status & IP Monitor
-                    </div>
-                    <div class="feature-desc">
-                        Displays the active network IPv4 address (e.g. <code>10.0.0.4</code>), MySQL connection status, and active PHP database driver (<code>PDO MySQL</code>) required for handheld Wi-Fi scanners.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(16,185,129,0.15); color: #34d399;">Network Diagnostics</span>
-                </div>
-
-                <div class="feature-box" onclick="openModal(4)" style="cursor: pointer;">
-                    <div class="feature-header">
-                        <span style="color: #c084fc;">📊</span> Resolution Sandbox
-                    </div>
-                    <div class="feature-desc">
-                        Multi-device layout testing tool supporting Pocket PC CE (240×320), smartphones, tablets, laptops, and 4K displays with live frame rotation and zoom.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(168,85,247,0.15); color: #c084fc;">Responsive Simulator</span>
-                </div>
-
-                <div class="feature-box" onclick="openModal(19)" style="cursor: pointer;">
-                    <div class="feature-header">
-                        <span style="color: #f59e0b;">📱</span> Open Phone Scanner
-                    </div>
-                    <div class="feature-desc">
-                        Launches the mobile scanner interface or displays a quick-connect QR code that operators can scan with their phone camera to instantly connect to the host session.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(245,158,11,0.15); color: #f59e0b;">Mobile Handheld</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 3: System Administrator Control Center Details -->
-        <div class="slide-pane" id="slide-2">
-            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">⚙️ System Administrator Control Center</h1>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">The command center dedicated to database administration, initial deployments, and maintenance safeguards.</p>
-
-            <div class="features-grid">
-                <div class="feature-box">
-                    <div class="feature-header">
-                        <span style="color: #60a5fa;">⚙️</span> Modify Configuration
-                    </div>
-                    <div class="feature-desc">
-                        Allows editing MySQL connection host/port, database credentials, Secret Sync Tokens, and label printing top/left margin alignments directly from the browser UI.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(59,130,246,0.15); color: #60a5fa;">Configuration</span>
-                </div>
-
-                <div class="feature-box">
-                    <div class="feature-header">
-                        <span style="color: #c084fc;">🧪</span> Resolution Sandbox
-                    </div>
-                    <div class="feature-desc">
-                        A real-time hardware simulator for testing scanner and dashboard UI across Pocket PC CE (240×320), mobile handsets, tablets, laptops, and desktop resolutions.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(168,85,247,0.15); color: #c084fc;">Testing & QA</span>
-                </div>
-
-                <div class="feature-box">
-                    <div class="feature-header">
-                        <span style="color: #34d399;">⚡</span> Initialize DB Tables
-                    </div>
-                    <div class="feature-desc">
-                        Validates the existence of all core system tables (<code>stores</code>, <code>items</code>, <code>users</code>, <code>audit_logs</code>, <code>cloud_backups</code>) and automatically builds any missing database entities.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(16,185,129,0.15); color: #34d399;">Deployment</span>
-                </div>
-
-                <div class="feature-box">
-                    <div class="feature-header">
-                        <span style="color: #38bdf8;">📦</span> Import database.sql Backup
-                    </div>
-                    <div class="feature-desc">
-                        Restores the baseline schema, master product catalog, store ID lookups, and default user accounts directly from the project's <code>database.sql</code> file without needing phpMyAdmin.
-                    </div>
-                    <span class="feature-tag" style="background: rgba(56,189,248,0.15); color: #38bdf8;">Database Utility</span>
-                </div>
-
-                <div class="feature-box" style="grid-column: 1 / -1; border-color: rgba(239, 68, 68, 0.4);">
-                    <div class="feature-header">
-                        <span style="color: #f87171;">🧹</span> Fresh Inventory Reset (Master Purge)
-                    </div>
-                    <div class="feature-desc">
-                        Permanently drops all dynamic store tables (<code>{store}_locators</code>, <code>{store}_scans</code>, <code>{store}_items</code>) and resets all countsheet sessions for clean season starts.
-                        <br><br>
-                        <strong>🛡️ Preserved Tables Intact (Never Deleted):</strong>
-                        <ul style="margin-left: 20px; margin-top: 6px; color: #34d399;">
-                            <li><code>items</code> — Master Product Catalog & Barcode Barcode Lookups</li>
-                            <li><code>stores_id</code> — Store ID Mapping & Branch Names</li>
-                            <li><code>users</code> — Administrator & Operator Accounts</li>
-                        </ul>
-                    </div>
-                    <span class="feature-tag" style="background: rgba(239,68,68,0.15); color: #f87171;">Destructive • Protected by 'RESET' Prompt</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 4: Store Inventory Progress Details -->
-        <div class="slide-pane" id="slide-3">
-            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">📊 Store Inventory Progress & Session Cards</h1>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">Real-time tracking of branch counts, locator closures, and synchronization workflows.</p>
-
-            <div class="features-grid">
-                <div class="feature-box">
-                    <div class="feature-header">🔵 ONGOING Store Session</div>
-                    <div class="feature-desc">
-                        Indicates the physical count is currently in progress. Handheld mobile scanners are actively scanning barcodes into open locators.
-                        <br><br>
-                        <strong>Action Available:</strong> <code>☁️ Pull Cloud Session</code> allows importing cloud counts to a local workstation.
-                    </div>
-                </div>
-
-                <div class="feature-box">
-                    <div class="feature-header">🟢 FINISHED Store Session (100%)</div>
-                    <div class="feature-desc">
-                        All locators in the store have been verified and closed by the host administrator. The count is ready for Excel variance export and consolidation.
-                        <br><br>
-                        <strong>Action Available:</strong> <code>🔄 Re-open Store</code> allows unlocking locators if recounts or item corrections are needed.
-                    </div>
-                </div>
-
-                <div class="feature-box">
-                    <div class="feature-header">🔴 CLOSED Store Session</div>
-                    <div class="feature-desc">
-                        The session has been archived. Operators can no longer log in or scan into this branch unless an administrator explicitly clicks <strong>Re-open Store</strong>.
-                    </div>
-                </div>
-
-                <div class="feature-box">
-                    <div class="feature-header">☁️ Download Store Session from Cloud</div>
-                    <div class="feature-desc">
-                        A dedicated button located at the top-right of the progress section (visible only on local servers) that lets you download any branch session from the central cloud database by entering the 3-letter store code.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 5: Cloud Sync Approvals -->
-        <div class="slide-pane" id="slide-4">
-            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">⚠️ Pending Cloud Sync Approvals</h1>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">How the cloud server protects active inventory counts from accidental data overwrites.</p>
-
-            <div class="callout-box" style="border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;">
-                <strong style="color: #fbbf24;">Why Sync Approvals Exist:</strong>
-                When a local branch synchronizes to the central cloud, if that branch's data already exists on the cloud with prior scan records, the cloud server automatically holds the request in a pending state to prevent unintended overwrites.
-            </div>
-
-            <div class="workflow-timeline">
-                <div class="workflow-step">
-                    <div class="step-number">1</div>
-                    <div class="step-title">Branch Submits Sync</div>
-                    <div class="step-desc">Local host finishes store counts and clicks 'Sync to Cloud' in the Host Console.</div>
-                </div>
-                <div class="workflow-step">
-                    <div class="step-number">2</div>
-                    <div class="step-title">Cloud Detects Conflict</div>
-                    <div class="step-desc">Cloud checks existing record count. If records exist, a Pending Sync Request is created.</div>
-                </div>
-                <div class="workflow-step active">
-                    <div class="step-number">3</div>
-                    <div class="step-title">Admin Review</div>
-                    <div class="step-desc">System Administrator reviews the store code, record count, and timestamp on the dashboard.</div>
-                </div>
-                <div class="workflow-step">
-                    <div class="step-number">4</div>
-                    <div class="step-title">Approve / Commit</div>
-                    <div class="step-desc">Clicking 'Approve' commits the overwrite and applies the latest local scan counts to the cloud database.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- SLIDE 6: MySQL Connection Setup -->
-        <div class="slide-pane" id="slide-5">
-            <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px;">
-                <div>
-                    <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800; color: white;">MySQL Connection Setup & Configuration</h1>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Define credentials, security synchronization tokens, and barcode printer label margins.</p>
-                </div>
-                <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 4px 10px; border-radius: 20px;">
-                    👆 Click any section card or pin below
-                </div>
-            </div>
-
-            <!-- Setup Simulation Stage -->
-            <div class="mockup-stage" style="max-width: 900px; margin: 0 auto 20px auto;">
-                
-                <!-- 10. Database Connection Card -->
-                <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(10)">
-                    <div class="setup-section-card">
-                        <div class="setup-card-title">
-                            <span style="display: flex; align-items: center; gap: 8px;">
-                                <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px; border-radius: 6px; font-size: 0.85rem;">🗄️</span>
-                                <span>MySQL Database Connection</span>
-                            </span>
-                            <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px;">Show Fields</span>
+                        <!-- Sync Token Card -->
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(11)">
+                            <div class="sim-card-title">
+                                <span>🔒 Security & Synchronization Token</span>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
+                                Secret Sync Token (Cloud & Local Authorization)
+                            </div>
+                            <input type="text" class="sim-input" value="e.g. my_secure_token_123" readonly style="font-family: monospace; color: #94a3b8;">
+                            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.4;">
+                                Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.
+                            </div>
+                            <button class="sim-btn sim-btn-config">Save Token Only</button>
+                            <div class="hotspot-pin">11</div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.25); padding: 12px 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div>
-                                <div style="color: #34d399; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
-                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
-                                    <span>MySQL Server Connected Successfully.</span>
+
+                        <!-- Print Spacing Card -->
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(12)">
+                            <div class="sim-card-title">
+                                <span>🖨️ Print Spacing Settings</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Top Margin / Spacing (mm)</div>
+                                    <input type="text" class="sim-input" value="0" readonly style="font-weight: 700;">
                                 </div>
-                                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-family: monospace;">
-                                    Host: localhost:3306 | Database: owi_physical_inventory
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Left Margin / Spacing (mm)</div>
+                                    <input type="text" class="sim-input" value="10" readonly style="font-weight: 700;">
                                 </div>
                             </div>
-                            <span style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px;">💾 Set Current DB as Default</span>
+                            <button class="sim-btn-primary">Save Spacing Settings</button>
+                            <div class="hotspot-pin">12</div>
                         </div>
                     </div>
-                    <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 10: Database Connection Card">10</div>
                 </div>
 
-                <!-- 11. Security & Synchronization Token Card -->
-                <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(11)">
-                    <div class="setup-section-card">
-                        <div class="setup-card-title">
-                            <span style="display: flex; align-items: center; gap: 8px;">
-                                <span style="background: rgba(6, 182, 212, 0.2); color: #06b6d4; padding: 4px; border-radius: 6px; font-size: 0.85rem;">🔒</span>
-                                <span>Security & Synchronization Token</span>
-                            </span>
+                <!-- ==============================================
+                     3. VIEW: TEST SCAN CHECKER
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-checker">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>║▌ Test Scan Checker (Barcode Diagnostic Utility)</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Verify physical laser scanners and SKU product recognition.</span>
                         </div>
-                        <div style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
-                            Secret Sync Token (Cloud & Local Authorization)
-                        </div>
-                        <div class="sim-input-box">
-                            e.g. my_secure_token_123
-                        </div>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.4;">
-                            Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.
-                        </div>
-                        <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 0.75rem; font-weight: 700; padding: 6px 14px; border-radius: 6px; display: inline-block;">Save Token Only</span>
+                        <button class="btn-view-manual" onclick="openModal(14)">📖 Open Scanner Diagnostic Manual</button>
                     </div>
-                    <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 11: Security & Synchronization Token">11</div>
-                </div>
 
-                <!-- 12. Print Spacing Settings Card -->
-                <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(12)">
-                    <div class="setup-section-card">
-                        <div class="setup-card-title">
-                            <span style="display: flex; align-items: center; gap: 8px;">
-                                <span style="background: rgba(168, 85, 247, 0.2); color: #a855f7; padding: 4px; border-radius: 6px; font-size: 0.85rem;">🖨️</span>
-                                <span>Print Spacing Settings</span>
-                            </span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px;">
-                            <div>
-                                <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Top Margin / Spacing (mm)</div>
-                                <div class="sim-input-box" style="font-weight: 700; color: white;">0</div>
+                    <div style="max-width: 900px; margin: 0 auto;">
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(14)">
+                            <div class="sim-card-title">
+                                <span>🔍 Hardware Scanner Barcode Input</span>
+                                <span style="font-size: 0.75rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 6px;">● Scanner Ready</span>
                             </div>
-                            <div>
-                                <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; margin-bottom: 4px;">Left Margin / Spacing (mm)</div>
-                                <div class="sim-input-box" style="font-weight: 700; color: white;">10</div>
+                            <input type="text" class="sim-input" placeholder="Point scanner here and press trigger (or type barcode & press Enter)..." style="font-size: 1rem; padding: 12px; border-color: var(--accent-blue);">
+                            
+                            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; margin-top: 14px;">
+                                <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px; font-weight: 700;">MATCHED ITEM DETAILS (LIVE SIMULATION):</div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                                    <div><span style="color: #64748b; font-size: 0.7rem;">UPC / BARCODE:</span><div style="font-weight: 700; color: white;">4800049720012</div></div>
+                                    <div><span style="color: #64748b; font-size: 0.7rem;">SKU:</span><div style="font-weight: 700; color: #38bdf8;">SKU-90214</div></div>
+                                    <div><span style="color: #64748b; font-size: 0.7rem;">DESCRIPTION:</span><div style="font-weight: 700; color: white;">BALLPEN 0.5MM BLACK</div></div>
+                                    <div><span style="color: #64748b; font-size: 0.7rem;">SRP PRICE:</span><div style="font-weight: 700; color: #34d399;">₱18.50</div></div>
+                                </div>
                             </div>
+                            <div class="hotspot-pin">14</div>
                         </div>
-                        <span style="background: #3b82f6; color: white; font-size: 0.75rem; font-weight: 700; padding: 8px 16px; border-radius: 6px; display: inline-block; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">Save Spacing Settings</span>
                     </div>
-                    <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 12: Print Spacing Settings">12</div>
                 </div>
 
-            </div>
+                <!-- ==============================================
+                     4. VIEW: ITEMS MASTERFILE
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-products">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>📦 Items Masterfile Manager</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— 2-Column Catalog, search, add/edit product, and bulk CSV/Excel import.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(15)">📖 Open Masterfile Manual</button>
+                    </div>
 
-            <div class="callout-box" style="text-align: center; max-width: 900px; margin: 0 auto;">
-                💡 <strong>Click any configuration card above</strong> to view its technical details, security guidelines, and printer alignment tips!
+                    <div class="sim-catalog-layout">
+                        <!-- Left: Catalog Table with Search -->
+                        <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(15)">
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <input type="text" class="sim-input" placeholder="🔍 Search product name, SKU, or UPC..." style="margin-bottom: 0;">
+                                <button class="sim-btn sim-btn-config" style="padding: 8px 12px;">✕</button>
+                                <button class="sim-btn sim-btn-config" style="padding: 8px 12px;">🔄</button>
+                            </div>
+                            <div class="sim-table-wrap">
+                                <div class="sim-table-row sim-table-header">
+                                    <div>UPC</div><div>DESCRIPTION</div><div>SKU</div><div>PRICE</div>
+                                </div>
+                                <div class="sim-table-row">
+                                    <div style="font-family: monospace;">480004972001</div><div>BALLPEN 0.5MM BLK</div><div>SKU-101</div><div>₱18.50</div>
+                                </div>
+                                <div class="sim-table-row">
+                                    <div style="font-family: monospace;">480004972002</div><div>CORRECTION TAPE 5M</div><div>SKU-102</div><div>₱45.00</div>
+                                </div>
+                                <div class="sim-table-row">
+                                    <div style="font-family: monospace;">480004972003</div><div>NOTEBOOK 80LGS</div><div>SKU-103</div><div>₱32.00</div>
+                                </div>
+                            </div>
+                            <div class="hotspot-pin">15</div>
+                        </div>
+
+                        <!-- Right: Action Tabs -->
+                        <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(15)">
+                            <div style="display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+                                <span class="sim-btn sim-btn-primary" style="font-size: 0.75rem;">✏️ Add / Edit Item</span>
+                                <span class="sim-btn sim-btn-config" style="font-size: 0.75rem;">📁 Bulk Import & Sync</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Barcode (UPC)</div>
+                            <input type="text" class="sim-input" value="480004972001" readonly>
+                            <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Item Description</div>
+                            <input type="text" class="sim-input" value="BALLPEN 0.5MM BLK" readonly>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="sim-btn-primary" style="flex: 1;">Save Product</button>
+                                <button class="sim-btn sim-btn-config">Reset</button>
+                            </div>
+                            <div class="hotspot-pin" style="top: -6px; right: -6px;">15</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================
+                     5. VIEW: USER ACCOUNTS
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-users">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>👥 User Accounts & Access Permissions</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Manage system admin and scanner operator roles.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(16)">📖 Open User Accounts Manual</button>
+                    </div>
+
+                    <div style="max-width: 900px; margin: 0 auto;">
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(16)">
+                            <div class="sim-card-title">
+                                <span>➕ Add New User Account</span>
+                                <span style="font-size: 0.75rem; color: #60a5fa; background: rgba(59, 130, 246, 0.15); padding: 4px 10px; border-radius: 6px;">☁️ Sync Users from Cloud</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Username</div>
+                                    <input type="text" class="sim-input" placeholder="e.g. operator_1" style="margin-bottom: 0;">
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Password</div>
+                                    <input type="password" class="sim-input" value="********" style="margin-bottom: 0;">
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Role Access</div>
+                                    <select class="sim-input" style="margin-bottom: 0;">
+                                        <option>user (Scanner Operator)</option>
+                                        <option>admin (Store Admin)</option>
+                                        <option>system_admin (Full Access)</option>
+                                    </select>
+                                </div>
+                                <button class="sim-btn-primary">Create User</button>
+                            </div>
+                            <div class="hotspot-pin">16</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ==============================================
+                     6. VIEW: AUDIT LOGS
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-audit">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>📄 Audit Logs & Traceability Record</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Historical log of all critical system and countsheet events.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(17)">📖 Open Audit Logs Manual</button>
+                    </div>
+
+                    <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(17)">
+                        <div class="sim-card-title">
+                            <span>📜 System Security & Activity Trail</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8;">Showing recent 20 events</span>
+                        </div>
+                        <div class="sim-table-wrap">
+                            <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 100px 140px 1fr;">
+                                <div>TIMESTAMP</div><div>USER</div><div>ACTION</div><div>DETAILS</div>
+                            </div>
+                            <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
+                                <div>2026-08-25 13:06</div><div>sys_admin</div><div style="color: #fbbf24;">Close All Locators</div><div>Closed all 10 remaining locators in store RME</div>
+                            </div>
+                            <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
+                                <div>2026-08-25 12:45</div><div>BETH</div><div style="color: #34d399;">Create Store</div><div>Initialized store countsheet database for LBS</div>
+                            </div>
+                            <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
+                                <div>2026-08-25 11:30</div><div>MARK</div><div style="color: #60a5fa;">Sync Masterfile</div><div>Updated 4,210 items from Cloud server</div>
+                            </div>
+                        </div>
+                        <div class="hotspot-pin">17</div>
+                    </div>
+                </div>
+
+                <!-- ==============================================
+                     7. VIEW: CLOUD BACKUP LOGS
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-backups">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>⬇️ Cloud Backup Logs & Snapshots</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Point-in-time SQL database backup archives.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(18)">📖 Open Backup Logs Manual</button>
+                    </div>
+
+                    <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(18)">
+                        <div class="sim-card-title">
+                            <span>📦 Point-In-Time SQL Snapshots</span>
+                            <button class="sim-btn-primary" style="padding: 4px 10px; font-size: 0.75rem;">➕ Create Manual Backup Now</button>
+                        </div>
+                        <div class="sim-table-wrap">
+                            <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 1fr 100px 120px;">
+                                <div>TIMESTAMP</div><div>FILENAME</div><div>SIZE</div><div>ACTION</div>
+                            </div>
+                            <div class="sim-table-row" style="grid-template-columns: 140px 1fr 100px 120px;">
+                                <div>2026-08-25 09:00</div><div style="font-family: monospace;">backup_2026_08_25_daily.sql</div><div>12.4 MB</div>
+                                <div><span style="color: #38bdf8; cursor: pointer;">Download</span> | <span style="color: #34d399; cursor: pointer;">Restore</span></div>
+                            </div>
+                        </div>
+                        <div class="hotspot-pin">18</div>
+                    </div>
+                </div>
+
+                <!-- ==============================================
+                     8. VIEW: RESOLUTION SANDBOX
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-sandbox">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>📊 Resolution Sandbox Simulator</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Multi-device screen testing for Pocket PC CE, Mobile, and Laptop.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(4)">📖 Open Sandbox Manual</button>
+                    </div>
+
+                    <div class="sim-card pin-anchor" style="display: block; text-align: center; padding: 30px;" onclick="openModal(4)">
+                        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                            <span class="sim-btn sim-btn-primary">📟 Pocket PC CE (240×320)</span>
+                            <span class="sim-btn sim-btn-config">📱 Mobile (375×812)</span>
+                            <span class="sim-btn sim-btn-config">📱 Tablet (768×1024)</span>
+                            <span class="sim-btn sim-btn-config">💻 Laptop HD (1366×768)</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.5); border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 40px; color: #94a3b8;">
+                            <div style="font-size: 2rem; margin-bottom: 8px;">🧪</div>
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">Live Multi-Device Frame Simulator Active</div>
+                            <div style="font-size: 0.85rem; margin-top: 6px;">Simulating target: <strong>scan.php</strong> with live rotation and zoom scaling.</div>
+                        </div>
+                        <div class="hotspot-pin">4</div>
+                    </div>
+                </div>
+
+                <!-- ==============================================
+                     9. VIEW: OPEN PHONE SCANNER
+                     ============================================== -->
+                <div class="sim-view-pane" id="view-phone">
+                    <div class="module-intro-bar">
+                        <div class="module-intro-title">
+                            <span>📱 Open Phone Scanner (Wireless QR Pairing)</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Mobile phone handheld barcode scanner launcher.</span>
+                        </div>
+                        <button class="btn-view-manual" onclick="openModal(19)">📖 Open Phone Scanner Manual</button>
+                    </div>
+
+                    <div class="sim-card pin-anchor" style="display: block; text-align: center; max-width: 600px; margin: 0 auto; padding: 30px;" onclick="openModal(19)">
+                        <div style="width: 140px; height: 140px; background: white; margin: 0 auto 16px auto; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: black;">
+                            🏁
+                        </div>
+                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: white;">Scan QR Code to Connect Mobile Handheld</div>
+                        <div style="font-size: 0.85rem; color: #38bdf8; font-family: monospace; margin: 8px 0;">http://10.0.0.4/OWIPI/scan.php</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Ensure smartphone is on the same local Wi-Fi router.</div>
+                        <div class="hotspot-pin">19</div>
+                    </div>
+                </div>
+
             </div>
         </div>
-
-        <!-- SLIDE 7: End-to-End Count Lifecycle -->
-        <div class="slide-pane" id="slide-6">
-            <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; color: white; margin-bottom: 8px;">🔄 Complete Store Inventory Lifecycle</h1>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 24px;">Recommended operational sequence from initial store setup to final variance report export.</p>
-
-            <div class="workflow-timeline">
-                <div class="workflow-step">
-                    <div class="step-number">1</div>
-                    <div class="step-title">Initialize Store</div>
-                    <div class="step-desc">Click 'Create / Select Store' on the Dashboard and enter the 3-letter Store Code (e.g. <code>RME</code>).</div>
-                </div>
-                <div class="workflow-step">
-                    <div class="step-number">2</div>
-                    <div class="step-title">Load Masterfile</div>
-                    <div class="step-desc">Verify products in 'Items Masterfile' or click 'Sync Masterfile from Cloud' to download latest catalog.</div>
-                </div>
-                <div class="workflow-step">
-                    <div class="step-number">3</div>
-                    <div class="step-title">Perform Scans</div>
-                    <div class="step-desc">Operators log into mobile scanners and scan barcodes into their assigned locators.</div>
-                </div>
-                <div class="workflow-step">
-                    <div class="step-number">4</div>
-                    <div class="step-title">Close Locators</div>
-                    <div class="step-desc">As shelves are counted, close locators individually or click '🔒 Close All Open' to finish the store.</div>
-                </div>
-                <div class="workflow-step">
-                    <div class="step-number">5</div>
-                    <div class="step-title">Consolidate & Sync</div>
-                    <div class="step-desc">Export Excel variance report, print summary audit sheets, and sync final count to Cloud.</div>
-                </div>
-            </div>
-        </div>
-
-    </main>
+    </div>
 
     <!-- ===================================================
          INTERACTIVE POPUP MODAL
@@ -1597,31 +1491,22 @@
     </div>
 
     <script>
-        let currentSlide = 0;
-        const totalSlides = 7;
         let currentModalPin = 1;
         const totalPins = 20;
 
-        function goToSlide(index) {
-            currentSlide = index;
-            document.querySelectorAll('.slide-pane').forEach((pane, i) => {
-                pane.classList.toggle('active', i === index);
-            });
-            document.querySelectorAll('.slide-tab').forEach((tab, i) => {
-                tab.classList.toggle('active', i === index);
-            });
-            document.getElementById('slide-indicator').innerText = `Slide ${index + 1} of ${totalSlides}`;
+        function switchSimulatorView(viewId) {
+            // Update sidebar nav highlighting
+            document.querySelectorAll('.sim-nav-item').forEach(item => item.classList.remove('active'));
+            const activeNav = document.getElementById(`nav-${viewId}`);
+            if (activeNav) activeNav.classList.add('active');
+
+            // Switch right view pane
+            document.querySelectorAll('.sim-view-pane').forEach(pane => pane.classList.remove('active'));
+            const targetPane = document.getElementById(`view-${viewId}`);
+            if (targetPane) targetPane.classList.add('active');
         }
 
-        function nextSlide() {
-            goToSlide((currentSlide + 1) % totalSlides);
-        }
-
-        function prevSlide() {
-            goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
-        }
-
-        // Comprehensive 20-pin dictionary covering Sidebar, Dashboard, Setup & Life Cycle
+        // Comprehensive 20-pin dictionary covering every view in the system
         const pinData = {
             1: {
                 title: "Control Dashboard (index.php)",
@@ -1697,7 +1582,7 @@
                 tip: "Ensures that simultaneous uploads or accidental re-syncs never wipe out existing store counts without explicit admin review."
             },
             7: {
-                title: "Ongoing Store Session (e.g. RME)",
+                title: "Ongoing Store Session (e.g. LBS, SLE)",
                 subtitle: "Real-time locator progress bar and cloud pull synchronization",
                 takeaway: "Indicates an active physical inventory count currently in progress.",
                 desc: "Displays active branch completion metrics (0% - 99%), locator closed counts, and creator name. Allows pulling cloud counts to a local workstation.",
@@ -1709,7 +1594,7 @@
                 tip: "Use <strong>Pull Cloud Session</strong> if another workstation already uploaded counts for this store."
             },
             8: {
-                title: "Finished Store Session (e.g. SME, TES)",
+                title: "Finished / Closed Store Session (e.g. KQC, PSP)",
                 subtitle: "Completed 100% store session ready for variance report consolidation",
                 takeaway: "All locators in this store are closed and verified.",
                 desc: "Indicates 100% completion. Operators can no longer submit scans unless reopened by an administrator.",
@@ -1907,16 +1792,13 @@
             openModal(prev);
         }
 
-        // Keyboard navigation
+        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeModal();
             } else if (document.getElementById('modal-backdrop').classList.contains('active')) {
                 if (e.key === 'ArrowRight') nextModalPin();
                 if (e.key === 'ArrowLeft') prevModalPin();
-            } else {
-                if (e.key === 'ArrowRight') nextSlide();
-                if (e.key === 'ArrowLeft') prevSlide();
             }
         });
     </script>
