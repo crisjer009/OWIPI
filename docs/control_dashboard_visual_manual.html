@@ -122,7 +122,7 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             overflow: hidden;
             position: relative;
-            min-height: 760px;
+            min-height: 780px;
             flex-grow: 1;
         }
 
@@ -153,10 +153,13 @@
             display: flex;
             flex-direction: column;
             gap: 6px;
+            width: 260px;
+            min-width: 260px;
+            box-sizing: border-box;
         }
 
         .sim-sidebar-brand {
-            display: flex;
+            display: flex !important;
             align-items: center;
             gap: 10px;
             padding: 4px 8px 16px 8px;
@@ -164,11 +167,13 @@
             margin-bottom: 8px;
             cursor: pointer;
             position: relative;
+            width: 100%;
         }
 
         .sim-sidebar-logo {
             width: 36px;
             height: 36px;
+            min-width: 36px;
             border-radius: 10px;
             background: linear-gradient(135deg, #0284c7, #0369a1);
             display: flex;
@@ -232,7 +237,7 @@
 
         /* Sidebar Gateway Status Widget */
         .sim-gateway-widget {
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.45);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 10px;
             padding: 12px;
@@ -241,6 +246,10 @@
             position: relative;
             cursor: pointer;
             transition: all 0.2s ease;
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            box-sizing: border-box;
         }
 
         .sim-gateway-widget:hover {
@@ -255,14 +264,16 @@
             letter-spacing: 0.05em;
             color: #64748b;
             margin-bottom: 6px;
+            display: block;
         }
 
         .sim-widget-row {
-            display: flex;
+            display: flex !important;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 6px;
             color: #cbd5e1;
+            width: 100%;
         }
 
         .sim-widget-badge {
@@ -837,7 +848,7 @@
             <!-- Left Navigation Sidebar -->
             <div class="sim-sidebar">
                 <!-- Brand & Store Context Selector -->
-                <div class="sim-sidebar-brand pin-anchor" onclick="openModal(1, 'sidebar')" title="Click to view Store Selector Manual">
+                <div class="sim-sidebar-brand" onclick="openModal(1, 'sidebar')" title="Click to view Store Selector Manual">
                     <div class="sim-sidebar-logo">❖</div>
                     <div>
                         <div class="sim-sidebar-title">OWI PHYSICAL</div>
@@ -898,13 +909,13 @@
                 </div>
 
                 <!-- Bottom User Session & Gateway Widget -->
-                <div class="sim-gateway-widget pin-anchor" onclick="openModal(2, 'sidebar')" title="Click to view Gateway & Network Manual">
-                    <div class="sim-widget-label">User Session</div>
+                <div class="sim-gateway-widget" onclick="openModal(2, 'sidebar')" title="Click to view Gateway & Network Manual">
+                    <div class="sim-widget-label">USER SESSION</div>
                     <div class="sim-widget-row">
                         <span style="font-weight: 700; color: #60a5fa;">👤 sys_admin</span>
                         <span style="color: #64748b; font-size: 0.65rem;">Active Store: <strong style="color: var(--accent-cyan);">[Switch]</strong></span>
                     </div>
-                    <div class="sim-widget-label" style="margin-top: 8px;">Gateway Status</div>
+                    <div class="sim-widget-label" style="margin-top: 8px;">GATEWAY STATUS</div>
                     <div class="sim-widget-row">
                         <span>MySQL DB:</span>
                         <span class="sim-widget-badge">● Connected</span>
@@ -1412,7 +1423,7 @@
                                 <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 1fr 100px 120px;">
                                     <div>TIMESTAMP</div><div>FILENAME</div><div>SIZE</div><div>ACTION</div>
                                 </div>
-                                <div class="sim-table-row" style="grid-template-columns: 140px 1fr 100px 120px;">
+                                <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
                                     <div>2026-08-25 09:00</div><div style="font-family: monospace;">backup_2026_08_25_daily.sql</div><div>12.4 MB</div>
                                     <div><span style="color: #38bdf8; cursor: pointer;">Download</span> | <span style="color: #34d399; cursor: pointer;">Restore</span></div>
                                 </div>
