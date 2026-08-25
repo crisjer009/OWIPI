@@ -538,7 +538,7 @@
             margin-left: auto;
         }
 
-        /* Store Progress Cards Grid */
+        /* Store Cards Grid Simulation */
         .sim-stores-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -824,7 +824,7 @@
             <span class="brand-badge">Interactive System Manual</span>
         </div>
         <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Switch sidebar tabs to explore all system views:</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Switch sidebar tabs to explore each module:</span>
             <a href="../index.php" class="btn-live-app">🎛️ Open Live Application</a>
         </div>
     </header>
@@ -837,13 +837,13 @@
             <!-- Left Navigation Sidebar -->
             <div class="sim-sidebar">
                 <!-- Brand & Store Context Selector -->
-                <div class="sim-sidebar-brand pin-anchor" onclick="openModal(13)" title="Click to view Store Selector Manual">
+                <div class="sim-sidebar-brand pin-anchor" onclick="openModal(1, 'sidebar')" title="Click to view Store Selector Manual">
                     <div class="sim-sidebar-logo">❖</div>
                     <div>
                         <div class="sim-sidebar-title">OWI PHYSICAL</div>
                         <div class="sim-sidebar-store">STORE [NONE]</div>
                     </div>
-                    <div class="hotspot-pin" style="top: -6px; right: -4px;">13</div>
+                    <div class="hotspot-pin" style="top: -6px; right: -4px;">1</div>
                 </div>
 
                 <!-- Interactive Sidebar Menu Links -->
@@ -892,13 +892,13 @@
                     <span>Open Phone Scanner ↗</span>
                 </div>
 
-                <div class="sim-nav-item logout-item" onclick="openModal(20)">
+                <div class="sim-nav-item logout-item" onclick="openModal(2, 'sidebar')">
                     <span>🚪</span>
                     <span>Log Out</span>
                 </div>
 
                 <!-- Bottom User Session & Gateway Widget -->
-                <div class="sim-gateway-widget pin-anchor" onclick="openModal(3)" title="Click to view Gateway & Network Manual">
+                <div class="sim-gateway-widget pin-anchor" onclick="openModal(2, 'sidebar')" title="Click to view Gateway & Network Manual">
                     <div class="sim-widget-label">User Session</div>
                     <div class="sim-widget-row">
                         <span style="font-weight: 700; color: #60a5fa;">👤 sys_admin</span>
@@ -914,7 +914,7 @@
                         <span class="sim-widget-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">● PDO MySQL</span>
                     </div>
                     <div style="color: #64748b; font-size: 0.65rem; margin-top: 4px; font-family: monospace;">IP: 10.0.0.4</div>
-                    <div class="hotspot-pin" style="top: -6px; right: -6px;">3</div>
+                    <div class="hotspot-pin" style="top: -6px; right: -6px;">2</div>
                 </div>
             </div>
 
@@ -922,7 +922,7 @@
             <div class="sim-viewport">
 
                 <!-- ==============================================
-                     1. VIEW: DASHBOARD
+                     1. VIEW: DASHBOARD (Pins 1 - 9)
                      ============================================== -->
                 <div class="sim-view-pane active" id="view-dashboard">
                     <div class="module-intro-bar">
@@ -930,13 +930,22 @@
                             <span>🏠 Control Dashboard</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— System configuration, integrations, and server status.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(1)">📖 Open Dashboard Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'dashboard')">📖 Open Dashboard Manual</button>
+                    </div>
+
+                    <!-- Header -->
+                    <div style="margin-bottom: 16px;">
+                        <div class="pin-anchor" onclick="openModal(1, 'dashboard')">
+                            <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: white; cursor: pointer;">Control Dashboard</h2>
+                            <div class="hotspot-pin">1</div>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">System configuration, integrations, and server status.</div>
                     </div>
 
                     <!-- Sys Admin Control Center -->
                     <div class="sim-control-box">
                         <div class="sim-header">
-                            <div class="pin-anchor" onclick="openModal(2)">
+                            <div class="pin-anchor" onclick="openModal(2, 'dashboard')">
                                 <div class="sim-title" style="cursor: pointer;">
                                     <span>⚙️ System Administrator Control Center</span>
                                     <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.65rem; padding: 2px 6px; border-radius: 12px; font-weight: 800;">SYS_ADMIN</span>
@@ -944,7 +953,7 @@
                                 <div class="hotspot-pin">2</div>
                             </div>
 
-                            <div class="pin-anchor" onclick="openModal(3)">
+                            <div class="pin-anchor" onclick="openModal(3, 'dashboard')">
                                 <div class="sim-status-pill">
                                     <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">MySQL:</span> <span style="color: white; font-family: monospace;">localhost:3306</span></div>
                                     <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
@@ -961,15 +970,15 @@
                         <div class="sim-actions-grid">
                             <span class="sim-btn sim-btn-config" onclick="switchSimulatorView('database')">⚙️ Modify Configuration</span>
                             
-                            <div class="pin-anchor" onclick="switchSimulatorView('sandbox')">
+                            <div class="pin-anchor" onclick="openModal(4, 'dashboard')">
                                 <span class="sim-btn sim-btn-sandbox">🧪 Resolution Sandbox</span>
                                 <div class="hotspot-pin">4</div>
                             </div>
 
-                            <span class="sim-btn sim-btn-init" onclick="openModal(2)">⚡ Initialize DB Tables</span>
-                            <span class="sim-btn sim-btn-import" onclick="openModal(2)">📦 Import database.sql Backup</span>
+                            <span class="sim-btn sim-btn-init" onclick="openModal(2, 'dashboard')">⚡ Initialize DB Tables</span>
+                            <span class="sim-btn sim-btn-import" onclick="openModal(2, 'dashboard')">📦 Import database.sql Backup</span>
                             
-                            <div class="pin-anchor" style="margin-left: auto;" onclick="openModal(5)">
+                            <div class="pin-anchor" style="margin-left: auto;" onclick="openModal(5, 'dashboard')">
                                 <span class="sim-btn sim-btn-reset">🧹 Fresh Inventory Reset</span>
                                 <div class="hotspot-pin">5</div>
                             </div>
@@ -983,14 +992,14 @@
                             <div style="font-size: 0.75rem; color: var(--text-muted);">Real-time locator completion metrics across active store databases.</div>
                         </div>
                         
-                        <div class="pin-anchor" onclick="openModal(9)">
+                        <div class="pin-anchor" onclick="openModal(9, 'dashboard')">
                             <span class="sim-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.75rem;">☁️ Download Store Session from Cloud</span>
                             <div class="hotspot-pin">9</div>
                         </div>
                     </div>
 
                     <!-- Pending Sync Banner -->
-                    <div class="pin-anchor" style="width: 100%; display: block;" onclick="openModal(6)">
+                    <div class="pin-anchor" style="width: 100%; display: block;" onclick="openModal(6, 'dashboard')">
                         <div style="background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
                             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; color: #fef08a;">
                                 <span style="background: #eab308; color: black; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">!</span>
@@ -1004,7 +1013,7 @@
 
                     <!-- Store Progress Cards Grid -->
                     <div class="sim-stores-grid">
-                        <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
+                        <div class="pin-anchor" style="display: block;" onclick="openModal(8, 'dashboard')">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
@@ -1033,7 +1042,7 @@
                             <div class="hotspot-pin" style="top: -6px; right: -6px;">8</div>
                         </div>
 
-                        <div class="pin-anchor" style="display: block;" onclick="openModal(7)">
+                        <div class="pin-anchor" style="display: block;" onclick="openModal(7, 'dashboard')">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
@@ -1059,7 +1068,7 @@
                             <div class="hotspot-pin" style="top: -6px; right: -6px;">7</div>
                         </div>
 
-                        <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
+                        <div class="pin-anchor" style="display: block;" onclick="openModal(8, 'dashboard')">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
@@ -1087,7 +1096,7 @@
                             </div>
                         </div>
 
-                        <div class="pin-anchor" style="display: block;" onclick="openModal(7)">
+                        <div class="pin-anchor" style="display: block;" onclick="openModal(7, 'dashboard')">
                             <div class="sim-store-card">
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                     <div>
@@ -1115,7 +1124,7 @@
                 </div>
 
                 <!-- ==============================================
-                     2. VIEW: MYSQL SETUP & CONFIGURATION
+                     2. VIEW: MYSQL SETUP (Pins 1 - 3)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-database">
                     <div class="module-intro-bar">
@@ -1123,12 +1132,12 @@
                             <span>🗄️ MySQL Connection Setup & Configuration</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Database credentials, sync tokens, and print margin alignment.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(10)">📖 Open MySQL Setup Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'database')">📖 Open MySQL Setup Manual</button>
                     </div>
 
                     <div style="max-width: 900px; margin: 0 auto;">
-                        <!-- Connection Card -->
-                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(10)">
+                        <!-- Pin 1: Connection Card -->
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(1, 'database')">
                             <div class="sim-card-title">
                                 <span>🗄️ MySQL Database Connection</span>
                                 <span style="font-size: 0.75rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 6px;">Show Fields</span>
@@ -1145,11 +1154,11 @@
                                 </div>
                                 <span style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px;">💾 Set Current DB as Default</span>
                             </div>
-                            <div class="hotspot-pin">10</div>
+                            <div class="hotspot-pin">1</div>
                         </div>
 
-                        <!-- Sync Token Card -->
-                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(11)">
+                        <!-- Pin 2: Sync Token Card -->
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(2, 'database')">
                             <div class="sim-card-title">
                                 <span>🔒 Security & Synchronization Token</span>
                             </div>
@@ -1161,11 +1170,11 @@
                                 Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.
                             </div>
                             <button class="sim-btn sim-btn-config">Save Token Only</button>
-                            <div class="hotspot-pin">11</div>
+                            <div class="hotspot-pin">2</div>
                         </div>
 
-                        <!-- Print Spacing Card -->
-                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(12)">
+                        <!-- Pin 3: Print Spacing Card -->
+                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(3, 'database')">
                             <div class="sim-card-title">
                                 <span>🖨️ Print Spacing Settings</span>
                             </div>
@@ -1180,13 +1189,13 @@
                                 </div>
                             </div>
                             <button class="sim-btn-primary">Save Spacing Settings</button>
-                            <div class="hotspot-pin">12</div>
+                            <div class="hotspot-pin">3</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     3. VIEW: TEST SCAN CHECKER
+                     3. VIEW: TEST SCAN CHECKER (Pins 1 - 3)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-checker">
                     <div class="module-intro-bar">
@@ -1194,33 +1203,41 @@
                             <span>║▌ Test Scan Checker (Barcode Diagnostic Utility)</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Verify physical laser scanners and SKU product recognition.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(14)">📖 Open Scanner Diagnostic Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'checker')">📖 Open Scanner Diagnostic Manual</button>
                     </div>
 
                     <div style="max-width: 900px; margin: 0 auto;">
-                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(14)">
+                        <div class="sim-card">
                             <div class="sim-card-title">
-                                <span>🔍 Hardware Scanner Barcode Input</span>
-                                <span style="font-size: 0.75rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 6px;">● Scanner Ready</span>
+                                <div class="pin-anchor" onclick="openModal(1, 'checker')">
+                                    <span>🔍 Hardware Scanner Barcode Input</span>
+                                    <div class="hotspot-pin" style="top: -6px; right: -18px;">1</div>
+                                </div>
+                                <div class="pin-anchor" onclick="openModal(3, 'checker')">
+                                    <span style="font-size: 0.75rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 6px; cursor: pointer;">● Scanner Ready</span>
+                                    <div class="hotspot-pin" style="top: -6px; right: -8px;">3</div>
+                                </div>
                             </div>
                             <input type="text" class="sim-input" placeholder="Point scanner here and press trigger (or type barcode & press Enter)..." style="font-size: 1rem; padding: 12px; border-color: var(--accent-blue);">
                             
-                            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; margin-top: 14px;">
-                                <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px; font-weight: 700;">MATCHED ITEM DETAILS (LIVE SIMULATION):</div>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
-                                    <div><span style="color: #64748b; font-size: 0.7rem;">UPC / BARCODE:</span><div style="font-weight: 700; color: white;">4800049720012</div></div>
-                                    <div><span style="color: #64748b; font-size: 0.7rem;">SKU:</span><div style="font-weight: 700; color: #38bdf8;">SKU-90214</div></div>
-                                    <div><span style="color: #64748b; font-size: 0.7rem;">DESCRIPTION:</span><div style="font-weight: 700; color: white;">BALLPEN 0.5MM BLACK</div></div>
-                                    <div><span style="color: #64748b; font-size: 0.7rem;">SRP PRICE:</span><div style="font-weight: 700; color: #34d399;">₱18.50</div></div>
+                            <div class="pin-anchor" style="display: block; width: 100%; margin-top: 14px;" onclick="openModal(2, 'checker')">
+                                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; cursor: pointer;">
+                                    <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 8px; font-weight: 700;">MATCHED ITEM DETAILS (LIVE SIMULATION):</div>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+                                        <div><span style="color: #64748b; font-size: 0.7rem;">UPC / BARCODE:</span><div style="font-weight: 700; color: white;">4800049720012</div></div>
+                                        <div><span style="color: #64748b; font-size: 0.7rem;">SKU:</span><div style="font-weight: 700; color: #38bdf8;">SKU-90214</div></div>
+                                        <div><span style="color: #64748b; font-size: 0.7rem;">DESCRIPTION:</span><div style="font-weight: 700; color: white;">BALLPEN 0.5MM BLACK</div></div>
+                                        <div><span style="color: #64748b; font-size: 0.7rem;">SRP PRICE:</span><div style="font-weight: 700; color: #34d399;">₱18.50</div></div>
+                                    </div>
                                 </div>
+                                <div class="hotspot-pin">2</div>
                             </div>
-                            <div class="hotspot-pin">14</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     4. VIEW: ITEMS MASTERFILE
+                     4. VIEW: ITEMS MASTERFILE (Pins 1 - 4)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-products">
                     <div class="module-intro-bar">
@@ -1228,39 +1245,49 @@
                             <span>📦 Items Masterfile Manager</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— 2-Column Catalog, search, add/edit product, and bulk CSV/Excel import.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(15)">📖 Open Masterfile Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'products')">📖 Open Masterfile Manual</button>
                     </div>
 
                     <div class="sim-catalog-layout">
                         <!-- Left: Catalog Table with Search -->
-                        <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(15)">
-                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <div class="sim-card">
+                            <div class="pin-anchor" style="display: flex; gap: 8px; margin-bottom: 12px; width: 100%;" onclick="openModal(1, 'products')">
                                 <input type="text" class="sim-input" placeholder="🔍 Search product name, SKU, or UPC..." style="margin-bottom: 0;">
                                 <button class="sim-btn sim-btn-config" style="padding: 8px 12px;">✕</button>
                                 <button class="sim-btn sim-btn-config" style="padding: 8px 12px;">🔄</button>
+                                <div class="hotspot-pin" style="top: -6px; right: 0;">1</div>
                             </div>
-                            <div class="sim-table-wrap">
-                                <div class="sim-table-row sim-table-header">
-                                    <div>UPC</div><div>DESCRIPTION</div><div>SKU</div><div>PRICE</div>
+                            
+                            <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(2, 'products')">
+                                <div class="sim-table-wrap">
+                                    <div class="sim-table-row sim-table-header">
+                                        <div>UPC</div><div>DESCRIPTION</div><div>SKU</div><div>PRICE</div>
+                                    </div>
+                                    <div class="sim-table-row">
+                                        <div style="font-family: monospace;">480004972001</div><div>BALLPEN 0.5MM BLK</div><div>SKU-101</div><div>₱18.50</div>
+                                    </div>
+                                    <div class="sim-table-row">
+                                        <div style="font-family: monospace;">480004972002</div><div>CORRECTION TAPE 5M</div><div>SKU-102</div><div>₱45.00</div>
+                                    </div>
+                                    <div class="sim-table-row">
+                                        <div style="font-family: monospace;">480004972003</div><div>NOTEBOOK 80LGS</div><div>SKU-103</div><div>₱32.00</div>
+                                    </div>
                                 </div>
-                                <div class="sim-table-row">
-                                    <div style="font-family: monospace;">480004972001</div><div>BALLPEN 0.5MM BLK</div><div>SKU-101</div><div>₱18.50</div>
-                                </div>
-                                <div class="sim-table-row">
-                                    <div style="font-family: monospace;">480004972002</div><div>CORRECTION TAPE 5M</div><div>SKU-102</div><div>₱45.00</div>
-                                </div>
-                                <div class="sim-table-row">
-                                    <div style="font-family: monospace;">480004972003</div><div>NOTEBOOK 80LGS</div><div>SKU-103</div><div>₱32.00</div>
-                                </div>
+                                <div class="hotspot-pin">2</div>
                             </div>
-                            <div class="hotspot-pin">15</div>
                         </div>
 
                         <!-- Right: Action Tabs -->
-                        <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(15)">
+                        <div class="sim-card">
                             <div style="display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
-                                <span class="sim-btn sim-btn-primary" style="font-size: 0.75rem;">✏️ Add / Edit Item</span>
-                                <span class="sim-btn sim-btn-config" style="font-size: 0.75rem;">📁 Bulk Import & Sync</span>
+                                <div class="pin-anchor" onclick="openModal(3, 'products')">
+                                    <span class="sim-btn sim-btn-primary" style="font-size: 0.75rem;">✏️ Add / Edit Item</span>
+                                    <div class="hotspot-pin" style="top: -6px; right: -6px;">3</div>
+                                </div>
+                                <div class="pin-anchor" onclick="openModal(4, 'products')">
+                                    <span class="sim-btn sim-btn-config" style="font-size: 0.75rem;">📁 Bulk Import & Sync</span>
+                                    <div class="hotspot-pin" style="top: -6px; right: -6px;">4</div>
+                                </div>
                             </div>
                             <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Barcode (UPC)</div>
                             <input type="text" class="sim-input" value="480004972001" readonly>
@@ -1270,13 +1297,12 @@
                                 <button class="sim-btn-primary" style="flex: 1;">Save Product</button>
                                 <button class="sim-btn sim-btn-config">Reset</button>
                             </div>
-                            <div class="hotspot-pin" style="top: -6px; right: -6px;">15</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     5. VIEW: USER ACCOUNTS
+                     5. VIEW: USER ACCOUNTS (Pins 1 - 3)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-users">
                     <div class="module-intro-bar">
@@ -1284,14 +1310,20 @@
                             <span>👥 User Accounts & Access Permissions</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Manage system admin and scanner operator roles.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(16)">📖 Open User Accounts Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'users')">📖 Open User Accounts Manual</button>
                     </div>
 
                     <div style="max-width: 900px; margin: 0 auto;">
-                        <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(16)">
+                        <div class="sim-card">
                             <div class="sim-card-title">
-                                <span>➕ Add New User Account</span>
-                                <span style="font-size: 0.75rem; color: #60a5fa; background: rgba(59, 130, 246, 0.15); padding: 4px 10px; border-radius: 6px;">☁️ Sync Users from Cloud</span>
+                                <div class="pin-anchor" onclick="openModal(1, 'users')">
+                                    <span>➕ Add New User Account</span>
+                                    <div class="hotspot-pin" style="top: -6px; right: -18px;">1</div>
+                                </div>
+                                <div class="pin-anchor" onclick="openModal(3, 'users')">
+                                    <span style="font-size: 0.75rem; color: #60a5fa; background: rgba(59, 130, 246, 0.15); padding: 4px 10px; border-radius: 6px; cursor: pointer;">☁️ Sync Users from Cloud</span>
+                                    <div class="hotspot-pin" style="top: -6px; right: -8px;">3</div>
+                                </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
                                 <div>
@@ -1302,23 +1334,23 @@
                                     <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Password</div>
                                     <input type="password" class="sim-input" value="********" style="margin-bottom: 0;">
                                 </div>
-                                <div>
+                                <div class="pin-anchor" style="display: block;" onclick="openModal(2, 'users')">
                                     <div style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px;">Role Access</div>
                                     <select class="sim-input" style="margin-bottom: 0;">
                                         <option>user (Scanner Operator)</option>
                                         <option>admin (Store Admin)</option>
                                         <option>system_admin (Full Access)</option>
                                     </select>
+                                    <div class="hotspot-pin" style="top: -4px; right: 0;">2</div>
                                 </div>
                                 <button class="sim-btn-primary">Create User</button>
                             </div>
-                            <div class="hotspot-pin">16</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     6. VIEW: AUDIT LOGS
+                     6. VIEW: AUDIT LOGS (Pins 1 - 3)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-audit">
                     <div class="module-intro-bar">
@@ -1326,13 +1358,13 @@
                             <span>📄 Audit Logs & Traceability Record</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Historical log of all critical system and countsheet events.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(17)">📖 Open Audit Logs Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'audit')">📖 Open Audit Logs Manual</button>
                     </div>
 
-                    <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(17)">
+                    <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(1, 'audit')">
                         <div class="sim-card-title">
                             <span>📜 System Security & Activity Trail</span>
-                            <span style="font-size: 0.75rem; color: #94a3b8;">Showing recent 20 events</span>
+                            <span style="font-size: 0.75rem; color: #94a3b8;">Showing recent events</span>
                         </div>
                         <div class="sim-table-wrap">
                             <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 100px 140px 1fr;">
@@ -1348,12 +1380,12 @@
                                 <div>2026-08-25 11:30</div><div>MARK</div><div style="color: #60a5fa;">Sync Masterfile</div><div>Updated 4,210 items from Cloud server</div>
                             </div>
                         </div>
-                        <div class="hotspot-pin">17</div>
+                        <div class="hotspot-pin">1</div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     7. VIEW: CLOUD BACKUP LOGS
+                     7. VIEW: CLOUD BACKUP LOGS (Pins 1 - 3)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-backups">
                     <div class="module-intro-bar">
@@ -1361,29 +1393,37 @@
                             <span>⬇️ Cloud Backup Logs & Snapshots</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Point-in-time SQL database backup archives.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(18)">📖 Open Backup Logs Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'backups')">📖 Open Backup Logs Manual</button>
                     </div>
 
-                    <div class="sim-card pin-anchor" style="display: block;" onclick="openModal(18)">
+                    <div class="sim-card">
                         <div class="sim-card-title">
-                            <span>📦 Point-In-Time SQL Snapshots</span>
-                            <button class="sim-btn-primary" style="padding: 4px 10px; font-size: 0.75rem;">➕ Create Manual Backup Now</button>
-                        </div>
-                        <div class="sim-table-wrap">
-                            <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 1fr 100px 120px;">
-                                <div>TIMESTAMP</div><div>FILENAME</div><div>SIZE</div><div>ACTION</div>
+                            <div class="pin-anchor" onclick="openModal(2, 'backups')">
+                                <span>📦 Point-In-Time SQL Snapshots</span>
+                                <div class="hotspot-pin" style="top: -6px; right: -18px;">2</div>
                             </div>
-                            <div class="sim-table-row" style="grid-template-columns: 140px 1fr 100px 120px;">
-                                <div>2026-08-25 09:00</div><div style="font-family: monospace;">backup_2026_08_25_daily.sql</div><div>12.4 MB</div>
-                                <div><span style="color: #38bdf8; cursor: pointer;">Download</span> | <span style="color: #34d399; cursor: pointer;">Restore</span></div>
+                            <div class="pin-anchor" onclick="openModal(1, 'backups')">
+                                <button class="sim-btn-primary" style="padding: 4px 10px; font-size: 0.75rem;">➕ Create Manual Backup Now</button>
+                                <div class="hotspot-pin" style="top: -6px; right: -8px;">1</div>
                             </div>
                         </div>
-                        <div class="hotspot-pin">18</div>
+                        <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(3, 'backups')">
+                            <div class="sim-table-wrap">
+                                <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 1fr 100px 120px;">
+                                    <div>TIMESTAMP</div><div>FILENAME</div><div>SIZE</div><div>ACTION</div>
+                                </div>
+                                <div class="sim-table-row" style="grid-template-columns: 140px 1fr 100px 120px;">
+                                    <div>2026-08-25 09:00</div><div style="font-family: monospace;">backup_2026_08_25_daily.sql</div><div>12.4 MB</div>
+                                    <div><span style="color: #38bdf8; cursor: pointer;">Download</span> | <span style="color: #34d399; cursor: pointer;">Restore</span></div>
+                                </div>
+                            </div>
+                            <div class="hotspot-pin">3</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     8. VIEW: RESOLUTION SANDBOX
+                     8. VIEW: RESOLUTION SANDBOX (Pins 1 - 3)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-sandbox">
                     <div class="module-intro-bar">
@@ -1391,27 +1431,31 @@
                             <span>📊 Resolution Sandbox Simulator</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Multi-device screen testing for Pocket PC CE, Mobile, and Laptop.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(4)">📖 Open Sandbox Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'sandbox')">📖 Open Sandbox Manual</button>
                     </div>
 
-                    <div class="sim-card pin-anchor" style="display: block; text-align: center; padding: 30px;" onclick="openModal(4)">
-                        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                    <div class="sim-card" style="text-align: center; padding: 24px;">
+                        <div class="pin-anchor" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;" onclick="openModal(1, 'sandbox')">
                             <span class="sim-btn sim-btn-primary">📟 Pocket PC CE (240×320)</span>
                             <span class="sim-btn sim-btn-config">📱 Mobile (375×812)</span>
                             <span class="sim-btn sim-btn-config">📱 Tablet (768×1024)</span>
                             <span class="sim-btn sim-btn-config">💻 Laptop HD (1366×768)</span>
+                            <div class="hotspot-pin" style="top: -8px; right: -8px;">1</div>
                         </div>
-                        <div style="background: rgba(0,0,0,0.5); border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 40px; color: #94a3b8;">
-                            <div style="font-size: 2rem; margin-bottom: 8px;">🧪</div>
-                            <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">Live Multi-Device Frame Simulator Active</div>
-                            <div style="font-size: 0.85rem; margin-top: 6px;">Simulating target: <strong>scan.php</strong> with live rotation and zoom scaling.</div>
+                        
+                        <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(2, 'sandbox')">
+                            <div style="background: rgba(0,0,0,0.5); border: 2px dashed rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 40px; color: #94a3b8;">
+                                <div style="font-size: 2rem; margin-bottom: 8px;">🧪</div>
+                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">Live Multi-Device Frame Simulator Active</div>
+                                <div style="font-size: 0.85rem; margin-top: 6px;">Simulating target: <strong>scan.php</strong> with live rotation and zoom scaling.</div>
+                            </div>
+                            <div class="hotspot-pin">2</div>
                         </div>
-                        <div class="hotspot-pin">4</div>
                     </div>
                 </div>
 
                 <!-- ==============================================
-                     9. VIEW: OPEN PHONE SCANNER
+                     9. VIEW: OPEN PHONE SCANNER (Pins 1 - 2)
                      ============================================== -->
                 <div class="sim-view-pane" id="view-phone">
                     <div class="module-intro-bar">
@@ -1419,17 +1463,23 @@
                             <span>📱 Open Phone Scanner (Wireless QR Pairing)</span>
                             <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 400;">— Mobile phone handheld barcode scanner launcher.</span>
                         </div>
-                        <button class="btn-view-manual" onclick="openModal(19)">📖 Open Phone Scanner Manual</button>
+                        <button class="btn-view-manual" onclick="openModal(1, 'phone')">📖 Open Phone Scanner Manual</button>
                     </div>
 
-                    <div class="sim-card pin-anchor" style="display: block; text-align: center; max-width: 600px; margin: 0 auto; padding: 30px;" onclick="openModal(19)">
-                        <div style="width: 140px; height: 140px; background: white; margin: 0 auto 16px auto; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: black;">
-                            🏁
+                    <div class="sim-card" style="text-align: center; max-width: 600px; margin: 0 auto; padding: 30px;">
+                        <div class="pin-anchor" style="display: block; width: 140px; margin: 0 auto 16px auto;" onclick="openModal(1, 'phone')">
+                            <div style="width: 140px; height: 140px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: black; cursor: pointer;">
+                                🏁
+                            </div>
+                            <div class="hotspot-pin">1</div>
                         </div>
-                        <div style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: white;">Scan QR Code to Connect Mobile Handheld</div>
+                        
+                        <div class="pin-anchor" onclick="openModal(2, 'phone')">
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 800; color: white; cursor: pointer;">Scan QR Code to Connect Mobile Handheld</div>
+                            <div class="hotspot-pin" style="top: -6px; right: -8px;">2</div>
+                        </div>
                         <div style="font-size: 0.85rem; color: #38bdf8; font-family: monospace; margin: 8px 0;">http://10.0.0.4/OWIPI/scan.php</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted);">Ensure smartphone is on the same local Wi-Fi router.</div>
-                        <div class="hotspot-pin">19</div>
                     </div>
                 </div>
 
@@ -1484,17 +1534,19 @@
 
             <div class="modal-footer-nav">
                 <button class="btn-modal-nav" onclick="prevModalPin()">◀ Previous Hotspot</button>
-                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 20</span>
+                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 9</span>
                 <button class="btn-modal-nav" onclick="nextModalPin()">Next Hotspot ▶</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentModalPin = 1;
-        const totalPins = 20;
+        let currentActiveView = 'dashboard';
+        let currentActivePin = 1;
 
         function switchSimulatorView(viewId) {
+            currentActiveView = viewId;
+
             // Update sidebar nav highlighting
             document.querySelectorAll('.sim-nav-item').forEach(item => item.classList.remove('active'));
             const activeNav = document.getElementById(`nav-${viewId}`);
@@ -1506,254 +1558,445 @@
             if (targetPane) targetPane.classList.add('active');
         }
 
-        // Comprehensive 20-pin dictionary covering every view in the system
-        const pinData = {
-            1: {
-                title: "Control Dashboard (index.php)",
-                subtitle: "Main mission control overview, server status, and store progress",
-                takeaway: "The primary administrative command center for physical inventory operations.",
-                desc: "Provides a complete overview of active store counts, database health, background tasks, and direct shortcuts to configuration tools.",
-                actions: [
-                    "<strong>Role Identity:</strong> Displays active admin privileges.",
-                    "<strong>Live Progress:</strong> Shows real-time branch completion metrics.",
-                    "<strong>Direct Action:</strong> Launch database init, sandbox, or store syncs."
-                ],
-                tip: "Bookmark this page as your main administrative homepage during inventory season."
+        // Modular Pin Dictionary with count restarting from 1 on each view
+        const viewPinData = {
+            'dashboard': {
+                1: {
+                    title: "Control Dashboard Header & Status",
+                    subtitle: "Dashboard module overview, background integrations, and server status",
+                    takeaway: "The primary administrative command center for physical inventory operations.",
+                    desc: "Provides a complete overview of active store counts, database health, background tasks, and direct shortcuts to configuration tools.",
+                    actions: [
+                        "<strong>Role Identity:</strong> Displays active admin privileges.",
+                        "<strong>Live Progress:</strong> Shows real-time branch completion metrics.",
+                        "<strong>Direct Action:</strong> Launch database init, sandbox, or store syncs."
+                    ],
+                    tip: "Bookmark this page as your main administrative homepage during inventory season."
+                },
+                2: {
+                    title: "System Administrator Control Center",
+                    subtitle: "Master operations, table initialization, and maintenance console",
+                    takeaway: "The top command center for configuring connections, schemas, and maintenance.",
+                    desc: "Houses all critical system operations including database credential updates, multi-device resolution simulations, table structure builders, and master data resets.",
+                    actions: [
+                        "<strong>⚙️ Modify Config:</strong> Adjust MySQL host, credentials & ports.",
+                        "<strong>🧪 Sandbox:</strong> Launch the multi-screen resolution simulator.",
+                        "<strong>⚡ Init Tables:</strong> Auto-create missing database entities.",
+                        "<strong>📦 Import Backup:</strong> Restore master items & users from SQL."
+                    ],
+                    tip: "Always run <strong>Initialize DB Tables</strong> first after fresh deployments to ensure all system tables exist."
+                },
+                3: {
+                    title: "MySQL Connection & Database Status Pill",
+                    subtitle: "Real-time database host, schema name, and connection monitor",
+                    takeaway: "Instantly confirms whether PHP PDO is successfully communicating with MySQL.",
+                    desc: "Displays the active MySQL host and port (<code>localhost:3306</code>), the connected database name (<code>owi_physical_inventory</code>), and a live color-coded connection status pill.",
+                    actions: [
+                        "<strong>🟢 Connected:</strong> Database is active and running at 100% health.",
+                        "<strong>🔴 Offline:</strong> Connection lost. Check XAMPP MySQL service.",
+                        "<strong>Host & DB Info:</strong> Instant confirmation of target database."
+                    ],
+                    tip: "If status shows <strong>🔴 Offline</strong>, verify that Apache and MySQL are running in the XAMPP Control Panel."
+                },
+                4: {
+                    title: "Resolution Sandbox Button",
+                    subtitle: "Hardware simulator for Pocket PC CE, mobile phones, tablets, and laptops",
+                    takeaway: "Test scanner and dashboard UI across multiple screen resolutions in real time.",
+                    desc: "Opens <code>sandbox.php</code>, allowing administrators to preview and interact with any page across hardware presets including Pocket PC CE (240×320), Mobile (375p), Tablet (768p), and Laptop (1366×768).",
+                    actions: [
+                        "<strong>Target Page Switching:</strong> Toggle between <code>scan.php</code>, <code>index.php</code>, etc.",
+                        "<strong>CE Preset (240×320):</strong> Verify vintage Casio/WinCE barcode scanner layouts.",
+                        "<strong>Live Zoom & Rotate:</strong> Rotate landscape/portrait with zoom scaling."
+                    ],
+                    tip: "Restricted strictly to <strong>system_admin</strong> and user <strong>allan</strong> for security and QA verification."
+                },
+                5: {
+                    title: "Fresh Inventory Reset (Master Purge)",
+                    subtitle: "Safe season reset tool that wipes dynamic counts while preserving master items",
+                    takeaway: "Permanently drops dynamic store scan tables for a clean inventory season start.",
+                    desc: "Cleans up all active store sessions and drops dynamic tables (<code>{store}_locators</code>, <code>{store}_scans</code>, <code>{store}_items</code>) without deleting your master catalog.",
+                    actions: [
+                        "<strong>🛡️ Preserved:</strong> Master items (<code>items</code>), store IDs, and users.",
+                        "<strong>🗑️ Purged:</strong> Dynamic scan records, locators, and store sessions.",
+                        "<strong>🔒 Safety Gate:</strong> Requires explicitly typing <code>RESET</code> to execute."
+                    ],
+                    tip: "Use this only at the very beginning of a new inventory cycle or when clearing test counts."
+                },
+                6: {
+                    title: "Pending Cloud Sync Approvals",
+                    subtitle: "Safety queue protecting cloud inventory from accidental multi-store overwrites",
+                    takeaway: "Catches and holds store sync requests when cloud data already exists.",
+                    desc: "When a local store host synchronizes to the cloud and that store already contains prior scan data, the cloud halts the update in this queue until an administrator approves it.",
+                    actions: [
+                        "<strong>Review Store:</strong> Inspect store code, record count, and timestamp.",
+                        "<strong>✅ Approve Overwrite:</strong> Commits the local store sync to the cloud.",
+                        "<strong>❌ Reject:</strong> Dismisses the incoming sync to preserve existing cloud data."
+                    ],
+                    tip: "Ensures that simultaneous uploads or accidental re-syncs never wipe out existing store counts without explicit admin review."
+                },
+                7: {
+                    title: "Ongoing Store Session (e.g. LBS, SLE)",
+                    subtitle: "Real-time locator progress bar and cloud pull synchronization",
+                    takeaway: "Indicates an active physical inventory count currently in progress.",
+                    desc: "Displays active branch completion metrics (0% - 99%), locator closed counts, and creator name. Allows pulling cloud counts to a local workstation.",
+                    actions: [
+                        "<strong>☁️ Pull Cloud Session:</strong> Downloads cloud counts directly to local.",
+                        "<strong>Progress Bar:</strong> Live formula of closed vs total locators.",
+                        "<strong>Delete:</strong> Drops the store session after confirmation."
+                    ],
+                    tip: "Use <strong>Pull Cloud Session</strong> if another workstation already uploaded counts for this store."
+                },
+                8: {
+                    title: "Finished / Closed Store Session (e.g. KQC, PSP)",
+                    subtitle: "Completed 100% store session ready for variance report consolidation",
+                    takeaway: "All locators in this store are closed and verified.",
+                    desc: "Indicates 100% completion. Operators can no longer submit scans unless reopened by an administrator.",
+                    actions: [
+                        "<strong>🔄 Re-open Store:</strong> Unlocks closed locators for recounts or edits.",
+                        "<strong>100% Milestone:</strong> Ready for Excel variance report export.",
+                        "<strong>Delete:</strong> Archives and cleans up store tables."
+                    ],
+                    tip: "Once all stores are finished, head to the Host Console (<code>scan.php</code>) to export consolidated Excel sheets."
+                },
+                9: {
+                    title: "Download Store Session from Cloud",
+                    subtitle: "Header action to import complete store structures from the cloud",
+                    takeaway: "Allows local hosts to download any branch countsession from the cloud server.",
+                    desc: "Entering a 3-letter store code pulls all locators, item catalogs, and scans from the central cloud database straight into your local MySQL instance.",
+                    actions: [
+                        "<strong>Branch Pull:</strong> Enter any 3-letter code (e.g. <code>BGC</code>, <code>RME</code>).",
+                        "<strong>Full Structure:</strong> Rebuilds locators, items, and scan records locally.",
+                        "<strong>Smart Visibility:</strong> Automatically hidden on cloud hosts."
+                    ],
+                    tip: "Ideal for setting up a local offline inventory server before heading to the retail branch."
+                }
             },
-            2: {
-                title: "System Administrator Control Center",
-                subtitle: "Master operations, table initialization, and maintenance console",
-                takeaway: "The top command center for configuring connections, schemas, and maintenance.",
-                desc: "Houses all critical system operations including database credential updates, multi-device resolution simulations, table structure builders, and master data resets.",
-                actions: [
-                    "<strong>⚙️ Modify Config:</strong> Adjust MySQL host, credentials & ports.",
-                    "<strong>🧪 Sandbox:</strong> Launch the multi-screen resolution simulator.",
-                    "<strong>⚡ Init Tables:</strong> Auto-create missing database entities.",
-                    "<strong>📦 Import Backup:</strong> Restore master items & users from SQL."
-                ],
-                tip: "Always run <strong>Initialize DB Tables</strong> first after fresh deployments to ensure all system tables exist."
+            'database': {
+                1: {
+                    title: "MySQL Database Connection & Credentials",
+                    subtitle: "Configure database host, port, credentials, and default target schema",
+                    takeaway: "Sets up the MySQL PDO connection string for local or remote database servers.",
+                    desc: "Allows inputting MySQL Host (<code>localhost</code> or IP), Port (<code>3306</code>), Username, Password, and Database Name without touching PHP configuration files manually.",
+                    actions: [
+                        "<strong>Show Fields:</strong> Expand input fields to update credentials.",
+                        "<strong>Test Connection:</strong> Verifies PDO handshake before saving.",
+                        "<strong>💾 Set DB as Default:</strong> Saves current database as the permanent startup default."
+                    ],
+                    tip: "When connecting from remote mobile devices, ensure MySQL user allows connections from <code>%</code> (wildcard host)."
+                },
+                2: {
+                    title: "Security & Synchronization Token (Sync Key)",
+                    subtitle: "Cryptographic secret handshake authorization between Local and Cloud hosts",
+                    takeaway: "Secures all multi-branch sync requests and prevents unauthorized uploads.",
+                    desc: "Defines the shared private Secret Sync Token. The exact same token must be configured on both the Local Store Server and the Central Cloud Server for synchronization to be accepted.",
+                    actions: [
+                        "<strong>Custom Secret Token:</strong> Enter a strong alphanumeric passphrase.",
+                        "<strong>Cloud Authorization:</strong> Blocks unauthorized devices from pushing data.",
+                        "<strong>Save Token Only:</strong> Updates sync credentials without modifying DB connection."
+                    ],
+                    tip: "Never share this token publicly. Keep the token identical across all branch inventory servers and headquarters."
+                },
+                3: {
+                    title: "Print Spacing Settings (Margin Calibration)",
+                    subtitle: "Hardware alignment margins for barcode label and countsheet thermal printers",
+                    takeaway: "Calibrates physical print alignment for barcode labels and count summaries in millimeters.",
+                    desc: "Provides Top Margin (mm) and Left Margin (mm) offset controls to ensure barcode labels print centered on continuous roll label printers and thermal receipts.",
+                    actions: [
+                        "<strong>Top Margin (mm):</strong> Adjust vertical print offset (default 0mm).",
+                        "<strong>Left Margin (mm):</strong> Adjust horizontal indentation (default 10mm).",
+                        "<strong>Save Spacing Settings:</strong> Applies spacing parameters across all print dialogs."
+                    ],
+                    tip: "If barcodes are clipping on the left edge, increase <strong>Left Margin (mm)</strong> in increments of 2mm until centered."
+                }
             },
-            3: {
-                title: "Gateway Status & Network Monitor",
-                subtitle: "Real-time MySQL connection, PHP PDO driver, and server IPv4 address",
-                takeaway: "Live monitor verifying that mobile scanners can reach the local inventory server.",
-                desc: "Displays active MySQL connection status (<code>● Connected</code>), PHP database driver (<code>PDO MySQL</code>), and the local network IPv4 address (e.g. <code>10.0.0.4</code>).",
-                actions: [
-                    "<strong>IP Address:</strong> Direct IP needed for wireless mobile barcode scanners.",
-                    "<strong>Database Health:</strong> Immediate visual confirmation of PDO link.",
-                    "<strong>User Session:</strong> Displays authenticated user and store switch shortcut."
-                ],
-                tip: "Make sure handheld scanners are on the exact same Wi-Fi router subnet as the IP displayed here."
+            'checker': {
+                1: {
+                    title: "Live Barcode Scanner Input Field",
+                    subtitle: "Point hardware scanner or type barcode and press Enter",
+                    takeaway: "Direct input interface designed for high-speed laser and camera barcode inputs.",
+                    desc: "Automatically captures barcode scans, queries the active masterfile, and loads complete product records without latency.",
+                    actions: [
+                        "<strong>Laser Scanner Compatible:</strong> Supports USB, Bluetooth, and CE scanners.",
+                        "<strong>Instant Lookup:</strong> Displays product data in real time.",
+                        "<strong>Auto-Focus:</strong> Keeps focus locked on the input for continuous testing."
+                    ],
+                    tip: "Ensure your barcode scanner is configured to send an Enter (CR/LF) suffix after each scan."
+                },
+                2: {
+                    title: "Matched Item Details Display Card",
+                    subtitle: "Live preview of matched UPC, SKU, Description, Type, and SRP Price",
+                    takeaway: "Displays complete item masterfile information matched to the scanned barcode.",
+                    desc: "Verifies whether the scanned barcode exists in the database and confirms that the description, SKU, and retail price are accurate.",
+                    actions: [
+                        "<strong>UPC / Barcode:</strong> Confirms the exact parsed barcode number.",
+                        "<strong>SKU & Description:</strong> Displays master product catalog attributes.",
+                        "<strong>SRP Price:</strong> Verifies retail pricing in PHP."
+                    ],
+                    tip: "If an item says 'Not Found in Masterfile', head to <strong>Items Masterfile</strong> to add or sync the product."
+                },
+                3: {
+                    title: "Clean Diagnostic Scanner Mode",
+                    subtitle: "Safe diagnostic test tool that will not modify actual inventory counts",
+                    takeaway: "Allows testing hardware and barcodes without creating count records.",
+                    desc: "The Test Scan Checker operates strictly in read-only diagnostic mode so team leads can verify scanner hardware before counting begins.",
+                    actions: [
+                        "<strong>Zero Count Impact:</strong> Does not create locator scan rows.",
+                        "<strong>Safe QA Tool:</strong> Test unlimited barcodes without cleanup."
+                    ],
+                    tip: "Use this before starting physical inventory to confirm all handheld barcode lasers are working."
+                }
             },
-            4: {
-                title: "Resolution Sandbox Simulator",
-                subtitle: "Hardware simulator for Pocket PC CE, mobile phones, tablets, and laptops",
-                takeaway: "Test scanner and dashboard UI across multiple screen resolutions in real time.",
-                desc: "Opens <code>sandbox.php</code>, allowing administrators to preview and interact with any page across hardware presets including Pocket PC CE (240×320), Mobile (375p), Tablet (768p), and Laptop (1366×768).",
-                actions: [
-                    "<strong>Target Page Switching:</strong> Toggle between <code>scan.php</code>, <code>index.php</code>, etc.",
-                    "<strong>CE Preset (240×320):</strong> Verify vintage Casio/WinCE barcode scanner layouts.",
-                    "<strong>Live Zoom & Rotate:</strong> Rotate landscape/portrait with zoom scaling."
-                ],
-                tip: "Restricted strictly to <strong>system_admin</strong> and user <strong>allan</strong> for security and QA verification."
+            'products': {
+                1: {
+                    title: "Product Catalog Search & Refresh Toolbar",
+                    subtitle: "Real-time search with instant clear ✕ and reload 🔄 buttons",
+                    takeaway: "Instantly filter thousands of products by barcode, SKU, or description keywords.",
+                    desc: "Provides a responsive live-search input that instantly filters catalog table rows, with dedicated clear and refresh controls.",
+                    actions: [
+                        "<strong>Live Keyword Filter:</strong> Type any keyword or SKU number.",
+                        "<strong>Clear ✕ Button:</strong> Resets search filter instantly.",
+                        "<strong>Refresh 🔄 Button:</strong> Reloads product table from database."
+                    ],
+                    tip: "Click any product row in the table to automatically populate the Add/Edit form on the right!"
+                },
+                2: {
+                    title: "Spacious Product Catalog Table",
+                    subtitle: "Sticky-header product table showing UPCs, Descriptions, SKUs, and Prices",
+                    takeaway: "The primary repository view of all master inventory items.",
+                    desc: "Displays the active item catalog in an optimized layout with sticky column headers and auto-scrolling.",
+                    actions: [
+                        "<strong>Row Selection:</strong> Clicking a row loads it for instant editing.",
+                        "<strong>SKU & UPC Display:</strong> Full visibility of item identification keys."
+                    ],
+                    tip: "Keep the catalog synced with headquarters to ensure new products are recognized during counting."
+                },
+                3: {
+                    title: "Add / Edit Product Item Tab",
+                    subtitle: "Single product creation and attribute modification panel",
+                    takeaway: "Add brand new products or update existing item details.",
+                    desc: "Provides form inputs for Barcode (UPC), SKU, Item Description, Product Type, Attribute, Size, and SRP Price.",
+                    actions: [
+                        "<strong>Create Product:</strong> Register new UPCs in the masterfile.",
+                        "<strong>Update Product:</strong> Edit descriptions or correct retail prices.",
+                        "<strong>Reset Button:</strong> Clears input fields for a new entry."
+                    ],
+                    tip: "Barcodes must be unique. Duplicate barcodes will update the existing product record."
+                },
+                4: {
+                    title: "Bulk CSV/Excel Import & Cloud Sync Tab",
+                    subtitle: "Upload mass inventory spreadsheets or synchronize from Cloud",
+                    takeaway: "Import thousands of products at once from CSV/Excel or central cloud.",
+                    desc: "Allows uploading Excel/CSV masterfiles or triggering a direct automated sync from the central cloud database.",
+                    actions: [
+                        "<strong>Spreadsheet Import:</strong> Drag & drop CSV/Excel catalog files.",
+                        "<strong>Cloud Sync:</strong> Downloads latest masterfile from headquarters with 1 click."
+                    ],
+                    tip: "Ensure your CSV matches column headers: UPC, SKU, Description, Type, Attr, Size, Price."
+                }
             },
-            5: {
-                title: "Fresh Inventory Reset (Master Purge)",
-                subtitle: "Safe season reset tool that wipes dynamic counts while preserving master items",
-                takeaway: "Permanently drops dynamic store scan tables for a clean inventory season start.",
-                desc: "Cleans up all active store sessions and drops dynamic tables (<code>{store}_locators</code>, <code>{store}_scans</code>, <code>{store}_items</code>) without deleting your master catalog.",
-                actions: [
-                    "<strong>🛡️ Preserved:</strong> Master items (<code>items</code>), store IDs, and users.",
-                    "<strong>🗑️ Purged:</strong> Dynamic scan records, locators, and store sessions.",
-                    "<strong>🔒 Safety Gate:</strong> Requires explicitly typing <code>RESET</code> to execute."
-                ],
-                tip: "Use this only at the very beginning of a new inventory cycle or when clearing test counts."
+            'users': {
+                1: {
+                    title: "Add New User Account Form",
+                    subtitle: "Create operator or administrator accounts with custom passwords",
+                    takeaway: "Manage authentication credentials for counting personnel and supervisors.",
+                    desc: "Allows creating usernames, setting passwords, and granting specific operational roles.",
+                    actions: [
+                        "<strong>Username:</strong> Unique login identifier.",
+                        "<strong>Password:</strong> Secure login credential.",
+                        "<strong>Create Button:</strong> Adds user account to database immediately."
+                    ],
+                    tip: "Create separate operator accounts (e.g. `op_1`, `op_2`) so audit logs reflect individual accountability."
+                },
+                2: {
+                    title: "Role-Based Access Control (RBAC)",
+                    subtitle: "Assign system_admin, admin, or user permissions",
+                    takeaway: "Enforces strict security boundaries between operators and administrators.",
+                    desc: "Restricts scanner operators to countsheets only, while reserving database tools and resets for system administrators.",
+                    actions: [
+                        "<strong>user:</strong> Scanner operator (Mobile scan & countsheets only).",
+                        "<strong>admin:</strong> Store supervisor (Locator management & approvals).",
+                        "<strong>system_admin:</strong> Full root access (DB setup, purge resets, sandbox)."
+                    ],
+                    tip: "Never give `system_admin` credentials to temporary counting staff."
+                },
+                3: {
+                    title: "Sync Users from Cloud",
+                    subtitle: "Download authorized company credentials from the central server",
+                    takeaway: "Imports pre-configured administrative accounts from headquarters.",
+                    desc: "Fetches approved user rosters from the cloud database so local branch servers don't have to re-enter usernames manually.",
+                    actions: [
+                        "<strong>One-Click Roster Pull:</strong> Syncs all authorized usernames.",
+                        "<strong>Automatic Role Mapping:</strong> Applies permissions defined at headquarters."
+                    ],
+                    tip: "Run this after setting up a fresh local server at a branch."
+                }
             },
-            6: {
-                title: "Pending Cloud Sync Approvals",
-                subtitle: "Safety queue protecting cloud inventory from accidental multi-store overwrites",
-                takeaway: "Catches and holds store sync requests when cloud data already exists.",
-                desc: "When a local store host synchronizes to the cloud and that store already contains prior scan data, the cloud halts the update in this queue until an administrator approves it.",
-                actions: [
-                    "<strong>Review Store:</strong> Inspect store code, record count, and timestamp.",
-                    "<strong>✅ Approve Overwrite:</strong> Commits the local store sync to the cloud.",
-                    "<strong>❌ Reject:</strong> Dismisses the incoming sync to preserve existing cloud data."
-                ],
-                tip: "Ensures that simultaneous uploads or accidental re-syncs never wipe out existing store counts without explicit admin review."
+            'audit': {
+                1: {
+                    title: "Audit Logs & Security Activity Trail",
+                    subtitle: "Historical record of all critical system and countsheet events",
+                    takeaway: "Maintains an immutable record of all administrative actions.",
+                    desc: "Logs every store creation, masterfile sync, inventory reset, locator closure, and user login with exact timestamps and usernames.",
+                    actions: [
+                        "<strong>Timestamped Events:</strong> Exact chronological logging.",
+                        "<strong>User Attribution:</strong> Identifies who performed each action.",
+                        "<strong>Action Details:</strong> Full context of modifications."
+                    ],
+                    tip: "Audit logs provide complete accountability for inventory audit compliance."
+                },
+                2: {
+                    title: "User Attribution & Accountability",
+                    subtitle: "Tracks exact usernames associated with each system action",
+                    takeaway: "Ensures transparent accountability across the counting team.",
+                    desc: "Identifies whether an action was performed by a supervisor, operator, or system administrator.",
+                    actions: [
+                        "<strong>Supervisor Tracking:</strong> Logs locator closures and store finalizations.",
+                        "<strong>Admin Tracking:</strong> Logs database resets and configuration changes."
+                    ],
+                    tip: "Use this log to verify who completed each locator countsheet."
+                },
+                3: {
+                    title: "Security Compliance & Filter",
+                    subtitle: "Review system integrity and historical counting milestones",
+                    takeaway: "Provides certified proof of physical inventory execution.",
+                    desc: "Essential for financial auditors and management review following store inventory consolidation.",
+                    actions: [
+                        "<strong>Audit Review:</strong> Verify store creation and closure dates.",
+                        "<strong>Tamper Detection:</strong> Confirms no unauthorized resets took place."
+                    ],
+                    tip: "Export or archive audit logs alongside your final Excel variance reports."
+                }
             },
-            7: {
-                title: "Ongoing Store Session (e.g. LBS, SLE)",
-                subtitle: "Real-time locator progress bar and cloud pull synchronization",
-                takeaway: "Indicates an active physical inventory count currently in progress.",
-                desc: "Displays active branch completion metrics (0% - 99%), locator closed counts, and creator name. Allows pulling cloud counts to a local workstation.",
-                actions: [
-                    "<strong>☁️ Pull Cloud Session:</strong> Downloads cloud counts directly to local.",
-                    "<strong>Progress Bar:</strong> Live formula of closed vs total locators.",
-                    "<strong>Delete:</strong> Drops the store session after confirmation."
-                ],
-                tip: "Use <strong>Pull Cloud Session</strong> if another workstation already uploaded counts for this store."
+            'backups': {
+                1: {
+                    title: "Create Manual Point-In-Time Backup",
+                    subtitle: "Instantly exports a full SQL database backup snapshot",
+                    takeaway: "Generates an immediate SQL snapshot of the entire inventory database.",
+                    desc: "Dumps all tables, items, users, and active scan records into an encrypted `.sql` archive stored on disk.",
+                    actions: [
+                        "<strong>Instant Snapshot:</strong> Creates a complete database dump in seconds.",
+                        "<strong>Pre-Reset Safety:</strong> Recommended before running Fresh Inventory Reset."
+                    ],
+                    tip: "Always create a manual backup before performing any mass data operations or masterfile updates."
+                },
+                2: {
+                    title: "Point-In-Time SQL Snapshots Archive Table",
+                    subtitle: "List of all automated daily and manual SQL snapshots with sizes",
+                    takeaway: "Repository of previous backup snapshots available for download or rollback.",
+                    desc: "Displays timestamp, filename, and file size for every snapshot created locally or in the cloud.",
+                    actions: [
+                        "<strong>Snapshot History:</strong> Track automated daily and manual backups.",
+                        "<strong>Storage Tracking:</strong> Monitor database archive file sizes."
+                    ],
+                    tip: "Keep backup files copied to an external USB flash drive for offline disaster recovery."
+                },
+                3: {
+                    title: "Download & Restore Actions",
+                    subtitle: "Save backup file to disk or restore database state in disaster scenarios",
+                    takeaway: "Restores database to a previous point in time or exports SQL off-site.",
+                    desc: "Clicking **Download** saves the `.sql` file to your PC. Clicking **Restore** executes the SQL file to roll back the database state.",
+                    actions: [
+                        "<strong>Download:</strong> Export SQL backup file to local machine.",
+                        "<strong>Restore:</strong> One-click database restoration to chosen snapshot point."
+                    ],
+                    tip: "Restoring a backup will overwrite current database records with the snapshot state."
+                }
             },
-            8: {
-                title: "Finished / Closed Store Session (e.g. KQC, PSP)",
-                subtitle: "Completed 100% store session ready for variance report consolidation",
-                takeaway: "All locators in this store are closed and verified.",
-                desc: "Indicates 100% completion. Operators can no longer submit scans unless reopened by an administrator.",
-                actions: [
-                    "<strong>🔄 Re-open Store:</strong> Unlocks closed locators for recounts or edits.",
-                    "<strong>100% Milestone:</strong> Ready for Excel variance report export.",
-                    "<strong>Delete:</strong> Archives and cleans up store tables."
-                ],
-                tip: "Once all stores are finished, head to the Host Console (<code>scan.php</code>) to export consolidated Excel sheets."
+            'sandbox': {
+                1: {
+                    title: "Hardware Resolution Presets Toolbar",
+                    subtitle: "One-click switching: Pocket PC CE, Mobile, Tablet, Laptop HD",
+                    takeaway: "Simulate any mobile scanner or desktop screen resolution instantly.",
+                    desc: "Provides hardware resolution presets including Pocket PC CE (240×320), Mobile Portrait/Landscape, Tablet (768×1024), and Laptop HD (1366×768).",
+                    actions: [
+                        "<strong>Pocket PC CE (240×320):</strong> Test legacy Casio handheld barcode terminals.",
+                        "<strong>Mobile (375×812):</strong> Test smartphone scanning viewports.",
+                        "<strong>Laptop HD (1366×768):</strong> Test laptop host dashboard layout."
+                    ],
+                    tip: "Use the CE preset to ensure buttons and fonts are clearly readable on small handheld LCDs."
+                },
+                2: {
+                    title: "Live Multi-Device Frame Simulator",
+                    subtitle: "Interactive iframe running live application pages in real time",
+                    takeaway: "A full functional browser inside the chosen hardware dimensions.",
+                    desc: "Allows interacting with `scan.php`, `index.php`, `mobile_ce.php`, or `login.php` within realistic device borders.",
+                    actions: [
+                        "<strong>Target Selector:</strong> Switch between Scanner, Host, or Login pages.",
+                        "<strong>Live Interaction:</strong> Click buttons and test forms inside simulated screen."
+                    ],
+                    tip: "Restricted strictly to **system_admin** and user **allan**."
+                },
+                3: {
+                    title: "Live Rotation & Zoom Scaling Controls",
+                    subtitle: "Rotate landscape/portrait and zoom viewport to fit monitor",
+                    takeaway: "Adjust orientation and zoom levels for optimal simulation testing.",
+                    desc: "Toggle between portrait and landscape modes with live zoom scaling from 50% to 150%.",
+                    actions: [
+                        "<strong>Rotate:</strong> Switch screen between vertical and horizontal orientation.",
+                        "<strong>Zoom Controls:</strong> Scale larger displays to fit on smaller laptop screens."
+                    ],
+                    tip: "Landscape rotation is ideal for testing barcode scanners mounted on tablet stands."
+                }
             },
-            9: {
-                title: "Download Store Session from Cloud",
-                subtitle: "Header action to import complete store structures from the cloud",
-                takeaway: "Allows local hosts to download any branch countsession from the cloud server.",
-                desc: "Entering a 3-letter store code pulls all locators, item catalogs, and scans from the central cloud database straight into your local MySQL instance.",
-                actions: [
-                    "<strong>Branch Pull:</strong> Enter any 3-letter code (e.g. <code>BGC</code>, <code>RME</code>).",
-                    "<strong>Full Structure:</strong> Rebuilds locators, items, and scan records locally.",
-                    "<strong>Smart Visibility:</strong> Automatically hidden on cloud hosts."
-                ],
-                tip: "Ideal for setting up a local offline inventory server before heading to the retail branch."
+            'phone': {
+                1: {
+                    title: "Wi-Fi Pairing QR Code",
+                    subtitle: "Operators scan this QR code with smartphone cameras to connect instantly",
+                    takeaway: "Eliminates the need for operators to type complex IP addresses.",
+                    desc: "Encodes the local host IP and scanning URL into a high-contrast QR code for instant camera pairing.",
+                    actions: [
+                        "<strong>Instant Auto-Connect:</strong> Opens scanner URL on mobile browser.",
+                        "<strong>Camera / Laser Ready:</strong> Ready for mobile barcode scanning immediately."
+                    ],
+                    tip: "Print or display this QR code at the physical counting station."
+                },
+                2: {
+                    title: "Direct IPv4 Host Link",
+                    subtitle: "Local network address used for wireless scanner browser pairing",
+                    takeaway: "The exact network URL for connecting mobile barcode scanners.",
+                    desc: "Displays `http://[IP]/OWIPI/scan.php`. Mobile phones on the same Wi-Fi router can navigate directly to this address.",
+                    actions: [
+                        "<strong>Network IPv4:</strong> Active local host IP address.",
+                        "<strong>Port & Path:</strong> Complete web application path."
+                    ],
+                    tip: "Ensure mobile devices are connected to the same Wi-Fi router as the host PC."
+                }
             },
-            10: {
-                title: "MySQL Database Connection & Credentials",
-                subtitle: "Configure database host, port, credentials, and default target schema",
-                takeaway: "Sets up the MySQL PDO connection string for local or remote database servers.",
-                desc: "Allows inputting MySQL Host (<code>localhost</code> or IP), Port (<code>3306</code>), Username, Password, and Database Name without touching PHP configuration files manually.",
-                actions: [
-                    "<strong>Show Fields:</strong> Expand input fields to update credentials.",
-                    "<strong>Test Connection:</strong> Verifies PDO handshake before saving.",
-                    "<strong>💾 Set DB as Default:</strong> Saves current database as the permanent startup default."
-                ],
-                tip: "When connecting from remote mobile devices, ensure MySQL user allows connections from <code>%</code> (wildcard host)."
-            },
-            11: {
-                title: "Security & Synchronization Token (Sync Key)",
-                subtitle: "Cryptographic secret handshake authorization between Local and Cloud hosts",
-                takeaway: "Secures all multi-branch sync requests and prevents unauthorized uploads.",
-                desc: "Defines the shared private Secret Sync Token. The exact same token must be configured on both the Local Store Server and the Central Cloud Server for synchronization to be accepted.",
-                actions: [
-                    "<strong>Custom Secret Token:</strong> Enter a strong alphanumeric passphrase.",
-                    "<strong>Cloud Authorization:</strong> Blocks unauthorized devices from pushing data.",
-                    "<strong>Save Token Only:</strong> Updates sync credentials without modifying DB connection."
-                ],
-                tip: "Never share this token publicly. Keep the token identical across all branch inventory servers and headquarters."
-            },
-            12: {
-                title: "Print Spacing Settings (Margin Calibration)",
-                subtitle: "Hardware alignment margins for barcode label and countsheet thermal printers",
-                takeaway: "Calibrates physical print alignment for barcode labels and count summaries in millimeters.",
-                desc: "Provides Top Margin (mm) and Left Margin (mm) offset controls to ensure barcode labels print centered on continuous roll label printers and thermal receipts.",
-                actions: [
-                    "<strong>Top Margin (mm):</strong> Adjust vertical print offset (default 0mm).",
-                    "<strong>Left Margin (mm):</strong> Adjust horizontal indentation (default 10mm).",
-                    "<strong>Save Spacing Settings:</strong> Applies spacing parameters across all print dialogs."
-                ],
-                tip: "If barcodes are clipping on the left edge, increase <strong>Left Margin (mm)</strong> in increments of 2mm until centered."
-            },
-            13: {
-                title: "Store Context Selector [Switch Store]",
-                subtitle: "Top-left logo banner showing the currently active branch database",
-                takeaway: "Quick switcher to load, create, or switch store countsheet databases.",
-                desc: "Displays the active store code (e.g. <code>STORE [RME]</code> or <code>STORE [NONE]</code>). Clicking it triggers the Store Selector modal to choose or create a new store session.",
-                actions: [
-                    "<strong>Active Store Display:</strong> Shows current branch database context.",
-                    "<strong>[Switch] Button:</strong> Quick shortcut to open another branch session.",
-                    "<strong>Create New Store:</strong> Initialize a brand new store database."
-                ],
-                tip: "Make sure you select the correct store code before launching phone scanners or masterfile imports."
-            },
-            14: {
-                title: "Test Scan Checker (Diagnostic Scanner)",
-                subtitle: "Interactive barcode hardware test tool and SKU lookup verifier",
-                takeaway: "Test barcode scanners and verify item masterfile recognition in seconds.",
-                desc: "A dedicated diagnostic utility where operators or administrators can scan any physical barcode to test scanner inputs, view matched descriptions, and verify retail prices without creating count records.",
-                actions: [
-                    "<strong>Live Hardware Test:</strong> Confirms USB, Bluetooth, or wireless scanner connectivity.",
-                    "<strong>SKU & UPC Lookup:</strong> Instantly displays description, size, color, and price.",
-                    "<strong>Clean Testing:</strong> Will not increment or modify actual inventory counts."
-                ],
-                tip: "Use this before starting physical inventory to confirm all handheld barcode lasers are scanning accurately."
-            },
-            15: {
-                title: "Items Masterfile Catalog Manager",
-                subtitle: "Comprehensive 2-column product catalog interface with tab switcher",
-                takeaway: "Manage your complete master barcode database, additions, edits, and bulk imports.",
-                desc: "Features a modern 2-column responsive layout: a spacious live-search product catalog table on the left, and a dedicated tabbed action panel (Add/Edit Item & Bulk Excel Import) on the right.",
-                actions: [
-                    "<strong>Live Search & Clear:</strong> Filter thousands of items with auto-clear ✕ and refresh 🔄.",
-                    "<strong>Add / Edit Item Tab:</strong> Click any row to automatically populate fields for editing.",
-                    "<strong>Bulk Import & Sync Tab:</strong> Drag & drop CSV/Excel files or sync master catalog from Cloud."
-                ],
-                tip: "Always ensure the Masterfile is synced with Cloud before dispatching teams to physical store counts."
-            },
-            16: {
-                title: "User Accounts & Access Management",
-                subtitle: "Administer user credentials, roles, and operator permissions",
-                takeaway: "Create and manage system administrator and store operator accounts.",
-                desc: "Allows creating, updating, and removing users, with role-based access control (<code>system_admin</code>, <code>admin</code>, and <code>user</code>).",
-                actions: [
-                    "<strong>Create User:</strong> Set username, password, and assign roles.",
-                    "<strong>Role Assignment:</strong> Assign sys_admin, store admin, or scanner operator.",
-                    "<strong>Cloud User Sync:</strong> Download authorized user accounts from cloud server."
-                ],
-                tip: "Assign the <strong>user</strong> role to scanner operators so they are restricted exclusively to scanning countsheets."
-            },
-            17: {
-                title: "Audit Logs & Security Trail",
-                subtitle: "Traceability record of all administrative actions and count closures",
-                takeaway: "Maintains an immutable historical record of all critical system events.",
-                desc: "Logs every store creation, masterfile sync, inventory reset, locator closure, and user login with exact timestamps and usernames.",
-                actions: [
-                    "<strong>Event Traceability:</strong> Verify who created or closed locators.",
-                    "<strong>Filter & Export:</strong> Inspect logs by user, action, or date range.",
-                    "<strong>Security Compliance:</strong> Ensures full accountability during inventory audits."
-                ],
-                tip: "Audit logs cannot be edited by standard operators, ensuring transparent accountability."
-            },
-            18: {
-                title: "Cloud Backup Logs",
-                subtitle: "Historical repository of automated database backups and snapshots",
-                takeaway: "View, download, or restore database backup snapshots.",
-                desc: "Displays all automated and manual database snapshots stored locally and in the cloud. Allows downloading SQL files or restoring previous snapshots.",
-                actions: [
-                    "<strong>Create Snapshot:</strong> Generate a full point-in-time SQL database backup.",
-                    "<strong>Download Backup:</strong> Save backup files to an external flash drive.",
-                    "<strong>Restore Snapshot:</strong> Revert database state in disaster recovery scenarios."
-                ],
-                tip: "Create a manual snapshot right before performing a <strong>Fresh Inventory Reset</strong> as a safety measure."
-            },
-            19: {
-                title: "Open Phone Scanner (Handheld QR Launcher)",
-                subtitle: "Instant mobile barcode scanner launcher with Wi-Fi QR pairing",
-                takeaway: "Turns any smartphone or Android handheld into an active barcode scanner.",
-                desc: "Opens the mobile scanner viewport and displays a large Wi-Fi QR code. Scanning the QR code automatically connects mobile phones to the local server without typing URLs.",
-                actions: [
-                    "<strong>QR Auto-Connect:</strong> Instant Wi-Fi connection pairing.",
-                    "<strong>Camera / Laser Scanning:</strong> Supports built-in camera or external Bluetooth lasers.",
-                    "<strong>Offline Sync:</strong> Operators can scan even if Wi-Fi temporarily fluctuates."
-                ],
-                tip: "Print or display the QR code at the counting station so operators can pair their phones in one second."
-            },
-            20: {
-                title: "Log Out & Session Termination",
-                subtitle: "Securely logs out the active administrator and clears authentication cookies",
-                takeaway: "Ends the active session and returns to the login screen.",
-                desc: "Destroys PHP session tokens and redirects to <code>login.php</code> to ensure unauthorized personnel cannot access the host dashboard.",
-                actions: [
-                    "<strong>Session Cleanup:</strong> Destroys active admin authentication tokens.",
-                    "<strong>Secure Redirection:</strong> Returns immediately to the secure login page."
-                ],
-                tip: "Always click Log Out when leaving the host workstation unattended during inventory counting."
+            'sidebar': {
+                1: {
+                    title: "Store Context Selector [Switch Store]",
+                    subtitle: "Top-left logo banner showing the currently active branch database",
+                    takeaway: "Quick switcher to load, create, or switch store countsheet databases.",
+                    desc: "Displays the active store code (e.g. <code>STORE [RME]</code> or <code>STORE [NONE]</code>). Clicking it triggers the Store Selector modal to choose or create a new store session.",
+                    actions: [
+                        "<strong>Active Store Display:</strong> Shows current branch database context.",
+                        "<strong>[Switch] Button:</strong> Quick shortcut to open another branch session.",
+                        "<strong>Create New Store:</strong> Initialize a brand new store database."
+                    ],
+                    tip: "Make sure you select the correct store code before launching phone scanners or masterfile imports."
+                },
+                2: {
+                    title: "Gateway Status & Network Monitor Widget",
+                    subtitle: "Real-time MySQL connection, PHP PDO driver, and server IPv4 address",
+                    takeaway: "Live monitor verifying that mobile scanners can reach the local inventory server.",
+                    desc: "Displays active MySQL connection status (<code>● Connected</code>), PHP database driver (<code>PDO MySQL</code>), and the local network IPv4 address (e.g. <code>10.0.0.4</code>).",
+                    actions: [
+                        "<strong>IP Address:</strong> Direct IP needed for wireless mobile barcode scanners.",
+                        "<strong>Database Health:</strong> Immediate visual confirmation of PDO link.",
+                        "<strong>User Session:</strong> Displays authenticated user and store switch shortcut."
+                    ],
+                    tip: "Make sure handheld scanners are on the exact same Wi-Fi router subnet as the IP displayed here."
+                }
             }
         };
 
-        function openModal(pinNum) {
-            currentModalPin = pinNum;
-            const data = pinData[pinNum];
+        function openModal(pinNum, viewName = currentActiveView) {
+            currentActivePin = pinNum;
+            const viewDict = viewPinData[viewName] || viewPinData['dashboard'];
+            const data = viewDict[pinNum];
             if (!data) return;
+
+            const totalPinsInView = Object.keys(viewDict).length;
 
             document.getElementById('m-pin-num').innerText = pinNum;
             document.getElementById('m-title').innerText = data.title;
@@ -1765,7 +2008,7 @@
             actionsList.innerHTML = data.actions.map(act => `<div class="action-item-pill">${act}</div>`).join('');
 
             document.getElementById('m-tip').innerHTML = data.tip;
-            document.getElementById('m-counter').innerText = `Hotspot ${pinNum} of ${totalPins}`;
+            document.getElementById('m-counter').innerText = `Hotspot ${pinNum} of ${totalPinsInView}`;
 
             document.getElementById('modal-backdrop').classList.add('active');
         }
@@ -1781,18 +2024,22 @@
         }
 
         function nextModalPin() {
-            let next = currentModalPin + 1;
-            if (next > totalPins) next = 1;
-            openModal(next);
+            const viewDict = viewPinData[currentActiveView] || viewPinData['dashboard'];
+            const totalPinsInView = Object.keys(viewDict).length;
+            let next = currentActivePin + 1;
+            if (next > totalPinsInView) next = 1;
+            openModal(next, currentActiveView);
         }
 
         function prevModalPin() {
-            let prev = currentModalPin - 1;
-            if (prev < 1) prev = totalPins;
-            openModal(prev);
+            const viewDict = viewPinData[currentActiveView] || viewPinData['dashboard'];
+            const totalPinsInView = Object.keys(viewDict).length;
+            let prev = currentActivePin - 1;
+            if (prev < 1) prev = totalPinsInView;
+            openModal(prev, currentActiveView);
         }
 
-        // Keyboard shortcuts
+        // Keyboard navigation
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeModal();
