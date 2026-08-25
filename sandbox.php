@@ -1,6 +1,28 @@
 <?php
 require_once __DIR__ . '/config.php';
 checkAuth();
+
+$userRole = strtolower(trim($_SESSION['role'] ?? ''));
+$userName = strtolower(trim($_SESSION['username'] ?? ''));
+$isSysAdmin = in_array($userRole, ['system_admin', 'sys_admin']);
+$isAllanUser = ($userName === 'allan');
+
+if (!$isSysAdmin && !$isAllanUser) {
+    header('Location: scan.php');
+    exit;
+}
+
+$targetPage = trim($_GET['page'] ?? 'scan.php');
+$allowedPages = [
+    'scan.php' => 'Scanner App (scan.php)',
+    'index.php' => 'Admin Dashboard (index.php)',
+    'mobile_ce.php' => 'Pocket PC CE (mobile_ce.php)',
+    'login.php' => 'Login Screen (login.php)'
+];
+
+if (!array_key_exists($targetPage, $allowedPages)) {
+    $targetPage = 'scan.php';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,6 +41,7 @@ checkAuth();
             --bar-bg: rgba(22, 27, 34, 0.95);
             --border-color: rgba(240, 246, 252, 0.12);
             --accent-color: #58a6ff;
+            --purple-color: #a855f7;
             --success-color: #2ea44f;
             --text-white: #ffffff;
             --text-muted: #8b949e;
@@ -65,9 +88,9 @@ checkAuth();
         }
 
         .badge-live {
-            background: rgba(46, 164, 79, 0.2);
-            color: #3fb950;
-            border: 1px solid rgba(46, 164, 79, 0.4);
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.4);
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -94,6 +117,7 @@ checkAuth();
             display: flex;
             align-items: center;
             gap: 6px;
+            text-decoration: none;
             transition: all 0.2s ease;
         }
 
@@ -136,6 +160,23 @@ checkAuth();
             padding: 0 6px;
             font-size: 0.75rem;
             text-align: center;
+        }
+
+        .page-select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #c084fc;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .page-select option {
+            background: #161b22;
+            color: #c9d1d9;
         }
 
         .scale-control {
@@ -197,6 +238,7 @@ checkAuth();
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             font-size: 0.75rem;
             color: var(--text-muted);
+            gap: 12px;
         }
 
         .frame-dots {
@@ -231,18 +273,32 @@ checkAuth();
             <span class="badge-live">Live Simulator</span>
         </div>
 
+        <!-- Target Page Switcher -->
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <label for="page-selector" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Target View:</label>
+            <select id="page-selector" class="page-select" onchange="changeSimulatedPage(this.value)">
+                <option value="scan.php" <?= $targetPage === 'scan.php' ? 'selected' : '' ?>>📱 Scanner App (scan.php)</option>
+                <option value="index.php" <?= $targetPage === 'index.php' ? 'selected' : '' ?>>🎛️ Admin Dashboard (index.php)</option>
+                <option value="mobile_ce.php" <?= $targetPage === 'mobile_ce.php' ? 'selected' : '' ?>>📟 Pocket PC CE (mobile_ce.php)</option>
+                <option value="login.php" <?= $targetPage === 'login.php' ? 'selected' : '' ?>>🔐 Login Page (login.php)</option>
+            </select>
+        </div>
+
         <!-- One-Click Device Presets -->
         <div class="presets-group">
-            <button class="preset-btn" onclick="setPreset(375, 812, 'Mobile Portrait', this)">
+            <button class="preset-btn <?= ($targetPage === 'mobile_ce.php') ? 'active' : '' ?>" onclick="setPreset(240, 320, 'Pocket PC CE (240x320)', this)">
+                📟 CE 240x320
+            </button>
+            <button class="preset-btn" onclick="setPreset(375, 812, 'Mobile Portrait (375x812)', this)">
                 📱 Mobile (375x812)
             </button>
-            <button class="preset-btn" onclick="setPreset(812, 375, 'Mobile Landscape', this)">
+            <button class="preset-btn" onclick="setPreset(812, 375, 'Mobile Landscape (812x375)', this)">
                 🔄 Mobile Land. (812x375)
             </button>
-            <button class="preset-btn" onclick="setPreset(768, 1024, 'Tablet / iPad', this)">
+            <button class="preset-btn" onclick="setPreset(768, 1024, 'Tablet / iPad (768x1024)', this)">
                 📱 Tablet (768x1024)
             </button>
-            <button class="preset-btn active" onclick="setPreset(1366, 768, 'Laptop HD (1366x768)', this)">
+            <button class="preset-btn <?= ($targetPage !== 'mobile_ce.php') ? 'active' : '' ?>" onclick="setPreset(1366, 768, 'Laptop HD (1366x768)', this)">
                 💻 Laptop 768p
             </button>
             <button class="preset-btn" onclick="setPreset(1920, 1080, 'Desktop Full HD (1920x1080)', this)">
@@ -257,9 +313,9 @@ checkAuth();
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
             <div class="custom-controls">
                 <label>W:</label>
-                <input type="number" id="input-w" value="1366" min="320" max="3840" onchange="applyCustomSize()">
+                <input type="number" id="input-w" value="<?= ($targetPage === 'mobile_ce.php') ? '240' : '1366' ?>" min="240" max="3840" onchange="applyCustomSize()">
                 <label>H:</label>
-                <input type="number" id="input-h" value="768" min="320" max="2160" onchange="applyCustomSize()">
+                <input type="number" id="input-h" value="<?= ($targetPage === 'mobile_ce.php') ? '320' : '768' ?>" min="240" max="2160" onchange="applyCustomSize()">
             </div>
 
             <div class="scale-control">
@@ -268,13 +324,13 @@ checkAuth();
                 <span id="zoom-label" style="font-weight: 700; color: white;">100%</span>
             </div>
 
-            <button class="preset-btn" onclick="rotateOrientation()" style="padding: 6px 10px;">
+            <button class="preset-btn" onclick="rotateOrientation()" style="padding: 6px 10px;" title="Rotate Orientation">
                 🔄 Rotate
             </button>
 
-            <span id="dim-display" class="dim-badge">1366 × 768 px</span>
+            <span id="dim-display" class="dim-badge"><?= ($targetPage === 'mobile_ce.php') ? '240 × 320 px' : '1366 × 768 px' ?></span>
 
-            <a href="scan.php" class="preset-btn" style="background: rgba(46,164,79,0.2); border-color: #2ea44f; color: #3fb950;">
+            <a id="exit-btn" href="<?= htmlspecialchars($targetPage) ?>" class="preset-btn" style="background: rgba(46,164,79,0.2); border-color: #2ea44f; color: #3fb950; font-weight: 700;">
                 ⬅️ Exit Sandbox
             </a>
         </div>
@@ -282,23 +338,26 @@ checkAuth();
 
     <!-- Live Stage Viewport -->
     <div class="sandbox-stage">
-        <div id="frame-wrapper" class="frame-wrapper" style="width: 1366px; height: 768px;">
+        <div id="frame-wrapper" class="frame-wrapper" style="width: <?= ($targetPage === 'mobile_ce.php') ? '240px' : '1366px' ?>; height: <?= ($targetPage === 'mobile_ce.php') ? '320px' : '768px' ?>;">
             <div class="frame-header">
                 <div class="frame-dots">
                     <span class="dot dot-red"></span>
                     <span class="dot dot-yellow"></span>
                     <span class="dot dot-green"></span>
                 </div>
-                <div id="frame-title" style="font-weight: 600;">Laptop HD (1366x768)</div>
-                <div style="font-family: monospace;">http://localhost/OWIPI/scan.php</div>
+                <div id="frame-title" style="font-weight: 600;"><?= ($targetPage === 'mobile_ce.php') ? 'Pocket PC CE (240x320)' : 'Laptop HD (1366x768)' ?></div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="frame-url" style="font-family: monospace; color: #58a6ff; font-size: 0.7rem;"><?= htmlspecialchars($targetPage) ?></span>
+                    <button onclick="reloadPreviewFrame()" title="Reload View" style="background: none; border: none; color: #8b949e; cursor: pointer; font-size: 0.8rem;">🔄</button>
+                </div>
             </div>
-            <iframe id="preview-iframe" src="scan.php"></iframe>
+            <iframe id="preview-iframe" src="<?= htmlspecialchars($targetPage) ?>"></iframe>
         </div>
     </div>
 
     <script>
-        let currentW = 1366;
-        let currentH = 768;
+        let currentW = <?= ($targetPage === 'mobile_ce.php') ? '240' : '1366' ?>;
+        let currentH = <?= ($targetPage === 'mobile_ce.php') ? '320' : '768' ?>;
         let currentScale = 1;
 
         function setPreset(w, h, label, btnElement) {
@@ -355,12 +414,35 @@ checkAuth();
             document.getElementById('dim-display').innerText = `${currentW} × ${currentH} px`;
         }
 
+        function changeSimulatedPage(newPage) {
+            const iframe = document.getElementById('preview-iframe');
+            const urlDisplay = document.getElementById('frame-url');
+            iframe.src = newPage;
+            if (urlDisplay) {
+                urlDisplay.innerText = newPage;
+            }
+            const exitBtn = document.getElementById('exit-btn');
+            if (exitBtn) {
+                exitBtn.href = newPage;
+            }
+
+            // Adjust default resolution if CE is chosen
+            if (newPage === 'mobile_ce.php') {
+                setPreset(240, 320, 'Pocket PC CE (240x320)');
+            }
+        }
+
+        function reloadPreviewFrame() {
+            const iframe = document.getElementById('preview-iframe');
+            iframe.src = iframe.src;
+        }
+
         // Auto-fit initial scale if screen is smaller than default 1366px
         window.addEventListener('load', () => {
             const stage = document.querySelector('.sandbox-stage');
             const availableW = stage.clientWidth - 40;
-            if (availableW < 1366) {
-                const autoScale = Math.max(0.4, (availableW / 1366).toFixed(2));
+            if (availableW < currentW) {
+                const autoScale = Math.max(0.4, (availableW / currentW).toFixed(2));
                 document.getElementById('zoom-slider').value = autoScale;
                 applyZoom(autoScale);
             }

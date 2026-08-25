@@ -424,6 +424,24 @@ function findCatalogProduct($barcode, $storeCode = null)
                 return $rows;
             }
         }
+
+        // 3. Fallback: Search by description terms if no barcode/SKU/Aux1 matches
+        $words = preg_split('/\s+/', $barcodeClean);
+        $words = array_filter(array_map('trim', $words));
+        if (!empty($words)) {
+            $likeClauses = [];
+            $params = [];
+            foreach ($words as $word) {
+                $likeClauses[] = "LOWER(Descr) LIKE ?";
+                $params[] = "%" . strtolower($word) . "%";
+            }
+            $sqlDescr = "SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, {$qtyCol} FROM `{$tableName}` 
+                         WHERE " . implode(" AND ", $likeClauses) . " LIMIT 1";
+            $rows = $db->query($sqlDescr, $params);
+            if (!empty($rows)) {
+                return $rows;
+            }
+        }
     }
 
     return [];

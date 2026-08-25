@@ -15,7 +15,7 @@ $diagnostics = OWI_DB::getDiagnostics();
 $localIP = getServerLocalIP();
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
 $systemHost = $_SERVER['HTTP_HOST'] ?? $localIP;
-$isCloudHost = (strpos($_SERVER['HTTP_HOST'] ?? '', 'officewarehouse.com.ph') !== false) || (strpos($_SERVER['SERVER_NAME'] ?? '', 'officewarehouse.com.ph') !== false);
+$isCloudHost = isCloudServer();
 
 // Override loopback addresses with active network IP so cellphones can connect
 $hostParts = explode(':', $systemHost);
@@ -918,24 +918,97 @@ if ($driverLoaded && $dbStatus === 'connected') {
             vertical-align: middle;
         }
 
+        #view-products .card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            padding: 1.5rem;
+        }
+
         #view-products .table-container {
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: auto;
             border: 1px solid var(--card-border);
-            border-radius: 8px;
-            padding-right: 8px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        #view-products #products-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        #view-products #products-table th {
+            position: sticky;
+            top: 0;
+            background: #111827;
+            z-index: 2;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        #view-products #products-table td {
+            padding: 0.7rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.85rem;
+        }
+
+        #view-products #products-table tr:hover td {
+            background: rgba(59, 130, 246, 0.08);
         }
 
         .products-grid {
             display: grid;
-            grid-template-columns: 1.3fr 1fr 0.9fr;
+            grid-template-columns: 1.6fr 1fr;
             gap: 1.5rem;
             margin-bottom: 1rem;
-            height: calc(100vh - 220px);
-            min-height: 350px;
+            height: calc(100vh - 210px);
+            min-height: 500px;
+        }
+
+        .catalog-tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 1.25rem;
+        }
+
+        .catalog-tab-btn {
+            flex: 1;
+            padding: 9px 12px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 7px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .catalog-tab-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .catalog-tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-color), #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
         }
 
         @media (max-width: 1024px) {
@@ -1093,13 +1166,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         for now ✕</a>
                 </div>
             </form>
-            <div
-                style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem; text-align: center;">
-                <a href="javascript:void(0)" onclick="openCloudStoreDownloader()"
-                    style="font-size:0.85rem; color:var(--success-color); text-decoration:none; font-weight:700; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;">
-                    ☁️ Download Store from Cloud
-                </a>
-            </div>
+            <?php if (!$isCloudHost): ?>
+                <div
+                    style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem; text-align: center;">
+                    <a href="javascript:void(0)" onclick="openCloudStoreDownloader()"
+                        style="font-size:0.85rem; color:var(--success-color); text-decoration:none; font-weight:700; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer;">
+                        ☁️ Download Store from Cloud
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -1688,6 +1763,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         Cloud Backup Logs
                     </div>
                 <?php endif; ?>
+                <?php if ($isSysAdmin || (strtolower(trim($_SESSION['username'] ?? '')) === 'allan')): ?>
+                    <a class="nav-item" href="sandbox.php?page=index.php" style="color: #c084fc;">
+                        <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:currentColor;">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z" />
+                        </svg>
+                        Resolution Sandbox
+                    </a>
+                <?php endif; ?>
                 <a class="nav-item" href="javascript:void(0);" onclick="handleOpenPhoneScanner(event)">
                     <svg viewBox="0 0 24 24">
                         <path
@@ -1863,6 +1946,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             ⚙️ Modify Configuration
                         </button>
 
+                        <a href="sandbox.php?page=index.php" class="btn btn-secondary btn-sm"
+                            style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 8px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                            🧪 Resolution Sandbox
+                        </a>
+
                         <?php if ($driverLoaded): ?>
                             <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
                                 style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 1px solid #059669; color: #ffffff; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;">
@@ -1890,12 +1978,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <div class="header-desc">Real-time locator completion metrics across all your active store
                         databases.</div>
                 </div>
-                <div>
-                    <button onclick="downloadEntireStoreFromCloud()" class="btn"
-                        style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
-                        ☁️ Download Store Session from Cloud
-                    </button>
-                </div>
+                <?php if (!$isCloudHost): ?>
+                    <div>
+                        <button onclick="downloadEntireStoreFromCloud()" class="btn"
+                            style="width: auto; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; cursor: pointer; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                            ☁️ Download Store Session from Cloud
+                        </button>
+                    </div>
+                <?php endif; ?>
             </header>
 
             <!-- Pending Cloud Sync Approvals Card for Admins -->
@@ -1946,10 +2036,12 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         style="width: auto; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 600;">
                         Create / Select Store Session
                     </button>
-                    <button onclick="openCloudStoreDownloader()" class="btn btn-secondary"
-                        style="width: auto; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 600; margin-left: 10px; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.1);">
-                        ☁️ Download Store from Cloud
-                    </button>
+                    <?php if (!$isCloudHost): ?>
+                        <button onclick="openCloudStoreDownloader()" class="btn btn-secondary"
+                            style="width: auto; padding: 0.65rem 1.25rem; font-size: 0.85rem; font-weight: 600; margin-left: 10px; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.1);">
+                            ☁️ Download Store from Cloud
+                        </button>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div
@@ -2194,7 +2286,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
         <!-- View: Products Catalog -->
         <div id="view-products" class="view-content">
-            <header>
+            <header style="margin-bottom: 1.25rem;">
                 <div>
                     <h1>Items Masterfile</h1>
                     <div class="header-desc">Register barcodes with names so scans display correct product details</div>
@@ -2202,29 +2294,37 @@ if ($driverLoaded && $dbStatus === 'connected') {
             </header>
 
             <div class="products-grid">
-                <!-- Product List (Column 1) -->
+                <!-- Product List (Left Column) -->
                 <div class="card" style="margin: 0;">
                     <div class="card-header"
-                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.5rem; padding-bottom: 0.75rem;">
                         <h2 class="card-title"
-                            style="margin-bottom:0; display: flex; align-items: center; gap: 0.5rem;">
-                            Current Registered Products (Items)
+                            style="margin-bottom:0; display: flex; align-items: center; gap: 0.5rem; font-size: 1.15rem;">
+                            <span>📦 Registered Products</span>
                             <span id="catalog-count-badge" class="badge"
-                                style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 4px 10px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">0
-                                Items</span>
+                                style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.8rem; padding: 4px 10px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">0 Items</span>
                         </h2>
-                        <input type="text" id="catalog-search" class="form-control" placeholder="Search catalog..."
-                            oninput="filterCatalog()"
-                            style="max-width: 140px; height: 36px; font-size: 0.85rem; padding: 0 0.75rem; margin:0;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="text" id="catalog-search" class="form-control" placeholder="Search by UPC, Name, SKU..."
+                                    oninput="filterCatalog()"
+                                    style="width: 240px; height: 38px; font-size: 0.85rem; padding: 0 28px 0 0.85rem; margin:0; border-radius: 8px;">
+                                <button type="button" onclick="document.getElementById('catalog-search').value=''; filterCatalog();" 
+                                    style="position: absolute; right: 8px; background: none; border: none; color: #8b949e; cursor: pointer; font-size: 0.85rem; padding: 2px 4px;" title="Clear search">✕</button>
+                            </div>
+                            <button type="button" onclick="loadProducts()" class="btn btn-secondary btn-sm" style="height: 38px; padding: 0 10px; border-radius: 8px; font-size: 0.8rem;" title="Refresh products">
+                                🔄
+                            </button>
+                        </div>
                     </div>
                     <div class="table-container">
-                        <table id="products-table" style="width: 100%;">
+                        <table id="products-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 25%;">UPC</th>
-                                    <th style="width: 40%;">Description (Descr)</th>
-                                    <th style="width: 15%;">SKU</th>
-                                    <th style="width: 20%;">Type</th>
+                                    <th style="width: 22%;">UPC</th>
+                                    <th style="width: 44%;">Description (Descr)</th>
+                                    <th style="width: 16%;">SKU</th>
+                                    <th style="width: 18%;">Type</th>
                                 </tr>
                             </thead>
                             <tbody id="products-tbody">
@@ -2236,83 +2336,95 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     </div>
                 </div>
 
-                <!-- Add Product (Column 2) -->
+                <!-- Action Panel (Right Column) -->
                 <div class="card" style="margin: 0;">
-                    <div class="card-header">
-                        <h2 class="card-title">Add / Update Product Catalog</h2>
-                    </div>
-                    <div id="catalog-form-banner"
-                        style="display: none; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.8rem; justify-content: space-between; align-items: center; box-sizing: border-box; flex-shrink: 0;">
-                        <span style="font-weight: 500;">✏️ Editing: <span id="catalog-banner-upc"
-                                style="color:var(--accent-color); font-weight:700;"></span></span>
-                        <a href="javascript:void(0)" onclick="resetProductForm()"
-                            style="color:#ef4444; font-weight:600; text-decoration:none; font-size:0.75rem;">Cancel</a>
-                    </div>
-                    <form id="product-form" onsubmit="saveProduct(event)">
-                        <div class="form-group">
-                            <label for="prod_barcode">UPC (Barcode)</label>
-                            <input type="text" id="prod_barcode" class="form-control" placeholder="e.g. 0000000022121"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="prod_name">Product Description (Descr)</label>
-                            <input type="text" id="prod_name" class="form-control"
-                                placeholder="e.g. TRNSCND USB 2.0 JF310 16GB" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="prod_sku">SKU Code</label>
-                            <input type="text" id="prod_sku" class="form-control" placeholder="e.g. 022121">
-                        </div>
-                        <div class="form-group">
-                            <label for="prod_type">Item Type</label>
-                            <input type="text" id="prod_type" class="form-control" placeholder="e.g. ACCESSORIES"
-                                value="GENERAL">
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.75rem;">
-                            <button type="submit" id="prod-submit-btn" class="btn" style="width: 100%; margin: 0;">Add
-                                Item</button>
-                            <button type="button" class="btn btn-secondary" onclick="resetProductForm()"
-                                style="width: 100%; margin: 0;">Clear Form</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Upload Catalog Masterfile (Column 3) -->
-                <div class="card" style="margin: 0;">
-                    <div class="card-header">
-                        <h2 class="card-title">Upload Store Masterfile</h2>
-                    </div>
-                    <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1rem; line-height:1.5;">
-                        Import products in bulk. Supports <strong>ITEMS.txt</strong> (CSV) or tab-separated
-                        <strong>MASTERFILE...txt</strong> files.
-                    </div>
-                    <form id="import-form" onsubmit="uploadMasterfile(event)">
-                        <div class="form-group" style="margin-bottom: 1rem;">
-                            <label for="masterfile_target_store">Target Masterfile Database</label>
-                            <select id="masterfile_target_store" class="form-control" style="font-size: 0.85rem;">
-                                <option value="">Global Master Catalog (Default items table)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 1rem;">
-                            <label for="masterfile_input">Select CSV / TSV File</label>
-                            <input type="file" id="masterfile_input" class="form-control" accept=".txt,.csv,.tsv"
-                                required style="height: 42px; font-size: 0.85rem; padding: 0.4rem 0.75rem;">
-                        </div>
-                        <button type="submit" id="upload-btn" class="btn"
-                            style="width:100%; margin-top: 0.5rem; background:linear-gradient(135deg, var(--accent-color), #2563eb);">Upload
-                            & Import</button>
-                    </form>
-                    <div
-                        style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
-                        <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
-                            Or fetch the latest catalog directly from your cloud server database.
-                        </div>
-                        <button type="button" onclick="syncMasterfileFromCloud()" id="btn-sync-master-cloud"
-                            class="btn btn-secondary"
-                            style="width:100%; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); font-weight: 600; cursor: pointer;">
-                            ☁️ Sync Masterfile from Cloud
+                    <!-- Tab Switcher -->
+                    <div class="catalog-tabs">
+                        <button type="button" id="tab-btn-single" class="catalog-tab-btn active" onclick="switchCatalogTab('single', this)">
+                            ✏️ Add / Edit Item
                         </button>
+                        <button type="button" id="tab-btn-bulk" class="catalog-tab-btn" onclick="switchCatalogTab('bulk', this)">
+                            📁 Bulk Import & Sync
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: Add / Update Single Product -->
+                    <div id="tab-pane-single" style="display: flex; flex-direction: column; height: 100%; overflow-y: auto;">
+                        <div id="catalog-form-banner"
+                            style="display: none; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 0.6rem 0.85rem; margin-bottom: 1rem; font-size: 0.85rem; justify-content: space-between; align-items: center; box-sizing: border-box; flex-shrink: 0;">
+                            <span style="font-weight: 500;">✏️ Editing: <span id="catalog-banner-upc"
+                                    style="color:var(--accent-color); font-weight:700;"></span></span>
+                            <a href="javascript:void(0)" onclick="resetProductForm()"
+                                style="color:#ef4444; font-weight:600; text-decoration:none; font-size:0.75rem;">✕ Cancel Edit</a>
+                        </div>
+                        <form id="product-form" onsubmit="saveProduct(event)">
+                            <div class="form-group" style="margin-bottom: 0.9rem;">
+                                <label for="prod_barcode" style="font-size: 0.8rem; font-weight: 600;">UPC (Barcode)</label>
+                                <input type="text" id="prod_barcode" class="form-control" placeholder="e.g. 0000000022121"
+                                    required style="font-family: monospace; font-size: 0.9rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0.9rem;">
+                                <label for="prod_name" style="font-size: 0.8rem; font-weight: 600;">Product Description (Descr)</label>
+                                <input type="text" id="prod_name" class="form-control"
+                                    placeholder="e.g. TRNSCND USB 2.0 JF310 16GB" required style="font-size: 0.9rem;">
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.9rem;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="prod_sku" style="font-size: 0.8rem; font-weight: 600;">SKU Code</label>
+                                    <input type="text" id="prod_sku" class="form-control" placeholder="e.g. 022121" style="font-size: 0.9rem;">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label for="prod_type" style="font-size: 0.8rem; font-weight: 600;">Item Type</label>
+                                    <input type="text" id="prod_type" class="form-control" placeholder="e.g. GENERAL"
+                                        value="GENERAL" style="font-size: 0.9rem;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 0.75rem; margin-top: 1.25rem;">
+                                <button type="submit" id="prod-submit-btn" class="btn" style="width: 100%; margin: 0; padding: 0.75rem 1rem;">
+                                    Add Item
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetProductForm()"
+                                    style="width: 100%; margin: 0; padding: 0.75rem 1rem;">
+                                    Clear Form
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab 2: Bulk Masterfile Upload & Sync -->
+                    <div id="tab-pane-bulk" style="display: none; flex-direction: column; height: 100%; overflow-y: auto;">
+                        <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.15rem; line-height:1.5;">
+                            Import catalog in bulk. Supports <strong>ITEMS.txt</strong> (CSV) or tab-separated <strong>MASTERFILE...txt</strong> files.
+                        </div>
+                        <form id="import-form" onsubmit="uploadMasterfile(event)">
+                            <div class="form-group" style="margin-bottom: 1.15rem;">
+                                <label for="masterfile_target_store" style="font-size: 0.8rem; font-weight: 600;">Target Masterfile Database</label>
+                                <select id="masterfile_target_store" class="form-control" style="font-size: 0.85rem; width: 100%;">
+                                    <option value="">Global Master Catalog (Default items table)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 1.15rem;">
+                                <label for="masterfile_input" style="font-size: 0.8rem; font-weight: 600;">Select CSV / TSV File</label>
+                                <input type="file" id="masterfile_input" class="form-control" accept=".txt,.csv,.tsv"
+                                    required style="height: 44px; font-size: 0.85rem; padding: 0.45rem 0.75rem; width: 100%;">
+                            </div>
+                            <button type="submit" id="upload-btn" class="btn"
+                                style="width:100%; margin-top: 0.5rem; background:linear-gradient(135deg, var(--accent-color), #2563eb); padding: 0.75rem 1rem;">
+                                📤 Upload & Import
+                            </button>
+                        </form>
+                        <div
+                            style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
+                            <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+                                Or fetch the latest catalog directly from your cloud server database.
+                            </div>
+                            <button type="button" onclick="syncMasterfileFromCloud()" id="btn-sync-master-cloud"
+                                class="btn btn-secondary"
+                                style="width:100%; border: 1px solid var(--success-color); color: var(--success-color); background: rgba(16, 185, 129, 0.08); font-weight: 600; cursor: pointer; padding: 0.75rem 1rem;">
+                                ☁️ Sync Masterfile from Cloud
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3573,8 +3685,31 @@ if ($driverLoaded && $dbStatus === 'connected') {
             renderCatalog(filtered);
         }
 
+        // Tab switcher for Masterfile action panel
+        function switchCatalogTab(tabName, btnElement) {
+            document.querySelectorAll('.catalog-tab-btn').forEach(b => b.classList.remove('active'));
+            if (btnElement) {
+                btnElement.classList.add('active');
+            } else {
+                const targetBtn = document.getElementById(`tab-btn-${tabName}`);
+                if (targetBtn) targetBtn.classList.add('active');
+            }
+
+            const singlePane = document.getElementById('tab-pane-single');
+            const bulkPane = document.getElementById('tab-pane-bulk');
+
+            if (tabName === 'single') {
+                if (singlePane) singlePane.style.display = 'flex';
+                if (bulkPane) bulkPane.style.display = 'none';
+            } else {
+                if (singlePane) singlePane.style.display = 'none';
+                if (bulkPane) bulkPane.style.display = 'flex';
+            }
+        }
+
         // Prefill form for editing
         function populateProductForm(barcode, name, sku, type) {
+            switchCatalogTab('single', document.getElementById('tab-btn-single'));
             document.getElementById('prod_barcode').value = barcode;
             document.getElementById('prod_name').value = name;
             document.getElementById('prod_sku').value = sku;

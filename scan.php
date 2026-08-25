@@ -1179,13 +1179,18 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <?php
             $loggedInUsername = strtolower(trim($_SESSION['username'] ?? ''));
+            $currentUserRole = strtolower(trim($_SESSION['role'] ?? ''));
+            $isSysAdmin = in_array($currentUserRole, ['system_admin', 'sys_admin']);
             $isAllanUser = ($loggedInUsername === 'allan');
-            if (!$isMobileScanner && $isAllanUser):
+            
+            if (!$isMobileScanner && ($isSysAdmin || $isAllanUser)):
                 ?>
-                <a href="sandbox.php" class="btn"
+                <a href="sandbox.php?page=scan.php" class="btn"
                     style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7; color: #c084fc; font-weight:600; text-decoration: none;">
                     🧪 Resolution Sandbox
                 </a>
+            <?php endif; ?>
+            <?php if (!$isMobileScanner && ($isSysAdmin || $isAllanUser)): ?>
                 <button id="switch-view-btn" class="btn" onclick="toggleHostMobileView()"
                     style="padding: 4px 10px; font-size:0.75rem; width:auto; border-radius:6px; box-shadow:none; cursor:pointer; display: flex; align-items: center; gap: 4px; background: rgba(139, 148, 158, 0.15); border: 1px solid rgba(255,255,255,0.2); color: #c9d1d9; font-weight:600;">
                     🖥️ Host Console
@@ -1358,13 +1363,13 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
 
         <!-- Manual input fallback -->
         <div class="card">
-            <div class="card-title">Manual Barcode Input</div>
+            <div class="card-title">Manual Barcode / Description Input</div>
             <form onsubmit="handleManualSubmit(event)" style="display:flex; gap:8px;">
-                <input type="text" id="manual-barcode" class="form-control" placeholder="Type Barcode..." required
-                    style="flex-grow:1;" inputmode="numeric" pattern="[0-9]*"
-                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <input type="text" id="manual-barcode" class="form-control" placeholder="Type Barcode or Description..." required
+                    style="flex-grow:1;" autocomplete="off" oninput="searchManualBarcodeItem()">
                 <button type="submit" class="btn btn-secondary" style="width:70px; height:38px;">Send</button>
             </form>
+            <div id="manual-barcode-search-results" style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: #161b22; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 6px; padding: 6px;"></div>
         </div>
 
         <!-- Mobile scan log history -->
@@ -1782,10 +1787,9 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
 
             <div class="form-group" style="margin-bottom: 12px;">
                 <label
-                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU
-                    / SKU or UPC</label>
+                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU, SKU, UPC or Description</label>
                 <input type="text" id="add-manual-scan-barcode" class="form-control"
-                    placeholder="Enter ALU, SKU or UPC..." required
+                    placeholder="Enter ALU, SKU, UPC or Description..." required
                     style="width: 100%; height: 36px; box-sizing: border-box;"
                     oninput="updateAddManualScanProductInfo(this.value.trim())"
                     onkeydown="if(event.key === 'Enter'){ event.preventDefault(); const q = document.getElementById('add-manual-scan-qty'); if(q){ q.focus(); q.select(); } }">
@@ -1795,7 +1799,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 style="background:rgba(255,255,255,0.03); border-radius:6px; padding:10px; margin-bottom:12px; font-size:0.8rem; border:1px dashed var(--card-border);">
                 <strong style="color:var(--text-white); display:block; margin-bottom:2px;"
                     id="add-manual-scan-prod-name">Item Preview</strong>
-                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU or UPC to check
+                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU, UPC or Description to check
                     catalog...</span>
             </div>
 
@@ -2908,7 +2912,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
 
         // Handle manual typed submit
         function handleManualSubmit(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
 
             const operatorNameInput = document.getElementById('scanned_by');
             const operatorName = operatorNameInput.value.trim();
@@ -2933,6 +2937,13 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
             const typedVal = input.value.trim();
             if (typedVal === '') return;
 
+            // Clear search results dropdown
+            const resultsContainer = document.getElementById('manual-barcode-search-results');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'none';
+                resultsContainer.innerHTML = '';
+            }
+
             playBeep();
             vibrate();
 
@@ -2946,6 +2957,76 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 }
             });
             input.value = '';
+        }
+
+        let manualBarcodeSearchTimeout = null;
+        function searchManualBarcodeItem() {
+            const input = document.getElementById('manual-barcode');
+            const resultsContainer = document.getElementById('manual-barcode-search-results');
+            if (!input || !resultsContainer) return;
+
+            const q = input.value.trim();
+            if (q === '') {
+                resultsContainer.style.display = 'none';
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            clearTimeout(manualBarcodeSearchTimeout);
+            manualBarcodeSearchTimeout = setTimeout(() => {
+                fetch(`api.php?action=search_masterfile&q=${encodeURIComponent(q)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (input.value.trim() !== q) return;
+
+                        if (data.status === 'success' && data.results) {
+                            if (data.results.length === 0) {
+                                resultsContainer.style.display = 'block';
+                                resultsContainer.innerHTML = `
+                                    <div style="text-align: center; padding: 8px; color: var(--text-muted); font-size: 0.75rem;">
+                                        No items matching "${q}" found.
+                                    </div>
+                                `;
+                                return;
+                            }
+
+                            let html = '';
+                            data.results.forEach(item => {
+                                const resolvedCode = item.barcode || item.sku || '';
+                                html += `
+                                    <div class="search-result-item" onclick="selectManualSearchResult('${resolvedCode}')" 
+                                         style="cursor: pointer; background: rgba(255,255,255,0.03); border: 1px solid rgba(88, 166, 255, 0.2); border-radius: 6px; padding: 8px; margin-bottom: 6px; transition: background 0.2s; text-align: left;">
+                                        <div style="color: var(--text-white); font-weight: bold; font-size: 0.8rem;">${item.description}</div>
+                                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; display: flex; gap: 8px;">
+                                            <span>UPC: <strong style="color: #58a6ff;">${item.barcode || 'N/A'}</strong></span>
+                                            <span>SKU: <strong style="color: #3fb950;">${item.sku || 'N/A'}</strong></span>
+                                            <span>Qty: <strong style="color: #2ea44f;">${item.master_qty}</strong></span>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+
+                            resultsContainer.style.display = 'block';
+                            resultsContainer.innerHTML = html;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error searching masterfile:", err);
+                    });
+            }, 300);
+        }
+
+        function selectManualSearchResult(barcode) {
+            const input = document.getElementById('manual-barcode');
+            if (input) {
+                input.value = barcode;
+            }
+            const resultsContainer = document.getElementById('manual-barcode-search-results');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'none';
+                resultsContainer.innerHTML = '';
+            }
+            handleManualSubmit(null);
         }
 
         // Fetch and display active mobile scanner locator logs from MySQL server database
@@ -4619,7 +4700,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
             document.getElementById('add-manual-scan-barcode').value = '';
             document.getElementById('add-manual-scan-qty').value = '1';
             document.getElementById('add-manual-scan-prod-name').innerText = "Item Preview";
-            document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU or UPC to check catalog...";
+            document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU, UPC or Description to check catalog...";
 
             document.getElementById('host-add-manual-scan-modal-overlay').classList.add('active');
             setTimeout(() => {
@@ -4637,7 +4718,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
             clearTimeout(addManualScanTimer);
             if (!barcode) {
                 document.getElementById('add-manual-scan-prod-name').innerText = "Item Preview";
-                document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU or UPC to check catalog...";
+                document.getElementById('add-manual-scan-prod-desc').innerText = "Enter ALU, SKU, UPC or Description to check catalog...";
                 return;
             }
 
@@ -4676,7 +4757,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 return;
             }
             if (barcodeInput === '') {
-                alert("Please enter an ALU, SKU or UPC!");
+                alert("Please enter an ALU, SKU, UPC or Description!");
                 document.getElementById('add-manual-scan-barcode').focus();
                 return;
             }

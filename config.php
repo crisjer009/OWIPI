@@ -157,6 +157,48 @@ function getServerLocalIP() {
     return $ips[0]['ip'];
 }
 
+// Detect whether system is running in Cloud environment
+function isCloudServer() {
+    static $isCloud = null;
+    if ($isCloud !== null) {
+        return $isCloud;
+    }
+
+    $httpHost = strtolower($_SERVER['HTTP_HOST'] ?? '');
+    $serverName = strtolower($_SERVER['SERVER_NAME'] ?? '');
+    $hostOnly = explode(':', $httpHost)[0];
+
+    // Check known cloud domains or keywords
+    if (
+        strpos($hostOnly, 'officewarehouse.com.ph') !== false ||
+        strpos($serverName, 'officewarehouse.com.ph') !== false ||
+        strpos($hostOnly, 'pginv') !== false ||
+        strpos($serverName, 'pginv') !== false
+    ) {
+        $isCloud = true;
+        return true;
+    }
+
+    // Check config
+    $config = loadConfig();
+    if (!empty($config['is_cloud_server']) || !empty($config['is_cloud'])) {
+        $isCloud = true;
+        return true;
+    }
+
+    // Check against cloud_sync_url host
+    if (!empty($config['cloud_sync_url'])) {
+        $cloudHost = strtolower(parse_url($config['cloud_sync_url'], PHP_URL_HOST) ?? '');
+        if (!empty($cloudHost) && ($hostOnly === $cloudHost || $serverName === $cloudHost)) {
+            $isCloud = true;
+            return true;
+        }
+    }
+
+    $isCloud = false;
+    return false;
+}
+
 // Authentication Check Helpers
 function isMobileDevice() {
     // Authenticated Host Accounts (system_admin or admin) operate in Host Mode unless explicitly requesting mobile view

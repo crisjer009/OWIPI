@@ -248,6 +248,75 @@ if (!empty($store) && !empty($operator) && !empty($locator) && $mode === 'setup'
                                   "&operator=" + encodeURIComponent(config_op) + 
                                   "&locator=" + encodeURIComponent(config_loc);
         }
+
+        var barcodeSearchTimeout = null;
+        function searchBarcodeItem() {
+            var input = document.getElementById("barcode");
+            var resultsContainer = document.getElementById("barcode-search-results");
+            if (!input || !resultsContainer) return;
+
+            var q = input.value.trim();
+            if (q === "") {
+                resultsContainer.style.display = "none";
+                resultsContainer.innerHTML = "";
+                return;
+            }
+
+            clearTimeout(barcodeSearchTimeout);
+            barcodeSearchTimeout = setTimeout(function() {
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", "api.php?action=search_masterfile&q=" + encodeURIComponent(q), true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        // Ensure input hasn't changed
+                        if (input.value.trim() !== q) return;
+
+                        var res = JSON.parse(xhr.responseText);
+                        if (res.status === "success" && res.results) {
+                            if (res.results.length === 0) {
+                                resultsContainer.style.display = "block";
+                                resultsContainer.innerHTML = '<div style="text-align:center; padding:8px; color:#8b949e; font-size:11px;">No items found.</div>';
+                                return;
+                            }
+
+                            var html = "";
+                            for (var i = 0; i < res.results.length; i++) {
+                                var item = res.results[i];
+                                var resolvedCode = item.barcode || item.sku || "";
+                                // Escape single quotes in description and code for onclick handler
+                                var descEscaped = item.description.replace(/'/g, "\\'");
+                                var codeEscaped = resolvedCode.replace(/'/g, "\\'");
+
+                                html += '<div onclick="selectBarcodeSearchResult(\'' + codeEscaped + '\')" ' +
+                                        'style="cursor:pointer; background:#161b22; border:1px solid #30363d; padding:6px; margin-bottom:4px; font-size:11px; text-align:left;">' +
+                                        '<div style="color:#ffffff; font-weight:bold;">' + item.description + '</div>' +
+                                        '<div style="color:#8b949e; margin-top:2px;">' +
+                                        'UPC: <span style="color:#58a6ff;">' + (item.barcode || "N/A") + '</span> | ' +
+                                        'SKU: <span style="color:#56f089;">' + (item.sku || "N/A") + '</span>' +
+                                        '</div>' +
+                                        '</div>';
+                            }
+                            resultsContainer.style.display = "block";
+                            resultsContainer.innerHTML = html;
+                        }
+                    }
+                };
+                xhr.send();
+            }, 300);
+        }
+
+        function selectBarcodeSearchResult(barcode) {
+            var input = document.getElementById("barcode");
+            if (input) {
+                input.value = barcode;
+            }
+            var resultsContainer = document.getElementById("barcode-search-results");
+            if (resultsContainer) {
+                resultsContainer.style.display = "none";
+                resultsContainer.innerHTML = "";
+            }
+            submitBarcode();
+        }
     </script>
 </head>
 <body>
@@ -303,11 +372,14 @@ if (!empty($store) && !empty($operator) && !empty($locator) && $mode === 'setup'
 
             <div class="card">
                 <div class="form-group" style="margin-bottom: 12px;">
-                    <label>Barcode Scan Target:</label>
+                    <label>Barcode / Description Target:</label>
                     <input type="text" id="barcode" class="form-control" 
+                           placeholder="Type Barcode or Description..."
                            style="height: 32px; font-size: 15px; font-weight: bold; text-align: center;" 
+                           oninput="searchBarcodeItem();"
                            onkeydown="return barcodeKeyDown(event);"
                            autocomplete="off">
+                    <div id="barcode-search-results" style="display: none; margin-top: 8px; max-height: 150px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; padding: 4px;"></div>
                 </div>
                 
                 <table style="width: 100%;">
