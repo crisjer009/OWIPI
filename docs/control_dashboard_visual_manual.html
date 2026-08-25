@@ -197,43 +197,47 @@
             background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981, #f59e0b, #ef4444);
         }
 
-        /* Interactive Hotspot Pin */
+        /* ===================================================
+           ACCURATE HOTSPOT PIN BADGE
+           =================================================== */
+        .pin-anchor {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
         .hotspot-pin {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            top: -12px;
+            right: -12px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #ef4444;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 900;
             cursor: pointer;
             box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
             animation: pulse 2s infinite;
-            z-index: 20;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 25;
+            transition: all 0.2s ease;
             user-select: none;
+            border: 2px solid #090d14;
         }
 
         .hotspot-pin:hover {
             transform: scale(1.3);
             background: #dc2626;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.9);
-        }
-
-        .hotspot-pin.active {
-            background: #3b82f6;
-            box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.4), 0 0 25px #3b82f6;
-            transform: scale(1.35);
-            animation: none;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 1);
         }
 
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
-            70% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
@@ -277,6 +281,13 @@
             align-items: center;
             gap: 12px;
             font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sim-status-pill:hover {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
         }
 
         .sim-actions-grid {
@@ -295,7 +306,13 @@
             align-items: center;
             gap: 6px;
             border: 1px solid transparent;
-            cursor: default;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sim-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
         .sim-btn-config {
@@ -343,6 +360,14 @@
             border-radius: 12px;
             padding: 16px;
             position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sim-store-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         }
 
         .sim-bar-track {
@@ -360,84 +385,119 @@
         }
 
         /* ===================================================
-           ONE-LOOK HIGH IMPACT DETAIL CARD
+           INTERACTIVE MODAL OVERLAY
            =================================================== */
-        .detail-display-card {
-            background: linear-gradient(135deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.95) 100%);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-            position: relative;
-            animation: fadeIn 0.25s ease;
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
         }
 
-        .detail-card-header {
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: linear-gradient(135deg, #111827 0%, #0f172a 100%);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            border-radius: 20px;
+            max-width: 860px;
+            width: 100%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(59, 130, 246, 0.2);
+            padding: 28px;
+            position: relative;
+            animation: modalPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 16px;
             margin-bottom: 20px;
         }
 
-        .detail-title-group {
+        .modal-title-group {
             display: flex;
             align-items: center;
             gap: 14px;
         }
 
-        .detail-pin-badge {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
+        .modal-pin-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             background: linear-gradient(135deg, #ef4444, #b91c1c);
             color: white;
             font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 4px 18px rgba(239, 68, 68, 0.5);
         }
 
-        .detail-title-text {
+        .modal-title-text {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.35rem;
+            font-size: 1.45rem;
             font-weight: 800;
             color: #ffffff;
-            letter-spacing: -0.01em;
         }
 
-        .detail-role-pill {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            display: inline-flex;
+        .btn-modal-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        /* 3-Column Visual Grid for Instant Scanning */
-        .detail-3col-grid {
+        .btn-modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #ffffff;
+            transform: rotate(90deg);
+        }
+
+        /* 3-Column Modal Content */
+        .modal-3col-grid {
             display: grid;
             grid-template-columns: 1.2fr 1.3fr 1fr;
-            gap: 20px;
+            gap: 18px;
+            margin-bottom: 24px;
         }
 
-        @media (max-width: 1024px) {
-            .detail-3col-grid {
+        @media (max-width: 800px) {
+            .modal-3col-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .detail-col-box {
+        .modal-col-box {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
@@ -446,7 +506,7 @@
             flex-direction: column;
         }
 
-        .detail-col-title {
+        .modal-col-title {
             font-size: 0.75rem;
             font-weight: 800;
             text-transform: uppercase;
@@ -458,7 +518,7 @@
             gap: 6px;
         }
 
-        .detail-takeaway {
+        .modal-takeaway {
             font-size: 1.05rem;
             font-weight: 700;
             color: #f8fafc;
@@ -466,7 +526,7 @@
             margin-bottom: 8px;
         }
 
-        .detail-desc-text {
+        .modal-desc-text {
             font-size: 0.85rem;
             color: var(--text-muted);
             line-height: 1.55;
@@ -499,43 +559,33 @@
             margin-top: auto;
         }
 
-        /* Mini Pin Switcher Bar */
-        .pin-switcher-bar {
+        .modal-footer-nav {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-            padding-top: 16px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
-            overflow-x: auto;
+            padding-top: 16px;
         }
 
-        .pin-switch-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-            padding: 6px 12px;
+        .btn-modal-nav {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 16px;
             border-radius: 8px;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            white-space: nowrap;
             transition: all 0.2s ease;
         }
 
-        .pin-switch-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .pin-switch-btn.active {
+        .btn-modal-nav:hover {
             background: var(--accent-blue);
             border-color: var(--accent-blue);
-            color: white;
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         }
 
         /* Explanatory Cards Grid for Other Slides */
@@ -634,6 +684,16 @@
             color: var(--text-muted);
             line-height: 1.4;
         }
+
+        .callout-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            padding: 14px 18px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
     </style>
 </head>
 <body>
@@ -678,52 +738,70 @@
             <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px;">
                 <div>
                     <h1 style="font-family: 'Outfit', sans-serif; font-size: 1.65rem; font-weight: 800; color: white;">Interactive Control Dashboard Visual Guide</h1>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);">Click any numbered red circle marker on the interface mockup to display its instant breakdown card below.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Click any numbered red circle marker on the interface to open its detailed breakdown modal.</p>
                 </div>
                 <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 4px 10px; border-radius: 20px;">
-                    👆 6 Interactive Hotspots Available
+                    👆 9 Accurately Positioned Interactive Hotspots
                 </div>
             </div>
 
-            <!-- Live Mockup Container with Interactive Hotspots -->
+            <!-- Live Mockup Container with Physically Attached Hotspot Pins -->
             <div class="mockup-stage">
-                <!-- Hotspot Pins aligned to mockup controls -->
-                <div class="hotspot-pin" id="pin-1" style="top: 25px; left: 230px;" onclick="selectPin(1)" title="Pin 1: Page Header">1</div>
-                <div class="hotspot-pin active" id="pin-2" style="top: 75px; left: 180px;" onclick="selectPin(2)" title="Pin 2: System Admin Control Center">2</div>
-                <div class="hotspot-pin" id="pin-3" style="top: 75px; right: 28px;" onclick="selectPin(3)" title="Pin 3: MySQL Connection & Database Pill">3</div>
-                <div class="hotspot-pin" id="pin-4" style="top: 130px; left: 220px;" onclick="selectPin(4)" title="Pin 4: Resolution Sandbox">4</div>
-                <div class="hotspot-pin" id="pin-5" style="top: 130px; right: 28px;" onclick="selectPin(5)" title="Pin 5: Fresh Inventory Reset">5</div>
-                <div class="hotspot-pin" id="pin-6" style="top: 205px; left: 230px;" onclick="selectPin(6)" title="Pin 6: Pending Cloud Sync Approvals">6</div>
 
-                <!-- Simulation Header -->
+                <!-- 1. Header Title -->
                 <div style="margin-bottom: 16px;">
-                    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: white;">Control Dashboard</h2>
+                    <div class="pin-anchor" onclick="openModal(1)">
+                        <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; color: white; cursor: pointer;">Control Dashboard</h2>
+                        <div class="hotspot-pin" title="Pin 1: Control Dashboard Overview">1</div>
+                    </div>
                     <div style="font-size: 0.8rem; color: var(--text-muted);">System configuration, integrations, and server status.</div>
                 </div>
 
                 <!-- Sim: Sys Admin Control Center -->
                 <div class="sim-control-box">
                     <div class="sim-header">
-                        <div class="sim-title">
-                            <span>⚙️ System Administrator Control Center</span>
-                            <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.65rem; padding: 2px 6px; border-radius: 12px; font-weight: 800;">SYS_ADMIN</span>
+                        <!-- 2. SysAdmin Banner Title -->
+                        <div class="pin-anchor" onclick="openModal(2)">
+                            <div class="sim-title" style="cursor: pointer;">
+                                <span>⚙️ System Administrator Control Center</span>
+                                <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); font-size: 0.65rem; padding: 2px 6px; border-radius: 12px; font-weight: 800;">SYS_ADMIN</span>
+                            </div>
+                            <div class="hotspot-pin" title="Pin 2: System Administrator Control Center">2</div>
                         </div>
-                        <div class="sim-status-pill">
-                            <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">MySQL:</span> <span style="color: white; font-family: monospace;">localhost:3306</span></div>
-                            <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
-                            <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">DB:</span> <span style="color: #38bdf8; font-family: monospace;">owi_physical_inventory</span></div>
-                            <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
-                            <span style="display: inline-flex; align-items: center; gap: 4px; color: #34d399; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                                <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Connected
-                            </span>
+
+                        <!-- 3. MySQL Status Pill -->
+                        <div class="pin-anchor" onclick="openModal(3)">
+                            <div class="sim-status-pill">
+                                <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">MySQL:</span> <span style="color: white; font-family: monospace;">localhost:3306</span></div>
+                                <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
+                                <div><span style="color: #64748b; font-weight: 700; text-transform: uppercase;">DB:</span> <span style="color: #38bdf8; font-family: monospace;">owi_physical_inventory</span></div>
+                                <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.1);"></div>
+                                <span style="display: inline-flex; align-items: center; gap: 4px; color: #34d399; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Connected
+                                </span>
+                            </div>
+                            <div class="hotspot-pin" title="Pin 3: MySQL Connection Status">3</div>
                         </div>
                     </div>
+
+                    <!-- SysAdmin Actions Grid -->
                     <div class="sim-actions-grid">
-                        <span class="sim-btn sim-btn-config">⚙️ Modify Configuration</span>
-                        <span class="sim-btn sim-btn-sandbox">🧪 Resolution Sandbox</span>
-                        <span class="sim-btn sim-btn-init">⚡ Initialize DB Tables</span>
-                        <span class="sim-btn sim-btn-import">📦 Import database.sql Backup</span>
-                        <span class="sim-btn sim-btn-reset">🧹 Fresh Inventory Reset</span>
+                        <span class="sim-btn sim-btn-config" onclick="openModal(2)">⚙️ Modify Configuration</span>
+                        
+                        <!-- 4. Sandbox Button -->
+                        <div class="pin-anchor" onclick="openModal(4)">
+                            <span class="sim-btn sim-btn-sandbox">🧪 Resolution Sandbox</span>
+                            <div class="hotspot-pin" title="Pin 4: Resolution Sandbox">4</div>
+                        </div>
+
+                        <span class="sim-btn sim-btn-init" onclick="openModal(2)">⚡ Initialize DB Tables</span>
+                        <span class="sim-btn sim-btn-import" onclick="openModal(2)">📦 Import database.sql Backup</span>
+                        
+                        <!-- 5. Fresh Reset Button -->
+                        <div class="pin-anchor" style="margin-left: auto;" onclick="openModal(5)">
+                            <span class="sim-btn sim-btn-reset">🧹 Fresh Inventory Reset</span>
+                            <div class="hotspot-pin" title="Pin 5: Fresh Inventory Reset">5</div>
+                        </div>
                     </div>
                 </div>
 
@@ -733,161 +811,122 @@
                         <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: white;">Store Inventory Progress</h3>
                         <div style="font-size: 0.75rem; color: var(--text-muted);">Real-time locator completion metrics across active store sessions.</div>
                     </div>
-                    <span class="sim-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.75rem;">☁️ Download Store Session from Cloud</span>
+                    
+                    <!-- 9. Download from Cloud Button -->
+                    <div class="pin-anchor" onclick="openModal(9)">
+                        <span class="sim-btn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.75rem;">☁️ Download Store Session from Cloud</span>
+                        <div class="hotspot-pin" title="Pin 9: Download Store Session from Cloud">9</div>
+                    </div>
                 </div>
 
-                <!-- Sim: Pending Cloud Sync Approvals -->
-                <div style="background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; color: #fef08a;">
-                        <span style="background: #eab308; color: black; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">!</span>
-                        <span>Pending Cloud Sync Approvals</span>
+                <!-- 6. Pending Cloud Sync Approvals Banner -->
+                <div class="pin-anchor" style="width: 100%; display: block;" onclick="openModal(6)">
+                    <div style="background: rgba(234, 179, 8, 0.05); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; color: #fef08a;">
+                            <span style="background: #eab308; color: black; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900;">!</span>
+                            <span>Pending Cloud Sync Approvals</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No pending sync requests awaiting approval.</span>
+                        <span style="font-size: 0.75rem; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 4px; color: white;">Refresh</span>
                     </div>
-                    <span style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">No pending sync requests awaiting approval.</span>
-                    <span style="font-size: 0.75rem; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 4px; color: white;">Refresh</span>
+                    <div class="hotspot-pin" style="top: -8px; right: 12px;" title="Pin 6: Pending Cloud Sync Approvals">6</div>
                 </div>
 
                 <!-- Sim: Store Progress Cards -->
                 <div class="sim-stores-grid">
-                    <!-- Ongoing Card -->
-                    <div class="sim-store-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">RME</div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">MARK</strong></div>
+                    <!-- 7. Ongoing Card -->
+                    <div class="pin-anchor" style="display: block;" onclick="openModal(7)">
+                        <div class="sim-store-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">RME</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">MARK</strong></div>
+                                </div>
+                                <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">ONGOING</span>
                             </div>
-                            <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">ONGOING</span>
+                            <div style="margin-top: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                    <span style="color: var(--text-muted);">Store Completion</span>
+                                    <strong style="color: white;">0%</strong>
+                                </div>
+                                <div class="sim-bar-track">
+                                    <div class="sim-bar-fill" style="width: 0%; background: #3b82f6;"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>0</strong> of <strong>3</strong> closed</span>
+                                <div style="display: flex; gap: 4px;">
+                                    <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #34d399; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">☁️ Pull Cloud</span>
+                                    <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                                </div>
+                            </div>
                         </div>
-                        <div style="margin-top: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                                <span style="color: var(--text-muted);">Store Completion</span>
-                                <strong style="color: white;">0%</strong>
-                            </div>
-                            <div class="sim-bar-track">
-                                <div class="sim-bar-fill" style="width: 0%; background: #3b82f6;"></div>
-                            </div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>0</strong> of <strong>3</strong> closed</span>
-                            <div style="display: flex; gap: 4px;">
-                                <span style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #34d399; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">☁️ Pull Cloud</span>
-                                <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
-                            </div>
-                        </div>
+                        <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 7: Ongoing Store Session">7</div>
                     </div>
 
-                    <!-- Finished Card 1 -->
-                    <div class="sim-store-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">SME</div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
+                    <!-- 8. Finished Card 1 -->
+                    <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
+                        <div class="sim-store-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">SME</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">BETH</strong></div>
+                                </div>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
                             </div>
-                            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
+                            <div style="margin-top: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                    <span style="color: var(--text-muted);">Store Completion</span>
+                                    <strong style="color: white;">100%</strong>
+                                </div>
+                                <div class="sim-bar-track">
+                                    <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>3</strong> of <strong>3</strong> closed</span>
+                                <div style="display: flex; gap: 4px;">
+                                    <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
+                                    <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                                </div>
+                            </div>
                         </div>
-                        <div style="margin-top: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                                <span style="color: var(--text-muted);">Store Completion</span>
-                                <strong style="color: white;">100%</strong>
-                            </div>
-                            <div class="sim-bar-track">
-                                <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
-                            </div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>3</strong> of <strong>3</strong> closed</span>
-                            <div style="display: flex; gap: 4px;">
-                                <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
-                                <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
-                            </div>
-                        </div>
+                        <div class="hotspot-pin" style="top: -6px; right: -6px;" title="Pin 8: Finished Store Session">8</div>
                     </div>
 
                     <!-- Finished Card 2 -->
-                    <div class="sim-store-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">TES</div>
-                                <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">ALLAN</strong></div>
+                    <div class="pin-anchor" style="display: block;" onclick="openModal(8)">
+                        <div class="sim-store-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div>
+                                    <div style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: white;">TES</div>
+                                    <div style="font-size: 0.7rem; color: var(--text-muted);">Created by: <strong style="color: #60a5fa;">ALLAN</strong></div>
+                                </div>
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
                             </div>
-                            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">FINISHED</span>
-                        </div>
-                        <div style="margin-top: 12px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                                <span style="color: var(--text-muted);">Store Completion</span>
-                                <strong style="color: white;">100%</strong>
+                            <div style="margin-top: 12px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                    <span style="color: var(--text-muted);">Store Completion</span>
+                                    <strong style="color: white;">100%</strong>
+                                </div>
+                                <div class="sim-bar-track">
+                                    <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
+                                </div>
                             </div>
-                            <div class="sim-bar-track">
-                                <div class="sim-bar-fill" style="width: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);"></div>
-                            </div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
-                            <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>10</strong> of <strong>10</strong> closed</span>
-                            <div style="display: flex; gap: 4px;">
-                                <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
-                                <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><strong>10</strong> of <strong>10</strong> closed</span>
+                                <div style="display: flex; gap: 4px;">
+                                    <span style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3b82f6; color: #60a5fa; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">🔄 Re-open</span>
+                                    <span style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #f87171; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-weight: 600;">Delete</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ===================================================
-                 ONE-LOOK HIGH-IMPACT EXPLANATION CARD
-                 =================================================== -->
-            <div class="detail-display-card" id="detail-card">
-                <div class="detail-card-header">
-                    <div class="detail-title-group">
-                        <div class="detail-pin-badge" id="card-pin-num">2</div>
-                        <div>
-                            <div class="detail-title-text" id="card-title">System Administrator Control Center</div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted);" id="card-subtitle">Master operations & table maintenance console</div>
-                        </div>
-                    </div>
-                    <div class="detail-role-pill" id="card-badge" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);">
-                        👑 System Admin Only
-                    </div>
-                </div>
-
-                <div class="detail-3col-grid">
-                    <!-- Col 1: Purpose at a glance -->
-                    <div class="detail-col-box">
-                        <div class="detail-col-title">🎯 Key Purpose at a Glance</div>
-                        <div class="detail-takeaway" id="card-takeaway">Manage core database schemas, system backups, and maintenance resets.</div>
-                        <div class="detail-desc-text" id="card-desc">
-                            The central administrative toolbar for system administrators to configure connections, initialize missing tables, import SQL data, and test multi-device responsiveness.
-                        </div>
-                    </div>
-
-                    <!-- Col 2: What actions can be done -->
-                    <div class="detail-col-box">
-                        <div class="detail-col-title">⚡ Available Actions / Controls</div>
-                        <div id="card-actions-list">
-                            <div class="action-item-pill"><strong>⚙️ Modify Config:</strong> Adjust MySQL credentials & ports.</div>
-                            <div class="action-item-pill"><strong>🧪 Sandbox:</strong> Simulate CE/mobile/tablet screens.</div>
-                            <div class="action-item-pill"><strong>⚡ Init Tables:</strong> Auto-create missing database entities.</div>
-                            <div class="action-item-pill"><strong>📦 Import Backup:</strong> Restore master items & users.</div>
-                        </div>
-                    </div>
-
-                    <!-- Col 3: Best practice & Pro-Tip -->
-                    <div class="detail-col-box">
-                        <div class="detail-col-title">💡 Pro-Tip & Best Practice</div>
-                        <div class="pro-tip-box" id="card-tip">
-                            Run <strong>Initialize DB Tables</strong> first after fresh deployments to ensure all tables exist before opening store sessions.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Mini Pin Selector Bar -->
-                <div class="pin-switcher-bar">
-                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Quick Jump:</span>
-                    <button class="pin-switch-btn" id="btn-pin-1" onclick="selectPin(1)">Pin 1 • Page Header</button>
-                    <button class="pin-switch-btn active" id="btn-pin-2" onclick="selectPin(2)">Pin 2 • SysAdmin Center</button>
-                    <button class="pin-switch-btn" id="btn-pin-3" onclick="selectPin(3)">Pin 3 • MySQL Status Pill</button>
-                    <button class="pin-switch-btn" id="btn-pin-4" onclick="selectPin(4)">Pin 4 • Resolution Sandbox</button>
-                    <button class="pin-switch-btn" id="btn-pin-5" onclick="selectPin(5)">Pin 5 • Fresh Reset</button>
-                    <button class="pin-switch-btn" id="btn-pin-6" onclick="selectPin(6)">Pin 6 • Cloud Sync Approvals</button>
-                </div>
+            <div class="callout-box" style="text-align: center;">
+                💡 <strong>Click any red numbered pin</strong> or any section above to open the detailed interactive manual modal!
             </div>
         </div>
 
@@ -1066,9 +1105,64 @@
 
     </main>
 
+    <!-- ===================================================
+         INTERACTIVE POPUP MODAL
+         =================================================== -->
+    <div class="modal-backdrop" id="modal-backdrop" onclick="handleBackdropClick(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div class="modal-pin-badge" id="m-pin-num">1</div>
+                    <div>
+                        <div class="modal-title-text" id="m-title">Control Dashboard</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="m-subtitle">System configuration, integrations, and server status</div>
+                    </div>
+                </div>
+                <button class="btn-modal-close" onclick="closeModal()" title="Close (Esc)">&times;</button>
+            </div>
+
+            <div class="modal-3col-grid">
+                <!-- Col 1: Purpose -->
+                <div class="modal-col-box">
+                    <div class="modal-col-title">🎯 Key Purpose at a Glance</div>
+                    <div class="modal-takeaway" id="m-takeaway">The main administrative entrance to OWIPI.</div>
+                    <div class="modal-desc-text" id="m-desc">
+                        Provides a top-level summary of your local inventory server, database connection health, active background processes, and direct access to administrative tools.
+                    </div>
+                </div>
+
+                <!-- Col 2: Actions -->
+                <div class="modal-col-box">
+                    <div class="modal-col-title">⚡ Available Actions / Controls</div>
+                    <div id="m-actions-list">
+                        <div class="action-item-pill"><strong>Role Identity:</strong> Confirms currently authenticated user privileges.</div>
+                        <div class="action-item-pill"><strong>Navigation:</strong> Direct links to configuration and testing modules.</div>
+                        <div class="action-item-pill"><strong>Server Health:</strong> Immediate visual check for offline alerts.</div>
+                    </div>
+                </div>
+
+                <!-- Col 3: Pro-Tip -->
+                <div class="modal-col-box">
+                    <div class="modal-col-title">💡 Pro-Tip & Best Practice</div>
+                    <div class="pro-tip-box" id="m-tip">
+                        Bookmark this page as your main administrative homepage during annual physical inventory counting periods.
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer-nav">
+                <button class="btn-modal-nav" onclick="prevModalPin()">◀ Previous Hotspot</button>
+                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 9</span>
+                <button class="btn-modal-nav" onclick="nextModalPin()">Next Hotspot ▶</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentSlide = 0;
         const totalSlides = 5;
+        let currentModalPin = 1;
+        const totalPins = 9;
 
         function goToSlide(index) {
             currentSlide = index;
@@ -1089,21 +1183,11 @@
             goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
         }
 
-        // Keyboard arrow navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight') nextSlide();
-            if (e.key === 'ArrowLeft') prevSlide();
-        });
-
-        // Data dictionary for all 6 pins with instant-read 3-column layout
+        // Complete 9-pin dictionary with rich content
         const pinData = {
             1: {
                 title: "Control Dashboard Header & Status",
                 subtitle: "Mission Control title, subsystem integrations, and server overview",
-                badge: "ℹ️ System Overview",
-                badgeColor: "rgba(59, 130, 246, 0.15)",
-                badgeBorder: "rgba(59, 130, 246, 0.3)",
-                badgeText: "#60a5fa",
                 takeaway: "The primary entry point showing system readiness, integrations, and server status.",
                 desc: "Provides a top-level summary of your local inventory server, database connection health, active background processes, and direct access to administrative tools.",
                 actions: [
@@ -1116,10 +1200,6 @@
             2: {
                 title: "System Administrator Control Center",
                 subtitle: "Master operations, table initialization, and maintenance console",
-                badge: "👑 System Admin Only",
-                badgeColor: "rgba(59, 130, 246, 0.15)",
-                badgeBorder: "rgba(59, 130, 246, 0.3)",
-                badgeText: "#60a5fa",
                 takeaway: "The top command center for configuring connections, schemas, and maintenance.",
                 desc: "Houses all critical system operations including database credential updates, multi-device resolution simulations, table structure builders, and master data resets.",
                 actions: [
@@ -1133,10 +1213,6 @@
             3: {
                 title: "MySQL Connection & Database Status Pill",
                 subtitle: "Real-time database host, schema name, and connection monitor",
-                badge: "🟢 Live Heartbeat",
-                badgeColor: "rgba(16, 185, 129, 0.15)",
-                badgeBorder: "rgba(16, 185, 129, 0.3)",
-                badgeText: "#34d399",
                 takeaway: "Instantly confirms whether PHP PDO is successfully communicating with MySQL.",
                 desc: "Displays the active MySQL host and port (<code>localhost:3306</code>), the connected database name (<code>owi_physical_inventory</code>), and a live color-coded connection status pill.",
                 actions: [
@@ -1149,10 +1225,6 @@
             4: {
                 title: "Resolution Sandbox Simulator",
                 subtitle: "Hardware simulator for Pocket PC CE, mobile phones, tablets, and laptops",
-                badge: "🧪 Testing & QA Tool",
-                badgeColor: "rgba(168, 85, 247, 0.15)",
-                badgeBorder: "rgba(168, 85, 247, 0.3)",
-                badgeText: "#c084fc",
                 takeaway: "Test scanner and dashboard UI across multiple screen resolutions in real time.",
                 desc: "Opens <code>sandbox.php</code>, allowing administrators to preview and interact with any page (Scanner, Host, Mobile CE, Login) across hardware presets including Pocket PC CE (240×320), Mobile (375p), Tablet (768p), and Laptop (1366×768).",
                 actions: [
@@ -1165,10 +1237,6 @@
             5: {
                 title: "Fresh Inventory Reset (Master Purge)",
                 subtitle: "Safe season reset tool that wipes dynamic counts while preserving master items",
-                badge: "⚠️ High-Safety Purge",
-                badgeColor: "rgba(239, 68, 68, 0.15)",
-                badgeBorder: "rgba(239, 68, 68, 0.3)",
-                badgeText: "#f87171",
                 takeaway: "Permanently drops dynamic store scan tables for a clean inventory season start.",
                 desc: "Cleans up all active store sessions and drops dynamic tables (<code>{store}_locators</code>, <code>{store}_scans</code>, <code>{store}_items</code>) without deleting your master catalog.",
                 actions: [
@@ -1181,10 +1249,6 @@
             6: {
                 title: "Pending Cloud Sync Approvals",
                 subtitle: "Safety queue protecting cloud inventory from accidental multi-store overwrites",
-                badge: "⚠️ Overwrite Protection",
-                badgeColor: "rgba(245, 158, 11, 0.15)",
-                badgeBorder: "rgba(245, 158, 11, 0.3)",
-                badgeText: "#fbbf24",
                 takeaway: "Catches and holds store sync requests when cloud data already exists.",
                 desc: "When a local store host synchronizes to the cloud and that store already contains prior scan data, the cloud halts the update in this queue until an administrator approves it.",
                 actions: [
@@ -1193,54 +1257,99 @@
                     "<strong>❌ Reject:</strong> Dismisses the incoming sync to preserve existing cloud data."
                 ],
                 tip: "Ensures that simultaneous uploads or accidental re-syncs never wipe out existing store counts without explicit admin review."
+            },
+            7: {
+                title: "Ongoing Store Session (e.g. RME)",
+                subtitle: "Real-time locator progress bar and cloud pull synchronization",
+                takeaway: "Indicates an active physical inventory count currently in progress.",
+                desc: "Displays active branch completion metrics (0% - 99%), locator closed counts, and creator name. Allows pulling cloud counts to a local workstation.",
+                actions: [
+                    "<strong>☁️ Pull Cloud Session:</strong> Downloads cloud counts directly to local.",
+                    "<strong>Progress Bar:</strong> Live formula of closed vs total locators.",
+                    "<strong>Delete:</strong> Drops the store session after confirmation."
+                ],
+                tip: "Use <strong>Pull Cloud Session</strong> if another workstation already uploaded counts for this store."
+            },
+            8: {
+                title: "Finished Store Session (e.g. SME, TES)",
+                subtitle: "Completed 100% store session ready for variance report consolidation",
+                takeaway: "All locators in this store are closed and verified.",
+                desc: "Indicates 100% completion. Operators can no longer submit scans unless reopened by an administrator.",
+                actions: [
+                    "<strong>🔄 Re-open Store:</strong> Unlocks closed locators for recounts or edits.",
+                    "<strong>100% Milestone:</strong> Ready for Excel variance report export.",
+                    "<strong>Delete:</strong> Archives and cleans up store tables."
+                ],
+                tip: "Once all stores are finished, head to the Host Console (<code>scan.php</code>) to export consolidated Excel sheets."
+            },
+            9: {
+                title: "Download Store Session from Cloud",
+                subtitle: "Header action to import complete store structures from the cloud",
+                takeaway: "Allows local hosts to download any branch countsession from the cloud server.",
+                desc: "Entering a 3-letter store code pulls all locators, item catalogs, and scans from the central cloud database straight into your local MySQL instance.",
+                actions: [
+                    "<strong>Branch Pull:</strong> Enter any 3-letter code (e.g. <code>BGC</code>, <code>RME</code>).",
+                    "<strong>Full Structure:</strong> Rebuilds locators, items, and scan records locally.",
+                    "<strong>Smart Visibility:</strong> Automatically hidden on cloud hosts."
+                ],
+                tip: "Ideal for setting up a local offline inventory server before heading to the retail branch."
             }
         };
 
-        function selectPin(num) {
-            const data = pinData[num];
+        function openModal(pinNum) {
+            currentModalPin = pinNum;
+            const data = pinData[pinNum];
             if (!data) return;
 
-            // Update pin button states
-            document.querySelectorAll('.hotspot-pin').forEach(pin => pin.classList.remove('active'));
-            const activePin = document.getElementById(`pin-${num}`);
-            if (activePin) activePin.classList.add('active');
+            document.getElementById('m-pin-num').innerText = pinNum;
+            document.getElementById('m-title').innerText = data.title;
+            document.getElementById('m-subtitle').innerText = data.subtitle;
+            document.getElementById('m-takeaway').innerText = data.takeaway;
+            document.getElementById('m-desc').innerHTML = data.desc;
 
-            // Update quick jump buttons
-            document.querySelectorAll('.pin-switch-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`btn-pin-${num}`);
-            if (activeBtn) activeBtn.classList.add('active');
+            const actionsList = document.getElementById('m-actions-list');
+            actionsList.innerHTML = data.actions.map(act => `<div class="action-item-pill">${act}</div>`).join('');
 
-            // Animate card update
-            const card = document.getElementById('detail-card');
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(6px)';
+            document.getElementById('m-tip').innerHTML = data.tip;
+            document.getElementById('m-counter').innerText = `Hotspot ${pinNum} of ${totalPins}`;
 
-            setTimeout(() => {
-                document.getElementById('card-pin-num').innerText = num;
-                document.getElementById('card-title').innerText = data.title;
-                document.getElementById('card-subtitle').innerText = data.subtitle;
-                
-                const badge = document.getElementById('card-badge');
-                badge.innerText = data.badge;
-                badge.style.background = data.badgeColor;
-                badge.style.borderColor = data.badgeBorder;
-                badge.style.color = data.badgeText;
-
-                document.getElementById('card-takeaway').innerText = data.takeaway;
-                document.getElementById('card-desc').innerHTML = data.desc;
-
-                const actionsContainer = document.getElementById('card-actions-list');
-                actionsContainer.innerHTML = data.actions.map(act => `<div class="action-item-pill">${act}</div>`).join('');
-
-                document.getElementById('card-tip').innerHTML = data.tip;
-
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            }, 120);
+            document.getElementById('modal-backdrop').classList.add('active');
         }
 
-        // Initialize with Pin 2 selected on load
-        selectPin(2);
+        function closeModal() {
+            document.getElementById('modal-backdrop').classList.remove('active');
+        }
+
+        function handleBackdropClick(e) {
+            if (e.target.id === 'modal-backdrop') {
+                closeModal();
+            }
+        }
+
+        function nextModalPin() {
+            let next = currentModalPin + 1;
+            if (next > totalPins) next = 1;
+            openModal(next);
+        }
+
+        function prevModalPin() {
+            let prev = currentModalPin - 1;
+            if (prev < 1) prev = totalPins;
+            openModal(prev);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            } else if (document.getElementById('modal-backdrop').classList.contains('active')) {
+                if (e.key === 'ArrowRight') nextModalPin();
+                if (e.key === 'ArrowLeft') prevModalPin();
+            } else {
+                if (e.key === 'ArrowRight') nextSlide();
+                if (e.key === 'ArrowLeft') prevSlide();
+            }
+        });
     </script>
 </body>
 </html>
