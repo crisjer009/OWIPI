@@ -65,13 +65,17 @@ The **Host Console (`scan.php`)** is the primary workstation for physical invent
 ### 3. Top Row KPI & Hardware Cards
 
 #### A. LOCATOR PROGRESS Card
-- **Scanners Online**: Real-time counter showing `SCANNERS: 1` and `INF: 0`.
-- **0% CLOSED Gauge**: Circle meter showing overall store completion percentage.
-- **Breakdown Table**:
-  - `Closed (Done)`: Count of locked shelves ready for export.
-  - `Active / Open`: Count of shelves currently available or in use.
-  - `Total Locators`: Grand total of all created zones.
-- **Search Item Input**: Quick lookup bar to search products by Barcode or ALU/SKU.
+The central mission control indicator tracking real-time counting progress across all retail shelves:
+
+| Indicator / Metric | Operational Meaning | Value / Formula | Stakeholder Action Required |
+| :--- | :--- | :--- | :--- |
+| **🔵 0% CLOSED Gauge** | Store Finalization Progress | `(Closed Locators ÷ Total Locators) × 100%` | Reaches 100% when all shelf countsheets are closed. |
+| **⚠️ INF (Items Not Found)** | Unmatched Barcode Alarm | Real-time count of barcodes missing from Masterfile | If `INF > 0`, supervisor must inspect physical item and register SKU in Items Masterfile. |
+| **📱 SCANNERS (Active Handhelds)** | Wireless Client Counter | Real-time count of connected mobile phone/laser clients | If `SCANNERS: 0`, check local Wi-Fi router connectivity. |
+| **🟢 Closed (Done)** | Finalized Shelves Count | Integer (e.g. `0`) | Count of shelves audited and locked against edits. |
+| **🟡 Active / Open** | Ongoing Shelves Count | Integer (e.g. `3`) | Shelves currently in progress or waiting to be claimed. |
+| **⚪ Total Locators** | Total Defined Zones | Integer (e.g. `3`) | Grand total of counting zones created in branch. |
+| **🔍 Search Item Input** | Universal Store Item Finder | Real-time query (Barcode, ALU/SKU, Description) | Type any barcode or SKU to find which locator holds the item and the recorded quantity. |
 
 #### B. CONNECT SCANNER Card
 - **Wi-Fi QR Code**: High-contrast QR code for instant mobile phone camera pairing.

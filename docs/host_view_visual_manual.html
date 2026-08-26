@@ -1093,16 +1093,20 @@
                 tip: "Run <strong>Download Store Masterfile</strong> before counting begins to ensure all barcodes are pre-loaded."
             },
             3: {
-                title: "LOCATOR PROGRESS Card & Metrics",
-                subtitle: "Circle completion percentage, scanners connected count, and item search",
-                takeaway: "Real-time visual gauge of physical shelf completion milestones.",
-                desc: "Calculates total closed vs open locators, active connected mobile scanners (e.g. <code>SCANNERS: 1</code>), and provides a quick item search input.",
+                title: "LOCATOR PROGRESS Card (Live Shelf & Scanner Metrics)",
+                subtitle: "Real-time shelf completion gauge, INF unmatched counter, active scanners, and global item search",
+                takeaway: "The central mission control indicator tracking physical store completion and scanner health.",
+                desc: "Provides supervisors, auditors, and management with a complete real-time status of counting velocity, active handheld connections, unmatched barcodes, and shelf closure milestones.",
                 actions: [
-                    "<strong>0% CLOSED Gauge:</strong> Live progress formula of closed vs total shelves.",
-                    "<strong>SCANNERS: 1:</strong> Number of handheld mobile devices currently connected.",
-                    "<strong>Search Item:</strong> Quick lookup by barcode or description."
+                    "<strong>🔵 0% CLOSED Circular Gauge:</strong> Live formula <code>(Closed Locators ÷ Total Locators) × 100%</code>. Shows progress towards 100% store finalization.",
+                    "<strong>⚠️ INF (Items Not Found):</strong> Displays count of scanned barcodes missing from the Masterfile. If <code>INF > 0</code>, supervisor must inspect unknown barcodes.",
+                    "<strong>📱 SCANNERS (Active Handhelds):</strong> Real-time count of mobile phone/laser scanner clients currently connected over Wi-Fi (e.g. <code>SCANNERS: 1</code>).",
+                    "<strong>🟢 Closed (Done):</strong> Number of completed shelves verified and locked against accidental edits.",
+                    "<strong>🟡 Active / Open:</strong> Number of shelves currently in progress or waiting to be claimed by floor staff.",
+                    "<strong>⚪ Total Locators:</strong> Total count of all defined shelf zones in the store session.",
+                    "<strong>🔍 Search Item (Barcode / ALU / SKU):</strong> Global store finder! Type any barcode or SKU to instantly discover which shelf locator contains the item and its recorded quantity."
                 ],
-                tip: "When the gauge reaches <strong>100% CLOSED</strong>, you are ready to export the Excel variance report."
+                tip: "<strong>Operational Protocol:</strong><br>1. Ensure <strong>INF is 0</strong> before closing the store.<br>2. When <strong>Active / Open reaches 0</strong> and gauge hits <strong>100% CLOSED</strong>, proceed to click <strong>Export Excel</strong>."
             },
             4: {
                 title: "CONNECT SCANNER (QR Code & IP Selector)",
