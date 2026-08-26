@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,7 +32,7 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
                 radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
                 radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
@@ -544,9 +545,17 @@
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
         }
 
         /* ===================================================
@@ -587,8 +596,15 @@
         }
 
         @keyframes modalPop {
-            from { transform: scale(0.92); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .modal-header {
@@ -772,6 +788,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Top Header -->
@@ -782,7 +799,9 @@
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <a href="control_dashboard_visual_manual.html" class="btn-nav-link">🎛️ Control Dashboard Manual</a>
-            <a href="../scan.php" class="btn-nav-link" style="background: rgba(46, 164, 79, 0.2); border-color: #2ea44f; color: #3fb950;">⚡ Open Live Host Console</a>
+            <a href="../scan.php" class="btn-nav-link"
+                style="background: rgba(46, 164, 79, 0.2); border-color: #2ea44f; color: #3fb950;">⚡ Open Live Host
+                Console</a>
         </div>
     </header>
 
@@ -811,9 +830,12 @@
                         <button class="btn-header-action btn-sync-cloud">☁️ Sync to Cloud</button>
                         <button class="btn-header-action btn-close-store">🔒 Close Store</button>
                         <div class="host-status-pill">
-                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #f59e0b;"></span> Offline (Local)
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #f59e0b;"></span>
+                            Offline (Local)
                         </div>
-                        <span style="color: #f87171; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 4px;">Log Out</span>
+                        <span
+                            style="color: #f87171; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 4px;">Log
+                            Out</span>
                     </div>
                     <div class="hotspot-pin" style="top: -6px; right: -6px;">2</div>
                 </div>
@@ -868,7 +890,8 @@
                         <div class="qr-placeholder-box">
                             <!-- QR Code SVG -->
                             <svg class="qr-svg" viewBox="0 0 24 24">
-                                <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm10 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 4h4v-4h-2v2h-2v2zM6 6h2v2H6V6zm12 0h2v2h-2V6zm-12 12h2v2H6v-2z" />
+                                <path
+                                    d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm10 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 4h4v-4h-2v2h-2v2zM6 6h2v2H6V6zm12 0h2v2h-2V6zm-12 12h2v2H6v-2z" />
                             </svg>
                         </div>
                         <div class="connect-scanner-details">
@@ -958,9 +981,13 @@
                                     <td style="color: #94a3b8; font-size: 0.75rem;">14:11:15</td>
                                 </tr>
                                 <tr>
-                                    <td style="font-family: monospace; font-weight: 600; color: #f87171;">480999888123</td>
-                                    <td><span style="color: #ef4444; font-weight: 700; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.3);">UNMATCHED</span></td>
-                                    <td><span style="color: #f59e0b; font-style: italic;">[INF] Item Not in Masterfile</span></td>
+                                    <td style="font-family: monospace; font-weight: 600; color: #f87171;">480999888123
+                                    </td>
+                                    <td><span
+                                            style="color: #ef4444; font-weight: 700; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.3);">UNMATCHED</span>
+                                    </td>
+                                    <td><span style="color: #f59e0b; font-style: italic;">[INF] Item Not Found</span>
+                                    </td>
                                     <td style="text-align: center; font-weight: 700; color: #f59e0b;">1</td>
                                     <td><strong style="color: #fbbf24;">RAYMART</strong></td>
                                     <td style="text-align: center;"><span class="pill-in-use">1</span></td>
@@ -975,18 +1002,25 @@
                 <!-- Bottom Right: Count Sheet & Locators Manager -->
                 <div class="host-card">
                     <div class="host-card-header" style="margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                        <div class="pin-anchor" onclick="openModal(7)">
+                        <div>
                             <span>COUNT SHEET & LOCATORS</span>
-                            <div class="hotspot-pin" style="top: -6px; right: -18px;">7</div>
                         </div>
 
                         <!-- Top Right Table Action Toolbar -->
                         <div class="pin-anchor" onclick="openModal(7)">
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                                <button class="btn-header-action" style="background: #21262d; border-color: #30363d; font-size: 0.72rem;">📊 Export Excel</button>
-                                <button class="btn-header-action" style="background: #2ea44f; border-color: #2ea44f; font-size: 0.72rem;">Print Summary</button>
-                                <button class="btn-header-action" style="background: rgba(217, 119, 6, 0.15); border-color: #d97706; color: #fbbf24; font-size: 0.72rem;">🔒 Close All Open</button>
-                                <button class="btn-header-action" style="background: #0969da; border-color: #0969da; font-size: 0.72rem;">+ Add Locator</button>
+                                <button class="btn-header-action"
+                                    style="background: #21262d; border-color: #30363d; font-size: 0.72rem;">📊 Export
+                                    Excel</button>
+                                <button class="btn-header-action"
+                                    style="background: #2ea44f; border-color: #2ea44f; font-size: 0.72rem;">Print
+                                    Summary</button>
+                                <button class="btn-header-action"
+                                    style="background: rgba(217, 119, 6, 0.15); border-color: #d97706; color: #fbbf24; font-size: 0.72rem;">🔒
+                                    Close All Open</button>
+                                <button class="btn-header-action"
+                                    style="background: #0969da; border-color: #0969da; font-size: 0.72rem;">+ Add
+                                    Locator</button>
                             </div>
                             <div class="hotspot-pin" style="top: -6px; right: -6px;">7</div>
                         </div>
@@ -1009,7 +1043,8 @@
                                 <tr>
                                     <td>
                                         <div class="pin-anchor" onclick="openModal(8)">
-                                            <strong>1</strong> <span style="color: #64748b; font-size: 0.72rem;">( 4 - items scanned )</span>
+                                            <strong>1</strong> <span style="color: #64748b; font-size: 0.72rem;">( 4 -
+                                                items scanned )</span>
                                             <div class="hotspot-pin" style="top: -6px; right: -14px;">8</div>
                                         </div>
                                     </td>
@@ -1026,25 +1061,31 @@
 
                                 <!-- Row 2: Open -->
                                 <tr>
-                                    <td><strong>2</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items scanned )</span></td>
+                                    <td><strong>2</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items
+                                            scanned )</span></td>
                                     <td><span class="pill-open">Open</span></td>
                                     <td style="color: #64748b;">-</td>
                                     <td style="text-align: center;">
                                         <button class="btn-tbl-action btn-tbl-view" onclick="openModal(9)">View</button>
-                                        <button class="btn-tbl-action btn-tbl-close" onclick="openModal(9)">Close</button>
-                                        <button class="btn-tbl-action btn-tbl-delete" onclick="openModal(9)">Delete</button>
+                                        <button class="btn-tbl-action btn-tbl-close"
+                                            onclick="openModal(9)">Close</button>
+                                        <button class="btn-tbl-action btn-tbl-delete"
+                                            onclick="openModal(9)">Delete</button>
                                     </td>
                                 </tr>
 
                                 <!-- Row 3: Open -->
                                 <tr>
-                                    <td><strong>3</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items scanned )</span></td>
+                                    <td><strong>3</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items
+                                            scanned )</span></td>
                                     <td><span class="pill-open">Open</span></td>
                                     <td style="color: #64748b;">-</td>
                                     <td style="text-align: center;">
                                         <button class="btn-tbl-action btn-tbl-view" onclick="openModal(9)">View</button>
-                                        <button class="btn-tbl-action btn-tbl-close" onclick="openModal(9)">Close</button>
-                                        <button class="btn-tbl-action btn-tbl-delete" onclick="openModal(9)">Delete</button>
+                                        <button class="btn-tbl-action btn-tbl-close"
+                                            onclick="openModal(9)">Close</button>
+                                        <button class="btn-tbl-action btn-tbl-delete"
+                                            onclick="openModal(9)">Delete</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -1068,7 +1109,8 @@
                     <div class="modal-pin-badge" id="m-pin-num">1</div>
                     <div>
                         <div class="modal-title-text" id="m-title">Host Console (scan.php)</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="m-subtitle">Store count supervision and locator management</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);" id="m-subtitle">Store count
+                            supervision and locator management</div>
                     </div>
                 </div>
                 <button class="btn-modal-close" onclick="closeModal()" title="Close (Esc)">&times;</button>
@@ -1080,7 +1122,8 @@
                     <div class="modal-col-title">🎯 Key Purpose at a Glance</div>
                     <div class="modal-takeaway" id="m-takeaway">The physical counting workstation for supervisors.</div>
                     <div class="modal-desc-text" id="m-desc">
-                        Allows supervisors to monitor all wireless scanners in real-time, audit individual shelves, print count summaries, export Excel variance reports, and push final counts to cloud.
+                        Allows supervisors to monitor all wireless scanners in real-time, audit individual shelves,
+                        print count summaries, export Excel variance reports, and push final counts to cloud.
                     </div>
                 </div>
 
@@ -1088,9 +1131,12 @@
                 <div class="modal-col-box">
                     <div class="modal-col-title">⚡ Available Actions / Controls</div>
                     <div id="m-actions-list">
-                        <div class="action-item-pill"><strong>Monitor Scanners:</strong> View live barcode streams.</div>
-                        <div class="action-item-pill"><strong>Close Locators:</strong> Lock shelf counts to prevent tampering.</div>
-                        <div class="action-item-pill"><strong>Export & Sync:</strong> Generate Excel files and push to Cloud.</div>
+                        <div class="action-item-pill"><strong>Monitor Scanners:</strong> View live barcode streams.
+                        </div>
+                        <div class="action-item-pill"><strong>Close Locators:</strong> Lock shelf counts to prevent
+                            tampering.</div>
+                        <div class="action-item-pill"><strong>Export & Sync:</strong> Generate Excel files and push to
+                            Cloud.</div>
                     </div>
                 </div>
 
@@ -1098,14 +1144,16 @@
                 <div class="modal-col-box">
                     <div class="modal-col-title">💡 Pro-Tip & Best Practice</div>
                     <div class="pro-tip-box" id="m-tip">
-                        Keep the Host Console open on your supervisor laptop while floor staff are counting shelves with handheld devices.
+                        Keep the Host Console open on your supervisor laptop while floor staff are counting shelves with
+                        handheld devices.
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer-nav">
                 <button class="btn-modal-nav" onclick="prevModalPin()">◀ Previous Hotspot</button>
-                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 9</span>
+                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1
+                    of 9</span>
                 <button class="btn-modal-nav" onclick="nextModalPin()">Next Hotspot ▶</button>
             </div>
         </div>
@@ -1290,4 +1338,5 @@
         });
     </script>
 </body>
+
 </html>
