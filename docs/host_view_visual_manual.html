@@ -931,9 +931,40 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td colspan="7" style="text-align: center; padding: 40px; color: #64748b; font-style: italic;">
-                                        No scans logged yet. Connect a mobile device to start scanning!
-                                    </td>
+                                    <td style="font-family: monospace; font-weight: 600;">480004972001</td>
+                                    <td><code style="color: #38bdf8;">SKU-1001</code></td>
+                                    <td>BALLPEN 0.5MM BLACK</td>
+                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">12</td>
+                                    <td><strong style="color: #fbbf24;">RAYMART</strong></td>
+                                    <td style="text-align: center;"><span class="pill-in-use">1</span></td>
+                                    <td style="color: #94a3b8; font-size: 0.75rem;">14:14:22</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">480004972002</td>
+                                    <td><code style="color: #38bdf8;">SKU-1002</code></td>
+                                    <td>CORRECTION TAPE 5M</td>
+                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">5</td>
+                                    <td><strong style="color: #60a5fa;">MARK</strong></td>
+                                    <td style="text-align: center;"><span class="pill-in-use">1</span></td>
+                                    <td style="color: #94a3b8; font-size: 0.75rem;">14:13:50</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600;">480004972003</td>
+                                    <td><code style="color: #38bdf8;">SKU-1003</code></td>
+                                    <td>SPIRAL NOTEBOOK 80LGS</td>
+                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">24</td>
+                                    <td><strong style="color: #fbbf24;">RAYMART</strong></td>
+                                    <td style="text-align: center;"><span class="pill-in-use">1</span></td>
+                                    <td style="color: #94a3b8; font-size: 0.75rem;">14:11:15</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-family: monospace; font-weight: 600; color: #f87171;">480999888123</td>
+                                    <td><span style="color: #ef4444; font-weight: 700; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239,68,68,0.3);">UNMATCHED</span></td>
+                                    <td><span style="color: #f59e0b; font-style: italic;">[INF] Item Not in Masterfile</span></td>
+                                    <td style="text-align: center; font-weight: 700; color: #f59e0b;">1</td>
+                                    <td><strong style="color: #fbbf24;">RAYMART</strong></td>
+                                    <td style="text-align: center;"><span class="pill-in-use">1</span></td>
+                                    <td style="color: #94a3b8; font-size: 0.75rem;">14:08:42</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -978,7 +1009,7 @@
                                 <tr>
                                     <td>
                                         <div class="pin-anchor" onclick="openModal(8)">
-                                            <strong>1</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items scanned )</span>
+                                            <strong>1</strong> <span style="color: #64748b; font-size: 0.72rem;">( 4 - items scanned )</span>
                                             <div class="hotspot-pin" style="top: -6px; right: -14px;">8</div>
                                         </div>
                                     </td>
@@ -1151,15 +1182,21 @@
             },
             6: {
                 title: "LIVE INCOMING SCANS LOG (Real-Time Stream)",
-                subtitle: "Live feed of every barcode scanned from mobile devices with timestamps",
-                takeaway: "Watch barcodes, quantities, and descriptions stream in live as staff scan.",
-                desc: "Displays every scan transaction with Barcode, ALU/SKU, Description, Qty, Scanned By, Assigned Locator, and Time. Also includes a live keyword search filter.",
+                subtitle: "Live feed of every barcode scanned from mobile devices with timestamps and operator attribution",
+                takeaway: "Watch barcodes, quantities, descriptions, and user attribution stream in live as staff scan.",
+                desc: "Displays each individual barcode scan event immediately as physical items are counted on the floor. Gives supervisors total transparency over counting velocity and accuracy.",
                 actions: [
-                    "<strong>Real-Time Stream:</strong> Ingests scans as barcode triggers are pulled.",
-                    "<strong>Search Log:</strong> Filter incoming barcodes by operator or SKU.",
-                    "<strong>Empty State:</strong> Shows 'No scans logged yet' until scanners connect."
+                    "<strong>🏷️ Barcode (UPC):</strong> Scanned barcode number (e.g. <code>480004972001</code>).",
+                    "<strong>📦 ALU/SKU:</strong> Stock keeping unit matched from masterfile (e.g. <code>SKU-1001</code>).",
+                    "<strong>📝 Description:</strong> Official product description from catalog.",
+                    "<strong>🔢 Qty:</strong> Number of units counted in that specific scan batch (e.g. <code>12</code>).",
+                    "<strong>👤 Scanned By:</strong> Operator username who pulled the trigger (e.g. <code>RAYMART</code>, <code>MARK</code>).",
+                    "<strong>📍 Locator:</strong> Assigned shelf zone where the item is physically placed (e.g. <code>Locator 1</code>).",
+                    "<strong>⏱️ Time:</strong> Exact timestamp of the scan transaction (e.g. <code>14:14:22</code>).",
+                    "<strong>⚠️ UNMATCHED / INF Handling:</strong> If a scanned barcode is missing from masterfile, it appears highlighted in red/amber so the supervisor can inspect the physical item.",
+                    "<strong>🔍 Search Filter:</strong> Type in the search box to filter live scans by item name, operator, or SKU."
                 ],
-                tip: "Watch this stream to verify that operators are scanning items into the correct shelf locator."
+                tip: "<strong>Supervisor Audit Tip:</strong> Keep an eye out for <code>UNMATCHED</code> items. If found, have the floor staff bring the physical item to the desk to add it into <strong>Items Masterfile</strong> before closing the shelf."
             },
             7: {
                 title: "COUNT SHEET & LOCATORS Toolbar",

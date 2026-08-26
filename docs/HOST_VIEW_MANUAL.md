@@ -91,8 +91,29 @@ The central mission control indicator tracking real-time counting progress acros
 ### 4. Bottom Row 50/50 Dual Tables
 
 #### A. LIVE INCOMING SCANS LOG
-- **Real-Time Feed**: Ingests scans live from mobile operators with Barcode, ALU/SKU, Description, Quantity, Scanned By, Locator, and Time.
-- **Search Filter**: Filter stream by product name or operator username.
+The real-time operational stream ingesting barcodes wirelessly from handheld mobile units:
+
+```
++---------------------------------------------------------------------------------------------------------------+
+| Barcode      | ALU/SKU   | Description                  | Qty | Scanned By | Locator | Time     | Status      |
++--------------+-----------+------------------------------+-----+------------+---------+----------+-------------+
+| 480004972001 | SKU-1001  | BALLPEN 0.5MM BLACK          | 12  | RAYMART    | 1       | 14:14:22 | Verified    |
+| 480004972002 | SKU-1002  | CORRECTION TAPE 5M           | 5   | MARK       | 1       | 14:13:50 | Verified    |
+| 480004972003 | SKU-1003  | SPIRAL NOTEBOOK 80LGS        | 24  | RAYMART    | 1       | 14:11:15 | Verified    |
+| 480999888123 | UNMATCHED | [INF] Item Not in Masterfile | 1   | RAYMART    | 1       | 14:08:42 | ⚠️ Alert INF |
++---------------------------------------------------------------------------------------------------------------+
+```
+
+| Column Field | Explanation & Value | Operational Purpose |
+| :--- | :--- | :--- |
+| **Barcode** | e.g. `480004972001` | Physical UPC code scanned by laser or camera. |
+| **ALU / SKU** | e.g. `SKU-1001` or `UNMATCHED` | Matched product identifier from active masterfile. |
+| **Description**| e.g. `BALLPEN 0.5MM BLACK` | Catalog product name. |
+| **Qty** | e.g. `12` | Number of physical units counted in this scan transaction. |
+| **Scanned By**| e.g. `RAYMART`, `MARK` | Handheld user operator attribution. |
+| **Locator** | e.g. `1` | Shelf number where the product was physically placed. |
+| **Time** | e.g. `14:14:22` | Timestamp of ingestion. |
+| **⚠️ UNMATCHED**| Amber/Red Highlight | Signals that an unknown item was scanned (`INF`). Supervisor must inspect item. |
 
 #### B. COUNT SHEET & LOCATORS Manager
 - **Toolbar Actions**:
