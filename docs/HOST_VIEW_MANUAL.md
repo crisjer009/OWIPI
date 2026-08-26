@@ -115,12 +115,15 @@ The real-time operational stream ingesting barcodes wirelessly from handheld mob
 | **Time** | e.g. `14:14:22` | Timestamp of ingestion. |
 | **⚠️ UNMATCHED**| Amber/Red Highlight | Signals that an unknown item was scanned (`INF`). Supervisor must inspect item. |
 
-#### B. COUNT SHEET & LOCATORS Manager
-- **Toolbar Actions**:
-  - **📊 Export Excel**: Generates `.xlsx` workbook with price valuations and inventory variances.
-  - **Print Summary**: Generates printable 80mm thermal receipt or A4 summary audit sheets.
-  - **🔒 Close All Open**: One-click batch closure that locks all remaining open shelves simultaneously.
-  - **+ Add Locator**: Automatically generates the next sequential shelf number (`1`, `2`, `3`, etc.).
+#### B. COUNT SHEET & LOCATORS Manager Toolbar
+
+| Action Button | Function & Output | Operational Definition & Modes |
+| :--- | :--- | :--- |
+| **📊 Export Excel** | Official Variance Workbook (`.xlsx`) | **Exports all store masterfile items that have system on-hand QTY** matched with actual **Scanned QTY** to calculate the physical variance (`Variance = Scanned Qty - System Qty`), matched unit cost, and total retail discrepancy valuation. |
+| **🖨️ Print Summary** | Dual Print Dialog Modal | Opens the print preview dialog offering **2 distinct output modes**:<br>• **1. Print Summary**: Standard consolidated shelf counts formatted for branch manager and supervisor sign-off.<br>• **2. Print with Variance**: Detailed discrepancy audit report comparing System Inventory vs Actual Scanned counts side-by-side with variance highlights. |
+| **🔒 Close All Open** | One-Click Batch Closure | Instantly transitions all open locators to `CLOSED`, locking all shelf counts and pushing store completion to 100%. |
+| **➕ Add Locator** | Automatic Sequence Increment | Detects the highest locator number and creates the next sequential shelf (e.g. `Locator 4`). |
+
 - **Locator Row States**:
   - **`In Use` (Orange Pill)**: An operator (e.g. `RAYMART`) is actively scanning inside this shelf. Actions: `[View]` `[Force Close]`.
   - **`Open` (Green Pill)**: Shelf is available for any operator to claim. Actions: `[View]` `[Close]` `[Delete]`.

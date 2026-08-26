@@ -1247,17 +1247,17 @@
                 tip: "<strong>Supervisor Audit Tip:</strong> Keep an eye out for <code>UNMATCHED</code> items. If found, have the floor staff bring the physical item to the desk to add it into <strong>Items Masterfile</strong> before closing the shelf."
             },
             7: {
-                title: "COUNT SHEET & LOCATORS Toolbar",
-                subtitle: "Export Excel, Print Summary, 🔒 Close All Open, and + Add Locator",
-                takeaway: "Primary action toolbar for shelf locator management and reporting.",
-                desc: "Contains the critical tools needed to close locators, print audit summaries, and download the official variance Excel workbook.",
+                title: "COUNT SHEET & LOCATORS Toolbar (Reporting & Batch Controls)",
+                subtitle: "Export Excel variance, Dual Print Summary modes, Close All Open, and Add Locator",
+                takeaway: "Master operational toolbar for generating variance reports, printing audit sheets, and locator batch controls.",
+                desc: "Contains the core management tools required to export official inventory variance workbooks, generate dual printable reports, batch-close remaining open shelves, and sequence new locators.",
                 actions: [
-                    "<strong>📊 Export Excel:</strong> Downloads `.xlsx` workbook with price & cost variances.",
-                    "<strong>Print Summary:</strong> Generates printable count receipt for manager sign-off.",
-                    "<strong>🔒 Close All Open:</strong> One-click batch closure for all open shelves.",
-                    "<strong>+ Add Locator:</strong> Sequentially creates the next shelf locator."
+                    "<strong>📊 Export Excel:</strong> Exports all masterfile items for this store that have system on-hand QTY compared against the actual Scanned QTY to calculate the exact physical variance (<code>Variance = Scanned QTY − System QTY</code>), including matched unit cost and retail valuations.",
+                    "<strong>🖨️ Print Summary (2 Print Options):</strong> Opens the Print dialog featuring two distinct print modes:<br>• <strong>1. Print Summary:</strong> Standard consolidated locator count totals formatted for branch manager and supervisor sign-off.<br>• <strong>2. Print with Variance:</strong> Comprehensive discrepancy audit sheet displaying System On-Hand vs Actual Scanned counts side-by-side with variance highlights.",
+                    "<strong>🔒 Close All Open:</strong> One-click batch closure tool that locks all remaining active locators simultaneously, preventing further tampering and pushing store completion to 100%.",
+                    "<strong>➕ Add Locator:</strong> Automatically sequences and creates the next shelf locator number (e.g. <code>Locator 4</code>) ready for mobile operators."
                 ],
-                tip: "Click <strong>🔒 Close All Open</strong> when counting is complete to lock all shelves simultaneously in 1 click."
+                tip: "<strong>Auditing Best Practice:</strong><br>1. Use <strong>Print with Variance</strong> for internal spot-checks and recounts.<br>2. Generate <strong>Export Excel</strong> for official submission to accounting and store operations."
             },
             8: {
                 title: "Shelf Locator Rows (e.g. Locator 1, 2, 3)",
