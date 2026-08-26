@@ -129,6 +129,30 @@ The real-time operational stream ingesting barcodes wirelessly from handheld mob
   - **`Open` (Green Pill)**: Shelf is available for any operator to claim. Actions: `[View]` `[Close]` `[Delete]`.
   - **`Closed`**: Shelf count is locked and finalized.
 
+#### C. "Items in Locator: Slot X" Inspection Modal (Accessed via [View])
+
+```
++-----------------------------------------------------------------------------------------------+
+| Items in Locator: Slot 1                                                         [+ Add Item] |
++-----------------------------------------------------------------------------------------------+
+| #   | Barcode      | ALU/SKU   | Description               | Qty | Action                 |
+|-----+--------------+-----------+---------------------------+-----+------------------------|
+| 1   | 480004972001 | SKU-1001  | BALLPEN 0.5MM BLACK       | 12  | [✏️ Edit Qty] [🗑️ Delete] |
+| 2   | 480004972002 | SKU-1002  | CORRECTION TAPE 5M        | 5   | [✏️ Edit Qty] [🗑️ Delete] |
++-----------------------------------------------------------------------------------------------+
+|                                                [Print Edits] [Print Sheet] [Close]            |
++-----------------------------------------------------------------------------------------------+
+```
+
+| Control / Feature | Function | Operational Usage |
+| :--- | :--- | :--- |
+| **➕ + Add Item** | Manual Product Entry | Allows manual entry of SKU/UPC and piece quantity if an item's barcode label is torn, missing, or unscannable. |
+| **✏️ Edit Qty** | Count Discrepancy Adjustment | Modifies recorded quantity directly if supervisor recounting finds a mismatch. |
+| **🗑️ Delete** | Row Removal | Removes accidental duplicate or wrongly assigned scans from the shelf. |
+| **🖨️ Print Edits** | Supervisor Audit Trail | Prints a specialized receipt listing only items manually added or edited by the supervisor for auditor review. |
+| **🖨️ Print Sheet** | Single Locator Thermal Receipt | Generates the official countsheet receipt for this individual shelf slot with sign-off blanks. |
+| **Close** | Dismiss Modal | Saves all changes to local database and closes the inspection window. |
+
 ---
 
 ## 4. Operational Sequence Diagram

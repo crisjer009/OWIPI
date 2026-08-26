@@ -1253,7 +1253,7 @@
                 desc: "Contains the core management tools required to export official inventory variance workbooks, generate dual printable reports, batch-close remaining open shelves, and sequence new locators.",
                 actions: [
                     "<strong>📊 Export Excel:</strong> Exports all masterfile items for this store that have system on-hand QTY compared against the actual Scanned QTY to calculate the exact physical variance (<code>Variance = Scanned QTY − System QTY</code>), including matched unit cost and retail valuations.",
-                    "<strong>🖨️ Print Summary (2 Print Options):</strong> Opens the Print dialog featuring two distinct print modes:<br>• <strong>1. Print Summary:</strong> Standard consolidated locator count totals formatted for branch manager and supervisor sign-off.<br>• <strong>2. Print with Variance:</strong> Comprehensive discrepancy audit sheet displaying System On-Hand vs Actual Scanned counts side-by-side with variance highlights.",
+                    "<strong>🖨️ Print Summary (2 Print Options):</strong> Opens the Print dialog featuring two distinct print modes:<br>• <strong>1. Print Summary:</strong> All items that have been scanned.<br>• <strong>2. Print with Variance:</strong> Only the items with discrepancy QTY.",
                     "<strong>🔒 Close All Open:</strong> One-click batch closure tool that locks all remaining active locators simultaneously, preventing further tampering and pushing store completion to 100%.",
                     "<strong>➕ Add Locator:</strong> Automatically sequences and creates the next shelf locator number (e.g. <code>Locator 4</code>) ready for mobile operators."
                 ],
@@ -1272,16 +1272,20 @@
                 tip: "Stick numbered physical locator stickers on retail shelf edges matching these numbers."
             },
             9: {
-                title: "Locator Actions (View, Force Close, Close, Delete)",
-                subtitle: "Inspect items in locator, lock active shelves, or perform recounts",
-                takeaway: "Control individual shelf status and audit itemized product scans.",
-                desc: "Allows inspecting shelf contents, modifying quantities, force-closing shelves in use, or deleting empty locator rows.",
+                title: "Locator Actions & 'Items in Locator' Modal Functions",
+                subtitle: "View shelf contents, manual item addition, quantity editing, audit printouts, and Force Close",
+                takeaway: "Deep-level auditing and correction suite for individual shelf locators.",
+                desc: "Clicking <strong>View</strong> opens the <code>Items in Locator: Slot X</code> inspection dialog. Supervisors have complete control to audit items, edit counts, manually input unscannable barcodes, print single countsheets, and generate audit-trail receipts.",
                 actions: [
-                    "<strong>View:</strong> Opens itemized breakdown of all products scanned in shelf.",
-                    "<strong>Force Close:</strong> Closes shelf even if an operator is currently active.",
-                    "<strong>Close / Delete:</strong> Locks count or removes empty locator."
+                    "<strong>👁️ 'View' (Items in Locator Modal):</strong> Opens the full shelf inspection window showing row numbers, barcodes, SKUs, descriptions, counted quantities, and row actions.",
+                    "<strong>➕ '+ Add Item' Button:</strong> Allows supervisors to manually insert a product into the locator by SKU/UPC and enter its quantity if the physical barcode label is torn or unreadable.",
+                    "<strong>✏️ Edit Quantity & 🗑️ Delete:</strong> In the items table, supervisors can adjust the counted piece quantity or delete erroneous scan rows.",
+                    "<strong>🖨️ 'Print Edits' (Audit Trail Printout):</strong> Generates a specialized receipt listing only the items that were manually edited or adjusted by the supervisor for auditor transparency.",
+                    "<strong>🖨️ 'Print Sheet' (Single Locator Count Sheet):</strong> Prints the official 80mm thermal countsheet receipt specifically for this locator slot.",
+                    "<strong>⚠️ 'Force Close':</strong> Immediately overrides and locks a locator marked <code>In Use</code> if a floor operator disconnected their phone without closing their shelf.",
+                    "<strong>🔒 'Close' / 🗑️ 'Delete':</strong> Finalizes open locators or deletes empty/unneeded shelf slots."
                 ],
-                tip: "Use <strong>Force Close</strong> if an operator disconnected their phone while leaving a locator marked In Use."
+                tip: "<strong>Supervisor Workflow:</strong><br>1. If a barcode label is physically damaged, open <strong>View</strong> ➔ click <strong>+ Add Item</strong>.<br>2. Always click <strong>Print Edits</strong> if you make manual quantity adjustments to keep an audit paper trail for accounting."
             }
         };
 
