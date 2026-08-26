@@ -11,7 +11,7 @@
             --bg-color: #0b0f19;
             --surface-color: #111827;
             --card-bg: rgba(17, 24, 39, 0.95);
-            --card-border: rgba(255, 255, 255, 0.12);
+            --card-border: rgba(255, 255, 255, 0.1);
             --accent-blue: #3b82f6;
             --accent-cyan: #06b6d4;
             --accent-purple: #a855f7;
@@ -42,7 +42,7 @@
             flex-direction: column;
         }
 
-        /* Top Header */
+        /* Top Bar */
         .top-navbar {
             background: rgba(17, 24, 39, 0.95);
             border-bottom: 1px solid var(--card-border);
@@ -79,19 +79,6 @@
             text-transform: uppercase;
         }
 
-        .user-tag-mark {
-            background: rgba(59, 130, 246, 0.2);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            color: #60a5fa;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 800;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
         .btn-nav-link {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -115,8 +102,8 @@
 
         /* Workspace Wrapper */
         .workspace-wrapper {
-            max-width: 1560px;
-            margin: 16px auto;
+            max-width: 1600px;
+            margin: 14px auto;
             padding: 0 16px;
             width: 100%;
             flex-grow: 1;
@@ -124,206 +111,330 @@
             flex-direction: column;
         }
 
-        /* Simulated Host Console Frame */
-        .host-console-frame {
-            background: #0d1117;
+        /* ===================================================
+           PIXEL-PERFECT HOST CONSOLE WORKSPACE (scan.php)
+           =================================================== */
+        .host-stage {
+            background: #090d16;
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 16px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
             overflow: hidden;
             position: relative;
-            min-height: 780px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 16px;
         }
 
-        .host-console-frame::before {
+        .host-stage::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #10b981, #06b6d4, #3b82f6, #f59e0b);
+            background: linear-gradient(90deg, #10b981, #06b6d4, #3b82f6, #f59e0b, #ef4444);
             z-index: 30;
         }
 
-        /* Host Header Bar */
-        .host-header-bar {
-            background: #161b22;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 14px 20px;
+        /* Header Row */
+        .host-top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .host-store-info {
+        .host-brand-info {
             display: flex;
-            align-items: center;
-            gap: 12px;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .store-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #059669, #10b981);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .host-main-title {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 900;
-            color: white;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+            color: #ffffff;
+            letter-spacing: 0.04em;
         }
 
-        .store-code-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.25rem;
+        .host-store-code {
+            font-size: 0.85rem;
             font-weight: 800;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            color: #38bdf8;
         }
 
-        .store-name-sub {
+        .host-user-tag {
             font-size: 0.75rem;
-            color: var(--text-muted);
+            color: #94a3b8;
         }
 
-        .host-header-actions {
+        .host-header-buttons {
             display: flex;
             align-items: center;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        /* Top Metric Cards */
-        .host-metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            padding: 20px 20px 10px 20px;
-        }
-
-        .metric-card {
-            background: rgba(22, 27, 34, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 16px;
+        .btn-header-action {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border-radius: 6px;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid transparent;
             transition: all 0.2s ease;
-            position: relative;
+            color: white;
         }
 
-        .metric-card:hover {
-            border-color: rgba(59, 130, 246, 0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        .btn-upload-master {
+            background: #1e293b;
+            border-color: #475569;
+            color: #f8fafc;
         }
 
-        .metric-label {
+        .btn-download-master {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #34d399;
+        }
+
+        .btn-sync-cloud {
+            background: #0284c7;
+            border-color: #0284c7;
+            box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+        }
+
+        .btn-close-store {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .host-status-pill {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 12px;
             font-size: 0.72rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
-            margin-bottom: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .metric-val {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: #ffffff;
-            line-height: 1.1;
-        }
-
-        .metric-sub {
-            font-size: 0.72rem;
-            color: #64748b;
-            margin-top: 6px;
-        }
-
-        /* 50/50 Dual Table Layout */
-        .host-dual-tables-grid {
+        /* Top 3 Cards Row */
+        .host-top-cards-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 10px 20px 20px 20px;
-            flex-grow: 1;
+            grid-template-columns: 1.15fr 1.35fr 1.15fr;
+            gap: 16px;
         }
 
-        @media (max-width: 1050px) {
-            .host-dual-tables-grid {
+        @media (max-width: 1100px) {
+            .host-top-cards-grid {
                 grid-template-columns: 1fr;
             }
         }
 
-        .host-card-table {
-            background: rgba(22, 27, 34, 0.95);
+        .host-card {
+            background: #111726;
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
+            padding: 16px;
             position: relative;
         }
 
-        .host-card-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #ffffff;
+        .host-card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        /* Card 1: Locator Progress */
+        .progress-circle-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .circle-gauge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 6px solid #1e293b;
+            border-top-color: #3b82f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .progress-stats-table {
+            flex-grow: 1;
+            font-size: 0.78rem;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            color: #94a3b8;
+        }
+
+        .stat-line strong {
+            color: white;
+        }
+
+        /* Card 2: Connect Scanner */
+        .connect-scanner-body {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .qr-placeholder-box {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 8px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .qr-svg {
+            width: 100%;
+            height: 100%;
+            fill: black;
+        }
+
+        .connect-scanner-details {
+            flex-grow: 1;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sim-select-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: monospace;
+        }
+
+        /* Card 3: Print Spacing */
+        .spacing-inputs-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             margin-bottom: 12px;
         }
 
-        .host-search-input {
+        .spacing-field label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .sim-input-control {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: white;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-family: monospace;
+        }
+
+        .btn-save-spacing {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Bottom Row: 50/50 Dual Tables */
+        .host-bottom-tables-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.05fr;
+            gap: 16px;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 1100px) {
+            .host-bottom-tables-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .host-table-search {
             width: 100%;
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 0.8rem;
             color: white;
-            margin-bottom: 12px;
-            outline: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
         }
 
-        .host-search-input:focus {
-            border-color: var(--accent-blue);
-        }
-
-        .table-scroll-wrap {
-            border: 1px solid rgba(255, 255, 255, 0.06);
+        .table-scroll-container {
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 8px;
             overflow-y: auto;
-            max-height: 420px;
+            max-height: 400px;
+            background: #0d1117;
         }
 
-        table.host-table {
+        table.host-data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             text-align: left;
         }
 
-        table.host-table th {
+        table.host-data-table th {
             position: sticky;
             top: 0;
-            background: #1c2128;
+            background: #161b22;
             color: #94a3b8;
             font-weight: 700;
             padding: 10px 8px;
@@ -331,70 +442,69 @@
             z-index: 2;
         }
 
-        table.host-table td {
-            padding: 10px 8px;
+        table.host-data-table td {
+            padding: 9px 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             color: #cbd5e1;
         }
 
-        table.host-table tr:hover {
+        table.host-data-table tr:hover {
             background: rgba(255, 255, 255, 0.03);
         }
 
-        /* Buttons */
-        .btn-host {
-            padding: 6px 12px;
-            font-size: 0.75rem;
+        /* Badges & Action Buttons */
+        .pill-in-use {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.68rem;
             font-weight: 700;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid transparent;
+        }
+
+        .pill-open {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.68rem;
+            font-weight: 700;
+        }
+
+        .btn-tbl-action {
+            padding: 4px 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            color: white;
+            border: 1px solid transparent;
+            margin-right: 4px;
         }
 
-        .btn-host:hover {
-            transform: translateY(-1px);
+        .btn-tbl-view {
+            background: #1e293b;
+            border-color: #3b82f6;
+            color: #60a5fa;
         }
 
-        .btn-host-sync {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-        }
-
-        .btn-host-excel {
-            background: #21262d;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-        }
-
-        .btn-host-excel:hover {
-            border-color: #58a6ff;
-            color: white;
-        }
-
-        .btn-host-print {
-            background: #2ea44f;
-            border-color: #2ea44f;
-        }
-
-        .btn-host-close-all {
-            background: rgba(217, 119, 6, 0.15);
-            border: 1px solid #d97706;
+        .btn-tbl-force-close {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: #f59e0b;
             color: #fbbf24;
         }
 
-        .btn-host-close-all:hover {
-            background: #d97706;
-            color: white;
+        .btn-tbl-close {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #ef4444;
+            color: #f87171;
         }
 
-        .btn-host-add-loc {
-            background: #0969da;
-            border-color: #0969da;
+        .btn-tbl-delete {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
         }
 
         /* Accurate Hotspot Pin Badge */
@@ -424,7 +534,7 @@
             z-index: 25;
             transition: all 0.2s ease;
             user-select: none;
-            border: 2px solid #0d1117;
+            border: 2px solid #090d16;
         }
 
         .hotspot-pin:hover {
@@ -439,28 +549,9 @@
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
-        /* Status Badges */
-        .badge-open {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.68rem;
-            font-weight: 700;
-        }
-
-        .badge-closed {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.68rem;
-            font-weight: 700;
-        }
-
-        /* Interactive Popup Modal */
+        /* ===================================================
+           INTERACTIVE POPUP MODAL
+           =================================================== */
         .modal-backdrop {
             position: fixed;
             top: 0;
@@ -665,12 +756,11 @@
 </head>
 <body>
 
-    <!-- Top Navigation -->
+    <!-- Top Header -->
     <header class="top-navbar">
         <div class="brand-title">
             <span>OWIPI Host Console Manual</span>
-            <span class="brand-badge">Supervisor View</span>
-            <div class="user-tag-mark">👤 LOGGED IN AS: <strong>MARK</strong></div>
+            <span class="brand-badge">Supervisor Console</span>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <a href="control_dashboard_visual_manual.html" class="btn-nav-link">🎛️ Control Dashboard Manual</a>
@@ -680,196 +770,232 @@
 
     <div class="workspace-wrapper">
 
-        <!-- Host Console Simulated Workspace -->
-        <div class="host-console-frame">
+        <!-- Host Console Simulated Workspace Frame (Matches Reference Image) -->
+        <div class="host-stage">
 
-            <!-- Host Console Header Bar -->
-            <div class="host-header-bar">
-                <div class="host-store-info">
-                    <div class="pin-anchor" onclick="openModal(1)">
-                        <div class="store-avatar">RME</div>
-                        <div class="hotspot-pin" style="top: -6px; right: -6px;">1</div>
+            <!-- Top Header Bar -->
+            <div class="host-top-header">
+                <!-- Pin 1: Store & User Context -->
+                <div class="pin-anchor" onclick="openModal(1)">
+                    <div class="host-brand-info">
+                        <div class="host-main-title">OWI PHYSICAL INVENTORY</div>
+                        <div class="host-store-code">STORE CODE : RME</div>
+                        <div class="host-user-tag">User: <strong>MARK</strong></div>
                     </div>
-                    <div>
-                        <div class="store-code-title">
-                            <span>STORE: RME</span>
-                            <span style="font-size: 0.72rem; color: #34d399; font-weight: 700; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 12px;">● Session Active</span>
-                        </div>
-                        <div class="store-name-sub">ROBINSONS METRO EAST • Supervised by <strong>MARK</strong></div>
-                    </div>
+                    <div class="hotspot-pin" style="top: -6px; right: -12px;">1</div>
                 </div>
 
-                <div class="host-header-actions">
-                    <div class="pin-anchor" onclick="openModal(2)">
-                        <button class="btn-host btn-host-sync">☁️ Sync to Cloud</button>
-                        <div class="hotspot-pin" style="top: -6px; right: -6px;">2</div>
+                <!-- Pin 2: Header Actions -->
+                <div class="pin-anchor" onclick="openModal(2)">
+                    <div class="host-header-buttons">
+                        <button class="btn-header-action btn-upload-master">📁 Upload Masterfile</button>
+                        <button class="btn-header-action btn-download-master">☁️ Download Store Masterfile</button>
+                        <button class="btn-header-action btn-sync-cloud">☁️ Sync to Cloud</button>
+                        <button class="btn-header-action btn-close-store">🔒 Close Store</button>
+                        <div class="host-status-pill">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #f59e0b;"></span> Offline (Local)
+                        </div>
+                        <span style="color: #f87171; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-left: 4px;">Log Out</span>
                     </div>
-                    <button class="btn-host btn-host-excel" onclick="openModal(6)">📋 Variance Report</button>
-                    <button class="btn-host" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;" onclick="openModal(1)">🚪 Exit Store</button>
+                    <div class="hotspot-pin" style="top: -6px; right: -6px;">2</div>
                 </div>
             </div>
 
-            <!-- Top KPI Metrics Grid -->
-            <div class="pin-anchor" style="display: block; width: 100%;" onclick="openModal(3)">
-                <div class="host-metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-label">Total Scanned Qty</div>
-                        <div class="metric-val" style="color: #38bdf8;">1,420</div>
-                        <div class="metric-sub">Across all locators</div>
+            <!-- Top 3 Cards Row -->
+            <div class="host-top-cards-grid">
+
+                <!-- Card 1: Locator Progress -->
+                <div class="host-card pin-anchor" style="display: block;" onclick="openModal(3)">
+                    <div class="host-card-header">
+                        <span>LOCATOR PROGRESS</span>
+                        <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700;">
+                            <span>INF: <strong style="color: #38bdf8;">0</strong></span>
+                            <span style="margin-left: 8px;">SCANNERS: <strong style="color: #34d399;">1</strong></span>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Unique Products</div>
-                        <div class="metric-val" style="color: #a855f7;">348</div>
-                        <div class="metric-sub">Matched masterfile SKUs</div>
+
+                    <div class="progress-circle-wrap">
+                        <div class="circle-gauge">
+                            <div>0%</div>
+                            <div style="font-size: 0.6rem; color: #64748b; font-weight: 700;">CLOSED</div>
+                        </div>
+                        <div class="progress-stats-table">
+                            <div class="stat-line">
+                                <span>Closed (Done)</span>
+                                <strong style="color: #34d399;">0</strong>
+                            </div>
+                            <div class="stat-line">
+                                <span>Active / Open</span>
+                                <strong style="color: #fbbf24;">3</strong>
+                            </div>
+                            <div class="stat-line">
+                                <span>Total Locators</span>
+                                <strong>3</strong>
+                            </div>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Total Locators</div>
-                        <div class="metric-val" style="color: #fbbf24;">8 <span style="font-size: 1rem; color: #94a3b8;">/ 12</span></div>
-                        <div class="metric-sub">8 Closed • 4 Open</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Store Completion</div>
-                        <div class="metric-val" style="color: #34d399;">67%</div>
-                        <div class="metric-sub">Progress towards 100% closure</div>
-                    </div>
+
+                    <input type="text" class="sim-input-control" placeholder="🔍 Search Item (Barcode, ALU/SKU)...">
+                    <div class="hotspot-pin">3</div>
                 </div>
-                <div class="hotspot-pin" style="top: 10px; right: 30px;">3</div>
+
+                <!-- Card 2: Connect Scanner -->
+                <div class="host-card pin-anchor" style="display: block;" onclick="openModal(4)">
+                    <div class="host-card-header">
+                        <span>CONNECT SCANNER</span>
+                        <span>❖</span>
+                    </div>
+
+                    <div class="connect-scanner-body">
+                        <div class="qr-placeholder-box">
+                            <!-- QR Code SVG -->
+                            <svg class="qr-svg" viewBox="0 0 24 24">
+                                <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm10 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 4h4v-4h-2v2h-2v2zM6 6h2v2H6V6zm12 0h2v2h-2V6zm-12 12h2v2H6v-2z" />
+                            </svg>
+                        </div>
+                        <div class="connect-scanner-details">
+                            <div>Scan QR code with phone.</div>
+                            <div style="font-weight: 700; color: white;">Host Network IP:</div>
+                            <select class="sim-select-box">
+                                <option>192.168.0.201 (LOCAL) ▼</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hotspot-pin">4</div>
+                </div>
+
+                <!-- Card 3: Print Spacing Settings -->
+                <div class="host-card pin-anchor" style="display: block;" onclick="openModal(5)">
+                    <div class="host-card-header">
+                        <span>🖨️ PRINT SPACING SETTINGS</span>
+                    </div>
+
+                    <div class="spacing-inputs-row">
+                        <div class="spacing-field">
+                            <label>TOP MARGIN (MM)</label>
+                            <input type="text" class="sim-input-control" value="0" readonly>
+                        </div>
+                        <div class="spacing-field">
+                            <label>LEFT MARGIN (MM)</label>
+                            <input type="text" class="sim-input-control" value="10" readonly>
+                        </div>
+                    </div>
+
+                    <button class="btn-save-spacing">Save Spacing</button>
+                    <div class="hotspot-pin">5</div>
+                </div>
+
             </div>
 
-            <!-- 50/50 Dual Tables: Live Scans + Count Sheet Locators -->
-            <div class="host-dual-tables-grid">
+            <!-- Bottom Row: 50/50 Dual Tables -->
+            <div class="host-bottom-tables-grid">
 
-                <!-- Left Column: Live Incoming Scans Log -->
-                <div class="host-card-table">
-                    <div class="host-card-title">
-                        <div class="pin-anchor" onclick="openModal(4)">
-                            <span>📡 Live Incoming Scans Log</span>
-                            <div class="hotspot-pin" style="top: -6px; right: -18px;">4</div>
-                        </div>
-                        <span style="font-size: 0.72rem; color: #34d399; background: rgba(16, 185, 129, 0.15); padding: 2px 8px; border-radius: 12px;">● Live Stream</span>
+                <!-- Bottom Left: Live Incoming Scans Log -->
+                <div class="host-card pin-anchor" style="display: block;" onclick="openModal(6)">
+                    <div class="host-card-header" style="margin-bottom: 8px;">
+                        <span>LIVE INCOMING SCANS LOG</span>
                     </div>
 
-                    <input type="text" class="host-search-input" placeholder="🔍 Search live incoming scans...">
+                    <input type="text" class="host-table-search" placeholder="🔍 Search live incoming scans...">
 
-                    <div class="table-scroll-wrap">
-                        <table class="host-table">
+                    <div class="table-scroll-container">
+                        <table class="host-data-table">
                             <thead>
                                 <tr>
                                     <th>Barcode</th>
-                                    <th>SKU</th>
+                                    <th>ALU/SKU</th>
                                     <th>Description</th>
-                                    <th style="text-align: center;">Qty</th>
+                                    <th>Qty</th>
                                     <th>Scanned By</th>
-                                    <th style="text-align: center;">Locator</th>
-                                    <th style="text-align: right;">Time</th>
+                                    <th>Locator</th>
+                                    <th>Time</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td style="font-family: monospace;">480004972001</td>
-                                    <td>SKU-101</td>
-                                    <td>BALLPEN 0.5MM BLK</td>
-                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">12</td>
-                                    <td><strong style="color: #60a5fa;">MARK</strong></td>
-                                    <td style="text-align: center;"><span class="badge-open">LOC-01</span></td>
-                                    <td style="text-align: right; color: #64748b;">13:34</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace;">480004972002</td>
-                                    <td>SKU-102</td>
-                                    <td>CORRECTION TAPE 5M</td>
-                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">5</td>
-                                    <td><strong style="color: #34d399;">ALLAN</strong></td>
-                                    <td style="text-align: center;"><span class="badge-open">LOC-02</span></td>
-                                    <td style="text-align: right; color: #64748b;">13:33</td>
-                                </tr>
-                                <tr>
-                                    <td style="font-family: monospace;">480004972003</td>
-                                    <td>SKU-103</td>
-                                    <td>NOTEBOOK 80LGS</td>
-                                    <td style="text-align: center; font-weight: 700; color: #38bdf8;">20</td>
-                                    <td><strong style="color: #60a5fa;">MARK</strong></td>
-                                    <td style="text-align: center;"><span class="badge-open">LOC-01</span></td>
-                                    <td style="text-align: right; color: #64748b;">13:31</td>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #64748b; font-style: italic;">
+                                        No scans logged yet. Connect a mobile device to start scanning!
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <div class="hotspot-pin">6</div>
                 </div>
 
-                <!-- Right Column: Count Sheet & Locators Manager -->
-                <div class="host-card-table">
-                    <div class="host-card-title">
-                        <div class="pin-anchor" onclick="openModal(5)">
-                            <span>📑 Count Sheet & Locators</span>
-                            <div class="hotspot-pin" style="top: -6px; right: -18px;">5</div>
+                <!-- Bottom Right: Count Sheet & Locators Manager -->
+                <div class="host-card">
+                    <div class="host-card-header" style="margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                        <div class="pin-anchor" onclick="openModal(7)">
+                            <span>COUNT SHEET & LOCATORS</span>
+                            <div class="hotspot-pin" style="top: -6px; right: -18px;">7</div>
                         </div>
 
-                        <!-- Locator Toolbar Buttons -->
-                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            <div class="pin-anchor" onclick="openModal(6)">
-                                <button class="btn-host btn-host-excel">📊 Export Excel</button>
-                                <div class="hotspot-pin" style="top: -6px; right: -6px;">6</div>
+                        <!-- Top Right Table Action Toolbar -->
+                        <div class="pin-anchor" onclick="openModal(7)">
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button class="btn-header-action" style="background: #21262d; border-color: #30363d; font-size: 0.72rem;">📊 Export Excel</button>
+                                <button class="btn-header-action" style="background: #2ea44f; border-color: #2ea44f; font-size: 0.72rem;">Print Summary</button>
+                                <button class="btn-header-action" style="background: rgba(217, 119, 6, 0.15); border-color: #d97706; color: #fbbf24; font-size: 0.72rem;">🔒 Close All Open</button>
+                                <button class="btn-header-action" style="background: #0969da; border-color: #0969da; font-size: 0.72rem;">+ Add Locator</button>
                             </div>
-                            <div class="pin-anchor" onclick="openModal(7)">
-                                <button class="btn-host btn-host-print">🖨️ Print Summary</button>
-                                <div class="hotspot-pin" style="top: -6px; right: -6px;">7</div>
-                            </div>
-                            <div class="pin-anchor" onclick="openModal(8)">
-                                <button class="btn-host btn-host-close-all">🔒 Close All Open</button>
-                                <div class="hotspot-pin" style="top: -6px; right: -6px;">8</div>
-                            </div>
-                            <div class="pin-anchor" onclick="openModal(9)">
-                                <button class="btn-host btn-host-add-loc">+ Add Locator</button>
-                                <div class="hotspot-pin" style="top: -6px; right: -6px;">9</div>
-                            </div>
+                            <div class="hotspot-pin" style="top: -6px; right: -6px;">7</div>
                         </div>
                     </div>
 
-                    <input type="text" class="host-search-input" placeholder="🔍 Search locators...">
+                    <input type="text" class="host-table-search" placeholder="🔍 Search locators...">
 
-                    <div class="table-scroll-wrap">
-                        <table class="host-table">
+                    <div class="table-scroll-container">
+                        <table class="host-data-table">
                             <thead>
                                 <tr>
                                     <th>Locator</th>
                                     <th>Status</th>
                                     <th>Scanned By</th>
-                                    <th style="text-align: center;">Actions</th>
+                                    <th style="text-align: center;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <!-- Row 1: In Use -->
                                 <tr>
-                                    <td style="font-weight: 700; color: white;">LOC-01</td>
-                                    <td><span class="badge-open">OPEN</span></td>
-                                    <td><strong style="color: #60a5fa;">MARK</strong></td>
+                                    <td>
+                                        <div class="pin-anchor" onclick="openModal(8)">
+                                            <strong>1</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items scanned )</span>
+                                            <div class="hotspot-pin" style="top: -6px; right: -14px;">8</div>
+                                        </div>
+                                    </td>
+                                    <td><span class="pill-in-use">In Use</span></td>
+                                    <td><strong style="color: #fbbf24;">RAYMART</strong></td>
                                     <td style="text-align: center;">
-                                        <div class="pin-anchor" onclick="openModal(10)">
-                                            <span style="color: #38bdf8; cursor: pointer; font-weight: 600; margin-right: 6px;">👁️ View</span>
-                                            <span style="color: #fbbf24; cursor: pointer; font-weight: 600; margin-right: 6px;">🔒 Close</span>
-                                            <span style="color: #f87171; cursor: pointer; font-weight: 600;">Delete</span>
-                                            <div class="hotspot-pin" style="top: -4px; right: -12px;">10</div>
+                                        <div class="pin-anchor" onclick="openModal(9)">
+                                            <button class="btn-tbl-action btn-tbl-view">View</button>
+                                            <button class="btn-tbl-action btn-tbl-force-close">Force Close</button>
+                                            <div class="hotspot-pin" style="top: -4px; right: -8px;">9</div>
                                         </div>
                                     </td>
                                 </tr>
+
+                                <!-- Row 2: Open -->
                                 <tr>
-                                    <td style="font-weight: 700; color: white;">LOC-02</td>
-                                    <td><span class="badge-closed">CLOSED</span></td>
-                                    <td><strong style="color: #34d399;">ALLAN</strong></td>
+                                    <td><strong>2</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items scanned )</span></td>
+                                    <td><span class="pill-open">Open</span></td>
+                                    <td style="color: #64748b;">-</td>
                                     <td style="text-align: center;">
-                                        <span style="color: #38bdf8; cursor: pointer; font-weight: 600; margin-right: 6px;" onclick="openModal(10)">👁️ View</span>
-                                        <span style="color: #60a5fa; cursor: pointer; font-weight: 600; margin-right: 6px;" onclick="openModal(10)">🔄 Re-open</span>
-                                        <span style="color: #f87171; cursor: pointer; font-weight: 600;" onclick="openModal(10)">Delete</span>
+                                        <button class="btn-tbl-action btn-tbl-view" onclick="openModal(9)">View</button>
+                                        <button class="btn-tbl-action btn-tbl-close" onclick="openModal(9)">Close</button>
+                                        <button class="btn-tbl-action btn-tbl-delete" onclick="openModal(9)">Delete</button>
                                     </td>
                                 </tr>
+
+                                <!-- Row 3: Open -->
                                 <tr>
-                                    <td style="font-weight: 700; color: white;">LOC-03</td>
-                                    <td><span class="badge-closed">CLOSED</span></td>
-                                    <td><strong style="color: #60a5fa;">MARK</strong></td>
+                                    <td><strong>3</strong> <span style="color: #64748b; font-size: 0.72rem;">( 0 - items scanned )</span></td>
+                                    <td><span class="pill-open">Open</span></td>
+                                    <td style="color: #64748b;">-</td>
                                     <td style="text-align: center;">
-                                        <span style="color: #38bdf8; cursor: pointer; font-weight: 600; margin-right: 6px;" onclick="openModal(10)">👁️ View</span>
-                                        <span style="color: #60a5fa; cursor: pointer; font-weight: 600; margin-right: 6px;" onclick="openModal(10)">🔄 Re-open</span>
-                                        <span style="color: #f87171; cursor: pointer; font-weight: 600;" onclick="openModal(10)">Delete</span>
+                                        <button class="btn-tbl-action btn-tbl-view" onclick="openModal(9)">View</button>
+                                        <button class="btn-tbl-action btn-tbl-close" onclick="openModal(9)">Close</button>
+                                        <button class="btn-tbl-action btn-tbl-delete" onclick="openModal(9)">Delete</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -883,7 +1009,9 @@
 
     </div>
 
-    <!-- Interactive Hotspot Modal -->
+    <!-- ===================================================
+         INTERACTIVE POPUP MODAL
+         =================================================== -->
     <div class="modal-backdrop" id="modal-backdrop" onclick="handleBackdropClick(event)">
         <div class="modal-card">
             <div class="modal-header">
@@ -928,7 +1056,7 @@
 
             <div class="modal-footer-nav">
                 <button class="btn-modal-nav" onclick="prevModalPin()">◀ Previous Hotspot</button>
-                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 10</span>
+                <span id="m-counter" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan);">Hotspot 1 of 9</span>
                 <button class="btn-modal-nav" onclick="nextModalPin()">Next Hotspot ▶</button>
             </div>
         </div>
@@ -936,127 +1064,117 @@
 
     <script>
         let currentModalPin = 1;
-        const totalPins = 10;
+        const totalPins = 9;
 
         const hostPinData = {
             1: {
-                title: "Supervisor Identity & Store Context (User: MARK)",
-                subtitle: "Active store code RME (Robinsons Metro East) and supervisor session",
+                title: "Store & Supervisor Identity (User: MARK)",
+                subtitle: "Active store code RME and supervisor session authentication",
                 takeaway: "Identifies the currently loaded store database and authenticated supervisor.",
-                desc: "Confirms that supervisor <strong>MARK</strong> is actively managing store <strong>RME</strong>. All locators, scans, and export sheets generated will be stamped under user MARK.",
+                desc: "Confirms that supervisor <strong>MARK</strong> is managing store <strong>RME</strong>. All locator countsheets, scan additions, and final sync packets are stamped under user MARK.",
                 actions: [
-                    "<strong>Active Store Badge:</strong> Displays branch code (e.g. <code>RME</code>).",
-                    "<strong>Session Status:</strong> Confirms session is live and connected.",
-                    "<strong>Exit Store:</strong> Unloads the active store database cleanly."
+                    "<strong>STORE CODE:</strong> Displays active branch database (<code>RME</code>).",
+                    "<strong>User Identity:</strong> Authenticated supervisor name (<code>MARK</code>).",
+                    "<strong>Title Banner:</strong> OWI Physical Inventory Host Console."
                 ],
-                tip: "Verify that the store code matches the physical retail branch before scanners begin counting."
+                tip: "Always double-check that the 3-letter store code matches your physical branch before staff start scanning."
             },
             2: {
-                title: "☁️ Sync to Cloud & Central Handshake",
-                subtitle: "Uploads verified local store inventory counts to the central cloud database",
-                takeaway: "Sends completed store counts, locators, and item quantities to headquarters.",
-                desc: "Executes a secure API synchronization request. The cloud verifies the cryptographic token and holds the request for approval if existing records are detected on cloud.",
+                title: "Header Management Toolbar Actions",
+                subtitle: "Upload Masterfile, Download Store Masterfile, Sync to Cloud, and Close Store",
+                takeaway: "High-level inventory data synchronization and session controls.",
+                desc: "Contains top-level master catalog upload/download, direct cloud synchronization, and the permanent store closure action.",
                 actions: [
-                    "<strong>Cloud Handshake:</strong> Uses shared Secret Sync Token.",
-                    "<strong>Complete Store Dump:</strong> Uploads items, scans, and locator data.",
-                    "<strong>Conflict Protection:</strong> Cloud alerts admin before overwriting."
+                    "<strong>📁 Upload Masterfile:</strong> Upload new product barcodes from CSV/Excel.",
+                    "<strong>☁️ Download Store Masterfile:</strong> Pull branch catalog from Cloud.",
+                    "<strong>☁️ Sync to Cloud:</strong> Push completed counts to headquarters.",
+                    "<strong>🔒 Close Store:</strong> Finalizes store session and marks it Closed."
                 ],
-                tip: "Only click <strong>Sync to Cloud</strong> after all locators in the store are 100% closed and audited."
+                tip: "Run <strong>Download Store Masterfile</strong> before counting begins to ensure all barcodes are pre-loaded."
             },
             3: {
-                title: "📊 Summary KPI Metrics Dashboard",
-                subtitle: "Real-time indicators: Total Scanned Qty, Unique SKUs, Locators & Completion %",
-                takeaway: "Instant snapshot of physical inventory velocity and completion milestones.",
-                desc: "Calculates total pieces scanned across all locators, total distinct product SKUs recognized in masterfile, open vs closed locators, and store completion percentage.",
+                title: "LOCATOR PROGRESS Card & Metrics",
+                subtitle: "Circle completion percentage, scanners connected count, and item search",
+                takeaway: "Real-time visual gauge of physical shelf completion milestones.",
+                desc: "Calculates total closed vs open locators, active connected mobile scanners (e.g. <code>SCANNERS: 1</code>), and provides a quick item search input.",
                 actions: [
-                    "<strong>Total Scanned Qty:</strong> Sum of all unit quantities counted so far.",
-                    "<strong>Unique SKUs:</strong> Count of distinct matched items.",
-                    "<strong>Completion Progress:</strong> Formula: <code>(Closed Locators / Total Locators) × 100%</code>."
+                    "<strong>0% CLOSED Gauge:</strong> Live progress formula of closed vs total shelves.",
+                    "<strong>SCANNERS: 1:</strong> Number of handheld mobile devices currently connected.",
+                    "<strong>Search Item:</strong> Quick lookup by barcode or description."
                 ],
-                tip: "When Store Completion reaches 100%, the store is ready for Excel variance export."
+                tip: "When the gauge reaches <strong>100% CLOSED</strong>, you are ready to export the Excel variance report."
             },
             4: {
-                title: "📡 Live Incoming Scans Stream",
-                subtitle: "Real-time feed of all wireless barcodes received from handheld scanners",
-                takeaway: "Watch barcodes and counts flow in live from the counting floor.",
-                desc: "Streams every scan immediately as staff pull barcode triggers. Displays Barcode, SKU, Description, Scanned Quantity, Operator Name (e.g. MARK, ALLAN), Locator, and Timestamp.",
+                title: "CONNECT SCANNER (QR Code & IP Selector)",
+                subtitle: "Wi-Fi pairing QR code and local network IPv4 host address",
+                takeaway: "Enables floor staff to connect their phone cameras without typing URLs.",
+                desc: "Displays an interactive QR code encoding the local host IP (e.g. <code>192.168.0.201</code>). Floor operators scan this QR code with their mobile browsers to begin scanning immediately.",
                 actions: [
-                    "<strong>Live Search:</strong> Filter incoming stream by description or operator.",
-                    "<strong>Operator Attribution:</strong> Verify who is scanning in each area.",
-                    "<strong>Error Auditing:</strong> Instantly catch duplicate scans or incorrect shelves."
+                    "<strong>QR Code Pairing:</strong> Automatic Wi-Fi connection handshake.",
+                    "<strong>Host Network IP:</strong> Choose correct adapter IP from dropdown."
                 ],
-                tip: "If a barcode shows 'Not in Masterfile', inform the floor team to set the physical item aside for supervisor inspection."
+                tip: "Make sure all smartphones are connected to the exact same Wi-Fi router SSID as this host laptop."
             },
             5: {
-                title: "📑 Count Sheet & Locators Manager",
-                subtitle: "The master control table for managing shelf locators and audit sheets",
-                takeaway: "Organize the physical store into manageable counting zones (Locators).",
-                desc: "Each locator represents a physical shelf, gondola, rack, or storage bin (e.g. <code>LOC-01</code>, <code>LOC-02</code>). Shows whether a locator is currently Open or Closed.",
+                title: "PRINT SPACING SETTINGS (Margin Calibration)",
+                subtitle: "Top Margin (0mm) and Left Margin (10mm) thermal label alignment",
+                takeaway: "Calibrate thermal printer margins so count receipts and barcode labels never clip.",
+                desc: "Adjusts Top and Left print margins in millimeters for continuous receipt rolls and 80mm thermal printers.",
                 actions: [
-                    "<strong>Status Tracking:</strong> Displays blue <code>OPEN</code> or green <code>CLOSED</code>.",
-                    "<strong>Search Locators:</strong> Quickly locate a specific shelf number.",
-                    "<strong>Zone Management:</strong> Assign locators to specific staff members."
+                    "<strong>Top Margin (MM):</strong> Vertical offset adjustment.",
+                    "<strong>Left Margin (MM):</strong> Horizontal indent adjustment (default 10mm).",
+                    "<strong>Save Spacing:</strong> Applies settings across all printable summaries."
                 ],
-                tip: "Keep locators numbered sequentially (1 to N) to correspond with physical barcode stickers on shelves."
+                tip: "If text is cutting off on the left edge of your thermal receipt, increase Left Margin to 12mm or 14mm."
             },
             6: {
-                title: "📊 Export Excel Store Variance Report",
-                subtitle: "Generates comprehensive multi-tab Excel workbook with cost variances",
-                takeaway: "Exports official inventory count sheets, matched prices, and variance calculations.",
-                desc: "Generates an `.xlsx` workbook containing full store count breakdown, UPCs, item descriptions, scanned quantities, system on-hand, variances, and retail valuation.",
+                title: "LIVE INCOMING SCANS LOG (Real-Time Stream)",
+                subtitle: "Live feed of every barcode scanned from mobile devices with timestamps",
+                takeaway: "Watch barcodes, quantities, and descriptions stream in live as staff scan.",
+                desc: "Displays every scan transaction with Barcode, ALU/SKU, Description, Qty, Scanned By, Assigned Locator, and Time. Also includes a live keyword search filter.",
                 actions: [
-                    "<strong>Instant Excel Download:</strong> Generates formatted workbook.",
-                    "<strong>Variance Breakdown:</strong> Scanned Qty vs Master Inventory.",
-                    "<strong>Audit Compliance:</strong> Official record for finance and store operations."
+                    "<strong>Real-Time Stream:</strong> Ingests scans as barcode triggers are pulled.",
+                    "<strong>Search Log:</strong> Filter incoming barcodes by operator or SKU.",
+                    "<strong>Empty State:</strong> Shows 'No scans logged yet' until scanners connect."
                 ],
-                tip: "Save a backup copy of the Excel variance report to your local flash drive immediately after counting."
+                tip: "Watch this stream to verify that operators are scanning items into the correct shelf locator."
             },
             7: {
-                title: "🖨️ Print Summary & Thermal Audit Sheets",
-                subtitle: "Direct printing for 80mm thermal receipts and full A4 summary reports",
-                takeaway: "Print physical count summaries for store manager and auditor signatures.",
-                desc: "Opens the print calibration modal to generate physical count receipts. Uses spacing margins configured in MySQL Setup to ensure labels never clip on printer edges.",
+                title: "COUNT SHEET & LOCATORS Toolbar",
+                subtitle: "Export Excel, Print Summary, 🔒 Close All Open, and + Add Locator",
+                takeaway: "Primary action toolbar for shelf locator management and reporting.",
+                desc: "Contains the critical tools needed to close locators, print audit summaries, and download the official variance Excel workbook.",
                 actions: [
-                    "<strong>Thermal 80mm Mode:</strong> Formatted for portable POS receipt printers.",
-                    "<strong>Full Summary Sheet:</strong> Detailed printable breakdown with signature lines.",
-                    "<strong>Margin Calibration:</strong> Applies custom Left/Top margin offsets."
+                    "<strong>📊 Export Excel:</strong> Downloads `.xlsx` workbook with price & cost variances.",
+                    "<strong>Print Summary:</strong> Generates printable count receipt for manager sign-off.",
+                    "<strong>🔒 Close All Open:</strong> One-click batch closure for all open shelves.",
+                    "<strong>+ Add Locator:</strong> Sequentially creates the next shelf locator."
                 ],
-                tip: "Have the store branch manager and supervisor sign the printed count summary before leaving the store."
+                tip: "Click <strong>🔒 Close All Open</strong> when counting is complete to lock all shelves simultaneously in 1 click."
             },
             8: {
-                title: "🔒 Close All Open Locators (Batch Closure)",
-                subtitle: "One-click tool to close all remaining active locators simultaneously",
-                takeaway: "Instantly finishes the store without having to click 'Close' on every row.",
-                desc: "Finds all locators currently with status <code>'open'</code> and updates them to <code>'closed'</code> in a single transaction, locking all shelves and pushing store completion to 100%.",
+                title: "Shelf Locator Rows (e.g. Locator 1, 2, 3)",
+                subtitle: "Locator number, items scanned counter, status pill, and operator name",
+                takeaway: "Represents individual physical shelves, gondolas, or storage bins.",
+                desc: "Shows shelf number (e.g. <code>1 (0 - items scanned)</code>), status badge (<code>In Use</code> or <code>Open</code>), and assigned operator name (e.g. <code>RAYMART</code>).",
                 actions: [
-                    "<strong>Batch Operation:</strong> Closes 10+ locators in under 1 second.",
-                    "<strong>Confirmation Dialog:</strong> Shows exact number of open locators before closing.",
-                    "<strong>Tamper Lock:</strong> Prevents floor staff from scanning further into closed shelves."
+                    "<strong>In Use (Orange):</strong> An operator is actively scanning in this shelf.",
+                    "<strong>Open (Green):</strong> Available for an operator to claim.",
+                    "<strong>Closed:</strong> Locked shelf count."
                 ],
-                tip: "Use this button once all operators have confirmed that every aisle and shelf has been completely counted."
+                tip: "Stick numbered physical locator stickers on retail shelf edges matching these numbers."
             },
             9: {
-                title: "➕ Add Next Locator & Auto-Sequencing",
-                subtitle: "Creates the next sequential locator number (e.g. LOC-01 -> LOC-02)",
-                takeaway: "Expands the store countsheet with new shelf locations on the fly.",
-                desc: "Automatically detects the highest existing locator number and generates the next sequence (e.g. <code>LOC-09</code>) ready for mobile operators to start scanning.",
+                title: "Locator Actions (View, Force Close, Close, Delete)",
+                subtitle: "Inspect items in locator, lock active shelves, or perform recounts",
+                takeaway: "Control individual shelf status and audit itemized product scans.",
+                desc: "Allows inspecting shelf contents, modifying quantities, force-closing shelves in use, or deleting empty locator rows.",
                 actions: [
-                    "<strong>Auto-Sequencing:</strong> Eliminates duplicate locator naming errors.",
-                    "<strong>Instant Activation:</strong> Scanners can immediately select the new locator."
+                    "<strong>View:</strong> Opens itemized breakdown of all products scanned in shelf.",
+                    "<strong>Force Close:</strong> Closes shelf even if an operator is currently active.",
+                    "<strong>Close / Delete:</strong> Locks count or removes empty locator."
                 ],
-                tip: "Create all initial store locators in advance before counting starts so operators can immediately pick their assigned areas."
-            },
-            10: {
-                title: "👁️ Locator Item Audit & Manual Corrections Modal",
-                subtitle: "Inspect items inside a locator, modify quantities, or add manual barcode entries",
-                takeaway: "View exactly which products and quantities are inside any specific shelf locator.",
-                desc: "Clicking <strong>View</strong> opens the Items in Locator modal. Supervisors can view the itemized list, delete erroneous scans, adjust unit counts, or add manual item lookups.",
-                actions: [
-                    "<strong>Itemized Breakdown:</strong> Shows barcode, description, qty per item.",
-                    "<strong>Manual Item Addition:</strong> Add products if scanner laser cannot read damaged barcodes.",
-                    "<strong>Re-open Locator:</strong> Re-opens a closed locator if recounts are requested."
-                ],
-                tip: "If a barcode label is physically torn or unreadable, supervisors can use <strong>+ Add Manual Scan</strong> to type the SKU and quantity."
+                tip: "Use <strong>Force Close</strong> if an operator disconnected their phone while leaving a locator marked In Use."
             }
         };
 
