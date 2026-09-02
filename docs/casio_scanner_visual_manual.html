@@ -34,11 +34,16 @@
             padding: 0;
         }
 
+        html, body {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-main);
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
             background-image: 
@@ -46,66 +51,65 @@
                 radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
                 radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
             background-attachment: fixed;
-            overflow-x: hidden;
         }
 
-        /* Top Bar */
+        /* Top Bar - Ultra Compact */
         .top-nav {
-            background: rgba(13, 17, 23, 0.85);
+            background: rgba(13, 17, 23, 0.9);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border-color);
-            padding: 12px 24px;
+            padding: 6px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
+            height: 48px;
+            flex-shrink: 0;
             z-index: 1000;
         }
 
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
         }
 
         .brand-badge {
             background: linear-gradient(135deg, #0284c7, #2563eb);
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 800;
-            padding: 4px 8px;
-            border-radius: 6px;
-            letter-spacing: 1px;
+            padding: 3px 7px;
+            border-radius: 5px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
         }
 
         .brand-title {
-            font-size: 1.15rem;
+            font-size: 1rem;
             font-weight: 700;
             color: white;
-            letter-spacing: -0.5px;
+            letter-spacing: -0.3px;
         }
 
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .nav-link {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            font-size: 0.85rem;
+            gap: 5px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
             font-weight: 600;
             color: var(--text-muted);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1px solid transparent;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .nav-link:hover {
@@ -120,126 +124,147 @@
             border-color: rgba(56, 189, 248, 0.3);
         }
 
-        /* Hero / Header Section */
-        .hero-banner {
-            padding: 30px 24px 20px;
-            text-align: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
+        /* Compact Sub-Header Toolbar */
+        .sub-header-toolbar {
+            padding: 8px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            gap: 15px;
         }
 
-        .hero-title {
-            font-size: 2.2rem;
+        .header-info-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .main-page-title {
+            font-size: 1.15rem;
             font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #38bdf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
+            color: white;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
         }
 
-        .hero-sub {
-            font-size: 1rem;
+        .main-page-sub {
+            font-size: 0.8rem;
             color: var(--text-muted);
-            max-width: 750px;
-            margin: 0 auto 20px;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 1200px) {
+            .main-page-sub { display: none; }
         }
 
         /* Screen Switcher Tabs */
         .tab-switcher-container {
             display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
         }
 
         .tab-btn {
-            background: rgba(30, 41, 59, 0.6);
+            background: rgba(30, 41, 59, 0.7);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.25s ease;
+            gap: 6px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .tab-btn:hover {
             color: white;
-            background: rgba(51, 65, 85, 0.8);
+            background: rgba(51, 65, 85, 0.9);
             border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
         }
 
         .tab-btn.active {
             color: #ffffff;
             background: linear-gradient(135deg, #0284c7, #2563eb);
             border-color: #38bdf8;
-            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+            box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
         }
 
-        /* Main Workspace Grid */
+        /* Main Workspace Grid - Fits in Viewport */
         .manual-main {
             flex: 1;
-            max-width: 1400px;
-            margin: 0 auto;
+            min-height: 0;
             width: 100%;
-            padding: 0 24px 40px;
+            padding: 10px 18px 12px;
             display: grid;
-            grid-template-columns: 460px 1fr;
-            gap: 30px;
-            align-items: start;
+            grid-template-columns: 360px 1fr;
+            gap: 16px;
+            align-items: stretch;
+            height: calc(100vh - 96px);
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 992px) {
+            html, body {
+                height: auto;
+                max-height: none;
+                overflow: auto;
+            }
             .manual-main {
                 grid-template-columns: 1fr;
+                height: auto;
             }
         }
 
-        /* Casio Device Mockup Frame */
+        /* Casio Device Mockup Frame - Fit without scroll */
         .casio-mockup-wrapper {
-            position: sticky;
-            top: 85px;
             background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 28px;
-            padding: 24px 20px 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 12px 14px 10px;
+            box-shadow: 0 15px 35px -8px rgba(0, 0, 0, 0.7), inset 0 1px 3px rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+        }
+
+        .casio-top-bar-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 8px 6px;
         }
 
         .casio-speaker-grille {
             display: flex;
-            gap: 16px;
-            margin-bottom: 12px;
+            gap: 8px;
         }
 
         .speaker-slot {
-            width: 24px;
-            height: 4px;
+            width: 18px;
+            height: 3px;
             background: #020617;
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
         .casio-led-indicators {
             display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 8px;
         }
 
         .led-dot {
-            width: 12px;
-            height: 12px;
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
             background: #334155;
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
@@ -247,13 +272,13 @@
 
         .led-dot.laser-active {
             background: #ef4444;
-            box-shadow: 0 0 12px #ef4444, inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 8px #ef4444, inset 0 1px 2px rgba(255, 255, 255, 0.6);
             animation: pulse-led 1.5s infinite;
         }
 
         .led-dot.power-ready {
             background: #10b981;
-            box-shadow: 0 0 8px #10b981;
+            box-shadow: 0 0 6px #10b981;
         }
 
         @keyframes pulse-led {
@@ -264,22 +289,27 @@
         /* Casio LCD Screen Container */
         .casio-lcd-bezel {
             width: 100%;
+            flex: 1;
+            min-height: 0;
             background: #020617;
-            padding: 8px;
-            border-radius: 12px;
+            padding: 5px;
+            border-radius: 8px;
             box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9);
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .casio-lcd-screen {
             background: #d8e1f5;
             color: #030712;
             font-family: 'JetBrains Mono', monospace;
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
             position: relative;
-            min-height: 520px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+            flex: 1;
+            min-height: 0;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.15);
             display: flex;
             flex-direction: column;
         }
@@ -288,23 +318,24 @@
         .app-win-bar {
             background: #000080;
             color: #ffffff;
-            padding: 5px 8px;
-            font-size: 0.85rem;
+            padding: 4px 6px;
+            font-size: 0.75rem;
             font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .app-win-close {
             background: #d8e1f5;
             color: #000080;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 800;
             cursor: pointer;
             border-radius: 2px;
@@ -313,13 +344,14 @@
         .app-sub-bar {
             background: #000080;
             color: #fca5a5;
-            padding: 4px 8px;
-            font-size: 0.82rem;
+            padding: 3px 6px;
+            font-size: 0.72rem;
             font-weight: 700;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-top: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
         }
 
         .input-mode-pill {
@@ -328,20 +360,22 @@
         }
 
         .app-body-content {
-            padding: 12px 10px;
+            padding: 8px 8px;
             flex: 1;
+            min-height: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            font-size: 0.85rem;
+            gap: 5px;
+            font-size: 0.78rem;
+            overflow-y: auto;
         }
 
         /* Screen 1: Config Elements */
         .c-label {
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #0f172a;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         .c-input {
@@ -350,17 +384,17 @@
             border: 1px solid #64748b;
             color: #000000;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 600;
-            padding: 5px 6px;
-            margin-bottom: 6px;
+            padding: 4px 6px;
+            margin-bottom: 4px;
             box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .c-row-dual {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 6px;
         }
 
         .c-btn {
@@ -368,12 +402,12 @@
             border: 2px outset #ffffff;
             color: #0f172a;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.88rem;
+            font-size: 0.8rem;
             font-weight: 700;
-            padding: 10px 8px;
+            padding: 7px 6px;
             text-align: center;
             cursor: pointer;
-            margin-top: 6px;
+            margin-top: 4px;
             transition: all 0.1s;
         }
 
@@ -394,21 +428,22 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
+            flex-shrink: 0;
         }
 
         .btn-mini {
             background: #cbd5e1;
             border: 1px outset #ffffff;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            padding: 3px 8px;
+            padding: 2px 6px;
             cursor: pointer;
         }
 
         .scan-metrics {
             text-align: right;
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #1e293b;
             line-height: 1.2;
@@ -417,39 +452,40 @@
         .scan-btn-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 4px;
+            gap: 5px;
+            margin-top: 2px;
         }
 
         .product-feedback-card {
             background: #e2e8f0;
             border: 1px solid #94a3b8;
             border-radius: 4px;
-            padding: 8px;
+            padding: 6px;
             margin-top: auto;
             text-align: center;
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+            flex-shrink: 0;
         }
 
         .feedback-title {
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: #475569;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .feedback-desc {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 800;
             color: #0f172a;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             line-height: 1.2;
         }
 
         .feedback-stats {
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #0369a1;
         }
@@ -459,17 +495,17 @@
             border-color: #86efac;
             color: #166534;
             font-weight: 800;
-            font-size: 0.85rem;
-            padding: 4px;
+            font-size: 0.75rem;
+            padding: 2px;
             border-radius: 3px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         /* Screen 3: Table Elements */
         .scans-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             background: #ffffff;
             border: 1px solid #94a3b8;
         }
@@ -477,13 +513,13 @@
         .scans-table th {
             background: #000080;
             color: #ffffff;
-            padding: 4px 6px;
+            padding: 3px 5px;
             text-align: left;
             font-weight: 700;
         }
 
         .scans-table td {
-            padding: 5px 6px;
+            padding: 4px 5px;
             border-bottom: 1px solid #e2e8f0;
             color: #0f172a;
             font-weight: 600;
@@ -500,18 +536,19 @@
 
         /* Casio Hardware Branding */
         .casio-brand-bottom {
-            margin-top: 18px;
+            margin-top: 6px;
             font-weight: 900;
-            font-size: 1.4rem;
+            font-size: 1.05rem;
             letter-spacing: 3px;
             color: #475569;
+            flex-shrink: 0;
         }
 
         /* Hotspot Pins Overlay */
         .hotspot-pin {
             position: absolute;
-            width: 26px;
-            height: 26px;
+            width: 22px;
+            height: 22px;
             background: #ef4444;
             color: #ffffff;
             border: 2px solid #ffffff;
@@ -520,10 +557,10 @@
             align-items: center;
             justify-content: center;
             font-family: 'Outfit', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.72rem;
             font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
             z-index: 50;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
             animation: pulse-pin 2s infinite;
@@ -532,76 +569,94 @@
         .hotspot-pin:hover {
             transform: scale(1.3);
             background: #f59e0b;
-            box-shadow: 0 0 20px rgba(245, 158, 11, 1);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 1);
         }
 
         @keyframes pulse-pin {
             0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
-            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
         }
 
-        /* Right Column: Interactive Explorer & Cards */
+        /* Right Column: Split into Top Function Keys & Bottom Hotspots */
         .explorer-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px;
+            min-height: 0;
+            height: 100%;
         }
 
-        .instruction-card {
+        .panel-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 24px;
+            border-radius: 16px;
+            padding: 14px 16px;
             backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-card.card-fkeys {
+            flex-shrink: 0;
+        }
+
+        .panel-card.card-hotspots {
+            flex: 1;
+            min-height: 0;
         }
 
         .card-header-flex {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: white;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .badge-live {
             background: rgba(16, 185, 129, 0.15);
             border: 1px solid rgba(16, 185, 129, 0.4);
             color: #34d399;
-            font-size: 0.75rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 20px;
+            padding: 2px 8px;
+            border-radius: 12px;
             text-transform: uppercase;
         }
 
-        /* Function Key Reference Matrix */
+        /* Function Key Reference Matrix - Ultra Compact Horizontal */
         .fkey-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-top: 15px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        @media (max-width: 1200px) {
+            .fkey-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         .fkey-card {
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 10px;
+            padding: 8px 10px;
             transition: all 0.2s ease;
         }
 
         .fkey-card:hover {
             border-color: rgba(56, 189, 248, 0.4);
             background: rgba(30, 41, 59, 0.8);
-            transform: translateY(-2px);
         }
 
         .fkey-badge {
@@ -610,48 +665,49 @@
             color: white;
             font-family: 'JetBrains Mono', monospace;
             font-weight: 800;
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-        }
-
-        .fkey-badge.f-orange {
-            background: #ea580c;
-        }
-
-        .fkey-badge.f-green {
-            background: #16a34a;
-        }
-
-        .fkey-name {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: white;
+            font-size: 0.68rem;
+            padding: 1px 6px;
+            border-radius: 4px;
             margin-bottom: 4px;
         }
 
-        .fkey-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            line-height: 1.4;
+        .fkey-badge.f-orange { background: #ea580c; }
+        .fkey-badge.f-green { background: #16a34a; }
+
+        .fkey-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Hotspot Inspection Cards List */
+        .fkey-desc {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* Hotspot Inspection Cards List - Scrollable inside card if needed */
         .hotspot-cards-list {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 8px;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 4px;
         }
 
         .h-card {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
+            border-radius: 10px;
+            padding: 10px 12px;
             display: flex;
-            gap: 16px;
-            align-items: flex-start;
+            gap: 12px;
+            align-items: center;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -659,7 +715,7 @@
         .h-card:hover {
             background: rgba(30, 41, 59, 0.8);
             border-color: rgba(56, 189, 248, 0.4);
-            transform: translateX(4px);
+            transform: translateX(2px);
         }
 
         .h-card.active {
@@ -668,8 +724,8 @@
         }
 
         .h-num {
-            width: 32px;
-            height: 32px;
+            width: 26px;
+            height: 26px;
             background: #0284c7;
             color: white;
             border-radius: 50%;
@@ -677,26 +733,33 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             flex-shrink: 0;
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
         }
 
         .h-details {
             flex: 1;
+            min-width: 0;
         }
 
         .h-title {
-            font-size: 1rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .h-desc {
-            font-size: 0.85rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
-            line-height: 1.4;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Modal Overlay for Deep Breakdown */
@@ -723,7 +786,7 @@
         .modal-card {
             background: #0f172a;
             border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 24px;
+            border-radius: 20px;
             max-width: 1350px;
             width: 96%;
             max-height: 90vh;
@@ -740,7 +803,7 @@
         }
 
         .modal-top {
-            padding: 20px 24px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -754,8 +817,8 @@
         }
 
         .modal-pin-badge {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             background: #ef4444;
             color: white;
             border-radius: 8px;
@@ -763,17 +826,17 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
 
         .modal-h2 {
-            font-size: 1.35rem;
+            font-size: 1.2rem;
             font-weight: 800;
             color: white;
         }
 
         .modal-h2-sub {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
         }
 
@@ -781,14 +844,14 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: all 0.2s ease;
         }
 
@@ -799,10 +862,10 @@
         }
 
         .modal-content-grid {
-            padding: 24px;
+            padding: 20px;
             display: grid;
-            grid-template-columns: 320px 1fr 340px;
-            gap: 20px;
+            grid-template-columns: 320px 1fr 320px;
+            gap: 16px;
         }
 
         @media (max-width: 1100px) {
@@ -814,50 +877,50 @@
         .m-box {
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
+            border-radius: 14px;
+            padding: 16px;
         }
 
         .m-box-title {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             color: #38bdf8;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .m-takeaway {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             line-height: 1.35;
         }
 
         .m-desc {
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             color: var(--text-muted);
-            line-height: 1.5;
+            line-height: 1.45;
         }
 
         .m-actions-subgrid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 8px;
         }
 
         .action-item-pill {
             background: rgba(2, 6, 23, 0.6);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 0.85rem;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
             color: #cbd5e1;
-            line-height: 1.45;
+            line-height: 1.4;
             display: block;
         }
 
@@ -868,28 +931,28 @@
         .action-item-pill code {
             background: rgba(56, 189, 248, 0.15);
             color: #7dd3fc;
-            padding: 2px 5px;
+            padding: 1px 4px;
             border-radius: 4px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .modal-photo-preview {
             width: 100%;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid var(--border-color);
-            margin-top: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            margin-top: 10px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
         }
 
         .modal-bottom {
-            padding: 16px 24px;
+            padding: 12px 20px;
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(2, 6, 23, 0.5);
-            border-radius: 0 0 24px 24px;
+            border-radius: 0 0 20px 20px;
         }
 
         .btn-nav-modal {
@@ -897,10 +960,10 @@
             border: 1px solid var(--border-color);
             color: white;
             font-family: 'Outfit', sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-weight: 600;
-            padding: 8px 18px;
-            border-radius: 8px;
+            padding: 6px 14px;
+            border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
         }
@@ -921,47 +984,51 @@
             <span class="brand-title">OWIPI Scanner Visual Manual</span>
         </a>
         <div class="nav-links">
-            <a href="control_dashboard_visual_manual.html" class="nav-link">🖥️ Control Dashboard</a>
+            <a href="control_dashboard_visual_manual.html" class="nav-link">🎛️ Control Dashboard</a>
             <a href="host_view_visual_manual.html" class="nav-link">💻 Host Console</a>
             <a href="casio_scanner_visual_manual.html" class="nav-link active">📱 Casio Scanner App</a>
             <a href="CASIO_SCANNER_MANUAL.md" class="nav-link" target="_blank">📖 Markdown Guide</a>
         </div>
     </nav>
 
-    <!-- Hero Header -->
-    <header class="hero-banner">
-        <h1 class="hero-title">Casio Mobile Scanner Visual Manual</h1>
-        <p class="hero-sub">Interactive simulator and comprehensive field manual for the Casio Industrial Terminal running the <strong>OWI PI Scanner App</strong>. Click any red hotspot pin or button below to inspect operational controls.</p>
+    <!-- Compact Sub-Header Toolbar (No Scroll Fit) -->
+    <div class="sub-header-toolbar">
+        <div class="header-info-box">
+            <h1 class="main-page-title">Casio Mobile Scanner Visual Manual</h1>
+            <span class="main-page-sub">• Interactive Digital Twin Simulator & Controls Guide</span>
+        </div>
 
         <!-- Screen Switcher Tabs -->
         <div class="tab-switcher-container">
-            <button class="tab-btn active" onclick="switchScreen('config')">
+            <button class="tab-btn active" onclick="switchScreen('config', event)">
                 <span>⚙️ Screen 1: Config & Setup</span>
             </button>
-            <button class="tab-btn" onclick="switchScreen('scan')">
+            <button class="tab-btn" onclick="switchScreen('scan', event)">
                 <span>📦 Screen 2: Barcode & QTY Scan</span>
             </button>
-            <button class="tab-btn" onclick="switchScreen('view')">
+            <button class="tab-btn" onclick="switchScreen('view', event)">
                 <span>📋 Screen 3: View Scanned List</span>
             </button>
         </div>
-    </header>
+    </div>
 
     <!-- Main Workspace -->
     <main class="manual-main">
 
         <!-- Left: Casio Physical Terminal Digital Twin -->
         <div class="casio-mockup-wrapper">
-            <div class="casio-speaker-grille">
-                <div class="speaker-slot"></div>
-                <div class="speaker-slot"></div>
-                <div class="speaker-slot"></div>
-            </div>
+            <div class="casio-top-bar-area">
+                <div class="casio-speaker-grille">
+                    <div class="speaker-slot"></div>
+                    <div class="speaker-slot"></div>
+                    <div class="speaker-slot"></div>
+                </div>
 
-            <!-- LED Indicators -->
-            <div class="casio-led-indicators">
-                <div class="led-dot power-ready" title="Wi-Fi Connected & Ready"></div>
-                <div class="led-dot laser-active" title="Laser Scanner Active / Powered"></div>
+                <!-- LED Indicators -->
+                <div class="casio-led-indicators">
+                    <div class="led-dot power-ready" title="Wi-Fi Connected & Ready"></div>
+                    <div class="led-dot laser-active" title="Laser Scanner Active / Powered"></div>
+                </div>
             </div>
 
             <!-- Casio Screen Display Bezel -->
@@ -997,15 +1064,15 @@
                         <input type="text" class="c-input" value="1" readonly>
 
                         <button type="button" class="c-btn" onclick="openModal(4)">Save Setting</button>
-                        <button type="button" class="c-btn" onclick="openModal(4)" style="margin-top: 12px;">F1: EXIT SYSTEM</button>
+                        <button type="button" class="c-btn" onclick="openModal(4)" style="margin-top: 8px;">F1: EXIT SYSTEM</button>
                     </div>
 
                     <!-- Hotspots for Config Screen -->
-                    <div class="hotspot-pin" style="top: 85px; left: 16px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 155px; left: 16px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 220px; left: 16px;" onclick="openModal(3)">3</div>
-                    <div class="hotspot-pin" style="top: 285px; right: 20px;" onclick="openModal(4)">4</div>
-                    <div class="hotspot-pin" style="top: 10px; right: 35px;" onclick="openModal(5)">5</div>
+                    <div class="hotspot-pin" style="top: 75px; left: 14px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 130px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 185px; left: 14px;" onclick="openModal(3)">3</div>
+                    <div class="hotspot-pin" style="top: 240px; right: 16px;" onclick="openModal(4)">4</div>
+                    <div class="hotspot-pin" style="top: 8px; right: 30px;" onclick="openModal(5)">5</div>
                 </div>
 
                 <!-- 2. SCREEN 2: ACTIVE SCANNING & PRODUCT VARIANCES -->
@@ -1039,7 +1106,7 @@
                             <button type="button" class="c-btn" onclick="openModal(9)">F7: Clear</button>
                         </div>
 
-                        <div class="scan-btn-grid" style="margin-top: 4px;">
+                        <div class="scan-btn-grid" style="margin-top: 3px;">
                             <button type="button" class="c-btn" onclick="openModal(10)">F6: View Scan</button>
                             <button type="button" class="c-btn c-btn-finish" onclick="openModal(10)">F4: Finish</button>
                         </div>
@@ -1052,12 +1119,12 @@
                     </div>
 
                     <!-- Hotspots for Scan Screen -->
-                    <div class="hotspot-pin" style="top: 48px; left: 12px;" onclick="openModal(6)">6</div>
-                    <div class="hotspot-pin" style="top: 105px; left: 16px;" onclick="openModal(7)">7</div>
-                    <div class="hotspot-pin" style="top: 165px; left: 16px;" onclick="openModal(8)">8</div>
-                    <div class="hotspot-pin" style="top: 220px; right: 20px;" onclick="openModal(9)">9</div>
-                    <div class="hotspot-pin" style="top: 265px; right: 20px;" onclick="openModal(10)">10</div>
-                    <div class="hotspot-pin" style="bottom: 25px; left: 20px;" onclick="openModal(11)">11</div>
+                    <div class="hotspot-pin" style="top: 42px; left: 10px;" onclick="openModal(6)">6</div>
+                    <div class="hotspot-pin" style="top: 92px; left: 14px;" onclick="openModal(7)">7</div>
+                    <div class="hotspot-pin" style="top: 142px; left: 14px;" onclick="openModal(8)">8</div>
+                    <div class="hotspot-pin" style="top: 185px; right: 16px;" onclick="openModal(9)">9</div>
+                    <div class="hotspot-pin" style="top: 225px; right: 16px;" onclick="openModal(10)">10</div>
+                    <div class="hotspot-pin" style="bottom: 16px; left: 16px;" onclick="openModal(11)">11</div>
                 </div>
 
                 <!-- 3. SCREEN 3: VIEW SCANNED ITEMS TABLE -->
@@ -1071,8 +1138,8 @@
                         <span class="input-mode-pill">[123]</span>
                     </div>
 
-                    <div class="app-body-content" style="padding-bottom: 6px;">
-                        <div style="height: 250px; overflow-y: auto; background: white; border: 1px solid #64748b;">
+                    <div class="app-body-content" style="padding-bottom: 4px;">
+                        <div style="flex: 1; overflow-y: auto; background: white; border: 1px solid #64748b;">
                             <table class="scans-table">
                                 <thead>
                                     <tr>
@@ -1091,18 +1158,18 @@
                             </table>
                         </div>
 
-                        <div class="scan-btn-grid" style="margin-top: 12px;">
+                        <div class="scan-btn-grid" style="margin-top: 6px;">
                             <button type="button" class="c-btn" onclick="openModal(13)">Edit</button>
                             <button type="button" class="c-btn" onclick="openModal(13)">F7: Delete</button>
                         </div>
 
-                        <button type="button" class="c-btn" onclick="openModal(14)" style="margin-top: 8px;">F4: Back to Scan</button>
+                        <button type="button" class="c-btn" onclick="openModal(14)" style="margin-top: 4px;">F4: Back to Scan</button>
                     </div>
 
                     <!-- Hotspots for View Screen -->
-                    <div class="hotspot-pin" style="top: 110px; left: 20px;" onclick="openModal(12)">12</div>
-                    <div class="hotspot-pin" style="top: 365px; right: 20px;" onclick="openModal(13)">13</div>
-                    <div class="hotspot-pin" style="bottom: 20px; left: 20px;" onclick="openModal(14)">14</div>
+                    <div class="hotspot-pin" style="top: 90px; left: 16px;" onclick="openModal(12)">12</div>
+                    <div class="hotspot-pin" style="bottom: 50px; right: 16px;" onclick="openModal(13)">13</div>
+                    <div class="hotspot-pin" style="bottom: 14px; left: 16px;" onclick="openModal(14)">14</div>
                 </div>
 
             </div>
@@ -1114,41 +1181,40 @@
         <!-- Right: Screen Information & Interactive Hotspot Matrix -->
         <div class="explorer-panel">
 
-            <!-- Card 1: Function Key Matrix -->
-            <div class="instruction-card">
+            <!-- Card 1: Function Key Matrix (Slim Top Strip) -->
+            <div class="panel-card card-fkeys">
                 <div class="card-header-flex">
                     <h3 class="card-title">
-                        <span>⌨️ Hardware & Function Key Guide</span>
+                        <span>⌨️ Hardware Function Key Guide</span>
                     </h3>
-                    <span class="badge-live">Quick Reference</span>
+                    <span class="badge-live">Quick Shortcuts</span>
                 </div>
-                <p style="font-size: 0.88rem; color: var(--text-muted);">The Casio mobile scanner keypad maps directly to physical function shortcuts for rapid one-handed counting:</p>
                 <div class="fkey-grid">
                     <div class="fkey-card">
                         <span class="fkey-badge">F1</span>
-                        <div class="fkey-name">Change Config / Exit</div>
-                        <div class="fkey-desc">Opens the Host URL and Store Code setup dialog or exits to OS.</div>
+                        <div class="fkey-name">Config / Exit</div>
+                        <div class="fkey-desc">Opens Host URL setup or exits app.</div>
                     </div>
                     <div class="fkey-card">
                         <span class="fkey-badge f-orange">F4</span>
-                        <div class="fkey-name">Finish / Back to Scan</div>
-                        <div class="fkey-desc">Finalizes the current locator count or toggles back to active scanning.</div>
+                        <div class="fkey-name">Finish / Back</div>
+                        <div class="fkey-desc">Locks locator or returns to scanning.</div>
                     </div>
                     <div class="fkey-card">
                         <span class="fkey-badge">F6</span>
                         <div class="fkey-name">View Scan</div>
-                        <div class="fkey-desc">Opens the itemized audit table of all products scanned in this shelf.</div>
+                        <div class="fkey-desc">Opens shelf itemized audit table.</div>
                     </div>
                     <div class="fkey-card">
                         <span class="fkey-badge f-green">F7</span>
                         <div class="fkey-name">Clear / Delete</div>
-                        <div class="fkey-desc">Clears the active input field or removes a selected item row.</div>
+                        <div class="fkey-desc">Erases input or deletes item row.</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 2: Hotspot Guide List for Active Screen -->
-            <div class="instruction-card">
+            <!-- Card 2: Hotspot Guide List for Active Screen (Auto-Fits Space) -->
+            <div class="panel-card card-hotspots">
                 <div class="card-header-flex">
                     <h3 class="card-title">
                         <span id="hotspots-list-title">📌 Hotspots in Screen 1 (Config & Setup)</span>
@@ -1197,14 +1263,14 @@
                 <!-- Right: Field Reference Photo & Best Practice -->
                 <div class="m-box">
                     <div class="m-box-title">💡 Pro-Tip & Physical Photo</div>
-                    <p class="m-desc" id="m-tip" style="margin-bottom: 12px;">Field best practice tip.</p>
+                    <p class="m-desc" id="m-tip" style="margin-bottom: 10px;">Field best practice tip.</p>
                     <img id="m-photo" src="" alt="Casio Terminal Photo" class="modal-photo-preview">
                 </div>
             </div>
 
             <div class="modal-bottom">
                 <button class="btn-nav-modal" onclick="prevModal()">◀ Previous Hotspot</button>
-                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 14</span>
+                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 14</span>
                 <button class="btn-nav-modal" onclick="nextModal()">Next Hotspot ▶</button>
             </div>
         </div>
@@ -1419,10 +1485,12 @@
             view: [12, 13, 14]
         };
 
-        function switchScreen(screenName) {
+        function switchScreen(screenName, ev) {
             currentScreen = screenName;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if (ev && ev.currentTarget) {
+                ev.currentTarget.classList.add('active');
+            }
 
             // Hide all screens
             document.getElementById('screen-config').style.display = 'none';
