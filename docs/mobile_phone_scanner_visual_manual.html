@@ -1220,25 +1220,30 @@
 
                 <!-- 1. SCREEN 1: HTTPS & PERMISSION BYPASS (Photos 1, 2, 3) -->
                 <div id="screen-security" style="display: flex; flex-direction: column; height: 100%;">
-                    <div class="phone-app-header">
+                    <div class="phone-app-header" style="position: relative;">
                         <div>
                             <div class="p-brand-title">OWI PHYSICAL INVENTORY</div>
                             <div class="p-store-tag">STORE CODE : TES</div>
                             <div class="p-user-tag">User: <strong>BETH</strong></div>
                         </div>
                         <span class="p-status-pill">● Offline (Local)</span>
+                        <div class="hotspot-pin" style="top: 8px; right: 4px;" onclick="openModal(1)">1</div>
                     </div>
 
                     <div class="phone-body-scroll">
-                        <div class="blocked-card">
-                            <div class="blocked-title">
+                        <div class="blocked-card" style="position: relative;">
+                            <div class="blocked-title" style="position: relative;">
                                 <span>⚠️ Camera Access Blocked (HTTP Origin)</span>
+                                <div class="hotspot-pin" style="top: -6px; left: -14px;" onclick="openModal(2)">2</div>
                             </div>
                             <div class="blocked-text">
                                 Mobile browsers block camera access on insecure HTTP addresses. To enable standard camera prompts:
                             </div>
 
-                            <button type="button" class="btn-https-switch" onclick="openModal(3)">⚡ Switch to Secure HTTPS</button>
+                            <div style="position: relative; margin-top: 4px;">
+                                <button type="button" class="btn-https-switch" onclick="openModal(3)">⚡ Switch to Secure HTTPS</button>
+                                <div class="hotspot-pin" style="top: 4px; right: -8px;" onclick="openModal(3)">3</div>
+                            </div>
 
                             <div style="margin-top: 6px; font-size: 0.65rem; color: #fca5a5; line-height: 1.3;">
                                 <div style="font-weight: 700; color: #ffffff;">Alternatively, use Chrome flag:</div>
@@ -1247,11 +1252,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Hotspots for Security Screen (1..3) -->
-                    <div class="hotspot-pin" style="top: 50px; left: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 110px; left: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 165px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
                 <!-- 2. SCREEN 2: SCANNER SETUP DIALOG (Photo 4) -->
@@ -1268,24 +1268,24 @@
                         <div class="setup-modal-card">
                             <div class="setup-modal-title">SCANNER SETUP</div>
 
-                            <div class="m-field-group">
+                            <div class="m-field-group" style="position: relative;">
                                 <label class="m-field-label">SCANNED BY</label>
                                 <input type="text" class="m-input-box" value="MOBILE" readonly>
+                                <div class="hotspot-pin" style="top: 14px; left: -12px;" onclick="openModal(1)">1</div>
                             </div>
 
-                            <div class="m-field-group">
+                            <div class="m-field-group" style="position: relative;">
                                 <label class="m-field-label">SELECT/TYPE LOCATOR</label>
                                 <input type="text" class="m-input-box" value="Type/Select Locator (e.g. 1)... ▼" readonly>
+                                <div class="hotspot-pin" style="top: 14px; left: -12px;" onclick="openModal(2)">2</div>
                             </div>
 
-                            <button type="button" class="btn-connect-scan" onclick="openModal(3)">Connect & Start Scanning</button>
+                            <div style="position: relative;">
+                                <button type="button" class="btn-connect-scan" onclick="openModal(3)">Connect & Start Scanning</button>
+                                <div class="hotspot-pin" style="top: 6px; right: -8px;" onclick="openModal(3)">3</div>
+                            </div>
                         </div>
                     </div>
-
-                    <!-- Hotspots for Setup Screen (1..3) -->
-                    <div class="hotspot-pin" style="top: 145px; left: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 205px; left: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 265px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
                 <!-- 3. SCREEN 3: LIVE CAMERA SCAN & FEEDBACK (Photos 5, 6) -->
@@ -1301,55 +1301,53 @@
 
                     <div class="phone-body-scroll">
                         <!-- Active Session Header HUD -->
-                        <div class="active-session-hud">
+                        <div class="active-session-hud" style="position: relative;">
                             <div>
                                 <div style="font-size: 0.6rem; color: #8b949e;">ACTIVE SESSION</div>
                                 <div class="session-loc-title">Locator 3 • MOBILE</div>
                             </div>
-                            <div class="hud-actions">
+                            <div class="hud-actions" style="position: relative;">
                                 <button type="button" class="btn-hud-change" onclick="openModal(1)">Change</button>
                                 <button type="button" class="btn-hud-finish" onclick="openModal(1)">Finish</button>
+                                <div class="hotspot-pin" style="top: -6px; right: -12px;" onclick="openModal(1)">1</div>
                             </div>
                         </div>
 
                         <!-- Camera Viewfinder Card -->
                         <div class="camera-card">
-                            <div class="viewfinder-box">
+                            <div class="viewfinder-box" style="position: relative;">
                                 <div class="viewfinder-reticle">
                                     <div class="reticle-line"></div>
                                 </div>
+                                <div class="hotspot-pin" style="top: 6px; left: 8px;" onclick="openModal(2)">2</div>
                             </div>
 
-                            <div class="camera-tools-grid">
+                            <div class="camera-tools-grid" style="position: relative;">
                                 <div style="display: flex; align-items: center; gap: 4px;">
                                     <span>🔍 ZOOM:</span>
                                     <input type="range" class="zoom-slider" min="1" max="3" step="0.1" value="1">
                                     <span style="color: white; font-weight: 700;">1.0x</span>
                                 </div>
                                 <button type="button" class="btn-torch" onclick="openModal(3)">🔦 OFF</button>
+                                <div class="hotspot-pin" style="top: -2px; right: -10px;" onclick="openModal(3)">3</div>
                             </div>
 
-                            <div class="camera-actions-grid">
+                            <div class="camera-actions-grid" style="position: relative;">
                                 <button type="button" class="btn-cam-start" onclick="openModal(4)">Start Scanner</button>
                                 <button type="button" class="btn-cam-stop" onclick="openModal(4)">Stop</button>
+                                <div class="hotspot-pin" style="top: 2px; left: -10px;" onclick="openModal(4)">4</div>
                             </div>
                         </div>
 
                         <!-- Scanned Successfully Banner -->
-                        <div class="success-feedback-box" onclick="openModal(5)">
+                        <div class="success-feedback-box" style="position: relative;" onclick="openModal(5)">
                             <div class="feedback-head">✓ Scanned Successfully</div>
                             <div>Barcode: <strong>8935001880752</strong></div>
                             <div style="font-weight: 700; color: white;">GELPEN FOGEL04 SUNBEAM BLK 0.5 0.5MM</div>
                             <div>Location: <strong>Slot 3</strong> | Store Qty: 0 | Scanned: <strong>1</strong> (Var: <strong>+1</strong>)</div>
+                            <div class="hotspot-pin" style="top: 6px; right: -8px;" onclick="openModal(5)">5</div>
                         </div>
                     </div>
-
-                    <!-- Hotspots for Camera Screen (1..5) -->
-                    <div class="hotspot-pin" style="top: 48px; right: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 100px; left: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 168px; right: 14px;" onclick="openModal(3)">3</div>
-                    <div class="hotspot-pin" style="top: 200px; left: 14px;" onclick="openModal(4)">4</div>
-                    <div class="hotspot-pin" style="bottom: 12px; left: 14px;" onclick="openModal(5)">5</div>
                 </div>
 
                 <!-- 4. SCREEN 4: MANUAL SEARCH & AUTOCOMPLETE (Photo 7) -->
@@ -1365,13 +1363,15 @@
                     <div class="phone-body-scroll">
                         <div class="search-box-card">
                             <div style="font-size: 0.68rem; font-weight: 800; color: #8b949e; margin-bottom: 4px;">MANUAL BARCODE / DESCRIPTION INPUT</div>
-                            <div class="search-input-row">
+                            <div class="search-input-row" style="position: relative;">
                                 <input type="text" class="m-input-box" value="NB SPI" readonly style="font-weight: 800;">
                                 <button type="button" class="btn-search-send" onclick="openModal(2)">Send</button>
+                                <div class="hotspot-pin" style="top: 4px; left: -12px;" onclick="openModal(1)">1</div>
+                                <div class="hotspot-pin" style="top: 4px; right: -12px;" onclick="openModal(2)">2</div>
                             </div>
 
                             <!-- Autocomplete Dropdown List -->
-                            <div class="search-results-list">
+                            <div class="search-results-list" style="position: relative;">
                                 <div class="search-item-card" onclick="openModal(3)">
                                     <div class="s-title">NB SPI 05200 1SUBJ 100SHT</div>
                                     <div class="s-meta">UPC: <span style="color:#58a6ff;">43100052005</span> | SKU: <span style="color:#56f089;">1</span> | Qty: 0</div>
@@ -1384,14 +1384,10 @@
                                     <div class="s-title">NB SPI 08188/08088 1SUBJ 100SH</div>
                                     <div class="s-meta">UPC: <span style="color:#58a6ff;">43100064268</span> | SKU: <span style="color:#56f089;">6638</span> | Qty: 0</div>
                                 </div>
+                                <div class="hotspot-pin" style="top: 10px; right: -10px;" onclick="openModal(3)">3</div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Hotspots for Search Screen (1..3) -->
-                    <div class="hotspot-pin" style="top: 75px; left: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 75px; right: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 140px; left: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
                 <!-- 5. SCREEN 5: EDIT SCAN RECORD MODAL & SESSION LOG (Photo 8) -->
@@ -1404,13 +1400,14 @@
                         <span class="p-status-pill">● Offline (Local)</span>
                     </div>
 
-                    <div class="phone-body-scroll">
-                        <div class="edit-record-modal-inner">
+                    <div class="phone-body-scroll" style="justify-content: center;">
+                        <div class="edit-record-modal-inner" style="position: relative;">
                             <div class="setup-modal-title" style="margin-bottom: 6px;">Edit Scan Record</div>
 
-                            <div class="m-field-group">
+                            <div class="m-field-group" style="position: relative;">
                                 <label class="m-field-label">BARCODE (UPC/SKU)</label>
                                 <input type="text" class="m-input-box" value="8935001880752" readonly>
+                                <div class="hotspot-pin" style="top: 14px; left: -12px;" onclick="openModal(1)">1</div>
                             </div>
 
                             <div class="edit-product-card">
@@ -1418,22 +1415,19 @@
                                 <div style="font-size: 0.65rem; color: #8b949e; margin-top: 2px;">SKU: 026912</div>
                             </div>
 
-                            <div class="m-field-group">
+                            <div class="m-field-group" style="position: relative;">
                                 <label class="m-field-label">QUANTITY</label>
                                 <input type="text" class="m-input-box" value="1" readonly style="font-weight: 800; text-align: center;">
+                                <div class="hotspot-pin" style="top: 14px; left: -12px;" onclick="openModal(2)">2</div>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; position: relative;">
                                 <button type="button" class="btn-hud-change" onclick="openModal(3)" style="padding: 6px; background: #da3637; color: white; border: none;">Cancel</button>
                                 <button type="button" class="btn-hud-finish" onclick="openModal(3)" style="padding: 6px; font-weight: 800;">Save Changes</button>
+                                <div class="hotspot-pin" style="top: 4px; right: -10px;" onclick="openModal(3)">3</div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Hotspots for Edit Screen (1..3) -->
-                    <div class="hotspot-pin" style="top: 100px; left: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 185px; left: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 245px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
             </div>
