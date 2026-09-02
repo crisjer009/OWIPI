@@ -1156,13 +1156,13 @@
                         </div>
                     </div>
 
-                    <!-- Hotspots for Scan Screen -->
-                    <div class="hotspot-pin" style="top: 42px; left: 10px;" onclick="openModal(6)">6</div>
-                    <div class="hotspot-pin" style="top: 92px; left: 14px;" onclick="openModal(7)">7</div>
-                    <div class="hotspot-pin" style="top: 142px; left: 14px;" onclick="openModal(8)">8</div>
-                    <div class="hotspot-pin" style="top: 185px; right: 16px;" onclick="openModal(9)">9</div>
-                    <div class="hotspot-pin" style="top: 225px; right: 16px;" onclick="openModal(10)">10</div>
-                    <div class="hotspot-pin" style="bottom: 16px; left: 16px;" onclick="openModal(11)">11</div>
+                    <!-- Hotspots for Scan Screen (Fresh 1..6 count) -->
+                    <div class="hotspot-pin" style="top: 42px; left: 10px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 92px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 142px; left: 14px;" onclick="openModal(3)">3</div>
+                    <div class="hotspot-pin" style="top: 185px; right: 16px;" onclick="openModal(4)">4</div>
+                    <div class="hotspot-pin" style="top: 225px; right: 16px;" onclick="openModal(5)">5</div>
+                    <div class="hotspot-pin" style="bottom: 16px; left: 16px;" onclick="openModal(6)">6</div>
                 </div>
 
                 <!-- 3. SCREEN 3: VIEW SCANNED ITEMS TABLE -->
@@ -1197,17 +1197,17 @@
                         </div>
 
                         <div class="scan-btn-grid" style="margin-top: 6px;">
-                            <button type="button" class="c-btn" onclick="openModal(13)">Edit</button>
-                            <button type="button" class="c-btn" onclick="openModal(13)">F7: Delete</button>
+                            <button type="button" class="c-btn" onclick="openModal(2)">Edit</button>
+                            <button type="button" class="c-btn" onclick="openModal(2)">F7: Delete</button>
                         </div>
 
-                        <button type="button" class="c-btn" onclick="openModal(14)" style="margin-top: 4px;">F4: Back to Scan</button>
+                        <button type="button" class="c-btn" onclick="openModal(3)" style="margin-top: 4px;">F4: Back to Scan</button>
                     </div>
 
-                    <!-- Hotspots for View Screen -->
-                    <div class="hotspot-pin" style="top: 90px; left: 16px;" onclick="openModal(12)">12</div>
-                    <div class="hotspot-pin" style="bottom: 50px; right: 16px;" onclick="openModal(13)">13</div>
-                    <div class="hotspot-pin" style="bottom: 14px; left: 16px;" onclick="openModal(14)">14</div>
+                    <!-- Hotspots for View Screen (Fresh 1..3 count) -->
+                    <div class="hotspot-pin" style="top: 90px; left: 16px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="bottom: 50px; right: 16px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="bottom: 14px; left: 16px;" onclick="openModal(3)">3</div>
                 </div>
 
             </div>
@@ -1308,220 +1308,219 @@
 
             <div class="modal-bottom">
                 <button class="btn-nav-modal" onclick="prevModal()">◀ Previous Hotspot</button>
-                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 14</span>
+                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 5</span>
                 <button class="btn-nav-modal" onclick="nextModal()">Next Hotspot ▶</button>
             </div>
         </div>
     </div>
 
-    <!-- Interactive Script -->
+    <!-- Interactive Script with Per-Tab Fresh Counts -->
     <script>
-        const casioData = {
-            1: {
-                screen: 'config',
-                title: "Host URL / IP Address Configuration",
-                subtitle: "Target OWIPI server endpoint (e.g. http://192.168.1.100/OWIPI)",
-                takeaway: "Specifies the local Wi-Fi IP address of the supervisor host laptop.",
-                desc: "Tells the Casio scanner application where to send barcode transactions. The Casio communicates over HTTP REST API to ingest scans directly into the host MySQL database.",
-                actions: [
-                    "<strong>🌐 HTTP Endpoint:</strong> Must match the host IP shown on the supervisor's <code>CONNECT SCANNER</code> QR card (e.g. <code>http://192.168.1.100/OWIPI</code>).",
-                    "<strong>📶 Wi-Fi Requirement:</strong> Both the Casio scanner and the supervisor laptop must be connected to the exact same local Wi-Fi SSID.",
-                    "<strong>🔒 Persistent Cache:</strong> Once configured, the Casio stores this URL in local memory across reboots."
-                ],
-                tip: "<strong>Setup Tip:</strong> If the scanner fails to connect, verify the supervisor host laptop IP address by checking <code>ipconfig</code> or the Host Console header.",
-                photo: "img/casio/casio_01_config_screen.png"
+        const casioScreens = {
+            config: {
+                total: 5,
+                name: "Screen 1: Config & Setup",
+                pins: {
+                    1: {
+                        title: "Host URL / IP Address Configuration",
+                        subtitle: "Target OWIPI server endpoint (e.g. http://192.168.1.100/OWIPI)",
+                        takeaway: "Specifies the local Wi-Fi IP address of the supervisor host laptop.",
+                        desc: "Tells the Casio scanner application where to send barcode transactions. The Casio communicates over HTTP REST API to ingest scans directly into the host MySQL database.",
+                        actions: [
+                            "<strong>🌐 HTTP Endpoint:</strong> Must match the host IP shown on the supervisor's <code>CONNECT SCANNER</code> QR card (e.g. <code>http://192.168.1.100/OWIPI</code>).",
+                            "<strong>📶 Wi-Fi Requirement:</strong> Both the Casio scanner and the supervisor laptop must be connected to the exact same local Wi-Fi SSID.",
+                            "<strong>🔒 Persistent Cache:</strong> Once configured, the Casio stores this URL in local memory across reboots."
+                        ],
+                        tip: "<strong>Setup Tip:</strong> If the scanner fails to connect, verify the supervisor host laptop IP address by checking <code>ipconfig</code> or the Host Console header.",
+                        photo: "img/casio/casio_01_config_screen.png"
+                    },
+                    2: {
+                        title: "Store Code & Operator Name Assignment",
+                        subtitle: "Store branch identifier (e.g. TES) and physical scanner operator name (e.g. NEW)",
+                        takeaway: "Binds this scanner hardware to a specific retail branch and user operator.",
+                        desc: "Every scan sent from this Casio terminal will automatically be tagged with this Store Code and Operator username for live supervisor attribution.",
+                        actions: [
+                            "<strong>🏬 Store Code:</strong> Must match the active branch session on the host (e.g. <code>TES</code> or <code>RME</code>).",
+                            "<strong>👤 Operator Name:</strong> Physical name of the staff member operating the terminal (e.g. <code>NEW</code>, <code>MARK</code>, <code>RAYMART</code>).",
+                            "<strong>📋 Live Stream Attribution:</strong> Appears in real time on the supervisor's <code>LIVE INCOMING SCANS LOG</code>."
+                        ],
+                        tip: "Assign unique operator names to each Casio terminal so audit logs clearly show who counted each shelf.",
+                        photo: "img/casio/casio_01_config_screen.png"
+                    },
+                    3: {
+                        title: "Locator / Slot Initial Number",
+                        subtitle: "Numeric shelf assignment (e.g. 1, 2, 3)",
+                        takeaway: "Defines the physical shelf or bin where counting starts.",
+                        desc: "Sets the active locator slot for this session. Must contain numbers only. When set to <code>1</code>, all scanned barcodes will be recorded under <strong>Locator 1</strong> until finished.",
+                        actions: [
+                            "<strong>🔢 Numbers Only:</strong> Input numeric shelf IDs (e.g. <code>1</code>, <code>2</code>, <code>10</code>).",
+                            "<strong>🏷️ Shelf Sticker Match:</strong> Ensure the number matches the physical barcode sticker attached to the gondola.",
+                            "<strong>🔒 Status Transition:</strong> Claiming this locator automatically marks the slot as <code>In Use</code> on the Host Console."
+                        ],
+                        tip: "Floor staff should physically stand in front of Shelf #1 before pressing Save Setting.",
+                        photo: "img/casio/casio_01_config_screen.png"
+                    },
+                    4: {
+                        title: "Save Setting & F1: EXIT SYSTEM Controls",
+                        subtitle: "Commit setup parameters and proceed to scanning, or exit to Casio OS",
+                        takeaway: "Validates host connection and transitions the terminal to active inventory counting.",
+                        desc: "Clicking <strong>Save Setting</strong> stores the configuration and opens Screen 2. <strong>F1: EXIT SYSTEM</strong> closes the application and returns to the Windows CE / Casio OS desktop.",
+                        actions: [
+                            "<strong>💾 Save Setting:</strong> Validates input fields, performs handshake with host server, and loads <strong>Screen 2 (Scan Barcode)</strong>.",
+                            "<strong>⌨️ F1: EXIT SYSTEM:</strong> Gracefully shuts down the OWI PI scanner application.",
+                            "<strong>⚡ Auto-Reconnect:</strong> If network drops, saving will retry host synchronization."
+                        ],
+                        tip: "Press <kbd>Save Setting</kbd> once to lock the locator. Use <kbd>F1</kbd> only if reconfiguring network settings.",
+                        photo: "img/casio/casio_01_config_screen.png"
+                    },
+                    5: {
+                        title: "Casio Hardware LED & Input Mode Indicator",
+                        subtitle: "Red Laser Activity LED and [ABC] / [123] keypad toggle",
+                        takeaway: "Hardware health indicator and alphanumeric typing status.",
+                        desc: "The Casio top LEDs indicate hardware status: Red for laser trigger / scanner power, Green for Wi-Fi readiness. The bracketed <code>[ABC]</code> or <code>[123]</code> badge indicates current keypad typing mode.",
+                        actions: [
+                            "<strong>🔴 Red LED:</strong> Lights up when the laser barcode engine is engaged or charging.",
+                            "<strong>🟢 Green LED:</strong> Indicates healthy battery and active Wi-Fi link.",
+                            "<strong>🔤 [ABC] / [123]:</strong> Shows whether keypad keys will type letters or numeric digits."
+                        ],
+                        tip: "Press the Casio Alpha key to toggle between numeric [123] and text [ABC] entry.",
+                        photo: "img/casio/casio_01_config_device.png"
+                    }
+                }
             },
-            2: {
-                screen: 'config',
-                title: "Store Code & Operator Name Assignment",
-                subtitle: "Store branch identifier (e.g. TES) and physical scanner operator name (e.g. NEW)",
-                takeaway: "Binds this scanner hardware to a specific retail branch and user operator.",
-                desc: "Every scan sent from this Casio terminal will automatically be tagged with this Store Code and Operator username for live supervisor attribution.",
-                actions: [
-                    "<strong>🏬 Store Code:</strong> Must match the active branch session on the host (e.g. <code>TES</code> or <code>RME</code>).",
-                    "<strong>👤 Operator Name:</strong> Physical name of the staff member operating the terminal (e.g. <code>NEW</code>, <code>MARK</code>, <code>RAYMART</code>).",
-                    "<strong>📋 Live Stream Attribution:</strong> Appears in real time on the supervisor's <code>LIVE INCOMING SCANS LOG</code>."
-                ],
-                tip: "Assign unique operator names to each Casio terminal so audit logs clearly show who counted each shelf.",
-                photo: "img/casio/casio_01_config_screen.png"
+            scan: {
+                total: 6,
+                name: "Screen 2: Barcode & QTY Scan",
+                pins: {
+                    1: {
+                        title: "Scan Header: [F1: Change Config] & Live Metrics",
+                        subtitle: "Locator #1, Scanned # counter, and quick config modifier",
+                        takeaway: "Top status HUD showing current shelf location and total scanned piece count.",
+                        desc: "Displays the active shelf locator number (e.g. <code>Locator: 1</code>) and increments the <code>Scanned #: 2</code> counter with every confirmed barcode entry.",
+                        actions: [
+                            "<strong>⚙️ F1: Change Config:</strong> Returns to Screen 1 if the operator needs to change shelf locators or store codes.",
+                            "<strong>📍 Locator Counter:</strong> Confirms the current active shelf zone.",
+                            "<strong>🔢 Scanned # Metric:</strong> Real-time total of physical scans completed in this locator."
+                        ],
+                        tip: "Verify <code>Locator: 1</code> before scanning items to prevent mis-filing scans in the wrong shelf.",
+                        photo: "img/casio/casio_02_scan_screen.png"
+                    },
+                    2: {
+                        title: "Scan Barcode Input Field & Laser Trigger",
+                        subtitle: "Receives hardware laser beam scans or manual UPC entry",
+                        takeaway: "Primary input field for capturing product barcodes (e.g. 43100052005).",
+                        desc: "Aim the Casio scanner lens at the product barcode and pull the physical yellow/black laser trigger. The barcode number immediately populates this field and queries the masterfile catalog.",
+                        actions: [
+                            "<strong>🔫 Laser Trigger:</strong> High-speed 1D/2D scanning engine auto-inputs digits instantly.",
+                            "<strong>⌨️ Manual Barcode Input:</strong> Allows typing barcode digits manually if the physical label is damaged.",
+                            "<strong>⚡ Auto-Focus:</strong> Cursor automatically resets here after every successful scan submission."
+                        ],
+                        tip: "Hold the Casio 4 to 8 inches away from the product label for the fastest laser read rate.",
+                        photo: "img/casio/casio_02_scan_screen.png"
+                    },
+                    3: {
+                        title: "Quantity (QTY) Input Field",
+                        subtitle: "Piece quantity entry for bulk product counts (e.g. 5 units)",
+                        takeaway: "Allows multi-piece batch counting without scanning the same item repeatedly.",
+                        desc: "If a shelf has 10 identical notebooks, scan the barcode once and type <code>10</code> into this field before pressing Send. Defaults to <code>1</code> if left blank.",
+                        actions: [
+                            "<strong>🔢 Bulk Entry:</strong> Enter count (e.g. <code>5</code>, <code>12</code>, <code>24</code>) for master carton or pack counting.",
+                            "<strong>⚡ Default QTY:</strong> Leaving QTY blank submits a default count of 1 piece.",
+                            "<strong>🧹 Auto-Clear:</strong> Resets to blank after pressing Send to prevent accidental duplicate entries."
+                        ],
+                        tip: "Count the physical items in the stack first, scan once, and input the batch quantity for maximum speed.",
+                        photo: "img/casio/casio_02_scan_screen.png"
+                    },
+                    4: {
+                        title: "[Send] & [F7: Clear] Action Buttons",
+                        subtitle: "Transmit scan transaction to host, or clear current input fields",
+                        takeaway: "Core submission and entry correction controls.",
+                        desc: "Pressing <strong>Send</strong> (or hardware Enter) transmits the barcode and quantity to the server. <strong>F7: Clear</strong> erases typed characters from the input fields.",
+                        actions: [
+                            "<strong>📤 Send:</strong> Submits barcode + QTY to host API via HTTP POST, updates host countsheet immediately.",
+                            "<strong>🧹 F7: Clear:</strong> Clears both Barcode and QTY fields if a wrong barcode was typed.",
+                            "<strong>⚡ Keypad Enter:</strong> Pressing the physical Enter key on the Casio trigger also executes Send."
+                        ],
+                        tip: "Press <kbd>F7</kbd> if you accidentally scan the wrong item before pressing Send.",
+                        photo: "img/casio/casio_02_scan_screen.png"
+                    },
+                    5: {
+                        title: "[F6: View Scan] & [F4: Finish] (Shelf Finalization)",
+                        subtitle: "Inspect items in locator or lock and finalize the current shelf",
+                        takeaway: "Toggles shelf audit table or completes the locator count.",
+                        desc: "Pressing <strong>F6: View Scan</strong> opens Screen 3 to inspect all scanned items. Pressing <strong>F4: Finish</strong> (highlighted in orange) finalizes the shelf and marks it ready for supervisor sign-off.",
+                        actions: [
+                            "<strong>📋 F6: View Scan:</strong> Switches to Screen 3 (View Scanned List) for line-by-line item verification.",
+                            "<strong>🔒 F4: Finish:</strong> Closes the current shelf locator and updates host status from <code>In Use</code> to <code>Closed</code>.",
+                            "<strong>➕ Next Locator Transition:</strong> After finishing, prompts to begin the next sequential shelf (e.g. Locator 2)."
+                        ],
+                        tip: "Always click <strong>F6: View Scan</strong> before pressing <strong>F4: Finish</strong> to confirm that all physical items in the shelf are recorded.",
+                        photo: "img/casio/casio_02_scan_screen.png"
+                    },
+                    6: {
+                        title: "Live Product Card & Variance Feedback Banner",
+                        subtitle: "SUCCESS: Saved! banner, product description, and Master Qty vs Scan Qty",
+                        takeaway: "Instant auditory and visual confirmation of scanned products.",
+                        desc: "Shows product description (e.g. <code>NB SPI 05200 1SUBJ 100SHT 10.5X8IN</code>), store masterfile quantity (<code>Mst Qty: 0</code>), counted quantity (<code>Scan: 5</code>), and the resulting physical variance (<code>Var: +5</code>).",
+                        actions: [
+                            "<strong>✅ SUCCESS: Saved!</strong> Green banner confirms transaction was committed into the database.",
+                            "<strong>📝 Product Description:</strong> Displays official catalog title matched from masterfile.",
+                            "<strong>📊 Variance Metric:</strong> Formula <code>Variance = Scanned Qty − Masterfile Qty</code>."
+                        ],
+                        tip: "If the screen shows <code>UNMATCHED</code> or variance alert, double-check that you scanned the primary retail UPC.",
+                        photo: "img/casio/casio_03_success_screen.png"
+                    }
+                }
             },
-            3: {
-                screen: 'config',
-                title: "Locator / Slot Initial Number",
-                subtitle: "Numeric shelf assignment (e.g. 1, 2, 3)",
-                takeaway: "Defines the physical shelf or bin where counting starts.",
-                desc: "Sets the active locator slot for this session. Must contain numbers only. When set to <code>1</code>, all scanned barcodes will be recorded under <strong>Locator 1</strong> until finished.",
-                actions: [
-                    "<strong>🔢 Numbers Only:</strong> Input numeric shelf IDs (e.g. <code>1</code>, <code>2</code>, <code>10</code>).",
-                    "<strong>🏷️ Shelf Sticker Match:</strong> Ensure the number matches the physical barcode sticker attached to the gondola.",
-                    "<strong>🔒 Status Transition:</strong> Claiming this locator automatically marks the slot as <code>In Use</code> on the Host Console."
-                ],
-                tip: "Floor staff should physically stand in front of Shelf #1 before pressing Save Setting.",
-                photo: "img/casio/casio_01_config_screen.png"
-            },
-            4: {
-                screen: 'config',
-                title: "Save Setting & F1: EXIT SYSTEM Controls",
-                subtitle: "Commit setup parameters and proceed to scanning, or exit to Casio OS",
-                takeaway: "Validates host connection and transitions the terminal to active inventory counting.",
-                desc: "Clicking <strong>Save Setting</strong> stores the configuration and opens Screen 2. <strong>F1: EXIT SYSTEM</strong> closes the application and returns to the Windows CE / Casio OS desktop.",
-                actions: [
-                    "<strong>💾 Save Setting:</strong> Validates input fields, performs handshake with host server, and loads <strong>Screen 2 (Scan Barcode)</strong>.",
-                    "<strong>⌨️ F1: EXIT SYSTEM:</strong> Gracefully shuts down the OWI PI scanner application.",
-                    "<strong>⚡ Auto-Reconnect:</strong> If network drops, saving will retry host synchronization."
-                ],
-                tip: "Press <kbd>Save Setting</kbd> once to lock the locator. Use <kbd>F1</kbd> only if reconfiguring network settings.",
-                photo: "img/casio/casio_01_config_screen.png"
-            },
-            5: {
-                screen: 'config',
-                title: "Casio Hardware LED & Input Mode Indicator",
-                subtitle: "Red Laser Activity LED and [ABC] / [123] keypad toggle",
-                takeaway: "Hardware health indicator and alphanumeric typing status.",
-                desc: "The Casio top LEDs indicate hardware status: Red for laser trigger / scanner power, Green for Wi-Fi readiness. The bracketed <code>[ABC]</code> or <code>[123]</code> badge indicates current keypad typing mode.",
-                actions: [
-                    "<strong>🔴 Red LED:</strong> Lights up when the laser barcode engine is engaged or charging.",
-                    "<strong>🟢 Green LED:</strong> Indicates healthy battery and active Wi-Fi link.",
-                    "<strong>🔤 [ABC] / [123]:</strong> Shows whether keypad keys will type letters or numeric digits."
-                ],
-                tip: "Press the Casio Alpha key to toggle between numeric [123] and text [ABC] entry.",
-                photo: "img/casio/casio_01_config_device.png"
-            },
-            6: {
-                screen: 'scan',
-                title: "Scan Header: [F1: Change Config] & Live Metrics",
-                subtitle: "Locator #1, Scanned # counter, and quick config modifier",
-                takeaway: "Top status HUD showing current shelf location and total scanned piece count.",
-                desc: "Displays the active shelf locator number (e.g. <code>Locator: 1</code>) and increments the <code>Scanned #: 2</code> counter with every confirmed barcode entry.",
-                actions: [
-                    "<strong>⚙️ F1: Change Config:</strong> Returns to Screen 1 if the operator needs to change shelf locators or store codes.",
-                    "<strong>📍 Locator Counter:</strong> Confirms the current active shelf zone.",
-                    "<strong>🔢 Scanned # Metric:</strong> Real-time total of physical scans completed in this locator."
-                ],
-                tip: "Verify <code>Locator: 1</code> before scanning items to prevent mis-filing scans in the wrong shelf.",
-                photo: "img/casio/casio_02_scan_screen.png"
-            },
-            7: {
-                screen: 'scan',
-                title: "Scan Barcode Input Field & Laser Trigger",
-                subtitle: "Receives hardware laser beam scans or manual UPC entry",
-                takeaway: "Primary input field for capturing product barcodes (e.g. 43100052005).",
-                desc: "Aim the Casio scanner lens at the product barcode and pull the physical yellow/black laser trigger. The barcode number immediately populates this field and queries the masterfile catalog.",
-                actions: [
-                    "<strong>🔫 Laser Trigger:</strong> High-speed 1D/2D scanning engine auto-inputs digits instantly.",
-                    "<strong>⌨️ Manual Barcode Input:</strong> Allows typing barcode digits manually if the physical label is damaged.",
-                    "<strong>⚡ Auto-Focus:</strong> Cursor automatically resets here after every successful scan submission."
-                ],
-                tip: "Hold the Casio 4 to 8 inches away from the product label for the fastest laser read rate.",
-                photo: "img/casio/casio_02_scan_screen.png"
-            },
-            8: {
-                screen: 'scan',
-                title: "Quantity (QTY) Input Field",
-                subtitle: "Piece quantity entry for bulk product counts (e.g. 5 units)",
-                takeaway: "Allows multi-piece batch counting without scanning the same item repeatedly.",
-                desc: "If a shelf has 10 identical notebooks, scan the barcode once and type <code>10</code> into this field before pressing Send. Defaults to <code>1</code> if left blank.",
-                actions: [
-                    "<strong>🔢 Bulk Entry:</strong> Enter count (e.g. <code>5</code>, <code>12</code>, <code>24</code>) for master carton or pack counting.",
-                    "<strong>⚡ Default QTY:</strong> Leaving QTY blank submits a default count of 1 piece.",
-                    "<strong>🧹 Auto-Clear:</strong> Resets to blank after pressing Send to prevent accidental duplicate entries."
-                ],
-                tip: "Count the physical items in the stack first, scan once, and input the batch quantity for maximum speed.",
-                photo: "img/casio/casio_02_scan_screen.png"
-            },
-            9: {
-                screen: 'scan',
-                title: "[Send] & [F7: Clear] Action Buttons",
-                subtitle: "Transmit scan transaction to host, or clear current input fields",
-                takeaway: "Core submission and entry correction controls.",
-                desc: "Pressing <strong>Send</strong> (or hardware Enter) transmits the barcode and quantity to the server. <strong>F7: Clear</strong> erases typed characters from the input fields.",
-                actions: [
-                    "<strong>📤 Send:</strong> Submits barcode + QTY to host API via HTTP POST, updates host countsheet immediately.",
-                    "<strong>🧹 F7: Clear:</strong> Clears both Barcode and QTY fields if a wrong barcode was typed.",
-                    "<strong>⚡ Keypad Enter:</strong> Pressing the physical Enter key on the Casio trigger also executes Send."
-                ],
-                tip: "Press <kbd>F7</kbd> if you accidentally scan the wrong item before pressing Send.",
-                photo: "img/casio/casio_02_scan_screen.png"
-            },
-            10: {
-                screen: 'scan',
-                title: "[F6: View Scan] & [F4: Finish] (Shelf Finalization)",
-                subtitle: "Inspect items in locator or lock and finalize the current shelf",
-                takeaway: "Toggles shelf audit table or completes the locator count.",
-                desc: "Pressing <strong>F6: View Scan</strong> opens Screen 3 to inspect all scanned items. Pressing <strong>F4: Finish</strong> (highlighted in orange) finalizes the shelf and marks it ready for supervisor sign-off.",
-                actions: [
-                    "<strong>📋 F6: View Scan:</strong> Switches to Screen 3 (View Scanned List) for line-by-line item verification.",
-                    "<strong>🔒 F4: Finish:</strong> Closes the current shelf locator and updates host status from <code>In Use</code> to <code>Closed</code>.",
-                    "<strong>➕ Next Locator Transition:</strong> After finishing, prompts to begin the next sequential shelf (e.g. Locator 2)."
-                ],
-                tip: "Always click <strong>F6: View Scan</strong> before pressing <strong>F4: Finish</strong> to confirm that all physical items in the shelf are recorded.",
-                photo: "img/casio/casio_02_scan_screen.png"
-            },
-            11: {
-                screen: 'scan',
-                title: "Live Product Card & Variance Feedback Banner",
-                subtitle: "SUCCESS: Saved! banner, product description, and Master Qty vs Scan Qty",
-                takeaway: "Instant auditory and visual confirmation of scanned products.",
-                desc: "Shows product description (e.g. <code>NB SPI 05200 1SUBJ 100SHT 10.5X8IN</code>), store masterfile quantity (<code>Mst Qty: 0</code>), counted quantity (<code>Scan: 5</code>), and the resulting physical variance (<code>Var: +5</code>).",
-                actions: [
-                    "<strong>✅ SUCCESS: Saved!</strong> Green banner confirms transaction was committed into the database.",
-                    "<strong>📝 Product Description:</strong> Displays official catalog title matched from masterfile.",
-                    "<strong>📊 Variance Metric:</strong> Formula <code>Variance = Scanned Qty − Masterfile Qty</code>."
-                ],
-                tip: "If the screen shows <code>UNMATCHED</code> or variance alert, double-check that you scanned the primary retail UPC.",
-                photo: "img/casio/casio_03_success_screen.png"
-            },
-            12: {
-                screen: 'view',
-                title: "Scanned Items Data Grid (Audit Table)",
-                subtitle: "Itemized list: Barcode (43100052005), Qty (5), and Description",
-                takeaway: "Complete inventory manifest for the active shelf locator.",
-                desc: "Displays every individual line item recorded inside this shelf. Operators can navigate through rows using Casio arrow keys to audit counts.",
-                actions: [
-                    "<strong>🏷️ Barcode Column:</strong> Full UPC number of recorded items.",
-                    "<strong>🔢 Qty Column:</strong> Total counted units for each product line.",
-                    "<strong>📝 Description Column:</strong> Catalog title for physical item verification."
-                ],
-                tip: "Use the physical Up/Down arrow keys on the Casio keypad to highlight different rows in the table.",
-                photo: "img/casio/casio_04_view_scans_screen.png"
-            },
-            13: {
-                screen: 'view',
-                title: "[Edit] & [F7: Delete] Item Modification Controls",
-                subtitle: "Adjust counted quantity or remove mistaken scan records",
-                takeaway: "On-the-fly correction tools for floor operators.",
-                desc: "Allows modifying the recorded piece count if a recount found a mismatch, or deleting an accidental duplicate scan row directly from the Casio terminal.",
-                actions: [
-                    "<strong>✏️ Edit:</strong> Opens quantity prompt to adjust the piece count of the highlighted row.",
-                    "<strong>🗑️ F7: Delete:</strong> Removes the selected item from this locator and recalculates total counts.",
-                    "<strong>🔒 Permission Sync:</strong> Edits sync to host and are logged for supervisor audit trail."
-                ],
-                tip: "If you accidentally scanned an item twice, select the duplicate row and press <kbd>F7: Delete</kbd>.",
-                photo: "img/casio/casio_04_view_scans_screen.png"
-            },
-            14: {
-                screen: 'view',
-                title: "[F4: Back to Scan] Active Mode Return",
-                subtitle: "Exit audit list and return to live barcode scanning (Screen 2)",
-                takeaway: "Resumes fast barcode ingestion mode.",
-                desc: "Closes the audit table and returns the operator directly to Screen 2 with the cursor focused in the <strong>Scan Barcode</strong> input field.",
-                actions: [
-                    "<strong>🔙 F4: Back to Scan:</strong> Returns directly to active scanning screen.",
-                    "<strong>⚡ Immediate Laser Readiness:</strong> Re-arms the laser engine for the next physical item.",
-                    "<strong>📍 Preserves Locator:</strong> Retains active locator slot number without restarting session."
-                ],
-                tip: "Press physical function key <kbd>F4</kbd> on the Casio keypad for rapid toggle back to scanning.",
-                photo: "img/casio/casio_04_view_scans_screen.png"
+            view: {
+                total: 3,
+                name: "Screen 3: View Scanned List",
+                pins: {
+                    1: {
+                        title: "Scanned Items Data Grid (Audit Table)",
+                        subtitle: "Itemized list: Barcode (43100052005), Qty (5), and Description",
+                        takeaway: "Complete inventory manifest for the active shelf locator.",
+                        desc: "Displays every individual line item recorded inside this shelf. Operators can navigate through rows using Casio arrow keys to audit counts.",
+                        actions: [
+                            "<strong>🏷️ Barcode Column:</strong> Full UPC number of recorded items.",
+                            "<strong>🔢 Qty Column:</strong> Total counted units for each product line.",
+                            "<strong>📝 Description Column:</strong> Catalog title for physical item verification."
+                        ],
+                        tip: "Use the physical Up/Down arrow keys on the Casio keypad to highlight different rows in the table.",
+                        photo: "img/casio/casio_04_view_scans_screen.png"
+                    },
+                    2: {
+                        title: "[Edit] & [F7: Delete] Item Modification Controls",
+                        subtitle: "Adjust counted quantity or remove mistaken scan records",
+                        takeaway: "On-the-fly correction tools for floor operators.",
+                        desc: "Allows modifying the recorded piece count if a recount found a mismatch, or deleting an accidental duplicate scan row directly from the Casio terminal.",
+                        actions: [
+                            "<strong>✏️ Edit:</strong> Opens quantity prompt to adjust the piece count of the highlighted row.",
+                            "<strong>🗑️ F7: Delete:</strong> Removes the selected item from this locator and recalculates total counts.",
+                            "<strong>🔒 Permission Sync:</strong> Edits sync to host and are logged for supervisor audit trail."
+                        ],
+                        tip: "If you accidentally scanned an item twice, select the duplicate row and press <kbd>F7: Delete</kbd>.",
+                        photo: "img/casio/casio_04_view_scans_screen.png"
+                    },
+                    3: {
+                        title: "[F4: Back to Scan] Active Mode Return",
+                        subtitle: "Exit audit list and return to live barcode scanning (Screen 2)",
+                        takeaway: "Resumes fast barcode ingestion mode.",
+                        desc: "Closes the audit table and returns the operator directly to Screen 2 with the cursor focused in the <strong>Scan Barcode</strong> input field.",
+                        actions: [
+                            "<strong>🔙 F4: Back to Scan:</strong> Returns directly to active scanning screen.",
+                            "<strong>⚡ Immediate Laser Readiness:</strong> Re-arms the laser engine for the next physical item.",
+                            "<strong>📍 Preserves Locator:</strong> Retains active locator slot number without restarting session."
+                        ],
+                        tip: "Press physical function key <kbd>F4</kbd> on the Casio keypad for rapid toggle back to scanning.",
+                        photo: "img/casio/casio_04_view_scans_screen.png"
+                    }
+                }
             }
         };
 
         let currentScreen = 'config';
         let currentModalPin = 1;
-        const screenHotspots = {
-            config: [1, 2, 3, 4, 5],
-            scan: [6, 7, 8, 9, 10, 11],
-            view: [12, 13, 14]
-        };
 
         function switchScreen(screenName, ev) {
             currentScreen = screenName;
@@ -1546,23 +1545,18 @@
             const countBadge = document.getElementById('hotspots-count-badge');
             const container = document.getElementById('hotspots-container');
 
-            const pins = screenHotspots[screenName];
-            countBadge.innerText = `${pins.length} Controls`;
+            const screenObj = casioScreens[screenName];
+            countBadge.innerText = `${screenObj.total} Controls`;
+            listTitle.innerText = `📌 Hotspots in ${screenObj.name}`;
 
-            const names = {
-                config: "Screen 1: Config & Setup",
-                scan: "Screen 2: Barcode & QTY Scan",
-                view: "Screen 3: View Scanned List"
-            };
-            listTitle.innerText = `📌 Hotspots in ${names[screenName]}`;
-
-            container.innerHTML = pins.map(pin => {
-                const item = casioData[pin];
+            const pinKeys = Object.keys(screenObj.pins);
+            container.innerHTML = pinKeys.map(pinKey => {
+                const item = screenObj.pins[pinKey];
                 return `
-                    <div class="h-card" onclick="openModal(${pin})" title="Click to inspect Hotspot ${pin}">
+                    <div class="h-card" onclick="openModal(${pinKey})" title="Click to inspect Hotspot ${pinKey}">
                         <div class="h-card-top">
                             <div class="h-card-title-group">
-                                <div class="h-num">${pin}</div>
+                                <div class="h-num">${pinKey}</div>
                                 <div class="h-title">${item.title}</div>
                             </div>
                             <span class="h-inspect-badge">Inspect ➔</span>
@@ -1574,11 +1568,12 @@
         }
 
         function openModal(pinNum) {
-            currentModalPin = pinNum;
-            const data = casioData[pinNum];
+            currentModalPin = parseInt(pinNum);
+            const screenObj = casioScreens[currentScreen];
+            const data = screenObj.pins[currentModalPin];
             if (!data) return;
 
-            document.getElementById('m-pin-num').innerText = pinNum;
+            document.getElementById('m-pin-num').innerText = currentModalPin;
             document.getElementById('m-title').innerText = data.title;
             document.getElementById('m-subtitle').innerText = data.subtitle;
             document.getElementById('m-takeaway').innerText = data.takeaway;
@@ -1589,7 +1584,7 @@
 
             document.getElementById('m-tip').innerHTML = data.tip;
             document.getElementById('m-photo').src = data.photo;
-            document.getElementById('m-counter').innerText = `Hotspot ${pinNum} of 14`;
+            document.getElementById('m-counter').innerText = `Hotspot ${currentModalPin} of ${screenObj.total} (${screenObj.name})`;
 
             document.getElementById('modal-backdrop').classList.add('active');
         }
@@ -1599,14 +1594,16 @@
         }
 
         function nextModal() {
+            const screenObj = casioScreens[currentScreen];
             let next = currentModalPin + 1;
-            if (next > 14) next = 1;
+            if (next > screenObj.total) next = 1;
             openModal(next);
         }
 
         function prevModal() {
+            const screenObj = casioScreens[currentScreen];
             let prev = currentModalPin - 1;
-            if (prev < 1) prev = 14;
+            if (prev < 1) prev = screenObj.total;
             openModal(prev);
         }
 
