@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWIPI - Casio Industrial Scanner Visual Manual & Digital Twin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(18, 24, 38, 0.85);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(56, 189, 248, 0.4);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --casio-bg: #1e293b;
+            --casio-screen-bg: #ccd5f0;
+            --casio-screen-text: #050b1a;
+            --casio-blue: #000084;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        /* Top Bar */
+        .top-nav {
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-color);
+        }
+
+        .nav-link.active {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        /* Hero / Header Section */
+        .hero-banner {
+            padding: 30px 24px 20px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .hero-sub {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 750px;
+            margin: 0 auto 20px;
+        }
+
+        /* Screen Switcher Tabs */
+        .tab-switcher-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn:hover {
+            color: white;
+            background: rgba(51, 65, 85, 0.8);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            border-color: #38bdf8;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+        }
+
+        /* Main Workspace Grid */
+        .manual-main {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 24px 40px;
+            display: grid;
+            grid-template-columns: 460px 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .manual-main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Casio Device Mockup Frame */
+        .casio-mockup-wrapper {
+            position: sticky;
+            top: 85px;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 24px 20px 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .casio-speaker-grille {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .speaker-slot {
+            width: 24px;
+            height: 4px;
+            background: #020617;
+            border-radius: 4px;
+        }
+
+        .casio-led-indicators {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .led-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #334155;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+        }
+
+        .led-dot.laser-active {
+            background: #ef4444;
+            box-shadow: 0 0 12px #ef4444, inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            animation: pulse-led 1.5s infinite;
+        }
+
+        .led-dot.power-ready {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        @keyframes pulse-led {
+            0%, 100% { opacity: 1; filter: brightness(1.2); }
+            50% { opacity: 0.6; filter: brightness(0.9); }
+        }
+
+        /* Casio LCD Screen Container */
+        .casio-lcd-bezel {
+            width: 100%;
+            background: #020617;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.9);
+            position: relative;
+        }
+
+        .casio-lcd-screen {
+            background: #d8e1f5;
+            color: #030712;
+            font-family: 'JetBrains Mono', monospace;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            min-height: 520px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Native App Header */
+        .app-win-bar {
+            background: #000080;
+            color: #ffffff;
+            padding: 5px 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-win-close {
+            background: #d8e1f5;
+            color: #000080;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .app-sub-bar {
+            background: #000080;
+            color: #fca5a5;
+            padding: 4px 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .input-mode-pill {
+            color: #ffffff;
+            font-weight: 800;
+        }
+
+        .app-body-content {
+            padding: 12px 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        /* Screen 1: Config Elements */
+        .c-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+
+        .c-input {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #64748b;
+            color: #000000;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 5px 6px;
+            margin-bottom: 6px;
+            box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .c-row-dual {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .c-btn {
+            background: #cbd5e1;
+            border: 2px outset #ffffff;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            padding: 10px 8px;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 6px;
+            transition: all 0.1s;
+        }
+
+        .c-btn:active {
+            border: 2px inset #64748b;
+            background: #94a3b8;
+        }
+
+        .c-btn-finish {
+            background: #fed7aa;
+            border: 2px outset #ffffff;
+            color: #7c2d12;
+            font-weight: 800;
+        }
+
+        /* Screen 2: Scan Elements */
+        .scan-header-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .btn-mini {
+            background: #cbd5e1;
+            border: 1px outset #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            cursor: pointer;
+        }
+
+        .scan-metrics {
+            text-align: right;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+
+        .scan-btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .product-feedback-card {
+            background: #e2e8f0;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            padding: 8px;
+            margin-top: auto;
+            text-align: center;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .feedback-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .feedback-desc {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .feedback-stats {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #0369a1;
+        }
+
+        .feedback-success {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 4px;
+            border-radius: 3px;
+            margin-bottom: 4px;
+        }
+
+        /* Screen 3: Table Elements */
+        .scans-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            background: #ffffff;
+            border: 1px solid #94a3b8;
+        }
+
+        .scans-table th {
+            background: #000080;
+            color: #ffffff;
+            padding: 4px 6px;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .scans-table td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .scans-table tr.selected {
+            background: #000080;
+            color: #ffffff;
+        }
+
+        .scans-table tr.selected td {
+            color: #ffffff;
+        }
+
+        /* Casio Hardware Branding */
+        .casio-brand-bottom {
+            margin-top: 18px;
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: 3px;
+            color: #475569;
+        }
+
+        /* Hotspot Pins Overlay */
+        .hotspot-pin {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: #ef4444;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+            z-index: 50;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: pulse-pin 2s infinite;
+        }
+
+        .hotspot-pin:hover {
+            transform: scale(1.3);
+            background: #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 1);
+        }
+
+        @keyframes pulse-pin {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+
+        /* Right Column: Interactive Explorer & Cards */
+        .explorer-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .instruction-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .badge-live {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        /* Function Key Reference Matrix */
+        .fkey-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .fkey-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .fkey-card:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            background: rgba(30, 41, 59, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .fkey-badge {
+            display: inline-block;
+            background: #0284c7;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .fkey-badge.f-orange {
+            background: #ea580c;
+        }
+
+        .fkey-badge.f-green {
+            background: #16a34a;
+        }
+
+        .fkey-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .fkey-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Hotspot Inspection Cards List */
+        .hotspot-cards-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        .h-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .h-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(56, 189, 248, 0.4);
+            transform: translateX(4px);
+        }
+
+        .h-card.active {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .h-num {
+            width: 32px;
+            height: 32px;
+            background: #0284c7;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.4);
+        }
+
+        .h-details {
+            flex: 1;
+        }
+
+        .h-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .h-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* Modal Overlay for Deep Breakdown */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: #0f172a;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 24px;
+            max-width: 1350px;
+            width: 96%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.15);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-backdrop.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-top {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-pin-badge {
+            width: 34px;
+            height: 34px;
+            background: #ef4444;
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .modal-h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .modal-h2-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .modal-close-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close-btn:hover {
+            color: white;
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+
+        .modal-content-grid {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 320px 1fr 340px;
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .modal-content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .m-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .m-box-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .m-takeaway {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            line-height: 1.35;
+        }
+
+        .m-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .m-actions-subgrid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+        }
+
+        .action-item-pill {
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+            display: block;
+        }
+
+        .action-item-pill strong {
+            color: #38bdf8;
+        }
+
+        .action-item-pill code {
+            background: rgba(56, 189, 248, 0.15);
+            color: #7dd3fc;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .modal-photo-preview {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-top: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-bottom {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(2, 6, 23, 0.5);
+            border-radius: 0 0 24px 24px;
+        }
+
+        .btn-nav-modal {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-nav-modal:hover {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: #38bdf8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="../index.php" class="nav-brand">
+            <span class="brand-badge">Digital Twin</span>
+            <span class="brand-title">OWIPI Scanner Visual Manual</span>
+        </a>
+        <div class="nav-links">
+            <a href="control_dashboard_visual_manual.html" class="nav-link">🖥️ Control Dashboard</a>
+            <a href="host_view_visual_manual.html" class="nav-link">💻 Host Console</a>
+            <a href="casio_scanner_visual_manual.html" class="nav-link active">📱 Casio Scanner App</a>
+            <a href="CASIO_SCANNER_MANUAL.md" class="nav-link" target="_blank">📖 Markdown Guide</a>
+        </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="hero-banner">
+        <h1 class="hero-title">Casio Mobile Scanner Visual Manual</h1>
+        <p class="hero-sub">Interactive simulator and comprehensive field manual for the Casio Industrial Terminal running the <strong>OWI PI Scanner App</strong>. Click any red hotspot pin or button below to inspect operational controls.</p>
+
+        <!-- Screen Switcher Tabs -->
+        <div class="tab-switcher-container">
+            <button class="tab-btn active" onclick="switchScreen('config')">
+                <span>⚙️ Screen 1: Config & Setup</span>
+            </button>
+            <button class="tab-btn" onclick="switchScreen('scan')">
+                <span>📦 Screen 2: Barcode & QTY Scan</span>
+            </button>
+            <button class="tab-btn" onclick="switchScreen('view')">
+                <span>📋 Screen 3: View Scanned List</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="manual-main">
+
+        <!-- Left: Casio Physical Terminal Digital Twin -->
+        <div class="casio-mockup-wrapper">
+            <div class="casio-speaker-grille">
+                <div class="speaker-slot"></div>
+                <div class="speaker-slot"></div>
+                <div class="speaker-slot"></div>
+            </div>
+
+            <!-- LED Indicators -->
+            <div class="casio-led-indicators">
+                <div class="led-dot power-ready" title="Wi-Fi Connected & Ready"></div>
+                <div class="led-dot laser-active" title="Laser Scanner Active / Powered"></div>
+            </div>
+
+            <!-- Casio Screen Display Bezel -->
+            <div class="casio-lcd-bezel">
+
+                <!-- 1. SCREEN 1: CONFIGURATION & SETUP -->
+                <div id="screen-config" class="casio-lcd-screen">
+                    <div class="app-win-bar">
+                        <span>OWI PI Scanner App</span>
+                        <div class="app-win-close">✕</div>
+                    </div>
+                    <div class="app-sub-bar">
+                        <span>OWI PHYSICAL INVENTORY</span>
+                        <span class="input-mode-pill">[ABC]</span>
+                    </div>
+
+                    <div class="app-body-content">
+                        <div class="c-label">Host URL / IP:</div>
+                        <input type="text" class="c-input" value="http://192.168.1.100/OWIPI" readonly>
+
+                        <div class="c-row-dual">
+                            <div>
+                                <div class="c-label">Store Code:</div>
+                                <input type="text" class="c-input" value="TES" readonly>
+                            </div>
+                            <div>
+                                <div class="c-label">Operator Name:</div>
+                                <input type="text" class="c-input" value="NEW" readonly>
+                            </div>
+                        </div>
+
+                        <div class="c-label">Locator / Slot (Numbers Only):</div>
+                        <input type="text" class="c-input" value="1" readonly>
+
+                        <button type="button" class="c-btn" onclick="openModal(4)">Save Setting</button>
+                        <button type="button" class="c-btn" onclick="openModal(4)" style="margin-top: 12px;">F1: EXIT SYSTEM</button>
+                    </div>
+
+                    <!-- Hotspots for Config Screen -->
+                    <div class="hotspot-pin" style="top: 85px; left: 16px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 155px; left: 16px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 220px; left: 16px;" onclick="openModal(3)">3</div>
+                    <div class="hotspot-pin" style="top: 285px; right: 20px;" onclick="openModal(4)">4</div>
+                    <div class="hotspot-pin" style="top: 10px; right: 35px;" onclick="openModal(5)">5</div>
+                </div>
+
+                <!-- 2. SCREEN 2: ACTIVE SCANNING & PRODUCT VARIANCES -->
+                <div id="screen-scan" class="casio-lcd-screen" style="display: none;">
+                    <div class="app-win-bar">
+                        <span>OWI PI Scanner App</span>
+                        <div class="app-win-close">✕</div>
+                    </div>
+                    <div class="app-sub-bar">
+                        <span>OWI PHYSICAL INVENTORY</span>
+                        <span class="input-mode-pill">[123]</span>
+                    </div>
+
+                    <div class="app-body-content">
+                        <div class="scan-header-status">
+                            <button type="button" class="btn-mini" onclick="openModal(6)">F1: Change Config</button>
+                            <div class="scan-metrics">
+                                <div>Locator: <strong>1</strong></div>
+                                <div>Scanned #: <strong>2</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="c-label">Scan Barcode:</div>
+                        <input type="text" class="c-input" value="43100052005" readonly>
+
+                        <div class="c-label">Quantity (QTY):</div>
+                        <input type="text" class="c-input" value="5" readonly>
+
+                        <div class="scan-btn-grid">
+                            <button type="button" class="c-btn" onclick="openModal(9)">Send</button>
+                            <button type="button" class="c-btn" onclick="openModal(9)">F7: Clear</button>
+                        </div>
+
+                        <div class="scan-btn-grid" style="margin-top: 4px;">
+                            <button type="button" class="c-btn" onclick="openModal(10)">F6: View Scan</button>
+                            <button type="button" class="c-btn c-btn-finish" onclick="openModal(10)">F4: Finish</button>
+                        </div>
+
+                        <div class="product-feedback-card">
+                            <div class="feedback-success">SUCCESS: Saved! Var: +5</div>
+                            <div class="feedback-desc">NB SPI 05200 1SUBJ 100SHT 10.5X8IN</div>
+                            <div class="feedback-stats">Mst Qty: 0 | Scan: 5 | Var: +5</div>
+                        </div>
+                    </div>
+
+                    <!-- Hotspots for Scan Screen -->
+                    <div class="hotspot-pin" style="top: 48px; left: 12px;" onclick="openModal(6)">6</div>
+                    <div class="hotspot-pin" style="top: 105px; left: 16px;" onclick="openModal(7)">7</div>
+                    <div class="hotspot-pin" style="top: 165px; left: 16px;" onclick="openModal(8)">8</div>
+                    <div class="hotspot-pin" style="top: 220px; right: 20px;" onclick="openModal(9)">9</div>
+                    <div class="hotspot-pin" style="top: 265px; right: 20px;" onclick="openModal(10)">10</div>
+                    <div class="hotspot-pin" style="bottom: 25px; left: 20px;" onclick="openModal(11)">11</div>
+                </div>
+
+                <!-- 3. SCREEN 3: VIEW SCANNED ITEMS TABLE -->
+                <div id="screen-view" class="casio-lcd-screen" style="display: none;">
+                    <div class="app-win-bar">
+                        <span>OWI PI Scanner App</span>
+                        <div class="app-win-close">✕</div>
+                    </div>
+                    <div class="app-sub-bar">
+                        <span>OWI PHYSICAL INVENTORY</span>
+                        <span class="input-mode-pill">[123]</span>
+                    </div>
+
+                    <div class="app-body-content" style="padding-bottom: 6px;">
+                        <div style="height: 250px; overflow-y: auto; background: white; border: 1px solid #64748b;">
+                            <table class="scans-table">
+                                <thead>
+                                    <tr>
+                                        <th>Barcode</th>
+                                        <th>Qty</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="selected">
+                                        <td>43100052005</td>
+                                        <td>5</td>
+                                        <td>NB SPI 05200 1SUBJ...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="scan-btn-grid" style="margin-top: 12px;">
+                            <button type="button" class="c-btn" onclick="openModal(13)">Edit</button>
+                            <button type="button" class="c-btn" onclick="openModal(13)">F7: Delete</button>
+                        </div>
+
+                        <button type="button" class="c-btn" onclick="openModal(14)" style="margin-top: 8px;">F4: Back to Scan</button>
+                    </div>
+
+                    <!-- Hotspots for View Screen -->
+                    <div class="hotspot-pin" style="top: 110px; left: 20px;" onclick="openModal(12)">12</div>
+                    <div class="hotspot-pin" style="top: 365px; right: 20px;" onclick="openModal(13)">13</div>
+                    <div class="hotspot-pin" style="bottom: 20px; left: 20px;" onclick="openModal(14)">14</div>
+                </div>
+
+            </div>
+
+            <!-- Casio Hardware Label -->
+            <div class="casio-brand-bottom">CASIO</div>
+        </div>
+
+        <!-- Right: Screen Information & Interactive Hotspot Matrix -->
+        <div class="explorer-panel">
+
+            <!-- Card 1: Function Key Matrix -->
+            <div class="instruction-card">
+                <div class="card-header-flex">
+                    <h3 class="card-title">
+                        <span>⌨️ Hardware & Function Key Guide</span>
+                    </h3>
+                    <span class="badge-live">Quick Reference</span>
+                </div>
+                <p style="font-size: 0.88rem; color: var(--text-muted);">The Casio mobile scanner keypad maps directly to physical function shortcuts for rapid one-handed counting:</p>
+                <div class="fkey-grid">
+                    <div class="fkey-card">
+                        <span class="fkey-badge">F1</span>
+                        <div class="fkey-name">Change Config / Exit</div>
+                        <div class="fkey-desc">Opens the Host URL and Store Code setup dialog or exits to OS.</div>
+                    </div>
+                    <div class="fkey-card">
+                        <span class="fkey-badge f-orange">F4</span>
+                        <div class="fkey-name">Finish / Back to Scan</div>
+                        <div class="fkey-desc">Finalizes the current locator count or toggles back to active scanning.</div>
+                    </div>
+                    <div class="fkey-card">
+                        <span class="fkey-badge">F6</span>
+                        <div class="fkey-name">View Scan</div>
+                        <div class="fkey-desc">Opens the itemized audit table of all products scanned in this shelf.</div>
+                    </div>
+                    <div class="fkey-card">
+                        <span class="fkey-badge f-green">F7</span>
+                        <div class="fkey-name">Clear / Delete</div>
+                        <div class="fkey-desc">Clears the active input field or removes a selected item row.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Hotspot Guide List for Active Screen -->
+            <div class="instruction-card">
+                <div class="card-header-flex">
+                    <h3 class="card-title">
+                        <span id="hotspots-list-title">📌 Hotspots in Screen 1 (Config & Setup)</span>
+                    </h3>
+                    <span class="badge-live" id="hotspots-count-badge">5 Controls</span>
+                </div>
+                <div class="hotspot-cards-list" id="hotspots-container">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Deep Breakdown Modal -->
+    <div class="modal-backdrop" id="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-top">
+                <div class="modal-header-title">
+                    <div class="modal-pin-badge" id="m-pin-num">1</div>
+                    <div>
+                        <h2 class="modal-h2" id="m-title">Control Title</h2>
+                        <div class="modal-h2-sub" id="m-subtitle">Control Subtitle</div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeModal()">✕</button>
+            </div>
+
+            <div class="modal-content-grid">
+                <!-- Left: Core Purpose -->
+                <div class="m-box">
+                    <div class="m-box-title">🎯 Operational Purpose</div>
+                    <div class="m-takeaway" id="m-takeaway">Primary function statement.</div>
+                    <p class="m-desc" id="m-desc">In-depth technical breakdown of this scanner field.</p>
+                </div>
+
+                <!-- Middle: Actions & Controls -->
+                <div class="m-box">
+                    <div class="m-box-title">⚡ Available Controls & Parameters</div>
+                    <div class="m-actions-subgrid" id="m-actions-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right: Field Reference Photo & Best Practice -->
+                <div class="m-box">
+                    <div class="m-box-title">💡 Pro-Tip & Physical Photo</div>
+                    <p class="m-desc" id="m-tip" style="margin-bottom: 12px;">Field best practice tip.</p>
+                    <img id="m-photo" src="" alt="Casio Terminal Photo" class="modal-photo-preview">
+                </div>
+            </div>
+
+            <div class="modal-bottom">
+                <button class="btn-nav-modal" onclick="prevModal()">◀ Previous Hotspot</button>
+                <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 14</span>
+                <button class="btn-nav-modal" onclick="nextModal()">Next Hotspot ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Script -->
+    <script>
+        const casioData = {
+            1: {
+                screen: 'config',
+                title: "Host URL / IP Address Configuration",
+                subtitle: "Target OWIPI server endpoint (e.g. http://192.168.1.100/OWIPI)",
+                takeaway: "Specifies the local Wi-Fi IP address of the supervisor host laptop.",
+                desc: "Tells the Casio scanner application where to send barcode transactions. The Casio communicates over HTTP REST API to ingest scans directly into the host MySQL database.",
+                actions: [
+                    "<strong>🌐 HTTP Endpoint:</strong> Must match the host IP shown on the supervisor's <code>CONNECT SCANNER</code> QR card (e.g. <code>http://192.168.1.100/OWIPI</code>).",
+                    "<strong>📶 Wi-Fi Requirement:</strong> Both the Casio scanner and the supervisor laptop must be connected to the exact same local Wi-Fi SSID.",
+                    "<strong>🔒 Persistent Cache:</strong> Once configured, the Casio stores this URL in local memory across reboots."
+                ],
+                tip: "<strong>Setup Tip:</strong> If the scanner fails to connect, verify the supervisor host laptop IP address by checking <code>ipconfig</code> or the Host Console header.",
+                photo: "img/casio/casio_01_config_screen.png"
+            },
+            2: {
+                screen: 'config',
+                title: "Store Code & Operator Name Assignment",
+                subtitle: "Store branch identifier (e.g. TES) and physical scanner operator name (e.g. NEW)",
+                takeaway: "Binds this scanner hardware to a specific retail branch and user operator.",
+                desc: "Every scan sent from this Casio terminal will automatically be tagged with this Store Code and Operator username for live supervisor attribution.",
+                actions: [
+                    "<strong>🏬 Store Code:</strong> Must match the active branch session on the host (e.g. <code>TES</code> or <code>RME</code>).",
+                    "<strong>👤 Operator Name:</strong> Physical name of the staff member operating the terminal (e.g. <code>NEW</code>, <code>MARK</code>, <code>RAYMART</code>).",
+                    "<strong>📋 Live Stream Attribution:</strong> Appears in real time on the supervisor's <code>LIVE INCOMING SCANS LOG</code>."
+                ],
+                tip: "Assign unique operator names to each Casio terminal so audit logs clearly show who counted each shelf.",
+                photo: "img/casio/casio_01_config_screen.png"
+            },
+            3: {
+                screen: 'config',
+                title: "Locator / Slot Initial Number",
+                subtitle: "Numeric shelf assignment (e.g. 1, 2, 3)",
+                takeaway: "Defines the physical shelf or bin where counting starts.",
+                desc: "Sets the active locator slot for this session. Must contain numbers only. When set to <code>1</code>, all scanned barcodes will be recorded under <strong>Locator 1</strong> until finished.",
+                actions: [
+                    "<strong>🔢 Numbers Only:</strong> Input numeric shelf IDs (e.g. <code>1</code>, <code>2</code>, <code>10</code>).",
+                    "<strong>🏷️ Shelf Sticker Match:</strong> Ensure the number matches the physical barcode sticker attached to the gondola.",
+                    "<strong>🔒 Status Transition:</strong> Claiming this locator automatically marks the slot as <code>In Use</code> on the Host Console."
+                ],
+                tip: "Floor staff should physically stand in front of Shelf #1 before pressing Save Setting.",
+                photo: "img/casio/casio_01_config_screen.png"
+            },
+            4: {
+                screen: 'config',
+                title: "Save Setting & F1: EXIT SYSTEM Controls",
+                subtitle: "Commit setup parameters and proceed to scanning, or exit to Casio OS",
+                takeaway: "Validates host connection and transitions the terminal to active inventory counting.",
+                desc: "Clicking <strong>Save Setting</strong> stores the configuration and opens Screen 2. <strong>F1: EXIT SYSTEM</strong> closes the application and returns to the Windows CE / Casio OS desktop.",
+                actions: [
+                    "<strong>💾 Save Setting:</strong> Validates input fields, performs handshake with host server, and loads <strong>Screen 2 (Scan Barcode)</strong>.",
+                    "<strong>⌨️ F1: EXIT SYSTEM:</strong> Gracefully shuts down the OWI PI scanner application.",
+                    "<strong>⚡ Auto-Reconnect:</strong> If network drops, saving will retry host synchronization."
+                ],
+                tip: "Press <kbd>Save Setting</kbd> once to lock the locator. Use <kbd>F1</kbd> only if reconfiguring network settings.",
+                photo: "img/casio/casio_01_config_screen.png"
+            },
+            5: {
+                screen: 'config',
+                title: "Casio Hardware LED & Input Mode Indicator",
+                subtitle: "Red Laser Activity LED and [ABC] / [123] keypad toggle",
+                takeaway: "Hardware health indicator and alphanumeric typing status.",
+                desc: "The Casio top LEDs indicate hardware status: Red for laser trigger / scanner power, Green for Wi-Fi readiness. The bracketed <code>[ABC]</code> or <code>[123]</code> badge indicates current keypad typing mode.",
+                actions: [
+                    "<strong>🔴 Red LED:</strong> Lights up when the laser barcode engine is engaged or charging.",
+                    "<strong>🟢 Green LED:</strong> Indicates healthy battery and active Wi-Fi link.",
+                    "<strong>🔤 [ABC] / [123]:</strong> Shows whether keypad keys will type letters or numeric digits."
+                ],
+                tip: "Press the Casio Alpha key to toggle between numeric [123] and text [ABC] entry.",
+                photo: "img/casio/casio_01_config_device.png"
+            },
+            6: {
+                screen: 'scan',
+                title: "Scan Header: [F1: Change Config] & Live Metrics",
+                subtitle: "Locator #1, Scanned # counter, and quick config modifier",
+                takeaway: "Top status HUD showing current shelf location and total scanned piece count.",
+                desc: "Displays the active shelf locator number (e.g. <code>Locator: 1</code>) and increments the <code>Scanned #: 2</code> counter with every confirmed barcode entry.",
+                actions: [
+                    "<strong>⚙️ F1: Change Config:</strong> Returns to Screen 1 if the operator needs to change shelf locators or store codes.",
+                    "<strong>📍 Locator Counter:</strong> Confirms the current active shelf zone.",
+                    "<strong>🔢 Scanned # Metric:</strong> Real-time total of physical scans completed in this locator."
+                ],
+                tip: "Verify <code>Locator: 1</code> before scanning items to prevent mis-filing scans in the wrong shelf.",
+                photo: "img/casio/casio_02_scan_screen.png"
+            },
+            7: {
+                screen: 'scan',
+                title: "Scan Barcode Input Field & Laser Trigger",
+                subtitle: "Receives hardware laser beam scans or manual UPC entry",
+                takeaway: "Primary input field for capturing product barcodes (e.g. 43100052005).",
+                desc: "Aim the Casio scanner lens at the product barcode and pull the physical yellow/black laser trigger. The barcode number immediately populates this field and queries the masterfile catalog.",
+                actions: [
+                    "<strong>🔫 Laser Trigger:</strong> High-speed 1D/2D scanning engine auto-inputs digits instantly.",
+                    "<strong>⌨️ Manual Barcode Input:</strong> Allows typing barcode digits manually if the physical label is damaged.",
+                    "<strong>⚡ Auto-Focus:</strong> Cursor automatically resets here after every successful scan submission."
+                ],
+                tip: "Hold the Casio 4 to 8 inches away from the product label for the fastest laser read rate.",
+                photo: "img/casio/casio_02_scan_screen.png"
+            },
+            8: {
+                screen: 'scan',
+                title: "Quantity (QTY) Input Field",
+                subtitle: "Piece quantity entry for bulk product counts (e.g. 5 units)",
+                takeaway: "Allows multi-piece batch counting without scanning the same item repeatedly.",
+                desc: "If a shelf has 10 identical notebooks, scan the barcode once and type <code>10</code> into this field before pressing Send. Defaults to <code>1</code> if left blank.",
+                actions: [
+                    "<strong>🔢 Bulk Entry:</strong> Enter count (e.g. <code>5</code>, <code>12</code>, <code>24</code>) for master carton or pack counting.",
+                    "<strong>⚡ Default QTY:</strong> Leaving QTY blank submits a default count of 1 piece.",
+                    "<strong>🧹 Auto-Clear:</strong> Resets to blank after pressing Send to prevent accidental duplicate entries."
+                ],
+                tip: "Count the physical items in the stack first, scan once, and input the batch quantity for maximum speed.",
+                photo: "img/casio/casio_02_scan_screen.png"
+            },
+            9: {
+                screen: 'scan',
+                title: "[Send] & [F7: Clear] Action Buttons",
+                subtitle: "Transmit scan transaction to host, or clear current input fields",
+                takeaway: "Core submission and entry correction controls.",
+                desc: "Pressing <strong>Send</strong> (or hardware Enter) transmits the barcode and quantity to the server. <strong>F7: Clear</strong> erases typed characters from the input fields.",
+                actions: [
+                    "<strong>📤 Send:</strong> Submits barcode + QTY to host API via HTTP POST, updates host countsheet immediately.",
+                    "<strong>🧹 F7: Clear:</strong> Clears both Barcode and QTY fields if a wrong barcode was typed.",
+                    "<strong>⚡ Keypad Enter:</strong> Pressing the physical Enter key on the Casio trigger also executes Send."
+                ],
+                tip: "Press <kbd>F7</kbd> if you accidentally scan the wrong item before pressing Send.",
+                photo: "img/casio/casio_02_scan_screen.png"
+            },
+            10: {
+                screen: 'scan',
+                title: "[F6: View Scan] & [F4: Finish] (Shelf Finalization)",
+                subtitle: "Inspect items in locator or lock and finalize the current shelf",
+                takeaway: "Toggles shelf audit table or completes the locator count.",
+                desc: "Pressing <strong>F6: View Scan</strong> opens Screen 3 to inspect all scanned items. Pressing <strong>F4: Finish</strong> (highlighted in orange) finalizes the shelf and marks it ready for supervisor sign-off.",
+                actions: [
+                    "<strong>📋 F6: View Scan:</strong> Switches to Screen 3 (View Scanned List) for line-by-line item verification.",
+                    "<strong>🔒 F4: Finish:</strong> Closes the current shelf locator and updates host status from <code>In Use</code> to <code>Closed</code>.",
+                    "<strong>➕ Next Locator Transition:</strong> After finishing, prompts to begin the next sequential shelf (e.g. Locator 2)."
+                ],
+                tip: "Always click <strong>F6: View Scan</strong> before pressing <strong>F4: Finish</strong> to confirm that all physical items in the shelf are recorded.",
+                photo: "img/casio/casio_02_scan_screen.png"
+            },
+            11: {
+                screen: 'scan',
+                title: "Live Product Card & Variance Feedback Banner",
+                subtitle: "SUCCESS: Saved! banner, product description, and Master Qty vs Scan Qty",
+                takeaway: "Instant auditory and visual confirmation of scanned products.",
+                desc: "Shows product description (e.g. <code>NB SPI 05200 1SUBJ 100SHT 10.5X8IN</code>), store masterfile quantity (<code>Mst Qty: 0</code>), counted quantity (<code>Scan: 5</code>), and the resulting physical variance (<code>Var: +5</code>).",
+                actions: [
+                    "<strong>✅ SUCCESS: Saved!</strong> Green banner confirms transaction was committed into the database.",
+                    "<strong>📝 Product Description:</strong> Displays official catalog title matched from masterfile.",
+                    "<strong>📊 Variance Metric:</strong> Formula <code>Variance = Scanned Qty − Masterfile Qty</code>."
+                ],
+                tip: "If the screen shows <code>UNMATCHED</code> or variance alert, double-check that you scanned the primary retail UPC.",
+                photo: "img/casio/casio_03_success_screen.png"
+            },
+            12: {
+                screen: 'view',
+                title: "Scanned Items Data Grid (Audit Table)",
+                subtitle: "Itemized list: Barcode (43100052005), Qty (5), and Description",
+                takeaway: "Complete inventory manifest for the active shelf locator.",
+                desc: "Displays every individual line item recorded inside this shelf. Operators can navigate through rows using Casio arrow keys to audit counts.",
+                actions: [
+                    "<strong>🏷️ Barcode Column:</strong> Full UPC number of recorded items.",
+                    "<strong>🔢 Qty Column:</strong> Total counted units for each product line.",
+                    "<strong>📝 Description Column:</strong> Catalog title for physical item verification."
+                ],
+                tip: "Use the physical Up/Down arrow keys on the Casio keypad to highlight different rows in the table.",
+                photo: "img/casio/casio_04_view_scans_screen.png"
+            },
+            13: {
+                screen: 'view',
+                title: "[Edit] & [F7: Delete] Item Modification Controls",
+                subtitle: "Adjust counted quantity or remove mistaken scan records",
+                takeaway: "On-the-fly correction tools for floor operators.",
+                desc: "Allows modifying the recorded piece count if a recount found a mismatch, or deleting an accidental duplicate scan row directly from the Casio terminal.",
+                actions: [
+                    "<strong>✏️ Edit:</strong> Opens quantity prompt to adjust the piece count of the highlighted row.",
+                    "<strong>🗑️ F7: Delete:</strong> Removes the selected item from this locator and recalculates total counts.",
+                    "<strong>🔒 Permission Sync:</strong> Edits sync to host and are logged for supervisor audit trail."
+                ],
+                tip: "If you accidentally scanned an item twice, select the duplicate row and press <kbd>F7: Delete</kbd>.",
+                photo: "img/casio/casio_04_view_scans_screen.png"
+            },
+            14: {
+                screen: 'view',
+                title: "[F4: Back to Scan] Active Mode Return",
+                subtitle: "Exit audit list and return to live barcode scanning (Screen 2)",
+                takeaway: "Resumes fast barcode ingestion mode.",
+                desc: "Closes the audit table and returns the operator directly to Screen 2 with the cursor focused in the <strong>Scan Barcode</strong> input field.",
+                actions: [
+                    "<strong>🔙 F4: Back to Scan:</strong> Returns directly to active scanning screen.",
+                    "<strong>⚡ Immediate Laser Readiness:</strong> Re-arms the laser engine for the next physical item.",
+                    "<strong>📍 Preserves Locator:</strong> Retains active locator slot number without restarting session."
+                ],
+                tip: "Press physical function key <kbd>F4</kbd> on the Casio keypad for rapid toggle back to scanning.",
+                photo: "img/casio/casio_04_view_scans_screen.png"
+            }
+        };
+
+        let currentScreen = 'config';
+        let currentModalPin = 1;
+        const screenHotspots = {
+            config: [1, 2, 3, 4, 5],
+            scan: [6, 7, 8, 9, 10, 11],
+            view: [12, 13, 14]
+        };
+
+        function switchScreen(screenName) {
+            currentScreen = screenName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            // Hide all screens
+            document.getElementById('screen-config').style.display = 'none';
+            document.getElementById('screen-scan').style.display = 'none';
+            document.getElementById('screen-view').style.display = 'none';
+
+            // Show selected screen
+            document.getElementById('screen-' + screenName).style.display = 'flex';
+
+            renderHotspotCards(screenName);
+        }
+
+        function renderHotspotCards(screenName) {
+            const listTitle = document.getElementById('hotspots-list-title');
+            const countBadge = document.getElementById('hotspots-count-badge');
+            const container = document.getElementById('hotspots-container');
+
+            const pins = screenHotspots[screenName];
+            countBadge.innerText = `${pins.length} Controls`;
+
+            const names = {
+                config: "Screen 1: Config & Setup",
+                scan: "Screen 2: Barcode & QTY Scan",
+                view: "Screen 3: View Scanned List"
+            };
+            listTitle.innerText = `📌 Hotspots in ${names[screenName]}`;
+
+            container.innerHTML = pins.map(pin => {
+                const item = casioData[pin];
+                return `
+                    <div class="h-card" onclick="openModal(${pin})">
+                        <div class="h-num">${pin}</div>
+                        <div class="h-details">
+                            <div class="h-title">${item.title}</div>
+                            <div class="h-desc">${item.takeaway}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openModal(pinNum) {
+            currentModalPin = pinNum;
+            const data = casioData[pinNum];
+            if (!data) return;
+
+            document.getElementById('m-pin-num').innerText = pinNum;
+            document.getElementById('m-title').innerText = data.title;
+            document.getElementById('m-subtitle').innerText = data.subtitle;
+            document.getElementById('m-takeaway').innerText = data.takeaway;
+            document.getElementById('m-desc').innerHTML = data.desc;
+
+            const actionsList = document.getElementById('m-actions-list');
+            actionsList.innerHTML = data.actions.map(act => `<div class="action-item-pill">${act}</div>`).join('');
+
+            document.getElementById('m-tip').innerHTML = data.tip;
+            document.getElementById('m-photo').src = data.photo;
+            document.getElementById('m-counter').innerText = `Hotspot ${pinNum} of 14`;
+
+            document.getElementById('modal-backdrop').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-backdrop').classList.remove('active');
+        }
+
+        function nextModal() {
+            let next = currentModalPin + 1;
+            if (next > 14) next = 1;
+            openModal(next);
+        }
+
+        function prevModal() {
+            let prev = currentModalPin - 1;
+            if (prev < 1) prev = 14;
+            openModal(prev);
+        }
+
+        // Close modal on Escape or background click
+        document.getElementById('modal-backdrop').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowRight' && document.getElementById('modal-backdrop').classList.contains('active')) nextModal();
+            if (e.key === 'ArrowLeft' && document.getElementById('modal-backdrop').classList.contains('active')) prevModal();
+        });
+
+        // Initialize on load
+        renderHotspotCards('config');
+    </script>
+
+</body>
+
+</html>
