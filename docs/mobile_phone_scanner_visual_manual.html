@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWIPI - Mobile Phone Camera Scanner Visual Manual & Digital Twin</title>
+    <title>OWIPI - Smartphone Camera Scanner Visual Manual & Digital Twin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -127,14 +127,14 @@
 
         /* Compact Sub-Header Toolbar */
         .sub-header-toolbar {
-            padding: 8px 18px;
+            padding: 6px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(15, 23, 42, 0.4);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
-            gap: 15px;
+            gap: 12px;
         }
 
         .header-info-box {
@@ -144,7 +144,7 @@
         }
 
         .main-page-title {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 800;
             color: white;
             letter-spacing: -0.3px;
@@ -152,7 +152,7 @@
         }
 
         .main-page-sub {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
             white-space: nowrap;
         }
@@ -165,7 +165,9 @@
         .tab-switcher-container {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
         }
 
         .tab-btn {
@@ -173,14 +175,14 @@
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             font-family: 'Outfit', sans-serif;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 700;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             transition: all 0.2s ease;
             white-space: nowrap;
         }
@@ -203,12 +205,12 @@
             flex: 1;
             min-height: 0;
             width: 100%;
-            padding: 10px 18px 12px;
+            padding: 8px 18px 10px;
             display: grid;
             grid-template-columns: 330px 1fr;
             gap: 16px;
             align-items: stretch;
-            height: calc(100vh - 96px);
+            height: calc(100vh - 92px);
         }
 
         @media (max-width: 992px) {
@@ -234,7 +236,7 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 320px;
+            max-width: 325px;
             margin: 0 auto;
             height: 100%;
             max-height: 100%;
@@ -247,7 +249,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 2px 0 6px;
+            padding: 2px 0 5px;
         }
 
         .phone-notch-pill {
@@ -342,7 +344,7 @@
             gap: 6px;
         }
 
-        /* Screen 1: Camera Blocked & Workarounds */
+        /* Cards and Elements */
         .blocked-card {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.4);
@@ -355,9 +357,6 @@
             font-size: 0.75rem;
             font-weight: 800;
             color: #f87171;
-            display: flex;
-            align-items: center;
-            gap: 4px;
             margin-bottom: 4px;
         }
 
@@ -378,20 +377,9 @@
             border: none;
             width: 100%;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
+            text-align: center;
         }
 
-        .workaround-list {
-            margin-top: 6px;
-            font-size: 0.65rem;
-            color: #fca5a5;
-            line-height: 1.3;
-        }
-
-        /* Screen 2: Setup Modal Card */
         .setup-modal-card {
             background: #161b22;
             border: 1px solid #30363d;
@@ -447,7 +435,7 @@
             margin-top: 6px;
         }
 
-        /* Screen 3: Live Camera Viewfinder & Controls */
+        /* Screen 3: Live Camera Viewfinder & Feedback */
         .active-session-hud {
             background: #161b22;
             border: 1px solid #30363d;
@@ -496,25 +484,16 @@
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 8px;
-            padding: 8px;
+            padding: 6px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
-        }
-
-        .camera-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: white;
+            gap: 5px;
         }
 
         .viewfinder-box {
             background: #000000;
             border-radius: 6px;
-            height: 120px;
+            height: 85px;
             position: relative;
             display: flex;
             align-items: center;
@@ -524,8 +503,8 @@
         }
 
         .viewfinder-reticle {
-            width: 140px;
-            height: 50px;
+            width: 130px;
+            height: 40px;
             border-left: 3px solid #ffffff;
             border-right: 3px solid #ffffff;
             position: relative;
@@ -543,8 +522,8 @@
         }
 
         @keyframes scan-laser {
-            0%, 100% { transform: translateY(-18px); }
-            50% { transform: translateY(18px); }
+            0%, 100% { transform: translateY(-14px); }
+            50% { transform: translateY(14px); }
         }
 
         .camera-tools-grid {
@@ -552,7 +531,7 @@
             grid-template-columns: 1fr auto;
             align-items: center;
             gap: 6px;
-            font-size: 0.68rem;
+            font-size: 0.66rem;
             color: #8b949e;
         }
 
@@ -566,25 +545,25 @@
             background: #21262d;
             border: 1px solid #30363d;
             color: white;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 700;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
         }
 
         .camera-actions-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            gap: 5px;
         }
 
         .btn-cam-start {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 0.72rem;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.7rem;
             font-weight: 800;
             cursor: pointer;
         }
@@ -593,31 +572,130 @@
             background: #21262d;
             border: 1px solid #30363d;
             color: #8b949e;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 0.72rem;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 0.7rem;
             font-weight: 700;
             cursor: pointer;
         }
 
-        .manual-input-box {
+        .success-feedback-box {
+            background: rgba(35, 134, 54, 0.15);
+            border: 1px solid #2ea44f;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.7rem;
+            line-height: 1.3;
+        }
+
+        .feedback-head {
+            color: #56f089;
+            font-weight: 800;
+            margin-bottom: 2px;
+        }
+
+        /* Screen 4: Manual Search Autocomplete */
+        .search-box-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .search-input-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-search-send {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: white;
+            font-weight: 700;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.74rem;
+        }
+
+        .search-results-list {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .search-item-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 5px 6px;
+            font-size: 0.68rem;
+            cursor: pointer;
+        }
+
+        .search-item-card:hover {
+            border-color: #58a6ff;
+            background: #161b22;
+        }
+
+        .s-title {
+            color: white;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .s-meta {
+            color: #8b949e;
+            font-size: 0.62rem;
+            margin-top: 2px;
+        }
+
+        /* Screen 5: Edit Scan Record Modal */
+        .edit-record-modal-inner {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 10px;
+            margin: auto 0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+        }
+
+        .edit-product-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 6px 8px;
+            margin-bottom: 8px;
+        }
+
+        .scan-log-mini-card {
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 6px;
             padding: 6px 8px;
-            font-size: 0.68rem;
-            font-weight: 800;
-            color: #8b949e;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-edit-mini {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
         /* Bottom Phone Home Indicator */
         .phone-home-indicator {
-            width: 90px;
+            width: 80px;
             height: 4px;
             background: #475569;
             border-radius: 3px;
-            margin-top: 5px;
+            margin-top: 4px;
             flex-shrink: 0;
         }
 
@@ -658,7 +736,7 @@
         .explorer-panel {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             min-height: 0;
             height: 100%;
         }
@@ -667,7 +745,7 @@
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 14px 16px;
+            padding: 12px 14px;
             backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
@@ -686,12 +764,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             flex-shrink: 0;
         }
 
         .card-title {
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: white;
             display: flex;
@@ -727,7 +805,7 @@
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 8px 10px;
+            padding: 6px 8px;
             transition: all 0.2s ease;
         }
 
@@ -741,14 +819,14 @@
             background: #059669;
             color: white;
             font-weight: 800;
-            font-size: 0.68rem;
-            padding: 1px 6px;
+            font-size: 0.65rem;
+            padding: 1px 5px;
             border-radius: 4px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .feature-name {
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             font-weight: 700;
             color: white;
             margin-bottom: 2px;
@@ -758,16 +836,16 @@
         }
 
         .feature-desc {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             color: var(--text-muted);
-            line-height: 1.3;
+            line-height: 1.25;
         }
 
-        /* Hotspot Inspection Cards List */
+        /* Hotspot Cards List */
         .hotspot-cards-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 8px;
             overflow-y: auto;
             align-content: start;
             flex: 1;
@@ -777,18 +855,17 @@
         .h-card {
             background: rgba(15, 23, 42, 0.65);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 8px 12px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 6px;
+            gap: 4px;
             cursor: pointer;
             transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            min-height: 75px;
+            min-height: 70px;
             height: auto;
             position: relative;
-            overflow: hidden;
         }
 
         .h-card:hover {
@@ -818,8 +895,8 @@
         }
 
         .h-num {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             background: linear-gradient(135deg, #059669, #10b981);
             color: white;
             border-radius: 6px;
@@ -827,13 +904,13 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             flex-shrink: 0;
             box-shadow: 0 2px 6px rgba(5, 150, 105, 0.4);
         }
 
         .h-title {
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             font-weight: 700;
             color: #ffffff;
             white-space: nowrap;
@@ -842,16 +919,15 @@
         }
 
         .h-inspect-badge {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: #34d399;
             background: rgba(16, 185, 129, 0.1);
-            padding: 2px 6px;
+            padding: 1px 5px;
             border-radius: 4px;
             border: 1px solid rgba(16, 185, 129, 0.25);
             white-space: nowrap;
             flex-shrink: 0;
-            transition: all 0.15s;
         }
 
         .h-card:hover .h-inspect-badge {
@@ -861,9 +937,9 @@
         }
 
         .h-desc {
-            font-size: 0.74rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
-            line-height: 1.35;
+            line-height: 1.3;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -911,7 +987,7 @@
         }
 
         .modal-top {
-            padding: 16px 20px;
+            padding: 14px 18px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -925,8 +1001,8 @@
         }
 
         .modal-pin-badge {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             background: #ef4444;
             color: white;
             border-radius: 8px;
@@ -934,17 +1010,17 @@
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .modal-h2 {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 800;
             color: white;
         }
 
         .modal-h2-sub {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
         }
 
@@ -952,8 +1028,8 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -970,10 +1046,10 @@
         }
 
         .modal-content-grid {
-            padding: 20px;
+            padding: 16px;
             display: grid;
             grid-template-columns: 320px 1fr 320px;
-            gap: 16px;
+            gap: 14px;
         }
 
         @media (max-width: 1100px) {
@@ -985,24 +1061,24 @@
         .m-box {
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 16px;
+            border-radius: 12px;
+            padding: 14px;
         }
 
         .m-box-title {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #34d399;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
         .m-takeaway {
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: white;
             margin-bottom: 6px;
@@ -1010,7 +1086,7 @@
         }
 
         .m-desc {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
             line-height: 1.45;
         }
@@ -1018,17 +1094,17 @@
         .m-actions-subgrid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 8px;
+            gap: 6px;
         }
 
         .action-item-pill {
             background: rgba(2, 6, 23, 0.6);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 0.8rem;
+            padding: 7px 10px;
+            font-size: 0.78rem;
             color: #cbd5e1;
-            line-height: 1.4;
+            line-height: 1.35;
             display: block;
         }
 
@@ -1042,19 +1118,19 @@
             padding: 1px 4px;
             border-radius: 4px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
         }
 
         .modal-photo-preview {
             width: 100%;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
-            margin-top: 10px;
+            margin-top: 8px;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
         }
 
         .modal-bottom {
-            padding: 12px 20px;
+            padding: 10px 18px;
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
@@ -1068,9 +1144,9 @@
             border: 1px solid var(--border-color);
             color: white;
             font-family: 'Outfit', sans-serif;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
@@ -1107,16 +1183,22 @@
             <span class="main-page-sub">• Real-Time Barcode Engine, SSL Workarounds & Locator Sessions</span>
         </div>
 
-        <!-- Screen Switcher Tabs -->
+        <!-- Screen Switcher Tabs (All 5 Workflows) -->
         <div class="tab-switcher-container">
             <button class="tab-btn active" onclick="switchScreen('security', event)">
-                <span>🔒 Screen 1: HTTPS & Security</span>
+                <span>🔒 1: HTTPS & SSL Bypass</span>
             </button>
             <button class="tab-btn" onclick="switchScreen('setup', event)">
-                <span>⚙️ Screen 2: Scanner Setup</span>
+                <span>⚙️ 2: Scanner Setup</span>
             </button>
             <button class="tab-btn" onclick="switchScreen('camera', event)">
-                <span>📷 Screen 3: Live Camera Scan</span>
+                <span>📷 3: Camera & Feedback</span>
+            </button>
+            <button class="tab-btn" onclick="switchScreen('search', event)">
+                <span>🔍 4: Masterfile Search</span>
+            </button>
+            <button class="tab-btn" onclick="switchScreen('edit', event)">
+                <span>✏️ 5: Edit Scan & Log</span>
             </button>
         </div>
     </div>
@@ -1136,7 +1218,7 @@
             <!-- Mobile Screen Display -->
             <div class="phone-screen">
 
-                <!-- 1. SCREEN 1: HTTPS & PERMISSION BYPASS -->
+                <!-- 1. SCREEN 1: HTTPS & PERMISSION BYPASS (Photos 1, 2, 3) -->
                 <div id="screen-security" style="display: flex; flex-direction: column; height: 100%;">
                     <div class="phone-app-header">
                         <div>
@@ -1158,10 +1240,10 @@
 
                             <button type="button" class="btn-https-switch" onclick="openModal(3)">⚡ Switch to Secure HTTPS</button>
 
-                            <div class="workaround-list">
-                                <div style="margin-top: 6px; font-weight: 700; color: #ffffff;">Alternatively, use Chrome flag:</div>
+                            <div style="margin-top: 6px; font-size: 0.65rem; color: #fca5a5; line-height: 1.3;">
+                                <div style="font-weight: 700; color: #ffffff;">Alternatively, use Chrome flag:</div>
                                 <div>1. <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></div>
-                                <div>2. Set Enabled & write <code>http://192.168.1.100</code></div>
+                                <div>2. Set Enabled & add <code>http://192.168.1.100</code></div>
                             </div>
                         </div>
                     </div>
@@ -1172,7 +1254,7 @@
                     <div class="hotspot-pin" style="top: 165px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
-                <!-- 2. SCREEN 2: SCANNER SETUP DIALOG -->
+                <!-- 2. SCREEN 2: SCANNER SETUP DIALOG (Photo 4) -->
                 <div id="screen-setup" style="display: none; flex-direction: column; height: 100%;">
                     <div class="phone-app-header">
                         <div>
@@ -1206,7 +1288,7 @@
                     <div class="hotspot-pin" style="top: 265px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
-                <!-- 3. SCREEN 3: ACTIVE CAMERA SCANNER -->
+                <!-- 3. SCREEN 3: LIVE CAMERA SCAN & FEEDBACK (Photos 5, 6) -->
                 <div id="screen-camera" style="display: none; flex-direction: column; height: 100%;">
                     <div class="phone-app-header">
                         <div>
@@ -1232,11 +1314,6 @@
 
                         <!-- Camera Viewfinder Card -->
                         <div class="camera-card">
-                            <div class="camera-header-flex">
-                                <span>CAMERA SCANNER</span>
-                                <span style="color: #2ea44f;">● Live</span>
-                            </div>
-
                             <div class="viewfinder-box">
                                 <div class="viewfinder-reticle">
                                     <div class="reticle-line"></div>
@@ -1258,17 +1335,105 @@
                             </div>
                         </div>
 
-                        <div class="manual-input-box" onclick="openModal(5)">
-                            MANUAL BARCODE / DESCRIPTION INPUT ▼
+                        <!-- Scanned Successfully Banner -->
+                        <div class="success-feedback-box" onclick="openModal(5)">
+                            <div class="feedback-head">✓ Scanned Successfully</div>
+                            <div>Barcode: <strong>8935001880752</strong></div>
+                            <div style="font-weight: 700; color: white;">GELPEN FOGEL04 SUNBEAM BLK 0.5 0.5MM</div>
+                            <div>Location: <strong>Slot 3</strong> | Store Qty: 0 | Scanned: <strong>1</strong> (Var: <strong>+1</strong>)</div>
                         </div>
                     </div>
 
                     <!-- Hotspots for Camera Screen (1..5) -->
                     <div class="hotspot-pin" style="top: 48px; right: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 110px; left: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 195px; right: 14px;" onclick="openModal(3)">3</div>
-                    <div class="hotspot-pin" style="top: 240px; left: 14px;" onclick="openModal(4)">4</div>
+                    <div class="hotspot-pin" style="top: 100px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 168px; right: 14px;" onclick="openModal(3)">3</div>
+                    <div class="hotspot-pin" style="top: 200px; left: 14px;" onclick="openModal(4)">4</div>
                     <div class="hotspot-pin" style="bottom: 12px; left: 14px;" onclick="openModal(5)">5</div>
+                </div>
+
+                <!-- 4. SCREEN 4: MANUAL SEARCH & AUTOCOMPLETE (Photo 7) -->
+                <div id="screen-search" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="phone-app-header">
+                        <div>
+                            <div class="p-brand-title">OWI PHYSICAL INVENTORY</div>
+                            <div class="p-store-tag">STORE CODE : TES</div>
+                        </div>
+                        <span class="p-status-pill">● Offline (Local)</span>
+                    </div>
+
+                    <div class="phone-body-scroll">
+                        <div class="search-box-card">
+                            <div style="font-size: 0.68rem; font-weight: 800; color: #8b949e; margin-bottom: 4px;">MANUAL BARCODE / DESCRIPTION INPUT</div>
+                            <div class="search-input-row">
+                                <input type="text" class="m-input-box" value="NB SPI" readonly style="font-weight: 800;">
+                                <button type="button" class="btn-search-send" onclick="openModal(2)">Send</button>
+                            </div>
+
+                            <!-- Autocomplete Dropdown List -->
+                            <div class="search-results-list">
+                                <div class="search-item-card" onclick="openModal(3)">
+                                    <div class="s-title">NB SPI 05200 1SUBJ 100SHT</div>
+                                    <div class="s-meta">UPC: <span style="color:#58a6ff;">43100052005</span> | SKU: <span style="color:#56f089;">1</span> | Qty: 0</div>
+                                </div>
+                                <div class="search-item-card" onclick="openModal(3)">
+                                    <div class="s-title">NB SPI 06254 3SUB 138SHT 9.5X6</div>
+                                    <div class="s-meta">UPC: <span style="color:#58a6ff;">43100062547</span> | SKU: <span style="color:#56f089;">22</span> | Qty: 0</div>
+                                </div>
+                                <div class="search-item-card" onclick="openModal(3)">
+                                    <div class="s-title">NB SPI 08188/08088 1SUBJ 100SH</div>
+                                    <div class="s-meta">UPC: <span style="color:#58a6ff;">43100064268</span> | SKU: <span style="color:#56f089;">6638</span> | Qty: 0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hotspots for Search Screen (1..3) -->
+                    <div class="hotspot-pin" style="top: 75px; left: 14px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 75px; right: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 140px; left: 14px;" onclick="openModal(3)">3</div>
+                </div>
+
+                <!-- 5. SCREEN 5: EDIT SCAN RECORD MODAL & SESSION LOG (Photo 8) -->
+                <div id="screen-edit" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="phone-app-header">
+                        <div>
+                            <div class="p-brand-title">OWI PHYSICAL INVENTORY</div>
+                            <div class="p-store-tag">STORE CODE : TES</div>
+                        </div>
+                        <span class="p-status-pill">● Offline (Local)</span>
+                    </div>
+
+                    <div class="phone-body-scroll">
+                        <div class="edit-record-modal-inner">
+                            <div class="setup-modal-title" style="margin-bottom: 6px;">Edit Scan Record</div>
+
+                            <div class="m-field-group">
+                                <label class="m-field-label">BARCODE (UPC/SKU)</label>
+                                <input type="text" class="m-input-box" value="8935001880752" readonly>
+                            </div>
+
+                            <div class="edit-product-card">
+                                <div style="font-weight: 800; color: white; font-size: 0.72rem;">GELPEN FOGEL04 SUNBEAM BLK 0.5 0.5MM</div>
+                                <div style="font-size: 0.65rem; color: #8b949e; margin-top: 2px;">SKU: 026912</div>
+                            </div>
+
+                            <div class="m-field-group">
+                                <label class="m-field-label">QUANTITY</label>
+                                <input type="text" class="m-input-box" value="1" readonly style="font-weight: 800; text-align: center;">
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px;">
+                                <button type="button" class="btn-hud-change" onclick="openModal(3)" style="padding: 6px; background: #da3637; color: white; border: none;">Cancel</button>
+                                <button type="button" class="btn-hud-finish" onclick="openModal(3)" style="padding: 6px; font-weight: 800;">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hotspots for Edit Screen (1..3) -->
+                    <div class="hotspot-pin" style="top: 100px; left: 14px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 185px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 245px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
             </div>
@@ -1300,14 +1465,14 @@
                         <div class="feature-desc">Instant 1D/2D scanning with live laser line.</div>
                     </div>
                     <div class="feature-card">
-                        <span class="feature-badge">TORCH & ZOOM</span>
-                        <div class="feature-name">Low-Light Torch</div>
-                        <div class="feature-desc">Hardware flashlight & 1x-3x optical zoom.</div>
+                        <span class="feature-badge">AUTOCOMPLETE</span>
+                        <div class="feature-name">Live Masterfile Search</div>
+                        <div class="feature-desc">Instant 300ms product dropdown suggestions.</div>
                     </div>
                     <div class="feature-card">
-                        <span class="feature-badge">LOCATOR HUD</span>
-                        <div class="feature-name">1-Tap Shelf Lock</div>
-                        <div class="feature-desc">[Finish] locks slot and updates host console.</div>
+                        <span class="feature-badge">IN-FIELD EDIT</span>
+                        <div class="feature-name">Quantity Adjustments</div>
+                        <div class="feature-desc">Modify counted units and delete rows live.</div>
                     </div>
                 </div>
             </div>
@@ -1316,7 +1481,7 @@
             <div class="panel-card card-hotspots">
                 <div class="card-header-flex">
                     <h3 class="card-title">
-                        <span id="hotspots-list-title">📌 Hotspots in Screen 1: HTTPS & Security</span>
+                        <span id="hotspots-list-title">📌 Hotspots in Screen 1: HTTPS & SSL Bypass</span>
                     </h3>
                     <span class="badge-live" id="hotspots-count-badge">3 Controls</span>
                 </div>
@@ -1380,7 +1545,7 @@
         const mobileScreens = {
             security: {
                 total: 3,
-                name: "Screen 1: HTTPS & Security",
+                name: "Screen 1: HTTPS & SSL Bypass",
                 pins: {
                     1: {
                         title: "Store Code, User Context & Local Status",
@@ -1409,7 +1574,7 @@
                         photo: "img/mobile/mobile_01_http_blocked.png"
                     },
                     3: {
-                        title: "SSL Bypass: [Advanced] ➔ [Proceed to 192.168.1.100 (unsafe)]",
+                        title: "SSL Certificate Bypass: [Advanced] ➔ [Proceed to unsafe]",
                         subtitle: "Self-signed certificate acceptance workflow in Chrome / Safari",
                         takeaway: "Grants persistent camera permissions on local Wi-Fi networks.",
                         desc: "When navigating to local HTTPS (<code>https://192.168.1.100</code>), Chrome displays <code>Your connection is not private</code> (<code>NET::ERR_CERT_AUTHORITY_INVALID</code>). Tapping <strong>Advanced</strong> ➔ <strong>Proceed to 192.168.1.100 (unsafe)</strong> grants permission.",
@@ -1469,7 +1634,7 @@
             },
             camera: {
                 total: 5,
-                name: "Screen 3: Live Camera Scan",
+                name: "Screen 3: Live Camera & Feedback",
                 pins: {
                     1: {
                         title: "ACTIVE SESSION HUD & [Change] / [Finish] Controls",
@@ -1523,17 +1688,101 @@
                         photo: "img/mobile/mobile_05_camera_live.png"
                     },
                     5: {
-                        title: "MANUAL BARCODE / DESCRIPTION INPUT Fallback",
-                        subtitle: "Expandable text field for manual UPC typing or catalog search",
-                        takeaway: "Backup entry method for damaged or unreadable barcode labels.",
-                        desc: "If a barcode label is scratched or missing, tap this bar to open the manual search dialog. Allows typing barcode digits or product names directly.",
+                        title: "✓ Scanned Successfully Live Feedback Banner",
+                        subtitle: "Barcode: 8935001880752 | GELPEN FOGEL04 | Slot 3 | Scanned: 1 | Var: +1",
+                        takeaway: "Instant auditory and visual validation confirming product count and inventory variance.",
+                        desc: "Displays the decoded barcode number, full catalog product title, recorded quantity, target locator, masterfile store quantity (<code>0</code>), scanned count (<code>1</code>), and real-time physical variance (<code>+1</code>).",
                         actions: [
-                            "<strong>⌨️ Manual UPC Typing:</strong> Type digits manually when barcode won't scan.",
-                            "<strong>🔍 Catalog Search:</strong> Search masterfile by description (e.g. <code>SPI 05200</code>).",
-                            "<strong>📤 Instant Submit:</strong> Submits directly to the active locator without leaving the camera page."
+                            "<strong>✅ Status Banner:</strong> Green highlight confirms transaction was committed into MySQL.",
+                            "<strong>📦 Product Details:</strong> Displays catalog description and SKU.",
+                            "<strong>📊 Real-Time Variance:</strong> Shows discrepancy between store expected stock and physical count."
                         ],
-                        tip: "Use manual input for damaged labels without having to exit the live scanning session.",
-                        photo: "img/mobile/mobile_05_camera_live.png"
+                        tip: "Check the variance indicator (+1, -2) to immediately spot unrecorded physical stock.",
+                        photo: "img/mobile/mobile_06_scanned_success_feedback.png"
+                    }
+                }
+            },
+            search: {
+                total: 3,
+                name: "Screen 4: Masterfile Search",
+                pins: {
+                    1: {
+                        title: "MANUAL BARCODE / DESCRIPTION INPUT Field",
+                        subtitle: "Search query bar with live masterfile catalog querying",
+                        takeaway: "Allows manual keyword or UPC typing when barcode label is torn or unreadable.",
+                        desc: "Type product keywords (e.g. <code>NB SPI</code>) or manual barcode digits. Triggers instant AJAX query against the store inventory database with 300ms debounce.",
+                        actions: [
+                            "<strong>⌨️ Live Text Input:</strong> Type letters, numbers, or brand names.",
+                            "<strong>⚡ Fast Query:</strong> Searches both barcode numbers and description strings."
+                        ],
+                        tip: "Type the first 3 letters of a notebook or pen brand to quickly find the product.",
+                        photo: "img/mobile/mobile_07_manual_search_autocomplete.png"
+                    },
+                    2: {
+                        title: "[Send] Manual Submit Action Button",
+                        subtitle: "Transmits entered barcode or selected SKU to active locator",
+                        takeaway: "Executes manual scan ingestion without using the camera.",
+                        desc: "Submits the entered item directly to the active locator slot (e.g. <code>Slot 3</code>). Updates the supervisor host countsheet immediately.",
+                        actions: [
+                            "<strong>📤 Send Action:</strong> Commits manual entry into the inventory table.",
+                            "<strong>🧹 Field Reset:</strong> Clears input box for the next search."
+                        ],
+                        tip: "Press <kbd>Send</kbd> or tap <kbd>Enter</kbd> on your mobile keyboard.",
+                        photo: "img/mobile/mobile_07_manual_search_autocomplete.png"
+                    },
+                    3: {
+                        title: "Masterfile Autocomplete Suggestion Cards",
+                        subtitle: "Live matching list: NB SPI 05200 (UPC: 43100052005, SKU: 1, Qty: 0)",
+                        takeaway: "1-Tap item selection with complete masterfile metadata.",
+                        desc: "Displays matching catalog records showing Title, UPC barcode, SKU number, and system stock Qty. Tapping any item auto-fills the barcode and submits the count.",
+                        actions: [
+                            "<strong>👆 1-Tap Submission:</strong> Tap any suggested product row to immediately submit a count of 1.",
+                            "<strong>🏷️ Metadata Verification:</strong> Displays UPC and SKU numbers for accurate item identification."
+                        ],
+                        tip: "Tap directly on the product row in the suggestion list for rapid counting without typing the full name.",
+                        photo: "img/mobile/mobile_07_manual_search_autocomplete.png"
+                    }
+                }
+            },
+            edit: {
+                total: 3,
+                name: "Screen 5: Edit Scan & Log",
+                pins: {
+                    1: {
+                        title: "BARCODE (UPC/SKU) & Product Card",
+                        subtitle: "Barcode: 8935001880752 | GELPEN FOGEL04 SUNBEAM | SKU: 026912",
+                        takeaway: "Item identification header in the modification modal.",
+                        desc: "Displays the target barcode number and masterfile metadata for the scanned item being adjusted.",
+                        actions: [
+                            "<strong>🏷️ UPC / SKU:</strong> Confirms the exact product being edited.",
+                            "<strong>📝 Catalog Title:</strong> Official product name."
+                        ],
+                        tip: "Verify product description before adjusting counted quantity.",
+                        photo: "img/mobile/mobile_08_edit_scan_modal.png"
+                    },
+                    2: {
+                        title: "QUANTITY Editor Input Field",
+                        subtitle: "Numeric quantity adjustment (e.g. 1, 5, 12)",
+                        takeaway: "Allows modifying physical counted pieces after a recount.",
+                        desc: "Type the updated physical quantity for this item in the locator. Replaces the previously submitted count with the new verified value.",
+                        actions: [
+                            "<strong>🔢 Qty Entry:</strong> Enter total counted pieces for this shelf.",
+                            "<strong>🔄 Host Sync:</strong> Automatically recalculates locator variance on the Host Console."
+                        ],
+                        tip: "If a recount shows 5 units instead of 1, update this field to 5 and tap Save Changes.",
+                        photo: "img/mobile/mobile_08_edit_scan_modal.png"
+                    },
+                    3: {
+                        title: "[Cancel] & [Save Changes] Action Buttons",
+                        subtitle: "Discard edits or commit updated quantity to server",
+                        takeaway: "Finalizes quantity correction and updates recent scan log.",
+                        desc: "Tapping <strong>[Save Changes]</strong> (Green) commits the updated count to <code>api.php</code>. Tapping <strong>[Cancel]</strong> (Red) discards modifications.",
+                        actions: [
+                            "<strong>💾 [Save Changes]:</strong> Commits update and reloads <code>SCAN LOG (CURRENT SESSION)</code>.",
+                            "<strong>❌ [Cancel]:</strong> Closes modal without altering recorded counts."
+                        ],
+                        tip: "Tap <kbd>Save Changes</kbd> to immediately update the countsheet.",
+                        photo: "img/mobile/mobile_08_edit_scan_modal.png"
                     }
                 }
             }
@@ -1553,6 +1802,8 @@
             document.getElementById('screen-security').style.display = 'none';
             document.getElementById('screen-setup').style.display = 'none';
             document.getElementById('screen-camera').style.display = 'none';
+            document.getElementById('screen-search').style.display = 'none';
+            document.getElementById('screen-edit').style.display = 'none';
 
             // Show selected screen
             document.getElementById('screen-' + screenName).style.display = 'flex';

@@ -1,25 +1,25 @@
 # OWIPI Smartphone Camera Scanner Operational Guide & Technical Manual
 
-This guide documents the **Smartphone Camera Scanner** application, allowing auditors and retail staff to count physical inventory directly using smartphone cameras (iOS Safari & Android Chrome) over local Wi-Fi.
+This guide documents the complete **Smartphone Camera Scanner** workflow for retail floor auditors and staff, built directly around field operations on iOS and Android devices.
 
 ---
 
-## 📸 Overview & Hardware Requirements
+## 📸 System Overview & Hardware Architecture
 
 | Parameter | Specification |
 | :--- | :--- |
+| **Client Interface** | HTML5 WebAssembly Camera Scanner (Chrome on Android, Safari on iOS) |
 | **Target URL** | `https://<HOST_IP>/OWIPI/` or `http://<HOST_IP>/OWIPI/` |
-| **Supported Devices** | Android (Chrome), iOS (Safari), Tablets |
-| **Hardware Features** | Live HTML5 Camera Viewfinder, Laser Reticle Target, Flashlight Torch, 1.0x–3.0x Zoom |
-| **Security Context** | HTTPS required for `navigator.mediaDevices.getUserMedia` camera permissions |
+| **Engine Capabilities** | 30 FPS Barcode Scanning, Laser Reticle Target, Hardware Flashlight Torch, 1.0x–3.0x Zoom |
+| **Security Context** | HTTPS required for standard `navigator.mediaDevices.getUserMedia` camera permissions |
+| **Catalog Search** | 300ms Debounced Live Masterfile Autocomplete |
+| **Adjustment Tools** | In-Field Quantity Editor Modal (`Edit Scan Record`) & Live Session Log |
 
 ---
 
-## 📱 Interactive Screen Workflows
+## 📱 5-Screen Workflow Breakdown (Matching Field Photos)
 
-### 1. Screen 1: HTTPS & Camera Permission Bypass
-
-Modern mobile browsers block camera access on unencrypted `http://` addresses. The application provides instant resolution workflows:
+### 1. Screen 1: HTTPS & SSL Permission Bypass (Photos 1, 2, 3)
 
 ```
 +----------------------------------------------------+
@@ -39,15 +39,15 @@ Modern mobile browsers block camera access on unencrypted `http://` addresses. T
 +----------------------------------------------------+
 ```
 
-#### Chrome SSL Bypass Steps:
+#### Step-by-Step SSL Bypass:
 1. Tap **`[⚡ Switch to Secure HTTPS]`** (loads `https://192.168.1.100`).
-2. On Chrome's *Your connection is not private* warning, tap **`[Advanced]`**.
-3. Tap **`Proceed to 192.168.1.100 (unsafe)`**.
-4. When prompted *Allow OWIPI to use your camera?*, tap **`Allow`**.
+2. When Chrome shows **`Your connection is not private`** (`NET::ERR_CERT_AUTHORITY_INVALID`), tap **`[Advanced]`**.
+3. Tap the blue link **`Proceed to 192.168.1.100 (unsafe)`**.
+4. Tap **`Allow`** on the camera access prompt.
 
 ---
 
-### 2. Screen 2: Mobile Scanner Setup Modal
+### 2. Screen 2: Scanner Setup Modal (Photo 4)
 
 ```
 +----------------------------------------------------+
@@ -63,14 +63,13 @@ Modern mobile browsers block camera access on unencrypted `http://` addresses. T
 +----------------------------------------------------+
 ```
 
-#### Setup Parameters:
-- **`SCANNED BY`**: Defaults to `MOBILE` to differentiate camera entries from physical Casio laser terminals.
-- **`SELECT/TYPE LOCATOR`**: Select open shelf from dropdown or type numeric shelf ID (e.g. `3`).
-- **`[Connect & Start Scanning]`**: Engages camera and initializes live locator session.
+- **`SCANNED BY`**: Defaults to `MOBILE` for distinct supervisor log attribution.
+- **`SELECT/TYPE LOCATOR`**: Pick from open locators or type a new shelf ID (e.g. `Locator 3`).
+- **`[Connect & Start Scanning]`**: Engages rear camera with autofocus.
 
 ---
 
-### 3. Screen 3: Live Camera Barcode Scanner View
+### 3. Screen 3: Live Camera Viewfinder & Feedback Banner (Photos 5, 6)
 
 ```
 +----------------------------------------------------+
@@ -83,46 +82,106 @@ Modern mobile browsers block camera access on unencrypted `http://` addresses. T
 +----------------------------------------------------+
 | CAMERA SCANNER                             ● Live  |
 | +------------------------------------------------+ |
-| |                                                | |
 | |             |--      --|                       | |
 | |              (Laser Beam)                      | |
-| |                                                | |
 | +------------------------------------------------+ |
 | 🔍 ZOOM: [======o=======] 1.0x      🔦 [OFF]     |
 | [ Start Scanner (Blue) ]            [ Stop ]       |
 +----------------------------------------------------+
-| MANUAL BARCODE / DESCRIPTION INPUT               ▼ |
+| ✓ Scanned Successfully                             |
+| Barcode: 8935001880752                             |
+| Product: GELPEN FOGEL04 SUNBEAM BLK 0.5 0.5MM      |
+| Location: Slot 3 | Store Qty: 0 | Scanned: 1 (+1)  |
 +----------------------------------------------------+
 ```
 
-#### Camera Controls:
-- **Viewfinder Reticle (`|-- --|`)**: Align barcode horizontally within brackets.
-- **`🔍 ZOOM` Slider**: Adjust from `1.0x` to `3.0x` for high or distant shelves.
-- **`🔦 FLASHLIGHT` Button**: Toggles phone LED torch for dark warehouse corners.
-- **`[Finish]` (Green Button)**: Locks shelf locator and marks it completed on Host Console.
-- **`MANUAL INPUT`**: Expandable fallback for typed UPC or masterfile catalog search.
+- **Reticle Guide (`|-- --|`)**: Align barcode within brackets.
+- **`🔍 ZOOM (1.0x-3.0x)`**: Zoom in for high gondola shelves.
+- **`🔦 FLASHLIGHT`**: Toggle LED torch for dark warehouse aisles.
+- **`✓ Scanned Successfully`**: Instant card confirming barcode, product, counted units, and variance.
 
 ---
 
-## ⚡ Smartphone Camera Scan SOP
+### 4. Screen 4: Manual Barcode / Masterfile Catalog Search (Photo 7)
+
+```
++----------------------------------------------------+
+| MANUAL BARCODE / DESCRIPTION INPUT                 |
+| [ NB SPI                                  ] [Send] |
++----------------------------------------------------+
+| NB SPI 05200 1SUBJ 100SHT                          |
+| UPC: 43100052005 | SKU: 1 | Qty: 0                 |
++----------------------------------------------------+
+| NB SPI 06254 3SUB 138SHT 9.5X6                     |
+| UPC: 43100062547 | SKU: 22 | Qty: 0                |
++----------------------------------------------------+
+| NB SPI 08188/08088 1SUBJ 100SH                     |
+| UPC: 43100064268 | SKU: 6638 | Qty: 0              |
++----------------------------------------------------+
+```
+
+- Used when barcode labels are torn, dirty, or missing.
+- Type 2+ characters to search masterfile in real time.
+- Tap any result row to submit count immediately.
+
+---
+
+### 5. Screen 5: In-Field Edit Modal & Session Log (Photo 8)
+
+```
++----------------------------------------------------+
+|                 Edit Scan Record                   |
++----------------------------------------------------+
+| BARCODE (UPC/SKU)                                  |
+| [ 8935001880752                                  ] |
+|                                                    |
+| +------------------------------------------------+ |
+| | GELPEN FOGEL04 SUNBEAM BLK 0.5 0.5MM           | |
+| | SKU: 026912                                    | |
+| +------------------------------------------------+ |
+|                                                    |
+| QUANTITY                                           |
+| [ 1                                              ] |
+|                                                    |
+| [ Cancel (Red) ]             [ Save Changes (Grn) ]|
++----------------------------------------------------+
+```
+
+- Accessed by tapping **`[Edit]`** next to any row in `SCAN LOG (CURRENT SESSION)`.
+- Modify quantity (e.g. adjust `1` to `5` after a manual batch recount).
+- **`[Save Changes]`** commits updated count and recalculates locator variance.
+
+---
+
+## ⚡ Complete Smartphone Inventory SOP (Sequence Diagram)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Staff as 📱 Auditor (Smartphone)
+    actor Auditor as 📱 Auditor (Smartphone)
     actor Supervisor as 👤 Supervisor (Host Console)
-    participant Host as 💻 Host Server (OWIPI HTTPS)
+    participant Host as 💻 Host Server (OWIPI API)
 
-    Staff->>Host: Scans Host QR code -> Opens https://192.168.1.100
-    Staff->>Staff: Taps Advanced -> Proceed (unsafe) -> Grants camera permission
-    Staff->>Host: Selects Locator 3, taps [Connect & Start Scanning]
-    Host-->>Supervisor: Locator 3 marks "In Use" by MOBILE
-    loop For Every Item on Shelf
-        Staff->>Staff: Points camera viewfinder at product barcode
-        Staff->>Host: HTML5 barcode engine decodes UPC & auto-submits POST
+    Supervisor->>Supervisor: Generates QR Code on Host Console
+    Auditor->>Host: Scans QR code with camera -> Opens https://192.168.1.100
+    Auditor->>Auditor: Accepts SSL certificate -> Grants camera access
+    Auditor->>Host: Selects Locator 3 -> Taps [Connect & Start Scanning]
+    Host-->>Supervisor: Locator 3 marked "In Use" by MOBILE
+    loop For Every Product on Shelf
+        alt Live Camera Scan
+            Auditor->>Auditor: Aligns barcode in camera viewfinder reticle
+            Host-->>Auditor: Plays beep, shows "Scanned Successfully (+1)"
+        else Damaged Label
+            Auditor->>Auditor: Types "NB SPI" in manual search box
+            Host-->>Auditor: Returns real-time masterfile dropdown
+            Auditor->>Host: Taps matching product row
+        end
         Host-->>Supervisor: Live incoming scans log updates immediately
-        Host-->>Staff: Audio beep + Green Success Banner
     end
-    Staff->>Host: Taps [Finish] to close Locator 3
+    opt Adjust Counted Quantity
+        Auditor->>Auditor: Taps [Edit] in Scan Log
+        Auditor->>Host: Changes Qty to 5 -> Taps [Save Changes]
+    end
+    Auditor->>Host: Taps [Finish] to close Locator 3
     Host-->>Supervisor: Locator 3 turns 100% Green Completed
 ```
