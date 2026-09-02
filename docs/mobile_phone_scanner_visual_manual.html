@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OWIPI - Mobile Phone Web Scanner Visual Manual & Digital Twin</title>
+    <title>OWIPI - Mobile Phone Camera Scanner Visual Manual & Digital Twin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
             --bg-dark: #090d16;
             --bg-card: rgba(18, 24, 38, 0.85);
             --border-color: rgba(255, 255, 255, 0.08);
-            --border-highlight: rgba(56, 189, 248, 0.4);
+            --border-highlight: rgba(52, 211, 153, 0.4);
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --accent-cyan: #06b6d4;
@@ -21,12 +21,12 @@
             --accent-green: #10b981;
             --accent-amber: #f59e0b;
             --accent-red: #ef4444;
-            --accent-purple: #8b5cf6;
-            --mobile-header: #161b22;
-            --mobile-bg: #0d1117;
-            --mobile-border: #30363d;
-            --mobile-blue: #58a6ff;
-            --mobile-green: #56f089;
+            --phone-bg: #0f141c;
+            --phone-card-bg: #161b22;
+            --phone-border: #30363d;
+            --phone-blue: #58a6ff;
+            --phone-green: #2ea44f;
+            --phone-red: #da3637;
         }
 
         * {
@@ -205,7 +205,7 @@
             width: 100%;
             padding: 10px 18px 12px;
             display: grid;
-            grid-template-columns: 340px 1fr;
+            grid-template-columns: 330px 1fr;
             gap: 16px;
             align-items: stretch;
             height: calc(100vh - 96px);
@@ -223,18 +223,18 @@
             }
         }
 
-        /* Modern Smartphone Frame Mockup */
+        /* Smartphone Hardware Frame Mockup */
         .phone-mockup-wrapper {
             background: #020617;
             border: 3px solid #334155;
-            border-radius: 36px;
-            padding: 10px 10px 12px;
+            border-radius: 34px;
+            padding: 8px 8px 10px;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 3px rgba(255, 255, 255, 0.15);
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 330px;
+            max-width: 320px;
             margin: 0 auto;
             height: 100%;
             max-height: 100%;
@@ -242,19 +242,17 @@
             position: relative;
         }
 
-        /* Dynamic Island / Camera Notch */
         .phone-notch-bar {
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 2px 0 6px;
-            position: relative;
         }
 
         .phone-notch-pill {
-            width: 70px;
-            height: 16px;
+            width: 65px;
+            height: 14px;
             background: #000000;
             border-radius: 12px;
             display: flex;
@@ -265,195 +263,361 @@
         }
 
         .phone-lens {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background: #1e293b;
             border: 1px solid #0f172a;
         }
 
         .phone-sensor {
-            width: 4px;
-            height: 4px;
+            width: 3px;
+            height: 3px;
             border-radius: 50%;
             background: #090d16;
         }
 
-        /* Smartphone Screen Bezel */
+        /* Smartphone Screen Display */
         .phone-screen {
-            background: #0f141c;
+            background: #090d16;
             color: #c9d1d9;
             width: 100%;
             flex: 1;
             min-height: 0;
-            border-radius: 20px;
+            border-radius: 18px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             position: relative;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
+            font-size: 0.78rem;
         }
 
-        /* Mobile App Navigation Header */
-        .m-app-header {
-            background-color: var(--mobile-header);
-            padding: 8px 10px;
-            border-bottom: 1px solid var(--mobile-border);
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: var(--mobile-blue);
-            flex-shrink: 0;
+        /* Mobile Phone Top Header */
+        .phone-app-header {
+            background: #0f141c;
+            border-bottom: 1px solid #1e293b;
+            padding: 6px 8px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
-        .m-app-body {
-            padding: 10px 10px;
+        .p-brand-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .p-store-tag {
+            font-size: 0.65rem;
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
+        .p-user-tag {
+            font-size: 0.62rem;
+            color: #94a3b8;
+        }
+
+        .p-status-pill {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid #f59e0b;
+            color: #fbbf24;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        .phone-body-scroll {
+            padding: 8px;
             flex: 1;
             min-height: 0;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            font-size: 0.8rem;
+            gap: 6px;
         }
 
-        /* Mobile Card Container */
-        .m-phone-card {
-            background-color: var(--mobile-header);
-            border: 1px solid var(--mobile-border);
+        /* Screen 1: Camera Blocked & Workarounds */
+        .blocked-card {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.4);
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
+            color: #fca5a5;
         }
 
-        .m-form-group {
+        .blocked-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #f87171;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .blocked-text {
+            font-size: 0.68rem;
+            line-height: 1.35;
+            color: #e2e8f0;
+            margin-bottom: 6px;
+        }
+
+        .btn-https-switch {
+            background: #16a34a;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 6px;
+            border-radius: 6px;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .workaround-list {
+            margin-top: 6px;
+            font-size: 0.65rem;
+            color: #fca5a5;
+            line-height: 1.3;
+        }
+
+        /* Screen 2: Setup Modal Card */
+        .setup-modal-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 12px 10px;
+            margin: auto 0;
+        }
+
+        .setup-modal-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 6px;
             margin-bottom: 8px;
         }
 
-        .m-form-label {
-            display: block;
+        .m-field-group {
+            margin-bottom: 8px;
+        }
+
+        .m-field-label {
+            font-size: 0.66rem;
             font-weight: 700;
-            font-size: 0.72rem;
-            margin-bottom: 3px;
             color: #8b949e;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+            display: block;
         }
 
-        .m-form-control {
-            width: 100%;
-            padding: 6px 8px;
-            background-color: var(--mobile-bg);
-            border: 1px solid var(--mobile-border);
-            border-radius: 6px;
-            color: #ffffff;
-            font-size: 0.82rem;
-            font-family: 'JetBrains Mono', monospace;
-            box-sizing: border-box;
-        }
-
-        .m-btn {
-            width: 100%;
-            padding: 8px 10px;
-            background-color: #1f6feb;
-            border: 1px solid #388bfd;
-            border-radius: 6px;
-            color: #ffffff;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 0.82rem;
-            text-align: center;
-            transition: all 0.15s;
-        }
-
-        .m-btn:active {
-            filter: brightness(1.2);
-        }
-
-        .m-btn-danger {
-            background-color: #da3637;
-            border-color: #f85149;
-        }
-
-        .m-status-box {
-            padding: 8px 10px;
-            text-align: center;
-            font-weight: 800;
-            font-size: 0.85rem;
-            color: #ffffff;
-            background-color: #21262d;
-            border: 1px solid var(--mobile-border);
-            border-radius: 6px;
-            flex-shrink: 0;
-        }
-
-        .m-status-success {
-            background-color: #1b4332;
-            border-color: #2ea44f;
-            color: #56f089;
-        }
-
-        .m-info-bar {
-            font-size: 0.72rem;
-            color: #8b949e;
-            text-align: center;
-            line-height: 1.3;
-            flex-shrink: 0;
-        }
-
-        .m-search-dropdown {
+        .m-input-box {
             background: #0d1117;
             border: 1px solid #30363d;
             border-radius: 6px;
-            padding: 4px;
-            margin-top: 6px;
-            max-height: 130px;
-            overflow-y: auto;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            padding: 6px 8px;
+            width: 100%;
         }
 
-        .m-search-item {
+        .btn-connect-scan {
+            background: #3b82f6;
+            color: white;
+            font-weight: 800;
+            font-size: 0.78rem;
+            padding: 8px;
+            border-radius: 6px;
+            border: none;
+            width: 100%;
             cursor: pointer;
+            margin-top: 6px;
+        }
+
+        /* Screen 3: Live Camera Viewfinder & Controls */
+        .active-session-hud {
             background: #161b22;
             border: 1px solid #30363d;
-            border-radius: 4px;
-            padding: 5px;
-            margin-bottom: 4px;
+            border-radius: 6px;
+            padding: 5px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .session-loc-title {
             font-size: 0.72rem;
-            text-align: left;
+            font-weight: 800;
+            color: #58a6ff;
         }
 
-        .m-search-item:hover {
-            border-color: #58a6ff;
-            background: #1c2128;
+        .hud-actions {
+            display: flex;
+            gap: 4px;
         }
 
-        .m-log-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.72rem;
-        }
-
-        .m-log-table th, .m-log-table td {
+        .btn-hud-change {
+            background: #21262d;
             border: 1px solid #30363d;
-            padding: 4px 5px;
-            text-align: left;
-        }
-
-        .m-log-table th {
-            background-color: #21262d;
-            color: #8b949e;
+            color: #c9d1d9;
+            font-size: 0.65rem;
             font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        /* Bottom Phone Home Indicator Bar */
+        .btn-hud-finish {
+            background: #238636;
+            border: 1px solid #2ea44f;
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .camera-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .camera-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .viewfinder-box {
+            background: #000000;
+            border-radius: 6px;
+            height: 120px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #30363d;
+        }
+
+        .viewfinder-reticle {
+            width: 140px;
+            height: 50px;
+            border-left: 3px solid #ffffff;
+            border-right: 3px solid #ffffff;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reticle-line {
+            width: 100%;
+            height: 2px;
+            background: rgba(239, 68, 68, 0.8);
+            box-shadow: 0 0 6px #ef4444;
+            animation: scan-laser 2s infinite ease-in-out;
+        }
+
+        @keyframes scan-laser {
+            0%, 100% { transform: translateY(-18px); }
+            50% { transform: translateY(18px); }
+        }
+
+        .camera-tools-grid {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.68rem;
+            color: #8b949e;
+        }
+
+        .zoom-slider {
+            width: 100%;
+            height: 4px;
+            accent-color: #3b82f6;
+        }
+
+        .btn-torch {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .camera-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .btn-cam-start {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .btn-cam-stop {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #8b949e;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .manual-input-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #8b949e;
+            text-align: center;
+        }
+
+        /* Bottom Phone Home Indicator */
         .phone-home-indicator {
-            width: 100px;
+            width: 90px;
             height: 4px;
             background: #475569;
             border-radius: 3px;
-            margin-top: 6px;
+            margin-top: 5px;
             flex-shrink: 0;
         }
 
@@ -599,7 +763,7 @@
             line-height: 1.3;
         }
 
-        /* Hotspot Inspection Cards List - Balanced Friendly Grid */
+        /* Hotspot Inspection Cards List */
         .hotspot-cards-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -706,7 +870,7 @@
             overflow: hidden;
         }
 
-        /* Modal Overlay for Deep Breakdown */
+        /* Modal Overlay */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -881,6 +1045,14 @@
             font-size: 0.75rem;
         }
 
+        .modal-photo-preview {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+        }
+
         .modal-bottom {
             padding: 12px 20px;
             border-top: 1px solid var(--border-color);
@@ -917,34 +1089,34 @@
     <nav class="top-nav">
         <a href="../index.php" class="nav-brand">
             <span class="brand-badge">Mobile Twin</span>
-            <span class="brand-title">OWIPI Mobile Web Scanner Manual</span>
+            <span class="brand-title">OWIPI Mobile Camera Scanner Manual</span>
         </a>
         <div class="nav-links">
             <a href="control_dashboard_visual_manual.html" class="nav-link">🎛️ Control Dashboard</a>
             <a href="host_view_visual_manual.html" class="nav-link">💻 Host Console</a>
-            <a href="casio_scanner_visual_manual.html" class="nav-link">📱 Casio Scanner App</a>
-            <a href="mobile_phone_scanner_visual_manual.html" class="nav-link active">📲 Mobile Web Scanner</a>
-            <a href="../mobile_ce.php" class="nav-link" style="color:#34d399; border-color: rgba(52, 211, 153, 0.4);" target="_blank">⚡ Live Mobile App</a>
+            <a href="casio_scanner_visual_manual.html" class="nav-link">📱 Casio Scanner</a>
+            <a href="mobile_phone_scanner_visual_manual.html" class="nav-link active">📲 Mobile Scanner</a>
+            <a href="MOBILE_PHONE_SCANNER_MANUAL.md" class="nav-link" target="_blank">📖 Guide</a>
         </div>
     </nav>
 
     <!-- Compact Sub-Header Toolbar -->
     <div class="sub-header-toolbar">
         <div class="header-info-box">
-            <h1 class="main-page-title">Smartphone Web Scanner Visual Manual</h1>
-            <span class="main-page-sub">• Browser-Based Scanning (`mobile_ce.php`) for iOS & Android</span>
+            <h1 class="main-page-title">Smartphone Camera Scanner Visual Manual</h1>
+            <span class="main-page-sub">• Real-Time Barcode Engine, SSL Workarounds & Locator Sessions</span>
         </div>
 
         <!-- Screen Switcher Tabs -->
         <div class="tab-switcher-container">
-            <button class="tab-btn active" onclick="switchScreen('setup', event)">
-                <span>⚙️ Screen 1: Mobile Setup</span>
+            <button class="tab-btn active" onclick="switchScreen('security', event)">
+                <span>🔒 Screen 1: HTTPS & Security</span>
             </button>
-            <button class="tab-btn" onclick="switchScreen('scan', event)">
-                <span>⚡ Screen 2: Barcode Scan & Search</span>
+            <button class="tab-btn" onclick="switchScreen('setup', event)">
+                <span>⚙️ Screen 2: Scanner Setup</span>
             </button>
-            <button class="tab-btn" onclick="switchScreen('log', event)">
-                <span>📋 Screen 3: Recent Scans Log</span>
+            <button class="tab-btn" onclick="switchScreen('camera', event)">
+                <span>📷 Screen 3: Live Camera Scan</span>
             </button>
         </div>
     </div>
@@ -954,7 +1126,6 @@
 
         <!-- Left: Smartphone Device Mockup -->
         <div class="phone-mockup-wrapper">
-            <!-- Dynamic Island / Top Camera -->
             <div class="phone-notch-bar">
                 <div class="phone-notch-pill">
                     <div class="phone-lens"></div>
@@ -965,128 +1136,144 @@
             <!-- Mobile Screen Display -->
             <div class="phone-screen">
 
-                <!-- 1. SCREEN 1: MOBILE SCANNER SETUP -->
-                <div id="screen-setup" style="display: flex; flex-direction: column; height: 100%;">
-                    <div class="m-app-header">OWI Scanner Setup</div>
-
-                    <div class="m-app-body">
-                        <div class="m-phone-card">
-                            <div class="m-form-group">
-                                <label class="m-form-label">Store Code:</label>
-                                <input type="text" class="m-form-control" value="TEST" readonly>
-                            </div>
-                            <div class="m-form-group">
-                                <label class="m-form-label">Operator Name:</label>
-                                <input type="text" class="m-form-control" value="JOHN" readonly>
-                            </div>
-                            <div class="m-form-group">
-                                <label class="m-form-label">Locator / Slot:</label>
-                                <input type="text" class="m-form-control" value="SLOT 1" readonly>
-                            </div>
-
-                            <button type="button" class="m-btn" onclick="openModal(4)" style="margin-top: 6px;">Start Scanning</button>
+                <!-- 1. SCREEN 1: HTTPS & PERMISSION BYPASS -->
+                <div id="screen-security" style="display: flex; flex-direction: column; height: 100%;">
+                    <div class="phone-app-header">
+                        <div>
+                            <div class="p-brand-title">OWI PHYSICAL INVENTORY</div>
+                            <div class="p-store-tag">STORE CODE : TES</div>
+                            <div class="p-user-tag">User: <strong>BETH</strong></div>
                         </div>
+                        <span class="p-status-pill">● Offline (Local)</span>
+                    </div>
 
-                        <div style="text-align: center; color: #8b949e; font-size: 0.72rem; margin-top: auto; padding-bottom: 8px;">
-                            Optimized for Smartphone & Pocket PC Browsers
+                    <div class="phone-body-scroll">
+                        <div class="blocked-card">
+                            <div class="blocked-title">
+                                <span>⚠️ Camera Access Blocked (HTTP Origin)</span>
+                            </div>
+                            <div class="blocked-text">
+                                Mobile browsers block camera access on insecure HTTP addresses. To enable standard camera prompts:
+                            </div>
+
+                            <button type="button" class="btn-https-switch" onclick="openModal(3)">⚡ Switch to Secure HTTPS</button>
+
+                            <div class="workaround-list">
+                                <div style="margin-top: 6px; font-weight: 700; color: #ffffff;">Alternatively, use Chrome flag:</div>
+                                <div>1. <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></div>
+                                <div>2. Set Enabled & write <code>http://192.168.1.100</code></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Hotspots for Setup Screen (1..4) -->
-                    <div class="hotspot-pin" style="top: 80px; left: 16px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 130px; left: 16px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 180px; left: 16px;" onclick="openModal(3)">3</div>
-                    <div class="hotspot-pin" style="top: 235px; right: 16px;" onclick="openModal(4)">4</div>
+                    <!-- Hotspots for Security Screen (1..3) -->
+                    <div class="hotspot-pin" style="top: 50px; left: 14px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 110px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 165px; right: 14px;" onclick="openModal(3)">3</div>
                 </div>
 
-                <!-- 2. SCREEN 2: ACTIVE SCANNING & INSTANT SEARCH -->
-                <div id="screen-scan" style="display: none; flex-direction: column; height: 100%;">
-                    <div class="m-app-header">OWI Scanner App</div>
+                <!-- 2. SCREEN 2: SCANNER SETUP DIALOG -->
+                <div id="screen-setup" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="phone-app-header">
+                        <div>
+                            <div class="p-brand-title">OWI PHYSICAL INVENTORY</div>
+                            <div class="p-store-tag">STORE CODE : TES</div>
+                        </div>
+                        <span class="p-status-pill">● Offline (Local)</span>
+                    </div>
 
-                    <div class="m-app-body">
-                        <div class="m-info-bar">
-                            Store: <strong style="color: #ffffff;">TEST</strong> | Loc: <strong style="color: #ffffff;">SLOT 1</strong><br>
-                            Op: <span style="color: #ffffff;">JOHN</span>
+                    <div class="phone-body-scroll" style="justify-content: center;">
+                        <div class="setup-modal-card">
+                            <div class="setup-modal-title">SCANNER SETUP</div>
+
+                            <div class="m-field-group">
+                                <label class="m-field-label">SCANNED BY</label>
+                                <input type="text" class="m-input-box" value="MOBILE" readonly>
+                            </div>
+
+                            <div class="m-field-group">
+                                <label class="m-field-label">SELECT/TYPE LOCATOR</label>
+                                <input type="text" class="m-input-box" value="Type/Select Locator (e.g. 1)... ▼" readonly>
+                            </div>
+
+                            <button type="button" class="btn-connect-scan" onclick="openModal(3)">Connect & Start Scanning</button>
+                        </div>
+                    </div>
+
+                    <!-- Hotspots for Setup Screen (1..3) -->
+                    <div class="hotspot-pin" style="top: 145px; left: 14px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 205px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 265px; right: 14px;" onclick="openModal(3)">3</div>
+                </div>
+
+                <!-- 3. SCREEN 3: ACTIVE CAMERA SCANNER -->
+                <div id="screen-camera" style="display: none; flex-direction: column; height: 100%;">
+                    <div class="phone-app-header">
+                        <div>
+                            <div class="p-brand-title">OWI PHYSICAL INVENTORY</div>
+                            <div class="p-store-tag">STORE CODE : TES</div>
+                            <div class="p-user-tag">User: <strong>BETH</strong></div>
+                        </div>
+                        <span class="p-status-pill">● Offline (Local)</span>
+                    </div>
+
+                    <div class="phone-body-scroll">
+                        <!-- Active Session Header HUD -->
+                        <div class="active-session-hud">
+                            <div>
+                                <div style="font-size: 0.6rem; color: #8b949e;">ACTIVE SESSION</div>
+                                <div class="session-loc-title">Locator 3 • MOBILE</div>
+                            </div>
+                            <div class="hud-actions">
+                                <button type="button" class="btn-hud-change" onclick="openModal(1)">Change</button>
+                                <button type="button" class="btn-hud-finish" onclick="openModal(1)">Finish</button>
+                            </div>
                         </div>
 
-                        <div class="m-status-box m-status-success">NB SPI 05200 (Count saved)</div>
+                        <!-- Camera Viewfinder Card -->
+                        <div class="camera-card">
+                            <div class="camera-header-flex">
+                                <span>CAMERA SCANNER</span>
+                                <span style="color: #2ea44f;">● Live</span>
+                            </div>
 
-                        <div class="m-phone-card">
-                            <div class="m-form-group">
-                                <label class="m-form-label">Barcode / Description Target:</label>
-                                <input type="text" class="m-form-control" value="43100052005" readonly style="font-weight: 800; text-align: center;">
-
-                                <!-- Instant Search Dropdown Demo -->
-                                <div class="m-search-dropdown">
-                                    <div class="m-search-item">
-                                        <div style="color: #ffffff; font-weight: 700;">NB SPI 05200 1SUBJ 100SHT</div>
-                                        <div style="color: #8b949e; font-size: 0.68rem; margin-top: 1px;">
-                                            UPC: <span style="color: #58a6ff;">43100052005</span> | SKU: <span style="color: #56f089;">SPI-052</span>
-                                        </div>
-                                    </div>
+                            <div class="viewfinder-box">
+                                <div class="viewfinder-reticle">
+                                    <div class="reticle-line"></div>
                                 </div>
                             </div>
 
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
-                                <button type="button" class="m-btn" onclick="openModal(4)">Send</button>
-                                <button type="button" class="m-btn m-btn-danger" onclick="openModal(5)">Setup</button>
+                            <div class="camera-tools-grid">
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <span>🔍 ZOOM:</span>
+                                    <input type="range" class="zoom-slider" min="1" max="3" step="0.1" value="1">
+                                    <span style="color: white; font-weight: 700;">1.0x</span>
+                                </div>
+                                <button type="button" class="btn-torch" onclick="openModal(3)">🔦 OFF</button>
+                            </div>
+
+                            <div class="camera-actions-grid">
+                                <button type="button" class="btn-cam-start" onclick="openModal(4)">Start Scanner</button>
+                                <button type="button" class="btn-cam-stop" onclick="openModal(4)">Stop</button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Hotspots for Scan Screen (1..5) -->
-                    <div class="hotspot-pin" style="top: 42px; right: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 80px; left: 14px;" onclick="openModal(2)">2</div>
-                    <div class="hotspot-pin" style="top: 135px; left: 14px;" onclick="openModal(3)">3</div>
-                    <div class="hotspot-pin" style="top: 240px; left: 18px;" onclick="openModal(4)">4</div>
-                    <div class="hotspot-pin" style="top: 240px; right: 18px;" onclick="openModal(5)">5</div>
-                </div>
-
-                <!-- 3. SCREEN 3: RECENT SCANS LOG AUDIT -->
-                <div id="screen-log" style="display: none; flex-direction: column; height: 100%;">
-                    <div class="m-app-header">OWI Scanner App</div>
-
-                    <div class="m-app-body">
-                        <div class="m-info-bar">
-                            Store: <strong style="color: #ffffff;">TEST</strong> | Loc: <strong style="color: #ffffff;">SLOT 1</strong>
-                        </div>
-
-                        <div class="m-status-box">READY TO SCAN</div>
-
-                        <div class="m-phone-card" style="padding: 6px;">
-                            <div style="font-weight: 700; font-size: 0.72rem; color: #8b949e; margin-bottom: 4px;">Recent Scans:</div>
-                            <table class="m-log-table">
-                                <thead>
-                                    <tr>
-                                        <th>Barcode</th>
-                                        <th>Description</th>
-                                        <th style="width: 25px; text-align: center;">Qty</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="color:#58a6ff; font-family:'JetBrains Mono';">43100052005</td>
-                                        <td style="color:#ffffff;">NB SPI 05200</td>
-                                        <td style="text-align: center; color:#56f089; font-weight:800;">5</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="color:#58a6ff; font-family:'JetBrains Mono';">48000160124</td>
-                                        <td style="color:#ffffff;">GEL PEN 0.5MM</td>
-                                        <td style="text-align: center; color:#56f089; font-weight:800;">12</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="manual-input-box" onclick="openModal(5)">
+                            MANUAL BARCODE / DESCRIPTION INPUT ▼
                         </div>
                     </div>
 
-                    <!-- Hotspots for Log Screen (1..2) -->
-                    <div class="hotspot-pin" style="top: 42px; left: 14px;" onclick="openModal(1)">1</div>
-                    <div class="hotspot-pin" style="top: 130px; left: 14px;" onclick="openModal(2)">2</div>
+                    <!-- Hotspots for Camera Screen (1..5) -->
+                    <div class="hotspot-pin" style="top: 48px; right: 14px;" onclick="openModal(1)">1</div>
+                    <div class="hotspot-pin" style="top: 110px; left: 14px;" onclick="openModal(2)">2</div>
+                    <div class="hotspot-pin" style="top: 195px; right: 14px;" onclick="openModal(3)">3</div>
+                    <div class="hotspot-pin" style="top: 240px; left: 14px;" onclick="openModal(4)">4</div>
+                    <div class="hotspot-pin" style="bottom: 12px; left: 14px;" onclick="openModal(5)">5</div>
                 </div>
 
             </div>
 
-            <!-- Smartphone Bottom Bar -->
+            <!-- Bottom Home Indicator -->
             <div class="phone-home-indicator"></div>
         </div>
 
@@ -1097,30 +1284,30 @@
             <div class="panel-card card-fkeys">
                 <div class="card-header-flex">
                     <h3 class="card-title">
-                        <span>📱 Smartphone Scanner Web Capabilities</span>
+                        <span>📱 Smartphone Camera Scanner Capabilities</span>
                     </h3>
-                    <span class="badge-live">Browser Powered</span>
+                    <span class="badge-live">Hardware Accelerated</span>
                 </div>
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <span class="feature-badge">QR SCAN</span>
-                        <div class="feature-name">Zero Install Setup</div>
-                        <div class="feature-desc">Scan QR code on host laptop to open instantly.</div>
+                        <span class="feature-badge">HTTPS / SSL</span>
+                        <div class="feature-name">Camera Permission</div>
+                        <div class="feature-desc">Unlocks getUserMedia API on Chrome/Safari.</div>
                     </div>
                     <div class="feature-card">
-                        <span class="feature-badge">AUTO-SEARCH</span>
-                        <div class="feature-name">Live Masterfile Search</div>
-                        <div class="feature-desc">Type product name to search catalog in real time.</div>
+                        <span class="feature-badge">VIEWFINDER</span>
+                        <div class="feature-name">Laser Reticle Target</div>
+                        <div class="feature-desc">Instant 1D/2D scanning with live laser line.</div>
                     </div>
                     <div class="feature-card">
-                        <span class="feature-badge">AUTO-FOCUS</span>
-                        <div class="feature-name">Continuous Input Focus</div>
-                        <div class="feature-desc">Re-focuses barcode input every second.</div>
+                        <span class="feature-badge">TORCH & ZOOM</span>
+                        <div class="feature-name">Low-Light Torch</div>
+                        <div class="feature-desc">Hardware flashlight & 1x-3x optical zoom.</div>
                     </div>
                     <div class="feature-card">
-                        <span class="feature-badge">REST API</span>
-                        <div class="feature-name">Async Ingestion</div>
-                        <div class="feature-desc">HTTP POST directly commits counts to database.</div>
+                        <span class="feature-badge">LOCATOR HUD</span>
+                        <div class="feature-name">1-Tap Shelf Lock</div>
+                        <div class="feature-desc">[Finish] locks slot and updates host console.</div>
                     </div>
                 </div>
             </div>
@@ -1129,9 +1316,9 @@
             <div class="panel-card card-hotspots">
                 <div class="card-header-flex">
                     <h3 class="card-title">
-                        <span id="hotspots-list-title">📌 Hotspots in Screen 1: Mobile Setup</span>
+                        <span id="hotspots-list-title">📌 Hotspots in Screen 1: HTTPS & Security</span>
                     </h3>
-                    <span class="badge-live" id="hotspots-count-badge">4 Controls</span>
+                    <span class="badge-live" id="hotspots-count-badge">3 Controls</span>
                 </div>
                 <div class="hotspot-cards-list" id="hotspots-container">
                     <!-- Loaded dynamically via JS -->
@@ -1172,20 +1359,17 @@
                     </div>
                 </div>
 
-                <!-- Right: Mobile Best Practice -->
+                <!-- Right: Mobile Reference Photo & Best Practice -->
                 <div class="m-box">
-                    <div class="m-box-title">💡 Mobile Operator Pro-Tip</div>
+                    <div class="m-box-title">💡 Pro-Tip & Field Photo</div>
                     <p class="m-desc" id="m-tip" style="margin-bottom: 10px;">Field best practice tip.</p>
-                    <div style="background: rgba(2, 6, 23, 0.7); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 10px;">
-                        <div style="font-size: 0.72rem; color: #34d399; font-weight: 800; text-transform: uppercase; margin-bottom: 4px;">📡 Live Endpoint</div>
-                        <code style="font-size: 0.75rem; color: #7dd3fc; word-break: break-all;" id="m-endpoint">api.php?action=submit_scan</code>
-                    </div>
+                    <img id="m-photo" src="" alt="Mobile Scanner Photo" class="modal-photo-preview">
                 </div>
             </div>
 
             <div class="modal-bottom">
                 <button class="btn-nav-modal" onclick="prevModal()">◀ Previous Hotspot</button>
-                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 4</span>
+                <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;" id="m-counter">Hotspot 1 of 3</span>
                 <button class="btn-nav-modal" onclick="nextModal()">Next Hotspot ▶</button>
             </div>
         </div>
@@ -1194,170 +1378,168 @@
     <!-- Interactive Script with Per-Tab Fresh Counts -->
     <script>
         const mobileScreens = {
-            setup: {
-                total: 4,
-                name: "Screen 1: Mobile Setup",
+            security: {
+                total: 3,
+                name: "Screen 1: HTTPS & Security",
                 pins: {
                     1: {
-                        title: "Store Code Assignment Field",
-                        subtitle: "Target retail branch identifier (e.g. TEST, RME)",
-                        takeaway: "Binds the smartphone session to the active store masterfile.",
-                        desc: "Specifies which store location's inventory catalog will be queried and updated during count submissions. Pre-filled automatically if opened via Host Console QR code.",
+                        title: "Store Code, User Context & Local Status",
+                        subtitle: "STORE CODE : TES | User: BETH | ● Offline (Local)",
+                        takeaway: "Identifies the active counting branch, operator account, and local network link.",
+                        desc: "Displays the active retail branch code (<code>TES</code>), logged-in supervisor/operator (<code>BETH</code>), and network status. Operates entirely over local LAN without requiring public Internet.",
                         actions: [
-                            "<strong>🏬 Store Code Input:</strong> Must match the branch loaded on the Host Console (e.g. <code>TEST</code>).",
-                            "<strong>📲 QR Auto-Config:</strong> When scanned from the supervisor's screen, the URL parameter <code>store_code=TEST</code> pre-populates this field.",
-                            "<strong>🔒 Masterfile Filter:</strong> Guarantees that only catalog SKUs belonging to this store are accepted."
+                            "<strong>🏬 STORE CODE : TES:</strong> Verifies that scans will be recorded into the correct store inventory masterfile.",
+                            "<strong>👤 User: BETH:</strong> Tags transactions with the operator's user account.",
+                            "<strong>🟡 Offline (Local):</strong> Confirms local LAN Wi-Fi pairing with supervisor host laptop."
                         ],
-                        tip: "If counting for a new store, verify that the Store Code exactly matches the supervisor's active dashboard session.",
-                        endpoint: "mobile_ce.php?mode=setup&store_code=TEST"
+                        tip: "Ensure your mobile phone is connected to the same local Wi-Fi router as the host laptop (e.g. <code>192.168.1.100</code>).",
+                        photo: "img/mobile/mobile_01_http_blocked.png"
                     },
                     2: {
-                        title: "Operator Name Input Field",
-                        subtitle: "Identifier of the floor staff counting items (e.g. JOHN)",
-                        takeaway: "Tags every scan transaction with the auditor's name for supervisor accountability.",
-                        desc: "Sets the operator name associated with every submitted scan row. This name is broadcast in real time to the supervisor's Host Console incoming scans feed.",
+                        title: "Camera Access Blocked (HTTP Origin) Warning",
+                        subtitle: "Browser security policy preventing camera access on unencrypted HTTP",
+                        takeaway: "Explains why camera video stream is blocked and provides immediate resolution paths.",
+                        desc: "Modern mobile browsers (Chrome, Safari) restrict the <code>navigator.mediaDevices.getUserMedia</code> camera API on plain <code>http://</code> origins for privacy reasons.",
                         actions: [
-                            "<strong>👤 Operator Tag:</strong> Enter your physical name or scanner ID (e.g. <code>JOHN</code>, <code>RAYMART</code>).",
-                            "<strong>📊 Live Audit Stream:</strong> Displays on the supervisor's <code>LIVE INCOMING SCANS LOG</code> table alongside timestamps.",
-                            "<strong>🏷️ Accountability:</strong> Enables variance dispute resolution if discrepancies arise during final audit."
+                            "<strong>🔒 Security Policy:</strong> Standard WebRTC camera capture requires a secure context (HTTPS or localhost).",
+                            "<strong>⚡ Direct Solution:</strong> Tap <strong>[Switch to Secure HTTPS]</strong> to load <code>https://192.168.1.100</code>.",
+                            "<strong>⚙️ Flag Alternative:</strong> Enable <code>chrome://flags/#unsafely-treat-insecure-origin-as-secure</code> and add <code>http://192.168.1.100</code>."
                         ],
-                        tip: "Use unique operator names for each smartphone so the supervisor can monitor individual counting speeds.",
-                        endpoint: "GET mobile_ce.php?operator=JOHN"
+                        tip: "The fastest method is tapping <kbd>Switch to Secure HTTPS</kbd> and bypassing the self-signed certificate warning.",
+                        photo: "img/mobile/mobile_01_http_blocked.png"
                     },
                     3: {
-                        title: "Locator / Slot Target",
-                        subtitle: "Shelf number or zone designation (e.g. SLOT 1, A-01, 10)",
-                        takeaway: "Designates the physical shelf zone where counts are being aggregated.",
-                        desc: "Defines the locator slot in which all scanned items will be bucketed until the locator is closed. Supports alphanumeric zone tags (e.g. <code>SLOT 1</code>, <code>GONDOLA 3</code>).",
+                        title: "SSL Bypass: [Advanced] ➔ [Proceed to 192.168.1.100 (unsafe)]",
+                        subtitle: "Self-signed certificate acceptance workflow in Chrome / Safari",
+                        takeaway: "Grants persistent camera permissions on local Wi-Fi networks.",
+                        desc: "When navigating to local HTTPS (<code>https://192.168.1.100</code>), Chrome displays <code>Your connection is not private</code> (<code>NET::ERR_CERT_AUTHORITY_INVALID</code>). Tapping <strong>Advanced</strong> ➔ <strong>Proceed to 192.168.1.100 (unsafe)</strong> grants permission.",
                         actions: [
-                            "<strong>📍 Locator Identification:</strong> Match the physical shelf barcode label on the retail gondola.",
-                            "<strong>🔒 Status Transition:</strong> Transitioning to scanning locks this slot as <code>In Use</code> on the supervisor's Host Console.",
-                            "<strong>📈 Progress Bar:</strong> Contributes directly to the 100% Locator Completion circular HUD."
+                            "<strong>⚠️ Step 1:</strong> Tap <strong>[Advanced]</strong> at the bottom of the Chrome SSL warning page.",
+                            "<strong>✅ Step 2:</strong> Tap the blue link <strong>Proceed to 192.168.1.100 (unsafe)</strong>.",
+                            "<strong>📷 Step 3:</strong> Browser will now prompt: <em>'Allow OWIPI to use your camera?'</em> ➔ Tap <strong>Allow</strong>."
                         ],
-                        tip: "Always double-check that your phone's Locator tag matches the shelf you are physically standing in front of.",
-                        endpoint: "GET mobile_ce.php?locator=SLOT%201"
-                    },
-                    4: {
-                        title: "[Start Scanning] Session Initiator Button",
-                        subtitle: "Commit setup parameters and launch live barcode reader (Screen 2)",
-                        takeaway: "Validates inputs and enters continuous high-speed scanning mode.",
-                        desc: "Submits the GET setup form, sets <code>mode=scan</code>, and transitions the smartphone into live barcode capture mode with auto-focus enabled.",
-                        actions: [
-                            "<strong>🚀 Launch Scanner:</strong> Switches the mobile viewport to Screen 2 (Scan & Search).",
-                            "<strong>⚡ Auto-Focus Loop:</strong> Automatically focuses the cursor into the Barcode input box.",
-                            "<strong>📶 Pre-Load Scans:</strong> Queries <code>api.php?action=get_scans_html</code> to load existing scans for this locator."
-                        ],
-                        tip: "Tap <kbd>Start Scanning</kbd> once. If your phone browser prompts for camera/bluetooth permissions, allow them.",
-                        endpoint: "mobile_ce.php?mode=scan&store_code=TEST&operator=JOHN&locator=SLOT%201"
+                        tip: "You only need to accept the SSL certificate once per browser session. The camera will remain unlocked across subsequent scans.",
+                        photo: "img/mobile/mobile_03_ssl_proceed.png"
                     }
                 }
             },
-            scan: {
-                total: 5,
-                name: "Screen 2: Barcode Scan & Search",
+            setup: {
+                total: 3,
+                name: "Screen 2: Scanner Setup",
                 pins: {
                     1: {
-                        title: "Session Info HUD & Context Badge",
-                        subtitle: "Active Store (TEST), Locator (SLOT 1), and Operator (JOHN)",
-                        takeaway: "Header status strip confirming active session binding.",
-                        desc: "Displays the active counting context at the top of the mobile screen so the operator always knows their current shelf assignment without checking settings.",
+                        title: "SCANNED BY Device Identifier",
+                        subtitle: "Hardware / channel tag (e.g. MOBILE)",
+                        takeaway: "Labels incoming scan transactions as mobile camera entries on the Host Console.",
+                        desc: "Identifies the counting client as a mobile device. Displayed in real time on the supervisor's <code>LIVE INCOMING SCANS LOG</code> table.",
                         actions: [
-                            "<strong>🏬 Store Confirmation:</strong> Displays active branch code.",
-                            "<strong>📍 Locator Display:</strong> Highlights active shelf zone.",
-                            "<strong>👤 Operator Tag:</strong> Displays current logged-in auditor."
+                            "<strong>📱 Device Tag:</strong> Displays <code>MOBILE</code> for smartphone camera scans.",
+                            "<strong>📊 Supervisor Attribution:</strong> Allows the lead supervisor to differentiate between Casio laser guns and phone camera users."
                         ],
-                        tip: "Glance at the header HUD when moving between shelves to ensure you are in the correct locator.",
-                        endpoint: "mobile_ce.php?mode=scan"
+                        tip: "Use descriptive names if multiple phone operators are counting simultaneously.",
+                        photo: "img/mobile/mobile_04_scanner_setup.png"
                     },
                     2: {
-                        title: "Live Status & Audio-Visual Feedback Banner",
-                        subtitle: "Transitions: READY TO SCAN ➔ Sending... ➔ SUCCESS: Saved / Error",
-                        takeaway: "Provides instant feedback on whether the scanned barcode was accepted.",
-                        desc: "Displays green banner with matched product name on successful entry, yellow when sending, or red when an item is invalid or not in masterfile.",
+                        title: "SELECT/TYPE LOCATOR Shelf Assignment",
+                        subtitle: "Shelf number or zone dropdown (e.g. Locator 1, 2, 3...)",
+                        takeaway: "Binds the mobile scanner to a specific physical shelf zone.",
+                        desc: "Select an existing shelf slot from the dropdown list or type a new locator number. All subsequent camera scans will be bucketed under this locator.",
                         actions: [
-                            "<strong>🟢 SUCCESS: Saved:</strong> Confirms transaction was recorded into the database.",
-                            "<strong>🟡 Sending...:</strong> HTTP POST request in flight.",
-                            "<strong>🔴 Error / Rejected:</strong> Alerts operator if barcode was empty or rejected by host."
+                            "<strong>📍 Dropdown Select:</strong> Choose from available open locators generated by the host.",
+                            "<strong>⌨️ Custom Input:</strong> Type numeric or alphanumeric shelf IDs (e.g. <code>3</code>, <code>SLOT 1</code>).",
+                            "<strong>🔒 Status Lock:</strong> Committing moves the shelf status to <code>In Use</code>."
                         ],
-                        tip: "A green confirmation message means you can immediately scan the next item without waiting.",
-                        endpoint: "status-box CSS transitions"
+                        tip: "Always match the locator number with the physical barcode sticker attached to the gondola shelf.",
+                        photo: "img/mobile/mobile_04_scanner_setup.png"
                     },
                     3: {
-                        title: "Barcode / Description Target with Instant Autocomplete",
-                        subtitle: "Real-time masterfile live search dropdown as you type",
-                        takeaway: "Dual-mode input accepting barcode gun scans OR live product title search.",
-                        desc: "Supports hardware Bluetooth barcode scanners, virtual keyboards, and live masterfile catalog search with instant autocomplete dropdown.",
+                        title: "[Connect & Start Scanning] Action Button",
+                        subtitle: "Initializes camera engine and launches live viewfinder",
+                        takeaway: "Transitions mobile screen to active barcode scanning mode (Screen 3).",
+                        desc: "Locks the selected locator slot and starts the high-speed HTML5 camera barcode detection engine with reticle targeting.",
                         actions: [
-                            "<strong>🔫 Hardware / Laser Scan:</strong> Ingests 1D/2D scans and auto-submits on Enter key.",
-                            "<strong>🔍 Real-Time Autocomplete:</strong> Queries <code>api.php?action=search_masterfile</code> with 300ms debounce as text is typed.",
-                            "<strong>🖱️ 1-Tap Result Selection:</strong> Tapping any dropdown item auto-populates barcode and submits transaction."
+                            "<strong>🚀 Start Scanning:</strong> Launches the camera viewfinder with real-time video feed.",
+                            "<strong>⚡ Camera Activation:</strong> Engages device rear camera with autofocus.",
+                            "<strong>📶 WebSocket / API Link:</strong> Establishes live telemetry with supervisor host console."
                         ],
-                        tip: "If a barcode label is torn or unreadable, type the first 3 letters of the product description to select it from the dropdown.",
-                        endpoint: "api.php?action=search_masterfile&q={query}"
+                        tip: "Tap <kbd>Connect & Start Scanning</kbd> once. If prompted, confirm camera permission.",
+                        photo: "img/mobile/mobile_04_scanner_setup.png"
+                    }
+                }
+            },
+            camera: {
+                total: 5,
+                name: "Screen 3: Live Camera Scan",
+                pins: {
+                    1: {
+                        title: "ACTIVE SESSION HUD & [Change] / [Finish] Controls",
+                        subtitle: "Locator 3 • MOBILE with 1-tap shelf closing",
+                        takeaway: "Top status bar confirming active shelf with quick change and lock controls.",
+                        desc: "Shows current active zone (<code>Locator 3 • MOBILE</code>). <strong>[Change]</strong> returns to locator selection. <strong>[Finish]</strong> (Green button) locks the shelf upon count completion.",
+                        actions: [
+                            "<strong>📍 Zone Confirmation:</strong> Displays <code>Locator 3</code>.",
+                            "<strong>🔄 [Change]:</strong> Switch shelf assignment without reloading page.",
+                            "<strong>🔒 [Finish]:</strong> Closes locator, turns progress gauge green on Host Console, and prompts for next shelf."
+                        ],
+                        tip: "Always tap <strong>[Finish]</strong> after counting all items on the shelf to finalize the countsheet.",
+                        photo: "img/mobile/mobile_05_camera_live.png"
+                    },
+                    2: {
+                        title: "Camera Viewfinder with Laser Reticle Target",
+                        subtitle: "Live video stream with alignment guide (|-- --|) and red scanning beam",
+                        takeaway: "Real-time barcode capture engine detecting 1D UPC/EAN and 2D QR codes.",
+                        desc: "Center the product barcode inside the white reticle target (<code>|-- --|</code>). The red animated laser line scans frames continuously at 30 FPS.",
+                        actions: [
+                            "<strong>🎯 Reticle Target:</strong> Align barcode between the white vertical brackets.",
+                            "<strong>⚡ 30 FPS Recognition:</strong> Instant barcode decode using optimized WebAssembly / ZXing engine.",
+                            "<strong>🔔 Audio Feedback:</strong> Plays a confirmation beep and displays green success banner upon scan."
+                        ],
+                        tip: "Hold your phone 4 to 6 inches away from the product label for the fastest auto-read.",
+                        photo: "img/mobile/mobile_05_camera_live.png"
+                    },
+                    3: {
+                        title: "ZOOM Slider & FLASHLIGHT Torch Toggle",
+                        subtitle: "1.0x to 3.0x optical zoom and LED flashlight torch toggle",
+                        takeaway: "Hardware camera controls for high shelves and dark stockroom aisles.",
+                        desc: "Use the <strong>ZOOM</strong> slider to scan barcodes on top gondola shelves without reaching. Tap <strong>FLASHLIGHT: OFF / ON</strong> to turn on the phone's LED torch in dimly lit areas.",
+                        actions: [
+                            "<strong>🔍 ZOOM Slider (1.0x - 3.0x):</strong> Smooth digital/optical zoom for hard-to-reach labels.",
+                            "<strong>🔦 FLASHLIGHT Toggle:</strong> Engages device LED flash for dark storage rooms.",
+                            "<strong>🔋 Battery Optimized:</strong> Automatically dims when scanner is paused."
+                        ],
+                        tip: "Use the flashlight in dark warehouse corners to ensure crisp 100% barcode detection rates.",
+                        photo: "img/mobile/mobile_05_camera_live.png"
                     },
                     4: {
-                        title: "[Send] Manual Submit Action Button",
-                        subtitle: "Transmits entered barcode and quantity (1) to OWIPI server",
-                        takeaway: "Triggers asynchronous HTTP POST scan submission.",
-                        desc: "Packs barcode, locator, operator, and store code into a URL-encoded payload and sends it asynchronously to <code>api.php?action=submit_scan</code>.",
+                        title: "[Start Scanner] & [Stop] Stream Controls",
+                        subtitle: "Engage or pause video feed to conserve battery",
+                        takeaway: "Allows pausing camera scanning during manual shelf recounts.",
+                        desc: "Click <strong>[Start Scanner]</strong> (Blue) to activate the video feed and barcode recognition engine. Click <strong>[Stop]</strong> to freeze the camera and reduce battery consumption.",
                         actions: [
-                            "<strong>📤 HTTP POST:</strong> Sends scan transaction without reloading the page.",
-                            "<strong>⚡ Keycode 13 (Enter):</strong> Pressing Enter on virtual or physical keyboard automatically triggers Send.",
-                            "<strong>🧹 Auto-Clear:</strong> Clears input box and re-focuses for next scan."
+                            "<strong>▶️ Start Scanner:</strong> Engages video feed and enables live barcode decoding.",
+                            "<strong>⏹️ Stop:</strong> Pauses camera stream and releases hardware video pipeline."
                         ],
-                        tip: "Barcode guns connected via Bluetooth or USB OTG automatically trigger Send on read.",
-                        endpoint: "POST api.php?action=submit_scan"
+                        tip: "Tap <kbd>Stop</kbd> while organizing physical items on the shelf to save phone battery.",
+                        photo: "img/mobile/mobile_05_camera_live.png"
                     },
                     5: {
-                        title: "[Setup] Danger Action Button (Session Return)",
-                        subtitle: "Exits active scanning mode and returns to Screen 1 setup",
-                        takeaway: "Allows changing locator slot or switching operator without losing session parameters.",
-                        desc: "Invokes <code>goBackToSetup()</code> to safely navigate back to <code>mobile_ce.php?mode=setup</code> with existing store and operator parameters preserved in the URL.",
+                        title: "MANUAL BARCODE / DESCRIPTION INPUT Fallback",
+                        subtitle: "Expandable text field for manual UPC typing or catalog search",
+                        takeaway: "Backup entry method for damaged or unreadable barcode labels.",
+                        desc: "If a barcode label is scratched or missing, tap this bar to open the manual search dialog. Allows typing barcode digits or product names directly.",
                         actions: [
-                            "<strong>⚙️ Return to Setup:</strong> Opens Screen 1 to change shelf locators.",
-                            "<strong>💾 Parameter Preservation:</strong> Retains store code and operator name in query string.",
-                            "<strong>🔄 Safe Navigation:</strong> Prevents browser cache issues on legacy mobile browsers."
+                            "<strong>⌨️ Manual UPC Typing:</strong> Type digits manually when barcode won't scan.",
+                            "<strong>🔍 Catalog Search:</strong> Search masterfile by description (e.g. <code>SPI 05200</code>).",
+                            "<strong>📤 Instant Submit:</strong> Submits directly to the active locator without leaving the camera page."
                         ],
-                        tip: "Tap <kbd>Setup</kbd> when finished counting the current shelf to proceed to the next slot (e.g. SLOT 2).",
-                        endpoint: "mobile_ce.php?mode=setup&store_code=TEST&operator=JOHN&locator=SLOT%201"
-                    }
-                }
-            },
-            log: {
-                total: 2,
-                name: "Screen 3: Recent Scans Log",
-                pins: {
-                    1: {
-                        title: "Shelf Context & Status Header",
-                        subtitle: "Active store, locator badge, and READY TO SCAN state",
-                        takeaway: "Confirms shelf zone for the recent scans log below.",
-                        desc: "Displays active locator information above the recent scans table to ensure that logged items match the physical shelf being audited.",
-                        actions: [
-                            "<strong>🏷️ Shelf Badge:</strong> Confirms current locator (e.g. <code>SLOT 1</code>).",
-                            "<strong>🟢 Ready State:</strong> Confirms terminal is ready for immediate scan additions."
-                        ],
-                        tip: "Compare the total items in this shelf against the physical count before moving to the next locator.",
-                        endpoint: "mobile_ce.php?mode=scan"
-                    },
-                    2: {
-                        title: "Recent Scans Audit Table (Live Scans Feed)",
-                        subtitle: "Itemized columns: Barcode (43100052005), Description (NB SPI 05200), and Qty",
-                        takeaway: "Live shelf manifest showing previously scanned items in chronological order.",
-                        desc: "Dynamically populated by <code>loadRecentScans()</code> which fetches HTML table rows directly from <code>api.php?action=get_scans_html</code>.",
-                        actions: [
-                            "<strong>🏷️ Barcode Column:</strong> Shows scanned UPC numbers.",
-                            "<strong>📝 Description Column:</strong> Matched product name from store masterfile.",
-                            "<strong>🔢 Qty Column:</strong> Quantity recorded for each transaction (default 1 unit).",
-                            "<strong>🔄 Auto-Refresh:</strong> Automatically re-fetches and updates after every successful scan."
-                        ],
-                        tip: "Verify that the latest scanned item appears at the top of the table after hearing the beep.",
-                        endpoint: "GET api.php?action=get_scans_html&store_code=TEST&location=SLOT%201"
+                        tip: "Use manual input for damaged labels without having to exit the live scanning session.",
+                        photo: "img/mobile/mobile_05_camera_live.png"
                     }
                 }
             }
         };
 
-        let currentScreen = 'setup';
+        let currentScreen = 'security';
         let currentModalPin = 1;
 
         function switchScreen(screenName, ev) {
@@ -1368,9 +1550,9 @@
             }
 
             // Hide all screens
+            document.getElementById('screen-security').style.display = 'none';
             document.getElementById('screen-setup').style.display = 'none';
-            document.getElementById('screen-scan').style.display = 'none';
-            document.getElementById('screen-log').style.display = 'none';
+            document.getElementById('screen-camera').style.display = 'none';
 
             // Show selected screen
             document.getElementById('screen-' + screenName).style.display = 'flex';
@@ -1421,7 +1603,7 @@
             actionsList.innerHTML = data.actions.map(act => `<div class="action-item-pill">${act}</div>`).join('');
 
             document.getElementById('m-tip').innerHTML = data.tip;
-            document.getElementById('m-endpoint').innerText = data.endpoint;
+            document.getElementById('m-photo').src = data.photo;
             document.getElementById('m-counter').innerText = `Hotspot ${currentModalPin} of ${screenObj.total} (${screenObj.name})`;
 
             document.getElementById('modal-backdrop').classList.add('active');
@@ -1457,7 +1639,7 @@
         });
 
         // Initialize on load
-        renderHotspotCards('setup');
+        renderHotspotCards('security');
     </script>
 
 </body>

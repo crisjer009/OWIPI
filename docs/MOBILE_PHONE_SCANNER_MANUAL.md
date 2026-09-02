@@ -1,166 +1,128 @@
-# OWIPI Mobile Phone Web Scanner Operational Guide & Technical Manual
+# OWIPI Smartphone Camera Scanner Operational Guide & Technical Manual
 
-This guide documents the **Mobile Phone Web Scanner** interface (`mobile_ce.php`), enabling retail floor staff and auditors to perform high-speed physical inventory counts directly from smartphones (iOS / Android) or handheld mobile web browsers.
+This guide documents the **Smartphone Camera Scanner** application, allowing auditors and retail staff to count physical inventory directly using smartphone cameras (iOS Safari & Android Chrome) over local Wi-Fi.
 
 ---
 
-## 📋 System Overview
+## 📸 Overview & Hardware Requirements
 
-The Mobile Phone Web Scanner is a lightweight, zero-installation web application designed for mobile devices. It connects to the supervisor's host server over local Wi-Fi and submits barcode transactions via REST API without requiring app store installations.
-
-| Feature | Specification |
+| Parameter | Specification |
 | :--- | :--- |
-| **Target URL** | `http://<HOST_IP>/OWIPI/mobile_ce.php` |
-| **Client Support** | iOS Safari, Android Chrome, Windows CE / Pocket PC Pocket Internet Explorer |
-| **Input Methods** | Bluetooth 1D/2D Barcode Gun, USB OTG Laser Scanner, Touchscreen On-Screen Keyboard |
-| **Real-Time Autocomplete** | Instant masterfile search with 300ms debounce (`api.php?action=search_masterfile`) |
-| **Continuous Focus** | 1,000ms background interval ensuring laser scans are never dropped |
-| **Audit Stream** | Live locator scan history (`api.php?action=get_scans_html`) |
+| **Target URL** | `https://<HOST_IP>/OWIPI/` or `http://<HOST_IP>/OWIPI/` |
+| **Supported Devices** | Android (Chrome), iOS (Safari), Tablets |
+| **Hardware Features** | Live HTML5 Camera Viewfinder, Laser Reticle Target, Flashlight Torch, 1.0x–3.0x Zoom |
+| **Security Context** | HTTPS required for `navigator.mediaDevices.getUserMedia` camera permissions |
 
 ---
 
-## 📱 Interactive Screens Breakdown
+## 📱 Interactive Screen Workflows
 
-### 1. Screen 1: Mobile Setup (`mode=setup`)
+### 1. Screen 1: HTTPS & Camera Permission Bypass
+
+Modern mobile browsers block camera access on unencrypted `http://` addresses. The application provides instant resolution workflows:
 
 ```
-+------------------------------------------+
-|            OWI Scanner Setup             |
-+------------------------------------------+
-|  Store Code:                             |
-|  [ TEST                                ] |
-|                                          |
-|  Operator Name:                          |
-|  [ JOHN                                ] |
-|                                          |
-|  Locator / Slot:                         |
-|  [ SLOT 1                              ] |
-|                                          |
-|  [           Start Scanning            ] |
-+------------------------------------------+
-| Optimized for Smartphone & Pocket PC     |
-+------------------------------------------+
++----------------------------------------------------+
+| OWI PHYSICAL INVENTORY                             |
+| STORE CODE : TES              ● Offline (Local)   |
+| User: BETH                                         |
++----------------------------------------------------+
+| ⚠️ Camera Access Blocked (HTTP Origin)              |
+| Mobile browsers block camera access on insecure    |
+| HTTP addresses. To enable standard camera prompts: |
+|                                                    |
+| [ ⚡ Switch to Secure HTTPS                      ] |
+|                                                    |
+| Alternatively, use Chrome flag workaround:         |
+| 1. chrome://flags/#unsafely-treat-insecure-origin  |
+| 2. Set Enabled & add http://192.168.1.100          |
++----------------------------------------------------+
 ```
 
-#### Controls & Parameters:
-1. **`Store Code`**: Binds the phone to the store branch session (e.g. `TEST` or `RME`).
-2. **`Operator Name`**: Auditor's username (e.g. `JOHN`) for live supervisor attribution.
-3. **`Locator / Slot`**: Numeric or alphanumeric shelf tag (e.g. `SLOT 1`, `GONDOLA 2`).
-4. **`[Start Scanning]`**: Commits configuration and transitions to live scanning.
+#### Chrome SSL Bypass Steps:
+1. Tap **`[⚡ Switch to Secure HTTPS]`** (loads `https://192.168.1.100`).
+2. On Chrome's *Your connection is not private* warning, tap **`[Advanced]`**.
+3. Tap **`Proceed to 192.168.1.100 (unsafe)`**.
+4. When prompted *Allow OWIPI to use your camera?*, tap **`Allow`**.
 
 ---
 
-### 2. Screen 2: Barcode Scan & Instant Catalog Search (`mode=scan`)
+### 2. Screen 2: Mobile Scanner Setup Modal
 
 ```
-+------------------------------------------+
-|             OWI Scanner App              |
-+------------------------------------------+
-| Store: TEST | Loc: SLOT 1                |
-| Op: JOHN                                 |
-+------------------------------------------+
-| [ NB SPI 05200 (Count saved)           ] | (Green Success Banner)
-+------------------------------------------+
-| Barcode / Description Target:            |
-| [ 43100052005                          ] |
-|                                          |
-| +--------------------------------------+ |
-| | NB SPI 05200 1SUBJ 100SHT            | | (Live Autocomplete Dropdown)
-| | UPC: 43100052005 | SKU: SPI-052      | |
-| +--------------------------------------+ |
-|                                          |
-| [    Send    ]          [   Setup   ]    |
-+------------------------------------------+
++----------------------------------------------------+
+|                   SCANNER SETUP                    |
++----------------------------------------------------+
+| SCANNED BY                                         |
+| [ MOBILE                                         ] |
+|                                                    |
+| SELECT/TYPE LOCATOR                                |
+| [ Type/Select Locator (e.g. 1)...               ▼] |
+|                                                    |
+| [          Connect & Start Scanning              ] |
++----------------------------------------------------+
 ```
 
-#### Controls & Actions:
-- **`Barcode / Description Input`**: Accepts laser gun barcode scans or typed text.
-- **`Live Search Dropdown`**: Typing 2+ characters queries `api.php?action=search_masterfile` and displays instant matches. Tapping a match auto-fills and submits the item.
-- **`[Send]`**: Asynchronously submits count to `api.php?action=submit_scan`.
-- **`[Setup]` (Red Danger Button)**: Safely returns to Screen 1 while preserving current store and operator parameters.
+#### Setup Parameters:
+- **`SCANNED BY`**: Defaults to `MOBILE` to differentiate camera entries from physical Casio laser terminals.
+- **`SELECT/TYPE LOCATOR`**: Select open shelf from dropdown or type numeric shelf ID (e.g. `3`).
+- **`[Connect & Start Scanning]`**: Engages camera and initializes live locator session.
 
 ---
 
-### 3. Screen 3: Recent Scans Log & Shelf Audit
+### 3. Screen 3: Live Camera Barcode Scanner View
 
 ```
-+------------------------------------------+
-|             OWI Scanner App              |
-+------------------------------------------+
-| Store: TEST | Loc: SLOT 1                |
-+------------------------------------------+
-| [ READY TO SCAN                        ] |
-+------------------------------------------+
-| Recent Scans:                            |
-| +-------------+--------------------+---+ |
-| | Barcode     | Description        |Qty| |
-| +-------------+--------------------+---+ |
-| | 43100052005 | NB SPI 05200 1SUBJ | 5 | |
-| | 48000160124 | GEL PEN 0.5MM      |12 | |
-| +-------------+--------------------+---+ |
-+------------------------------------------+
++----------------------------------------------------+
+| OWI PHYSICAL INVENTORY                             |
+| STORE CODE : TES              ● Offline (Local)   |
+| User: BETH                                         |
++----------------------------------------------------+
+| ACTIVE SESSION: Locator 3 • MOBILE                 |
+| [ Change ]                         [ Finish (Green)|
++----------------------------------------------------+
+| CAMERA SCANNER                             ● Live  |
+| +------------------------------------------------+ |
+| |                                                | |
+| |             |--      --|                       | |
+| |              (Laser Beam)                      | |
+| |                                                | |
+| +------------------------------------------------+ |
+| 🔍 ZOOM: [======o=======] 1.0x      🔦 [OFF]     |
+| [ Start Scanner (Blue) ]            [ Stop ]       |
++----------------------------------------------------+
+| MANUAL BARCODE / DESCRIPTION INPUT               ▼ |
++----------------------------------------------------+
 ```
+
+#### Camera Controls:
+- **Viewfinder Reticle (`|-- --|`)**: Align barcode horizontally within brackets.
+- **`🔍 ZOOM` Slider**: Adjust from `1.0x` to `3.0x` for high or distant shelves.
+- **`🔦 FLASHLIGHT` Button**: Toggles phone LED torch for dark warehouse corners.
+- **`[Finish]` (Green Button)**: Locks shelf locator and marks it completed on Host Console.
+- **`MANUAL INPUT`**: Expandable fallback for typed UPC or masterfile catalog search.
 
 ---
 
-## ⚡ Smartphone Scanning Workflow (Sequence Diagram)
+## ⚡ Smartphone Camera Scan SOP
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Auditor as 📱 Floor Staff (Smartphone)
+    actor Staff as 📱 Auditor (Smartphone)
     actor Supervisor as 👤 Supervisor (Host Console)
-    participant Host as 💻 Host Server (OWIPI API)
+    participant Host as 💻 Host Server (OWIPI HTTPS)
 
-    Supervisor->>Supervisor: Displays QR Code on Host Console
-    Auditor->>Host: Scans QR code with Phone Camera -> Opens mobile_ce.php
-    Auditor->>Auditor: Verifies Store (TEST), Operator (JOHN), Locator (SLOT 1)
-    Auditor->>Host: Taps [Start Scanning] -> Locks Locator 1 as "In Use"
-    loop For Every Shelf Product
-        alt Hardware Laser Barcode Gun
-            Auditor->>Auditor: Pulls trigger on barcode label
-            Auditor->>Host: Automatically submits scan on Enter
-        else Damaged Label / Manual Search
-            Auditor->>Auditor: Types first few letters of product description
-            Host-->>Auditor: Returns real-time masterfile dropdown matches
-            Auditor->>Host: Taps match -> Auto-populates and sends
-        end
-        Host-->>Auditor: Green Banner: "NB SPI 05200 (Count saved)"
+    Staff->>Host: Scans Host QR code -> Opens https://192.168.1.100
+    Staff->>Staff: Taps Advanced -> Proceed (unsafe) -> Grants camera permission
+    Staff->>Host: Selects Locator 3, taps [Connect & Start Scanning]
+    Host-->>Supervisor: Locator 3 marks "In Use" by MOBILE
+    loop For Every Item on Shelf
+        Staff->>Staff: Points camera viewfinder at product barcode
+        Staff->>Host: HTML5 barcode engine decodes UPC & auto-submits POST
         Host-->>Supervisor: Live incoming scans log updates immediately
-        Host-->>Auditor: Updates "Recent Scans" table row
+        Host-->>Staff: Audio beep + Green Success Banner
     end
-    Auditor->>Host: Taps [Setup] -> Moves to next physical shelf (SLOT 2)
+    Staff->>Host: Taps [Finish] to close Locator 3
+    Host-->>Supervisor: Locator 3 turns 100% Green Completed
 ```
-
----
-
-## 🛠️ Technical Implementation Notes
-
-1. **Auto-Focus Keep-Alive**:
-   ```javascript
-   function keepFocus() {
-       var barcodeEl = document.getElementById("barcode");
-       if (barcodeEl) barcodeEl.focus();
-   }
-   setInterval(keepFocus, 1000);
-   ```
-
-2. **Debounced Masterfile Search**:
-   ```javascript
-   clearTimeout(barcodeSearchTimeout);
-   barcodeSearchTimeout = setTimeout(function() {
-       xhr.open("GET", "api.php?action=search_masterfile&q=" + encodeURIComponent(q), true);
-       xhr.send();
-   }, 300);
-   ```
-
-3. **URL-Encoded Payload**:
-   ```javascript
-   var postData = "barcode=" + encodeURIComponent(barcode) +
-                  "&quantity=1" +
-                  "&location=" + encodeURIComponent(config_loc) +
-                  "&scanned_by=" + encodeURIComponent(config_op) +
-                  "&store_code=" + encodeURIComponent(config_store);
-   xhr.open("POST", "api.php?action=submit_scan", true);
-   xhr.send(postData);
-   ```
