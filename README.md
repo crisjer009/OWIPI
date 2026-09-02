@@ -13,6 +13,7 @@ Explore the full ecosystem through our interactive Digital Twin simulators:
 | **🖥️ Control Dashboard** | [control_dashboard_visual_manual.html](docs/control_dashboard_visual_manual.html) | [CONTROL_DASHBOARD_MANUAL.md](docs/CONTROL_DASHBOARD_MANUAL.md) | System Admins & Controllers (`index.php`) |
 | **💻 Host Console** | [host_view_visual_manual.html](docs/host_view_visual_manual.html) | [HOST_VIEW_MANUAL.md](docs/HOST_VIEW_MANUAL.md) | Store Supervisors & Lead Auditors (`scan.php`) |
 | **📱 Casio Industrial Scanner** | [casio_scanner_visual_manual.html](docs/casio_scanner_visual_manual.html) | [CASIO_SCANNER_MANUAL.md](docs/CASIO_SCANNER_MANUAL.md) | Floor Staff & Laser Barcode Operators (`OWI PI Scanner App`) |
+| **📲 Mobile Phone Scanner** | [mobile_phone_scanner_visual_manual.html](docs/mobile_phone_scanner_visual_manual.html) | [MOBILE_PHONE_SCANNER_MANUAL.md](docs/MOBILE_PHONE_SCANNER_MANUAL.md) | Mobile Auditors & Floor Counters (`mobile_ce.php`) |
 
 ---
 
