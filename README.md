@@ -10,6 +10,7 @@ Explore the full ecosystem through our interactive Digital Twin simulators:
 
 | Ecosystem Component | Interactive HTML Simulator | Technical Markdown Guide | Target Role & Scope |
 | :--- | :--- | :--- | :--- |
+| **📋 Step-by-Step SOP Guide** | [sop_visual_guide.html](docs/sop_visual_guide.html) | [STANDARD_OPERATING_PROCEDURE.md](docs/STANDARD_OPERATING_PROCEDURE.md) | Official 10-Step Operational Procedure (All Roles) |
 | **🖥️ Control Dashboard** | [control_dashboard_visual_manual.html](docs/control_dashboard_visual_manual.html) | [CONTROL_DASHBOARD_MANUAL.md](docs/CONTROL_DASHBOARD_MANUAL.md) | System Admins & Controllers (`index.php`) |
 | **💻 Host Console** | [host_view_visual_manual.html](docs/host_view_visual_manual.html) | [HOST_VIEW_MANUAL.md](docs/HOST_VIEW_MANUAL.md) | Store Supervisors & Lead Auditors (`scan.php`) |
 | **📱 Casio Industrial Scanner** | [casio_scanner_visual_manual.html](docs/casio_scanner_visual_manual.html) | [CASIO_SCANNER_MANUAL.md](docs/CASIO_SCANNER_MANUAL.md) | Floor Staff & Laser Barcode Operators (`OWI PI Scanner App`) |

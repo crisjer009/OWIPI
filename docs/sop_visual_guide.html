@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OWIPI - Interactive Step-by-Step SOP Visual Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --bg-card: rgba(18, 24, 38, 0.9);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(52, 211, 153, 0.4);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        /* Top Bar */
+        .top-nav {
+            background: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 6px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 48px;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .brand-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-color);
+        }
+
+        .nav-link.active {
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* SOP Sub-Header Stepper Bar */
+        .stepper-nav-bar {
+            background: rgba(15, 23, 42, 0.6);
+            border-bottom: 1px solid var(--border-color);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+
+        .stepper-track {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .step-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .step-pill:hover {
+            color: white;
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .step-pill.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            border-color: #60a5fa;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .step-pill.completed {
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .step-pill-num {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+        }
+
+        .step-pill.active .step-pill-num {
+            background: #ffffff;
+            color: #1d4ed8;
+        }
+
+        .step-pill.completed .step-pill-num {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .stepper-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-stepper {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--border-color);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-stepper:hover:not(:disabled) {
+            background: #2563eb;
+            border-color: #60a5fa;
+        }
+
+        .btn-stepper:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Main Workspace Grid */
+        .sop-main-workspace {
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            padding: 12px 20px 14px;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 18px;
+            align-items: stretch;
+            height: calc(100vh - 96px);
+        }
+
+        @media (max-width: 992px) {
+            html, body {
+                height: auto;
+                max-height: none;
+                overflow: auto;
+            }
+            .sop-main-workspace {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+
+        /* Left Side: Screenshot & Interactive Visual Inspector */
+        .visual-preview-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
+            backdrop-filter: blur(14px);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+        }
+
+        .preview-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .preview-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-circle-badge {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .preview-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.3px;
+        }
+
+        .preview-category-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-prep { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; }
+        .tag-config { background: rgba(139, 92, 246, 0.15); border: 1px solid #8b5cf6; color: #a78bfa; }
+        .tag-sync { background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; }
+        .tag-audit { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
+        .tag-close { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; }
+
+        /* Image Frame */
+        .screenshot-frame {
+            flex: 1;
+            min-height: 0;
+            background: #020617;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+        }
+
+        .screenshot-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .screenshot-img:hover {
+            transform: scale(1.02);
+        }
+
+        .img-watermark-note {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 0.68rem;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        /* Right Side: Step Breakdown & Instructions */
+        .instructions-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            backdrop-filter: blur(14px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .card-subhead {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #60a5fa;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .step-main-headline {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            letter-spacing: -0.2px;
+        }
+
+        .step-summary-text {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+            margin-bottom: 14px;
+        }
+
+        /* Action Checklist */
+        .checklist-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .check-item {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.82rem;
+            line-height: 1.4;
+            color: #e2e8f0;
+            transition: all 0.15s ease;
+        }
+
+        .check-item:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(96, 165, 250, 0.4);
+        }
+
+        .check-bullet {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid #3b82f6;
+            color: #60a5fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .check-item strong {
+            color: #ffffff;
+        }
+
+        .check-item code {
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        /* Pro Tip / Alert Box */
+        .alert-box {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .alert-box.info {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .alert-box.success {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .alert-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content {
+            font-size: 0.78rem;
+            color: #fcd34d;
+            line-height: 1.35;
+        }
+
+        .alert-box.info .alert-content {
+            color: #93c5fd;
+        }
+
+        .alert-box.success .alert-content {
+            color: #6ee7b7;
+        }
+
+        /* Interactive Helper Bar (Copy Token, Simulate Action) */
+        .interactive-helper-bar {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .helper-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .btn-copy-token {
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-copy-token:hover {
+            background: #3b82f6;
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.5);
+        }
+
+        /* Quick Navigation Footer */
+        .quick-nav-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .step-progress-text {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="../index.php" class="nav-brand">
+            <span class="brand-badge">SOP Manual</span>
+            <span class="brand-title">OWIPI Standard Operating Procedure</span>
+        </a>
+        <div class="nav-links">
+            <a href="control_dashboard_visual_manual.html" class="nav-link">🎛️ Control Dashboard</a>
+            <a href="host_view_visual_manual.html" class="nav-link">💻 Host Console</a>
+            <a href="casio_scanner_visual_manual.html" class="nav-link">📱 Casio Scanner</a>
+            <a href="mobile_phone_scanner_visual_manual.html" class="nav-link">📲 Mobile Scanner</a>
+            <a href="sop_visual_guide.html" class="nav-link active">📋 Step-by-Step SOP</a>
+            <a href="STANDARD_OPERATING_PROCEDURE.md" class="nav-link" target="_blank">📖 Guide</a>
+        </div>
+    </nav>
+
+    <!-- Stepper Navigation Bar -->
+    <div class="stepper-nav-bar">
+        <div class="stepper-track" id="stepper-track">
+            <!-- Rendered by JS -->
+        </div>
+        <div class="stepper-controls">
+            <button class="btn-stepper" id="btn-prev" onclick="prevStep()">◀ Back</button>
+            <button class="btn-stepper" id="btn-next" onclick="nextStep()">Next Step ▶</button>
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="sop-main-workspace">
+
+        <!-- Left: Screenshot & Visual Reference -->
+        <div class="visual-preview-card">
+            <div class="preview-header-flex">
+                <div class="preview-title-group">
+                    <div class="step-circle-badge" id="v-step-num">1</div>
+                    <div>
+                        <h2 class="preview-title" id="v-step-title">Step Title</h2>
+                    </div>
+                </div>
+                <span class="preview-category-tag" id="v-step-category">PREPARATION</span>
+            </div>
+
+            <div class="screenshot-frame">
+                <img id="v-screenshot" src="" alt="SOP Step Screenshot" class="screenshot-img">
+                <div class="img-watermark-note" id="v-watermark">Field Capture • OWIPI</div>
+            </div>
+        </div>
+
+        <!-- Right: Step Instructions & Action Items -->
+        <div class="instructions-panel">
+            <div class="info-card">
+                <div class="card-subhead">
+                    <span>⚡ Standard Operating Procedure</span>
+                </div>
+                <h1 class="step-main-headline" id="step-headline">Open XAMPP Control Panel</h1>
+                <p class="step-summary-text" id="step-summary">Summary statement about this operational step.</p>
+
+                <!-- Action Items Checklist -->
+                <div class="checklist-container" id="step-checklist">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <!-- Alert / Tip Box -->
+                <div class="alert-box" id="step-alert">
+                    <div class="alert-icon" id="alert-icon">💡</div>
+                    <div class="alert-content" id="alert-text">Helpful pro-tip regarding this step.</div>
+                </div>
+            </div>
+
+            <!-- Interactive Helper Bar (Copy tokens, URLs, etc.) -->
+            <div class="interactive-helper-bar" id="helper-bar">
+                <div class="helper-text" id="helper-label">Quick Action:</div>
+                <button class="btn-copy-token" id="helper-btn" onclick="executeHelperAction()">
+                    <span>📋 Copy Value</span>
+                </button>
+            </div>
+
+            <!-- Footer Progress -->
+            <div class="quick-nav-footer">
+                <span class="step-progress-text" id="footer-step-counter">Step 1 of 10</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Use <strong>Left / Right Arrow Keys</strong> to navigate</span>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const sopSteps = [
+            {
+                step: 1,
+                title: "Open XAMPP Control Panel",
+                headline: "Launch the Local Server Environment",
+                category: "prep",
+                categoryLabel: "Phase 1: Environment",
+                image: "img/sop/step_01_open_xampp.png",
+                watermark: "Windows Search • XAMPP Control Panel",
+                summary: "OWIPI runs locally on the store supervisor laptop using Apache and MySQL. Start by opening the XAMPP management interface.",
+                checklist: [
+                    { bold: "Press Windows Key:", desc: "Open the Windows Start Menu or search bar on the laptop." },
+                    { bold: "Search for XAMPP:", desc: "Type <code>xampp</code> or <code>XAMPP Control Panel</code>." },
+                    { bold: "Run as Administrator:", desc: "Click <strong>Run as administrator</strong> (or left-click Open) to ensure required networking and port permissions." }
+                ],
+                alertType: "info",
+                alertIcon: "ℹ️",
+                alert: "<strong>Pro-Tip:</strong> Running as Administrator prevents Windows Firewall from blocking incoming mobile scanner camera connections on port 80/443.",
+                helperLabel: "XAMPP Executable Path:",
+                helperValue: "C:\\xampp\\xampp-control.exe",
+                helperBtnText: "📋 Copy File Path"
+            },
+            {
+                step: 2,
+                title: "Start Apache & MySQL",
+                headline: "Activate Web & Database Engines",
+                category: "prep",
+                categoryLabel: "Phase 1: Environment",
+                image: "img/sop/step_02_start_apache_mysql.png",
+                watermark: "XAMPP Services • PID 7444 & 9496",
+                summary: "Both the Apache Web Server and MySQL Database must be active for the local store database and handheld scanners to communicate.",
+                checklist: [
+                    { bold: "Start Apache:", desc: "Click the <strong>Start</strong> button next to Apache. Wait until the background turns green with ports <code>80, 443</code>." },
+                    { bold: "Start MySQL:", desc: "Click the <strong>Start</strong> button next to MySQL. Wait until the background turns green with port <code>3306</code>." },
+                    { bold: "Verify Status Log:", desc: "Confirm the bottom console displays: <code>Status change detected: running</code> for both modules." }
+                ],
+                alertType: "warning",
+                alertIcon: "⚠️",
+                alert: "<strong>Port Conflict:</strong> If Apache fails to start, ensure Skype, IIS, or other web servers are closed to free up port 80.",
+                helperLabel: "Default Local Web Port:",
+                helperValue: "http://localhost/OWIPI/",
+                helperBtnText: "🔗 Copy Local URL"
+            },
+            {
+                step: 3,
+                title: "Log In to OWI Physical Inventory",
+                headline: "Authenticate Supervisor Credentials",
+                category: "prep",
+                categoryLabel: "Phase 2: Authentication",
+                image: "img/sop/step_03_login_system.png",
+                watermark: "OWIPI Login Portal • Version BETA",
+                summary: "Access the local web portal through Google Chrome and authenticate using your assigned supervisor or controller account.",
+                checklist: [
+                    { bold: "Open Google Chrome:", desc: "Navigate to <code>http://localhost/OWIPI/</code> on the host PC." },
+                    { bold: "Enter Credentials:", desc: "Type your official <strong>Username</strong> and <strong>Password</strong>." },
+                    { bold: "Click Log In:", desc: "Tap the blue <strong>Log In</strong> button to enter the session dashboard." },
+                    { bold: "Handheld Note:", desc: "Floor auditors using mobile phones or Casio scanners use <em>Handheld Scanner Mode</em> without needing login." }
+                ],
+                alertType: "info",
+                alertIcon: "📱",
+                alert: "<strong>Auditor Mode:</strong> Floor staff using mobile phones can scan the host QR code or tap 'Handheld Scanner Mode' to bypass password entry.",
+                helperLabel: "System Portal URL:",
+                helperValue: "http://localhost/OWIPI/",
+                helperBtnText: "📋 Copy Portal URL"
+            },
+            {
+                step: 4,
+                title: "Select Store Session & Locators",
+                headline: "Define Store Code & Shelf Slot Count",
+                category: "config",
+                categoryLabel: "Phase 3: Store Setup",
+                image: "img/sop/step_04_create_store_session.png",
+                watermark: "Select Store Session • Store SLE",
+                summary: "Configure the specific retail branch being audited and specify the initial number of locator shelves/gondolas needed for the count.",
+                checklist: [
+                    { bold: "Create / Connect Store Code:", desc: "Input the official 3-letter branch code (e.g. <code>SLE</code> for Sunken Leaf Express)." },
+                    { bold: "Number of Locators Needed:", desc: "Enter the initial number of shelf zones or gondolas (e.g. <code>10</code>)." },
+                    { bold: "Activate Store Session:", desc: "Click the blue <strong>Activate Store Session</strong> button to initialize the local tables and open the Host Console." }
+                ],
+                alertType: "success",
+                alertIcon: "✅",
+                alert: "<strong>Scalable:</strong> You can add more locators at any time during the audit directly from the Host Console using the '+ Add Locator' button.",
+                helperLabel: "Example Store Code:",
+                helperValue: "SLE",
+                helperBtnText: "📋 Copy Code"
+            },
+            {
+                step: 5,
+                title: "Configure Cloud Sync Token",
+                headline: "Authenticate Central Cloud Bridge",
+                category: "sync",
+                categoryLabel: "Phase 4: Cloud Link",
+                image: "img/sop/step_05_sync_token_config.png",
+                watermark: "Cloud Sync Config • Token OWIPI2026",
+                summary: "Connect your local laptop instance to the central Office Warehouse cloud repository by setting the security authorization token.",
+                checklist: [
+                    { bold: "Open Cloud Sync:", desc: "On the Host Console top header, click <strong>☁️ Sync to Cloud</strong>." },
+                    { bold: "Input Secret Sync Token:", desc: "Enter the official authorization token: <code>OWIPI2026</code>." },
+                    { bold: "Save Configuration:", desc: "Click <strong>Save Config</strong>. Confirm green message: <em>'Cloud synchronization configuration saved successfully!'</em>" },
+                    { bold: "Close Dialog:", desc: "Click <strong>Close</strong> to return to the console." }
+                ],
+                alertType: "success",
+                alertIcon: "🔒",
+                alert: "<strong>Security Token:</strong> The token authenticates the store laptop to download official store masterfiles and upload verified counts.",
+                helperLabel: "Official Sync Token:",
+                helperValue: "OWIPI2026",
+                helperBtnText: "📋 Copy OWIPI2026"
+            },
+            {
+                step: 6,
+                title: "Download Store Masterfile",
+                headline: "Pull Product Catalog from Cloud",
+                category: "sync",
+                categoryLabel: "Phase 4: Cloud Link",
+                image: "img/sop/step_06_download_masterfile.png",
+                watermark: "Confirm Store Download • Store SLE",
+                summary: "Download all products, active barcodes, descriptions, and expected stock quantities from the central cloud database into local MySQL.",
+                checklist: [
+                    { bold: "Ensure Internet Connection:", desc: "Verify laptop is connected to Wi-Fi or mobile hotspot." },
+                    { bold: "Click Download Button:", desc: "On the Host Console header, click <strong>☁️ Download Store Masterfile</strong>." },
+                    { bold: "Confirm Prompt:", desc: "When asked <em>'Are you sure you want to download and sync the items masterfile for store SLE from the cloud?'</em>, click <strong>Yes, Proceed</strong>." }
+                ],
+                alertType: "warning",
+                alertIcon: "🌐",
+                alert: "<strong>Internet Required:</strong> Internet is ONLY required during Steps 6 and 9. All scanning between these steps is 100% offline!",
+                helperLabel: "API Endpoint:",
+                helperValue: "https://pginv.officewarehouse.com.ph/OWIPI/",
+                helperBtnText: "📋 Copy Cloud URL"
+            },
+            {
+                step: 7,
+                title: "Verify Masterfile Import Success",
+                headline: "Confirm Local Catalog Population",
+                category: "sync",
+                categoryLabel: "Phase 4: Cloud Link",
+                image: "img/sop/step_07_download_success.png",
+                watermark: "Download Success • 8,626 Products",
+                summary: "Verify that all retail catalog records were successfully populated into local MySQL and acknowledge the completion banner.",
+                checklist: [
+                    { bold: "Wait for Ingestion:", desc: "The system downloads and indexes thousands of SKU and barcode records in seconds." },
+                    { bold: "Inspect Count Banner:", desc: "Confirm dialog displays: <em>'Successfully imported 8626 products for store SLE from cloud!'</em>" },
+                    { bold: "Click OK:", desc: "Click <strong>OK</strong> to close the dialog. The system is now 100% ready for physical counting." }
+                ],
+                alertType: "success",
+                alertIcon: "🎉",
+                alert: "<strong>Offline Ready:</strong> Your laptop is now completely self-sufficient. You can disconnect from the internet and take the laptop onto the retail floor.",
+                helperLabel: "Catalog Status:",
+                helperValue: "8626 Products Imported",
+                helperBtnText: "✓ Ready for Audit"
+            },
+            {
+                step: 8,
+                title: "Audit Shelves & Print Store Summary",
+                headline: "Execute Floor Count & Generate Reports",
+                category: "audit",
+                categoryLabel: "Phase 5: Physical Audit",
+                image: "img/sop/step_08_print_summary.png",
+                watermark: "Print Store Summary • 100% Closed",
+                summary: "Auditors scan items using Casio scanners or smartphone cameras. Once all locators are 100% closed, generate official variance count sheets.",
+                checklist: [
+                    { bold: "Scan All Items:", desc: "Staff scan products per shelf. As shelves finish, tap <strong>[Finish]</strong> to lock locators." },
+                    { bold: "Verify 100% Progress:", desc: "Ensure the circular gauge shows <strong>100% CLOSED</strong>." },
+                    { bold: "Click Print Summary:", desc: "Click <strong>🖨️ Print Summary</strong> on the Count Sheet toolbar." },
+                    { bold: "Select Report Type:", desc: "Choose <strong>Print All Summary</strong> for full count or <strong>Print With Variance Only</strong> for discrepancy investigation." }
+                ],
+                alertType: "info",
+                alertIcon: "📊",
+                alert: "<strong>Variance Audit:</strong> Use 'Print With Variance Only' first to conduct immediate recounts on missing or excess items before final closing.",
+                helperLabel: "Reporting Options:",
+                helperValue: "Print All Summary | Print With Variance Only",
+                helperBtnText: "🖨️ View Reports"
+            },
+            {
+                step: 9,
+                title: "Sync Final Counts to Cloud",
+                headline: "Upload Physical Count Records to HQ",
+                category: "sync",
+                categoryLabel: "Phase 6: Finalization",
+                image: "img/sop/step_09_sync_final_counts.png",
+                watermark: "Cloud Sync • Synced Locators & Scans",
+                summary: "Reconnect to the internet and upload all audited quantities, timestamps, and operator logs to central HQ servers.",
+                checklist: [
+                    { bold: "Reconnect Internet:", desc: "Connect laptop to store Wi-Fi or mobile hotspot." },
+                    { bold: "Open Sync Dialog:", desc: "Click <strong>☁️ Sync to Cloud</strong> on the header." },
+                    { bold: "Click Start Sync:", desc: "Tap the blue <strong>Start Sync</strong> button to transmit all count sheets." },
+                    { bold: "Confirm Success:", desc: "Verify green confirmation: <em>'Successfully synchronized with the cloud! Synced X locators and Y scan records.'</em>" }
+                ],
+                alertType: "success",
+                alertIcon: "☁️",
+                alert: "<strong>Cloud Backup:</strong> All physical scans are now permanently preserved in central HQ, ready for ERP / POS variance reconciliation.",
+                helperLabel: "Sync Status:",
+                helperValue: "Synced to Cloud HQ",
+                helperBtnText: "✓ Synced"
+            },
+            {
+                step: 10,
+                title: "Close Store Session",
+                headline: "Finalize & Lock Inventory Session",
+                category: "close",
+                categoryLabel: "Phase 6: Finalization",
+                image: "img/sop/step_10_close_store.png",
+                watermark: "Host Console • 100% Complete",
+                summary: "Lock the completed store audit session to prevent accidental modifications and archive the count files.",
+                checklist: [
+                    { bold: "Review Final Board:", desc: "Verify all locators display green <code>Closed</code> badges." },
+                    { bold: "Click Close Store:", desc: "Click the red <strong>🔒 Close Store</strong> button on the top right header." },
+                    { bold: "Confirm Closure:", desc: "Accept confirmation dialog to officially complete the store inventory audit." }
+                ],
+                alertType: "success",
+                alertIcon: "🏁",
+                alert: "<strong>Audit Complete:</strong> The physical inventory audit is officially finalized. Store stock records are updated and locked.",
+                helperLabel: "Store Session:",
+                helperValue: "Session Completed & Locked",
+                helperBtnText: "🔒 Closed"
+            }
+        ];
+
+        let currentStepIdx = 0;
+
+        function renderStepperNav() {
+            const track = document.getElementById('stepper-track');
+            track.innerHTML = sopSteps.map((s, idx) => {
+                const isActive = idx === currentStepIdx;
+                const isCompleted = idx < currentStepIdx;
+                return `
+                    <div class="step-pill ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" onclick="goToStep(${idx})">
+                        <div class="step-pill-num">${isCompleted ? '✓' : s.step}</div>
+                        <span>Step ${s.step}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderCurrentStep() {
+            const data = sopSteps[currentStepIdx];
+
+            // Header tags
+            document.getElementById('v-step-num').innerText = data.step;
+            document.getElementById('v-step-title').innerText = data.title;
+            
+            const catTag = document.getElementById('v-step-category');
+            catTag.innerText = data.categoryLabel;
+            catTag.className = 'preview-category-tag tag-' + data.category;
+
+            // Image
+            document.getElementById('v-screenshot').src = data.image;
+            document.getElementById('v-watermark').innerText = data.watermark;
+
+            // Details
+            document.getElementById('step-headline').innerText = data.headline;
+            document.getElementById('step-summary').innerText = data.summary;
+
+            // Checklist
+            const checkContainer = document.getElementById('step-checklist');
+            checkContainer.innerHTML = data.checklist.map((item, idx) => `
+                <div class="check-item">
+                    <div class="check-bullet">${idx + 1}</div>
+                    <div><strong>${item.bold}</strong> ${item.desc}</div>
+                </div>
+            `).join('');
+
+            // Alert Box
+            const alertBox = document.getElementById('step-alert');
+            alertBox.className = 'alert-box ' + data.alertType;
+            document.getElementById('alert-icon').innerText = data.alertIcon;
+            document.getElementById('alert-text').innerHTML = data.alert;
+
+            // Helper Bar
+            document.getElementById('helper-label').innerText = data.helperLabel;
+            document.getElementById('helper-btn').innerHTML = `<span>${data.helperBtnText}</span>`;
+
+            // Buttons state
+            document.getElementById('btn-prev').disabled = (currentStepIdx === 0);
+            document.getElementById('btn-next').innerText = (currentStepIdx === sopSteps.length - 1) ? 'Finish 🏁' : 'Next Step ▶';
+
+            // Counter
+            document.getElementById('footer-step-counter').innerText = `Step ${data.step} of ${sopSteps.length} • ${data.title}`;
+
+            renderStepperNav();
+        }
+
+        function goToStep(idx) {
+            if (idx >= 0 && idx < sopSteps.length) {
+                currentStepIdx = idx;
+                renderCurrentStep();
+            }
+        }
+
+        function nextStep() {
+            if (currentStepIdx < sopSteps.length - 1) {
+                currentStepIdx++;
+                renderCurrentStep();
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIdx > 0) {
+                currentStepIdx--;
+                renderCurrentStep();
+            }
+        }
+
+        function executeHelperAction() {
+            const data = sopSteps[currentStepIdx];
+            navigator.clipboard.writeText(data.helperValue).then(() => {
+                const btn = document.getElementById('helper-btn');
+                const orig = btn.innerHTML;
+                btn.innerHTML = '<span>✅ Copied!</span>';
+                setTimeout(() => { btn.innerHTML = orig; }, 1800);
+            }).catch(() => {
+                alert(`Value: ${data.helperValue}`);
+            });
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextStep();
+            if (e.key === 'ArrowLeft') prevStep();
+        });
+
+        // Initialize on page load
+        renderCurrentStep();
+    </script>
+
+</body>
+
+</html>
