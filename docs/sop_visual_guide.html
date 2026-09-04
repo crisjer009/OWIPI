@@ -7,7 +7,7 @@
     <title>OWIPI - Interactive Step-by-Step SOP Visual Guide</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #090d16;
@@ -238,13 +238,13 @@
             width: 100%;
             padding: 12px 20px 14px;
             display: grid;
-            grid-template-columns: 1.15fr 0.85fr;
+            grid-template-columns: 1.25fr 0.75fr;
             gap: 18px;
             align-items: stretch;
             height: calc(100vh - 96px);
         }
 
-        @media (max-width: 992px) {
+        @media (max-width: 1050px) {
             html, body {
                 height: auto;
                 max-height: none;
@@ -256,12 +256,12 @@
             }
         }
 
-        /* Left Side: Screenshot & Interactive Visual Inspector */
+        /* Left Side: System Mockup & Visual Inspector */
         .visual-preview-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 18px;
-            padding: 16px;
+            padding: 14px;
             backdrop-filter: blur(14px);
             display: flex;
             flex-direction: column;
@@ -274,7 +274,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             flex-shrink: 0;
         }
 
@@ -285,42 +285,60 @@
         }
 
         .step-circle-badge {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             background: linear-gradient(135deg, #1d4ed8, #3b82f6);
             color: white;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 0.95rem;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         .preview-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 800;
             color: white;
             letter-spacing: -0.3px;
         }
 
-        .preview-category-tag {
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        /* Mode Switcher: System UI vs Real Photo */
+        .view-mode-toggle {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2px;
+            gap: 2px;
         }
 
-        .tag-prep { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; }
-        .tag-config { background: rgba(139, 92, 246, 0.15); border: 1px solid #8b5cf6; color: #a78bfa; }
-        .tag-sync { background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #60a5fa; }
-        .tag-audit { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; }
-        .tag-close { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; }
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-        /* Image Frame */
+        .toggle-btn.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Visual Stage Frame */
         .screenshot-frame {
             flex: 1;
             min-height: 0;
@@ -333,32 +351,346 @@
             justify-content: center;
             overflow: hidden;
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.7);
+            padding: 12px;
         }
 
+        /* Real Photo view */
         .screenshot-img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
             border-radius: 8px;
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: none;
         }
 
-        .screenshot-img:hover {
-            transform: scale(1.02);
+        /* SYSTEM UI MOCKUP RENDER CONTAINER */
+        .system-ui-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
         }
 
-        .img-watermark-note {
-            position: absolute;
-            bottom: 8px;
-            right: 12px;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border-color);
+        /* --- MOCKUP 1: Windows Start Search --- */
+        .win-search-mockup {
+            width: 100%;
+            max-width: 520px;
+            background: #202020;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        .win-search-box {
+            background: #2c2c2c;
+            border: 1px solid #3f3f3f;
+            border-radius: 20px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .win-search-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .win-match-card {
+            background: #2c2c2c;
+            border: 1px solid #383838;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .win-icon-xampp {
+            width: 34px;
+            height: 34px;
+            background: #fb8c00;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .win-actions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.8rem;
+        }
+
+        .win-action-btn {
+            background: #2c2c2c;
+            border: 1px solid transparent;
             border-radius: 6px;
-            padding: 3px 8px;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #d1d5db;
+            cursor: pointer;
+        }
+
+        .win-action-btn.highlight {
+            background: #0067c0;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* --- MOCKUP 2: XAMPP Control Panel --- */
+        .xampp-mockup {
+            width: 100%;
+            max-width: 550px;
+            background: #f0f0f0;
+            border: 1px solid #707070;
+            border-radius: 6px;
+            color: #111827;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+            overflow: hidden;
+            font-size: 0.78rem;
+        }
+
+        .xampp-title-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #d1d5db;
+            padding: 4px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .xampp-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin: 6px 0;
+        }
+
+        .xampp-table th, .xampp-table td {
+            border: 1px solid #e5e7eb;
+            padding: 4px 8px;
+            text-align: left;
+        }
+
+        .xampp-status-running {
+            background: #86efac;
+            font-weight: 700;
+            color: #065f46;
+        }
+
+        .xampp-btn {
+            background: #e5e7eb;
+            border: 1px solid #9ca3af;
+            border-radius: 3px;
+            padding: 1px 8px;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .xampp-log-box {
+            background: #ffffff;
+            border: 1px solid #9ca3af;
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.68rem;
+            padding: 6px 8px;
+            margin: 6px;
+            height: 75px;
+            overflow-y: auto;
+            color: #1e3a8a;
+            line-height: 1.35;
+        }
+
+        /* --- MOCKUP 3: OWIPI System Modal Card (Unified Dark Theme) --- */
+        .system-modal-card {
+            background: #111827;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+            text-align: center;
+            color: white;
+        }
+
+        .sys-header-icon {
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+        }
+
+        .sys-modal-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+
+        .sys-modal-subtitle {
+            font-size: 0.78rem;
             color: #94a3b8;
-            pointer-events: none;
+            margin-bottom: 14px;
+            line-height: 1.35;
+        }
+
+        .sys-input-group {
+            text-align: left;
+            margin-bottom: 12px;
+        }
+
+        .sys-input-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .sys-input-box {
+            width: 100%;
+            background: #0b0f19;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .sys-btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 9px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            margin-top: 6px;
+        }
+
+        .sys-btn-green {
+            background: linear-gradient(135deg, #059669, #10b981);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .sys-banner-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            color: #34d399;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-align: left;
+        }
+
+        /* --- MOCKUP 10: Host Console Mini Preview --- */
+        .host-mini-console {
+            width: 100%;
+            max-width: 600px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .mini-host-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .mini-btn-group {
+            display: flex;
+            gap: 4px;
+        }
+
+        .mini-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .mini-btn-close-store {
+            background: #da3637;
+            border-color: #f85149;
+            color: white;
+            box-shadow: 0 0 10px rgba(218, 54, 55, 0.6);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 4px rgba(218, 54, 55, 0.4); }
+            50% { box-shadow: 0 0 12px rgba(218, 54, 55, 0.9); }
+        }
+
+        .mini-gauge-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .circle-gauge-mini {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 4px solid #2ea44f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.72rem;
+            color: #3fb950;
         }
 
         /* Right Side: Step Breakdown & Instructions */
@@ -388,58 +720,52 @@
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #60a5fa;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
 
         .step-main-headline {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 800;
             color: #ffffff;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             line-height: 1.3;
             letter-spacing: -0.2px;
         }
 
         .step-summary-text {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #cbd5e1;
             line-height: 1.45;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         /* Action Checklist */
         .checklist-container {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 14px;
+            gap: 6px;
+            margin-bottom: 12px;
         }
 
         .check-item {
             background: rgba(15, 23, 42, 0.7);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 12px;
+            border-radius: 8px;
+            padding: 8px 10px;
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            font-size: 0.82rem;
-            line-height: 1.4;
+            gap: 8px;
+            font-size: 0.78rem;
+            line-height: 1.35;
             color: #e2e8f0;
-            transition: all 0.15s ease;
-        }
-
-        .check-item:hover {
-            background: rgba(30, 41, 59, 0.8);
-            border-color: rgba(96, 165, 250, 0.4);
         }
 
         .check-bullet {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             background: rgba(59, 130, 246, 0.15);
             border: 1px solid #3b82f6;
@@ -447,7 +773,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-weight: 800;
             flex-shrink: 0;
             margin-top: 1px;
@@ -460,22 +786,22 @@
         .check-item code {
             background: rgba(59, 130, 246, 0.15);
             color: #93c5fd;
-            padding: 1px 5px;
+            padding: 1px 4px;
             border-radius: 4px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
         }
 
         /* Pro Tip / Alert Box */
         .alert-box {
             background: rgba(245, 158, 11, 0.08);
             border: 1px solid rgba(245, 158, 11, 0.3);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 8px 12px;
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
 
         .alert-box.info {
@@ -489,12 +815,12 @@
         }
 
         .alert-icon {
-            font-size: 1.1rem;
+            font-size: 1rem;
             flex-shrink: 0;
         }
 
         .alert-content {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: #fcd34d;
             line-height: 1.35;
         }
@@ -507,21 +833,21 @@
             color: #6ee7b7;
         }
 
-        /* Interactive Helper Bar (Copy Token, Simulate Action) */
+        /* Interactive Helper Bar */
         .interactive-helper-bar {
             background: rgba(15, 23, 42, 0.85);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 14px;
+            border-radius: 10px;
+            padding: 8px 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0;
         }
 
         .helper-text {
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
 
@@ -529,9 +855,9 @@
             background: linear-gradient(135deg, #1d4ed8, #2563eb);
             color: white;
             border: none;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 6px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -550,12 +876,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: 4px;
+            padding-top: 2px;
             flex-shrink: 0;
         }
 
         .step-progress-text {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 700;
             color: var(--text-muted);
         }
@@ -571,11 +897,11 @@
             <span class="brand-title">OWIPI Standard Operating Procedure</span>
         </a>
         <div class="nav-links">
+            <a href="sop_visual_guide.html" class="nav-link active">📋 Step-by-Step SOP</a>
             <a href="control_dashboard_visual_manual.html" class="nav-link">🎛️ Control Dashboard</a>
             <a href="host_view_visual_manual.html" class="nav-link">💻 Host Console</a>
             <a href="casio_scanner_visual_manual.html" class="nav-link">📱 Casio Scanner</a>
             <a href="mobile_phone_scanner_visual_manual.html" class="nav-link">📲 Mobile Scanner</a>
-            <a href="sop_visual_guide.html" class="nav-link active">📋 Step-by-Step SOP</a>
             <a href="STANDARD_OPERATING_PROCEDURE.md" class="nav-link" target="_blank">📖 Guide</a>
         </div>
     </nav>
@@ -594,7 +920,7 @@
     <!-- Main Workspace -->
     <main class="sop-main-workspace">
 
-        <!-- Left: Screenshot & Visual Reference -->
+        <!-- Left: System UI Mockup & Visual Twin -->
         <div class="visual-preview-card">
             <div class="preview-header-flex">
                 <div class="preview-title-group">
@@ -603,12 +929,26 @@
                         <h2 class="preview-title" id="v-step-title">Step Title</h2>
                     </div>
                 </div>
-                <span class="preview-category-tag" id="v-step-category">PREPARATION</span>
+
+                <!-- Toggle: System UI vs Original Photo -->
+                <div class="view-mode-toggle">
+                    <button class="toggle-btn active" id="btn-mode-system" onclick="setViewMode('system')">
+                        <span>🖥️ System UI Twin</span>
+                    </button>
+                    <button class="toggle-btn" id="btn-mode-photo" onclick="setViewMode('photo')">
+                        <span>📷 Field Photo</span>
+                    </button>
+                </div>
             </div>
 
             <div class="screenshot-frame">
+                <!-- 1. System Interactive Mockup Container -->
+                <div class="system-ui-container" id="system-ui-render">
+                    <!-- Loaded dynamically per step -->
+                </div>
+
+                <!-- 2. Original Field Photo Container -->
                 <img id="v-screenshot" src="" alt="SOP Step Screenshot" class="screenshot-img">
-                <div class="img-watermark-note" id="v-watermark">Field Capture • OWIPI</div>
             </div>
         </div>
 
@@ -644,43 +984,64 @@
             <!-- Footer Progress -->
             <div class="quick-nav-footer">
                 <span class="step-progress-text" id="footer-step-counter">Step 1 of 10</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Use <strong>Left / Right Arrow Keys</strong> to navigate</span>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Use <strong>Left / Right Arrow Keys</strong> to navigate</span>
             </div>
         </div>
 
     </main>
 
     <script>
+        let viewMode = 'system'; // 'system' or 'photo'
+        let currentStepIdx = 0;
+
         const sopSteps = [
             {
                 step: 1,
                 title: "Open XAMPP Control Panel",
                 headline: "Launch the Local Server Environment",
-                category: "prep",
-                categoryLabel: "Phase 1: Environment",
                 image: "img/sop/step_01_open_xampp.png",
-                watermark: "Windows Search • XAMPP Control Panel",
                 summary: "OWIPI runs locally on the store supervisor laptop using Apache and MySQL. Start by opening the XAMPP management interface.",
                 checklist: [
                     { bold: "Press Windows Key:", desc: "Open the Windows Start Menu or search bar on the laptop." },
                     { bold: "Search for XAMPP:", desc: "Type <code>xampp</code> or <code>XAMPP Control Panel</code>." },
-                    { bold: "Run as Administrator:", desc: "Click <strong>Run as administrator</strong> (or left-click Open) to ensure required networking and port permissions." }
+                    { bold: "Run as Administrator:", desc: "Click <strong>Run as administrator</strong> to ensure network socket permissions for handheld scanners." }
                 ],
                 alertType: "info",
                 alertIcon: "ℹ️",
                 alert: "<strong>Pro-Tip:</strong> Running as Administrator prevents Windows Firewall from blocking incoming mobile scanner camera connections on port 80/443.",
                 helperLabel: "XAMPP Executable Path:",
                 helperValue: "C:\\xampp\\xampp-control.exe",
-                helperBtnText: "📋 Copy File Path"
+                helperBtnText: "📋 Copy File Path",
+                renderSystemUI: () => `
+                    <div class="win-search-mockup">
+                        <div class="win-search-box">
+                            <span>🔍</span>
+                            <span style="color: white; font-weight: 600;">xampp</span><span style="color: #9ca3af;">| Control Panel</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 8px; font-weight: 600;">Best match</div>
+                        <div class="win-search-grid">
+                            <div class="win-match-card">
+                                <div class="win-icon-xampp">X3</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.85rem;">XAMPP Control Panel</div>
+                                    <div style="font-size: 0.7rem; color: #9ca3af;">App</div>
+                                </div>
+                            </div>
+                            <div class="win-actions-list">
+                                <div class="win-action-btn"><span>↗️</span> <span>Open</span></div>
+                                <div class="win-action-btn highlight"><span>🛡️</span> <span>Run as administrator (Recommended)</span></div>
+                                <div class="win-action-btn"><span>📂</span> <span>Open file location</span></div>
+                                <div class="win-action-btn"><span>📌</span> <span>Pin to taskbar</span></div>
+                            </div>
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 2,
                 title: "Start Apache & MySQL",
                 headline: "Activate Web & Database Engines",
-                category: "prep",
-                categoryLabel: "Phase 1: Environment",
                 image: "img/sop/step_02_start_apache_mysql.png",
-                watermark: "XAMPP Services • PID 7444 & 9496",
                 summary: "Both the Apache Web Server and MySQL Database must be active for the local store database and handheld scanners to communicate.",
                 checklist: [
                     { bold: "Start Apache:", desc: "Click the <strong>Start</strong> button next to Apache. Wait until the background turns green with ports <code>80, 443</code>." },
@@ -692,16 +1053,54 @@
                 alert: "<strong>Port Conflict:</strong> If Apache fails to start, ensure Skype, IIS, or other web servers are closed to free up port 80.",
                 helperLabel: "Default Local Web Port:",
                 helperValue: "http://localhost/OWIPI/",
-                helperBtnText: "🔗 Copy Local URL"
+                helperBtnText: "🔗 Copy Local URL",
+                renderSystemUI: () => `
+                    <div class="xampp-mockup">
+                        <div class="xampp-title-bar">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="background:#fb8c00; color:white; padding:1px 4px; border-radius:3px; font-weight:800; font-size:0.65rem;">X3</span>
+                                <span>XAMPP Control Panel v3.2.4</span>
+                            </div>
+                            <div style="display:flex; gap:4px; font-size:0.7rem; color:#6b7280;"><span>🗕</span><span>🗖</span><span>✕</span></div>
+                        </div>
+                        <div style="padding: 8px;">
+                            <table class="xampp-table">
+                                <thead style="background:#f3f4f6; font-size:0.7rem;">
+                                    <tr><th>Module</th><th>PID(s)</th><th>Port(s)</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="xampp-status-running">
+                                        <td><strong>Apache</strong></td>
+                                        <td>7444, 12244</td>
+                                        <td>80, 443</td>
+                                        <td><button class="xampp-btn" style="background:#fee2e2; border-color:#ef4444; color:#991b1b; font-weight:700;">Stop</button></td>
+                                    </tr>
+                                    <tr class="xampp-status-running">
+                                        <td><strong>MySQL</strong></td>
+                                        <td>9496</td>
+                                        <td>3306</td>
+                                        <td><button class="xampp-btn" style="background:#fee2e2; border-color:#ef4444; color:#991b1b; font-weight:700;">Stop</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>FileZilla</td><td></td><td></td><td><button class="xampp-btn">Start</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="xampp-log-box">
+                                <div>[Apache] Attempting to start Apache app...</div>
+                                <div style="color:#059669;">[Apache] Status change detected: running (PID: 7444, Ports: 80, 443)</div>
+                                <div>[mysql] Attempting to start MySQL app...</div>
+                                <div style="color:#059669;">[mysql] Status change detected: running (PID: 9496, Port: 3306)</div>
+                            </div>
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 3,
                 title: "Log In to OWI Physical Inventory",
                 headline: "Authenticate Supervisor Credentials",
-                category: "prep",
-                categoryLabel: "Phase 2: Authentication",
                 image: "img/sop/step_03_login_system.png",
-                watermark: "OWIPI Login Portal • Version BETA",
                 summary: "Access the local web portal through Google Chrome and authenticate using your assigned supervisor or controller account.",
                 checklist: [
                     { bold: "Open Google Chrome:", desc: "Navigate to <code>http://localhost/OWIPI/</code> on the host PC." },
@@ -714,16 +1113,32 @@
                 alert: "<strong>Auditor Mode:</strong> Floor staff using mobile phones can scan the host QR code or tap 'Handheld Scanner Mode' to bypass password entry.",
                 helperLabel: "System Portal URL:",
                 helperValue: "http://localhost/OWIPI/",
-                helperBtnText: "📋 Copy Portal URL"
+                helperBtnText: "📋 Copy Portal URL",
+                renderSystemUI: () => `
+                    <div class="system-modal-card">
+                        <div class="sys-header-icon">🗂️</div>
+                        <div class="sys-modal-title">OWI PHYSICAL INVENTORY</div>
+                        <div style="display:inline-block; background:rgba(59, 130, 246, 0.15); border:1px solid #3b82f6; color:#60a5fa; font-size:0.65rem; font-weight:800; padding:2px 8px; border-radius:10px; margin-bottom:14px;">● VERSION: BETA</div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Username</label>
+                            <input type="text" class="sys-input-box" value="supervisor_beth" readonly>
+                        </div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Password</label>
+                            <input type="password" class="sys-input-box" value="••••••••" readonly>
+                        </div>
+                        <button class="sys-btn-primary">Log In</button>
+                        <div style="margin-top:14px; font-size:0.75rem; color:#60a5fa; cursor:pointer;">
+                            📱 Handheld Scanner Mode (No Login Required)
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 4,
                 title: "Select Store Session & Locators",
                 headline: "Define Store Code & Shelf Slot Count",
-                category: "config",
-                categoryLabel: "Phase 3: Store Setup",
                 image: "img/sop/step_04_create_store_session.png",
-                watermark: "Select Store Session • Store SLE",
                 summary: "Configure the specific retail branch being audited and specify the initial number of locator shelves/gondolas needed for the count.",
                 checklist: [
                     { bold: "Create / Connect Store Code:", desc: "Input the official 3-letter branch code (e.g. <code>SLE</code> for Sunken Leaf Express)." },
@@ -735,16 +1150,32 @@
                 alert: "<strong>Scalable:</strong> You can add more locators at any time during the audit directly from the Host Console using the '+ Add Locator' button.",
                 helperLabel: "Example Store Code:",
                 helperValue: "SLE",
-                helperBtnText: "📋 Copy Code"
+                helperBtnText: "📋 Copy Code",
+                renderSystemUI: () => `
+                    <div class="system-modal-card">
+                        <div class="sys-header-icon" style="background: linear-gradient(135deg, #0284c7, #38bdf8);">🛢️</div>
+                        <div class="sys-modal-title">Select Store Session</div>
+                        <div class="sys-modal-subtitle">Select which store prefix database you are scanning barcodes into.</div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Create / Connect New Store Code</label>
+                            <input type="text" class="sys-input-box" value="SLE" readonly style="font-weight:800; color:#38bdf8; letter-spacing:1px;">
+                        </div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Number of Locators Needed</label>
+                            <input type="text" class="sys-input-box" value="10" readonly style="font-weight:800; color:#4ade80;">
+                        </div>
+                        <button class="sys-btn-primary">Activate Store Session</button>
+                        <div style="margin-top:14px; font-size:0.75rem; color:#f87171; cursor:pointer;">
+                            🚪 Log Out
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 5,
                 title: "Configure Cloud Sync Token",
                 headline: "Authenticate Central Cloud Bridge",
-                category: "sync",
-                categoryLabel: "Phase 4: Cloud Link",
                 image: "img/sop/step_05_sync_token_config.png",
-                watermark: "Cloud Sync Config • Token OWIPI2026",
                 summary: "Connect your local laptop instance to the central Office Warehouse cloud repository by setting the security authorization token.",
                 checklist: [
                     { bold: "Open Cloud Sync:", desc: "On the Host Console top header, click <strong>☁️ Sync to Cloud</strong>." },
@@ -757,16 +1188,34 @@
                 alert: "<strong>Security Token:</strong> The token authenticates the store laptop to download official store masterfiles and upload verified counts.",
                 helperLabel: "Official Sync Token:",
                 helperValue: "OWIPI2026",
-                helperBtnText: "📋 Copy OWIPI2026"
+                helperBtnText: "📋 Copy OWIPI2026",
+                renderSystemUI: () => `
+                    <div class="system-modal-card" style="max-width: 480px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="font-weight:800; font-size:1rem; display:flex; align-items:center; gap:6px;">☁️ Cloud Synchronization</div>
+                            <span style="cursor:pointer; color:#9ca3af;">✕</span>
+                        </div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Secret Sync Token</label>
+                            <input type="password" class="sys-input-box" value="OWIPI2026" readonly style="letter-spacing:2px;">
+                            <div style="font-size:0.68rem; color:#94a3b8; margin-top:4px;">Security token defined in the server's db_config.json to authorize uploads.</div>
+                        </div>
+                        <div class="sys-banner-success">
+                            <span>✅</span> <span>Cloud synchronization configuration saved successfully!</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+                            <button class="sys-btn-primary" style="background:#21262d; border:1px solid #30363d; margin:0;">Save Config</button>
+                            <button class="sys-btn-primary" style="margin:0;">Start Sync</button>
+                            <button class="sys-btn-primary" style="background:#21262d; border:1px solid #30363d; margin:0;">Close</button>
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 6,
                 title: "Download Store Masterfile",
                 headline: "Pull Product Catalog from Cloud",
-                category: "sync",
-                categoryLabel: "Phase 4: Cloud Link",
                 image: "img/sop/step_06_download_masterfile.png",
-                watermark: "Confirm Store Download • Store SLE",
                 summary: "Download all products, active barcodes, descriptions, and expected stock quantities from the central cloud database into local MySQL.",
                 checklist: [
                     { bold: "Ensure Internet Connection:", desc: "Verify laptop is connected to Wi-Fi or mobile hotspot." },
@@ -778,16 +1227,26 @@
                 alert: "<strong>Internet Required:</strong> Internet is ONLY required during Steps 6 and 9. All scanning between these steps is 100% offline!",
                 helperLabel: "API Endpoint:",
                 helperValue: "https://pginv.officewarehouse.com.ph/OWIPI/",
-                helperBtnText: "📋 Copy Cloud URL"
+                helperBtnText: "📋 Copy Cloud URL",
+                renderSystemUI: () => `
+                    <div class="system-modal-card" style="max-width: 440px;">
+                        <div class="sys-header-icon" style="background:linear-gradient(135deg, #1d4ed8, #2563eb);">📥</div>
+                        <div class="sys-modal-title">Confirm Store Download</div>
+                        <div class="sys-modal-subtitle" style="font-size:0.85rem; color:#e2e8f0; margin:14px 0 20px;">
+                            Are you sure you want to download and sync the items masterfile for store <strong style="color:#38bdf8;">SLE</strong> from the cloud?
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <button class="sys-btn-primary" style="margin:0;">Yes, Proceed</button>
+                            <button class="sys-btn-primary" style="background:#21262d; border:1px solid #30363d; margin:0;">Cancel</button>
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 7,
                 title: "Verify Masterfile Import Success",
                 headline: "Confirm Local Catalog Population",
-                category: "sync",
-                categoryLabel: "Phase 4: Cloud Link",
                 image: "img/sop/step_07_download_success.png",
-                watermark: "Download Success • 8,626 Products",
                 summary: "Verify that all retail catalog records were successfully populated into local MySQL and acknowledge the completion banner.",
                 checklist: [
                     { bold: "Wait for Ingestion:", desc: "The system downloads and indexes thousands of SKU and barcode records in seconds." },
@@ -799,16 +1258,23 @@
                 alert: "<strong>Offline Ready:</strong> Your laptop is now completely self-sufficient. You can disconnect from the internet and take the laptop onto the retail floor.",
                 helperLabel: "Catalog Status:",
                 helperValue: "8626 Products Imported",
-                helperBtnText: "✓ Ready for Audit"
+                helperBtnText: "✓ Ready for Audit",
+                renderSystemUI: () => `
+                    <div class="system-modal-card" style="max-width: 440px;">
+                        <div class="sys-header-icon" style="background:linear-gradient(135deg, #059669, #10b981);">✅</div>
+                        <div class="sys-modal-title">Download Success</div>
+                        <div class="sys-modal-subtitle" style="font-size:0.88rem; color:#e2e8f0; margin:14px 0 20px;">
+                            Successfully imported <strong style="color:#34d399; font-size:1.05rem;">8626</strong> products for store <strong style="color:#38bdf8;">SLE</strong> from cloud!
+                        </div>
+                        <button class="sys-btn-primary sys-btn-green" style="max-width:140px; margin:0 auto;">OK</button>
+                    </div>
+                `
             },
             {
                 step: 8,
                 title: "Audit Shelves & Print Store Summary",
                 headline: "Execute Floor Count & Generate Reports",
-                category: "audit",
-                categoryLabel: "Phase 5: Physical Audit",
                 image: "img/sop/step_08_print_summary.png",
-                watermark: "Print Store Summary • 100% Closed",
                 summary: "Auditors scan items using Casio scanners or smartphone cameras. Once all locators are 100% closed, generate official variance count sheets.",
                 checklist: [
                     { bold: "Scan All Items:", desc: "Staff scan products per shelf. As shelves finish, tap <strong>[Finish]</strong> to lock locators." },
@@ -821,16 +1287,29 @@
                 alert: "<strong>Variance Audit:</strong> Use 'Print With Variance Only' first to conduct immediate recounts on missing or excess items before final closing.",
                 helperLabel: "Reporting Options:",
                 helperValue: "Print All Summary | Print With Variance Only",
-                helperBtnText: "🖨️ View Reports"
+                helperBtnText: "🖨️ View Reports",
+                renderSystemUI: () => `
+                    <div class="system-modal-card" style="max-width: 440px;">
+                        <div class="sys-header-icon" style="background:linear-gradient(135deg, #7c3aed, #8b5cf6);">🖨️</div>
+                        <div class="sys-modal-title">Print Store Summary</div>
+                        <div class="sys-modal-subtitle">Select which items to include in the count summary report:</div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <button class="sys-btn-primary" style="margin:0; padding:11px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <span>📄</span> <span>Print All Summary</span>
+                            </button>
+                            <button class="sys-btn-primary sys-btn-green" style="margin:0; padding:11px; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <span>⚠️</span> <span>Print With Variance Only</span>
+                            </button>
+                            <button class="sys-btn-primary" style="background:#21262d; border:1px solid #30363d; margin:0;">Cancel</button>
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 9,
                 title: "Sync Final Counts to Cloud",
                 headline: "Upload Physical Count Records to HQ",
-                category: "sync",
-                categoryLabel: "Phase 6: Finalization",
                 image: "img/sop/step_09_sync_final_counts.png",
-                watermark: "Cloud Sync • Synced Locators & Scans",
                 summary: "Reconnect to the internet and upload all audited quantities, timestamps, and operator logs to central HQ servers.",
                 checklist: [
                     { bold: "Reconnect Internet:", desc: "Connect laptop to store Wi-Fi or mobile hotspot." },
@@ -843,16 +1322,37 @@
                 alert: "<strong>Cloud Backup:</strong> All physical scans are now permanently preserved in central HQ, ready for ERP / POS variance reconciliation.",
                 helperLabel: "Sync Status:",
                 helperValue: "Synced to Cloud HQ",
-                helperBtnText: "✓ Synced"
+                helperBtnText: "✓ Synced",
+                renderSystemUI: () => `
+                    <div class="system-modal-card" style="max-width: 480px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="font-weight:800; font-size:1rem; display:flex; align-items:center; gap:6px;">☁️ Cloud Synchronization</div>
+                            <span style="cursor:pointer; color:#9ca3af;">✕</span>
+                        </div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Cloud Server API URL</label>
+                            <input type="text" class="sys-input-box" value="https://pginv.officewarehouse.com.ph/OWIPI/" readonly style="font-size:0.75rem;">
+                        </div>
+                        <div class="sys-input-group">
+                            <label class="sys-input-label">Secret Sync Token</label>
+                            <input type="password" class="sys-input-box" value="OWIPI2026" readonly style="letter-spacing:2px;">
+                        </div>
+                        <div class="sys-banner-success">
+                            <span>✅</span> <span>Successfully synchronized with the cloud! Synced 3 locators and 3 scan records.</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+                            <button class="sys-btn-primary" style="background:#21262d; border:1px solid #30363d; margin:0;">Save Config</button>
+                            <button class="sys-btn-primary" style="margin:0;">Start Sync</button>
+                            <button class="sys-btn-primary" style="background:#21262d; border:1px solid #30363d; margin:0;">Close</button>
+                        </div>
+                    </div>
+                `
             },
             {
                 step: 10,
                 title: "Close Store Session",
                 headline: "Finalize & Lock Inventory Session",
-                category: "close",
-                categoryLabel: "Phase 6: Finalization",
                 image: "img/sop/step_10_close_store.png",
-                watermark: "Host Console • 100% Complete",
                 summary: "Lock the completed store audit session to prevent accidental modifications and archive the count files.",
                 checklist: [
                     { bold: "Review Final Board:", desc: "Verify all locators display green <code>Closed</code> badges." },
@@ -864,11 +1364,41 @@
                 alert: "<strong>Audit Complete:</strong> The physical inventory audit is officially finalized. Store stock records are updated and locked.",
                 helperLabel: "Store Session:",
                 helperValue: "Session Completed & Locked",
-                helperBtnText: "🔒 Closed"
+                helperBtnText: "🔒 Closed",
+                renderSystemUI: () => `
+                    <div class="host-mini-console">
+                        <div class="mini-host-header">
+                            <div>
+                                <div style="font-weight:800; font-size:0.8rem;">OWI PHYSICAL INVENTORY</div>
+                                <div style="font-size:0.68rem; color:#38bdf8;">STORE CODE : SLE | User: BETH</div>
+                            </div>
+                            <div class="mini-btn-group">
+                                <button class="mini-btn">📁 Upload</button>
+                                <button class="mini-btn">☁️ Download</button>
+                                <button class="mini-btn">☁️ Sync</button>
+                                <button class="mini-btn mini-btn-close-store">🔒 Close Store</button>
+                            </div>
+                        </div>
+                        <div class="mini-gauge-card">
+                            <div class="circle-gauge-mini">
+                                <div>100%</div>
+                                <div style="font-size:0.55rem;">DONE</div>
+                            </div>
+                            <div style="font-size:0.75rem; text-align:right;">
+                                <div>Locators Closed: <strong style="color:#34d399;">3 of 3</strong></div>
+                                <div style="color:#94a3b8; font-size:0.68rem;">Scanners Connected: 1 • INF: 0</div>
+                                <div style="color:#34d399; font-weight:700; margin-top:2px;">All Countsheets Locked & Verified</div>
+                            </div>
+                        </div>
+                        <div style="background:#161b22; border:1px solid #30363d; border-radius:6px; padding:6px 10px; font-size:0.7rem; display:flex; justify-content:space-between;">
+                            <span>Locator 1 (Closed) ✓</span>
+                            <span>Locator 2 (Closed) ✓</span>
+                            <span>Locator 3 (Closed) ✓</span>
+                        </div>
+                    </div>
+                `
             }
         ];
-
-        let currentStepIdx = 0;
 
         function renderStepperNav() {
             const track = document.getElementById('stepper-track');
@@ -884,20 +1414,40 @@
             }).join('');
         }
 
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('btn-mode-system').classList.toggle('active', mode === 'system');
+            document.getElementById('btn-mode-photo').classList.toggle('active', mode === 'photo');
+
+            const sysContainer = document.getElementById('system-ui-render');
+            const photoImg = document.getElementById('v-screenshot');
+
+            if (mode === 'system') {
+                sysContainer.style.display = 'flex';
+                photoImg.style.display = 'none';
+            } else {
+                sysContainer.style.display = 'none';
+                photoImg.style.display = 'block';
+            }
+        }
+
         function renderCurrentStep() {
             const data = sopSteps[currentStepIdx];
 
             // Header tags
             document.getElementById('v-step-num').innerText = data.step;
             document.getElementById('v-step-title').innerText = data.title;
-            
-            const catTag = document.getElementById('v-step-category');
-            catTag.innerText = data.categoryLabel;
-            catTag.className = 'preview-category-tag tag-' + data.category;
 
-            // Image
-            document.getElementById('v-screenshot').src = data.image;
-            document.getElementById('v-watermark').innerText = data.watermark;
+            // Render Dynamic System UI Mockup
+            const sysContainer = document.getElementById('system-ui-render');
+            sysContainer.innerHTML = data.renderSystemUI();
+
+            // Photo src
+            const photoImg = document.getElementById('v-screenshot');
+            photoImg.src = data.image;
+
+            // Apply viewMode
+            setViewMode(viewMode);
 
             // Details
             document.getElementById('step-headline').innerText = data.headline;
