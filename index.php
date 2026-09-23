@@ -217,6 +217,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
             overflow-x: hidden;
         }
 
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* Sidebar Styling */
         aside {
             width: var(--sidebar-width);
@@ -962,6 +967,51 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
         #view-products #products-table tr:hover td {
             background: rgba(59, 130, 246, 0.08);
+        }
+
+        /* Frozen Sticky Header for Audit Logs */
+        #view-audit .table-container {
+            margin-top: 0.5rem;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        #audit-logs-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        #audit-logs-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        #audit-logs-table th {
+            position: sticky;
+            top: 0;
+            background: #111827;
+            color: var(--text-secondary);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        #audit-logs-table tr:hover td {
+            background: rgba(59, 130, 246, 0.05);
         }
 
         .products-grid {
@@ -2098,11 +2148,38 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             </div>
 
                             <div
-                                style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-                                <span style="font-size: 0.8rem; color: var(--text-secondary);">
-                                    <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
-                                </span>
+                                style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.85rem; display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary);">
+                                        <strong><?= $s['closed'] ?></strong> of <strong><?= $s['total'] ?></strong> closed
+                                    </span>
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">
+                                        <?= $s['percent'] ?>%
+                                    </span>
+                                </div>
                                 <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                    <?php if ($s['status'] !== 'Not Initialized' && $s['status'] !== 'Empty'): ?>
+                                        <button
+                                            onclick="openPrintSummaryModal('<?= htmlspecialchars($s['store_code']) ?>', <?= (int) $s['percent'] ?>)"
+                                            class="btn btn-secondary btn-sm"
+                                            style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #2ea44f; color: #3fb950; background: rgba(46, 164, 79, 0.12); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"
+                                            title="Print Count Summary report for <?= htmlspecialchars($s['store_code']) ?>">
+                                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;">
+                                                <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
+                                            </svg>
+                                            Print Summary
+                                        </button>
+                                        <button
+                                            onclick="exportStoreVarianceExcel('<?= htmlspecialchars($s['store_code']) ?>')"
+                                            class="btn btn-secondary btn-sm"
+                                            style="padding: 3px 10px; font-size: 0.75rem; border: 1px solid #10b981; color: #34d399; background: rgba(16, 185, 129, 0.12); margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"
+                                            title="Export Variance Excel report for <?= htmlspecialchars($s['store_code']) ?>">
+                                            <svg viewBox="0 0 24 24" style="width:12px;height:12px;fill:currentColor;">
+                                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 6H12v2.5H9.5V9zm0 4H12v2.5H9.5V13zm-3-4H8v2.5H6.5V9zm0 4H8v2.5H6.5V13zm11 3.5h-3.5V13h3.5v3.5zm0-4.5h-3.5V9h3.5v3.5z"/>
+                                            </svg>
+                                            Export Excel
+                                        </button>
+                                    <?php endif; ?>
                                     <?php if (!$isCloudHost && $s['status'] !== 'Finished' && $s['status'] !== 'Closed'): ?>
                                         <button
                                             onclick="downloadEntireStoreFromCloud('<?= htmlspecialchars($s['store_code']) ?>', '<?= htmlspecialchars($s['status']) ?>')"
@@ -2226,28 +2303,81 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 </div>
             <?php endif; ?>
 
+            <?php 
+                $hasSyncToken = !empty(trim($config['sync_secret_token'] ?? ''));
+            ?>
             <!-- Sync Token Configuration Card (Visible to both System Admin and Admin) -->
             <div class="card" style="max-width: 600px; margin-top: <?= $isSysAdmin ? '2rem' : '0' ?>;">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <svg viewBox="0 0 24 24">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <h2 class="card-title" style="margin-bottom: 0;">
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor; vertical-align: middle; margin-right: 6px;">
                             <path
                                 d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
                         </svg>
                         Security & Synchronization Token
                     </h2>
+                    <?php if ($hasSyncToken): ?>
+                        <span id="sync_token_badge" class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.72rem; padding: 3px 10px; border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                            Permanently Saved
+                        </span>
+                    <?php else: ?>
+                        <span id="sync_token_badge" class="badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.72rem; padding: 3px 10px; border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                            Empty / Not Set
+                        </span>
+                    <?php endif; ?>
                 </div>
-                <div class="form-group">
-                    <label for="sync_secret_token">Secret Sync Token (Cloud & Local Authorization)</label>
-                    <input type="text" id="sync_secret_token" class="form-control"
-                        value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>"
-                        placeholder="e.g. my_secure_token_123">
-                    <small style="color:var(--text-muted); font-size:0.7rem; display:block; margin-top:4px;">Define a
-                        custom secret token here. This exact same token must be configured on local hosts to allow
-                        successful data synchronization.</small>
-                    <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary"
-                        style="margin-top: 8px; width: auto; font-size: 0.8rem; padding: 5px 12px; cursor: pointer;">Save
-                        Token Only</button>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label for="sync_secret_token" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Secret Sync Token (Cloud &amp; Local Authorization)</span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">Dual-Layer Stored (DB + Config)</span>
+                    </label>
+
+                    <div style="position: relative; display: flex; align-items: center; margin-top: 4px;">
+                        <input type="password" id="sync_secret_token" class="form-control"
+                            value="<?= htmlspecialchars($config['sync_secret_token'] ?? '') ?>"
+                            placeholder="e.g. my_secure_token_123"
+                            <?= $isSysAdmin ? '' : 'readonly' ?>
+                            style="padding-right: 42px; <?= $isSysAdmin ? '' : 'background: rgba(255,255,255,0.03); cursor: not-allowed;' ?>"
+                            autocomplete="off">
+                        <button type="button" onclick="toggleSyncTokenVisibility()" 
+                            style="position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 4px;"
+                            title="Toggle visibility">
+                            <svg id="sync_token_eye_icon" viewBox="0 0 24 24" style="width: 18px; height: 18px; fill: currentColor;">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <small style="color:var(--text-muted); font-size:0.72rem; display:block; margin-top:6px; line-height: 1.4;">
+                        Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.
+                    </small>
+
+                    <?php if ($isSysAdmin): ?>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 10px; flex-wrap: wrap;">
+                            <button type="button" onclick="saveTokenOnly()" class="btn btn-secondary"
+                                style="margin-top: 0; width: auto; font-size: 0.8rem; padding: 6px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 500;">
+                                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                                Save Token Permanently
+                            </button>
+                            <button type="button" onclick="clearTokenOnly()" class="btn btn-secondary"
+                                style="margin-top: 0; width: auto; font-size: 0.8rem; padding: 6px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; color: #ef4444; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.05);"
+                                title="Clear / Empty the Secret Sync Token">
+                                <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; fill: currentColor;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                                Clear / Empty Token
+                            </button>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.72rem; color: #10b981; display: flex; align-items: center; gap: 5px;">
+                            <svg viewBox="0 0 24 24" style="width: 13px; height: 13px; fill: currentColor;"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                            Permanently protected: saved to both MySQL database and config file until changed or emptied by System Admin.
+                        </div>
+                    <?php else: ?>
+                        <div style="margin-top: 8px; font-size: 0.72rem; color: #f59e0b; display: flex; align-items: center; gap: 5px;">
+                            <svg viewBox="0 0 24 24" style="width: 13px; height: 13px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                            Read-Only: Only System Administrators (<code>sys_admin</code>) are authorized to modify or clear this token.
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -2514,22 +2644,66 @@ if ($driverLoaded && $dbStatus === 'connected') {
             <header>
                 <div>
                     <h1>System Audit Logs</h1>
-                    <div class="header-desc">Track and audit modifications made to countsheets, locators, and catalog
-                        records</div>
+                    <div class="header-desc">Track and audit modifications made to countsheets, locators, and catalog records</div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-secondary" onclick="loadAuditLogs()" title="Refresh Logs" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" id="audit-refresh-svg" style="width: 16px; height: 16px; fill: currentColor; transition: transform 0.3s ease;">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg> Refresh
+                    </button>
+                    <?php if ($isSysAdmin): ?>
+                    <button class="btn btn-danger" onclick="confirmClearAuditLogs()" title="Clear Audit Logs" style="display: inline-flex; align-items: center; gap: 6px;">
+                        <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: currentColor;">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg> Clear Logs
+                    </button>
+                    <?php endif; ?>
                 </div>
             </header>
 
+            <!-- Filters & Search Toolbar -->
+            <div class="card" style="margin-bottom: 0.85rem; padding: 0.75rem 1.15rem;">
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                    <div style="position: relative; flex: 1; min-width: 240px; max-width: 380px;">
+                        <svg viewBox="0 0 24 24" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; fill: var(--text-secondary);">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                        <input type="text" id="audit-search-input" class="form-control" placeholder="Search actor, action, scope, details..." style="padding-left: 34px; width: 100%; font-size: 0.85rem;" oninput="filterAuditLogs()">
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-size: 0.82rem; color: var(--text-secondary); margin: 0; white-space: nowrap;">Scope:</label>
+                            <select id="audit-scope-filter" class="form-control" style="width: auto; min-width: 145px; font-size: 0.85rem; padding: 6px 10px;" onchange="filterAuditLogs()">
+                                <option value="ALL">All Scopes</option>
+                                <option value="STORES">Store Sessions</option>
+                                <option value="SYSTEM">System & Master</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-size: 0.82rem; color: var(--text-secondary); margin: 0; white-space: nowrap;">Actor:</label>
+                            <select id="audit-actor-filter" class="form-control" style="width: auto; min-width: 135px; font-size: 0.85rem; padding: 6px 10px;" onchange="filterAuditLogs()">
+                                <option value="ALL">All Actors</option>
+                                <option value="HUMAN">Staff / Users</option>
+                                <option value="SYSTEM">System / Automated</option>
+                            </select>
+                        </div>
+                        <span id="audit-log-counter" style="font-size: 0.82rem; color: var(--text-secondary); padding: 5px 10px; background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid var(--card-border); white-space: nowrap;">0 logs</span>
+                    </div>
+                </div>
+            </div>
+
             <div class="card"
-                style="margin: 0; padding: 1.15rem; display: flex; flex-direction: column; height: calc(100vh - 220px); min-height: 350px;">
-                <div class="table-container" style="flex-grow: 1; overflow-y: auto; max-height: 100%;">
-                    <table style="width: 100%;">
+                style="margin: 0; padding: 1.15rem; display: flex; flex-direction: column; height: calc(100vh - 280px); min-height: 350px;">
+                <div class="table-container" style="flex-grow: 1; overflow-y: auto; max-height: 100%; position: relative;">
+                    <table id="audit-logs-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
                         <thead>
                             <tr>
-                                <th style="width: 18%;">Timestamp</th>
-                                <th style="width: 12%;">User</th>
-                                <th style="width: 12%;">Store Code</th>
-                                <th style="width: 18%;">Action</th>
-                                <th style="width: 40%;">Details</th>
+                                <th style="width: 16%; position: sticky; top: 0; background: #111827; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); border-bottom: 2px solid rgba(255,255,255,0.12);">Timestamp</th>
+                                <th style="width: 14%; position: sticky; top: 0; background: #111827; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); border-bottom: 2px solid rgba(255,255,255,0.12);">User / Actor</th>
+                                <th style="width: 16%; position: sticky; top: 0; background: #111827; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); border-bottom: 2px solid rgba(255,255,255,0.12);">Target Scope</th>
+                                <th style="width: 18%; position: sticky; top: 0; background: #111827; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); border-bottom: 2px solid rgba(255,255,255,0.12);">Action</th>
+                                <th style="width: 36%; position: sticky; top: 0; background: #111827; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); border-bottom: 2px solid rgba(255,255,255,0.12);">Details</th>
                             </tr>
                         </thead>
                         <tbody id="audit-logs-tbody">
@@ -3190,6 +3364,359 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
+        // Active store state for dashboard Print Summary
+        let activePrintStoreCode = '';
+        let activePrintStorePercent = 100;
+
+        // Open modal to select print summary mode (All vs Variance Only)
+        function openPrintSummaryModal(storeCode, percent = 100) {
+            activePrintStoreCode = storeCode ? String(storeCode).toUpperCase() : '';
+            activePrintStorePercent = parseInt(percent) || 0;
+            
+            const modalEl = document.getElementById('print-summary-modal-overlay');
+            const badgeEl = document.getElementById('print-summary-store-badge');
+            const subtitleEl = document.getElementById('print-summary-modal-subtitle');
+
+            if (badgeEl) {
+                const statusColor = (activePrintStorePercent >= 100) ? '#34d399' : '#60a5fa';
+                const statusText = (activePrintStorePercent >= 100) ? '100% Completed' : `${activePrintStorePercent}% Ongoing`;
+                badgeEl.innerHTML = `
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); font-size: 0.8rem;">
+                        <span style="font-weight: 800; color: #ffffff; letter-spacing: 0.5px;">STORE: ${activePrintStoreCode}</span>
+                        <span style="color: ${statusColor}; font-weight: 700;">• ${statusText}</span>
+                    </div>
+                `;
+            }
+
+            if (subtitleEl) {
+                subtitleEl.innerHTML = `Select which items to include in the count summary report for <strong>${activePrintStoreCode}</strong>:`;
+            }
+
+            if (modalEl) {
+                modalEl.classList.add('active');
+            }
+        }
+
+        function closePrintSummaryModal() {
+            const modalEl = document.getElementById('print-summary-modal-overlay');
+            if (modalEl) {
+                modalEl.classList.remove('active');
+            }
+        }
+
+        async function confirmPrintSummary(mode) {
+            closePrintSummaryModal();
+            if (!activePrintStoreCode) return;
+
+            if (activePrintStorePercent < 100) {
+                const proceed = await showCustomConfirm(
+                    `Store '${activePrintStoreCode}' completion progress is ${activePrintStorePercent}%. Standard procedure recommends 100% closed locators before final store summary.\n\nDo you want to proceed with printing for audit/spot-check purposes?`,
+                    "Incomplete Store Notice",
+                    "Proceed to Print",
+                    "Cancel"
+                );
+                if (!proceed) return;
+            }
+
+            executePrintSummary(activePrintStoreCode, mode);
+        }
+
+        // Export store masterfile variance to Excel (CSV format)
+        function exportStoreVarianceExcel(storeCode) {
+            if (!storeCode) return;
+            showToast(`Downloading variance Excel workbook for store ${storeCode.toUpperCase()}...`, "info");
+            window.location.href = `api.php?action=export_masterfile_variance&store_code=${encodeURIComponent(storeCode)}`;
+        }
+
+        // Print store count summary matching HHTGW summary format
+        function executePrintSummary(targetStoreCode, mode = 'all') {
+            if (!targetStoreCode) return;
+            showToast(`Generating count summary report for ${targetStoreCode}...`, "info");
+
+            const targetUrl = (mode === 'variance_only') 
+                ? `api.php?action=get_scans&store_code=${encodeURIComponent(targetStoreCode)}`
+                : `api.php?action=get_store_summary&mode=all&store_code=${encodeURIComponent(targetStoreCode)}`;
+
+            fetch(targetUrl)
+                .then(res => res.json())
+                .then(data => {
+                    let items = [];
+                    let infCount = 0;
+
+                    if (mode === 'variance_only') {
+                        if (data.status === 'success' && data.scans) {
+                            const scans = data.scans;
+                            if (scans.length === 0) {
+                                showCustomAlert(`No scans available in store '${targetStoreCode}' to print.`, "No Scans Found");
+                                return;
+                            }
+
+                            const summaryMap = {};
+                            scans.forEach(scan => {
+                                const barcode = (scan.barcode && String(scan.barcode).trim() !== '') ? String(scan.barcode).trim() : (scan.sku || 'N/A');
+                                if (!summaryMap[barcode]) {
+                                    summaryMap[barcode] = {
+                                        barcode: barcode,
+                                        sku: scan.sku || 'N/A',
+                                        description: scan.product_name || 'Item Not Found',
+                                        masterQty: parseFloat(scan.master_qty || 0),
+                                        totalQty: 0
+                                    };
+                                }
+                                summaryMap[barcode].totalQty += parseFloat(scan.quantity || 0);
+                            });
+
+                            items = Object.values(summaryMap);
+                            items.sort((a, b) => a.description.localeCompare(b.description));
+                            items = items.filter(item => (item.totalQty - item.masterQty) !== 0);
+
+                            if (items.length === 0) {
+                                showCustomAlert(`No items with variance found in store '${targetStoreCode}' summary.`, "Zero Variance");
+                                return;
+                            }
+                        } else {
+                            showCustomAlert(data.message || "Failed to load scan records.", "Print Error");
+                            return;
+                        }
+                    } else {
+                        // Print All Summary (100% Completion)
+                        if (data.status === 'success' && data.summary) {
+                            const summary = data.summary;
+                            if (summary.length === 0) {
+                                showCustomAlert(`No store items catalog or inventory data available to print for '${targetStoreCode}'.`, "No Data Found");
+                                return;
+                            }
+
+                            items = summary.map(s => ({
+                                barcode: (s.barcode && String(s.barcode).trim() !== '') ? String(s.barcode).trim() : (s.sku || 'N/A'),
+                                sku: s.sku || 'N/A',
+                                description: s.product_name || 'Item Not Found',
+                                masterQty: parseFloat(s.master_qty || 0),
+                                totalQty: parseFloat(s.total_qty || 0)
+                            }));
+                            items.sort((a, b) => a.description.localeCompare(b.description));
+                        } else {
+                            showCustomAlert(data.message || "Failed to load store inventory summary.", "Print Error");
+                            return;
+                        }
+                    }
+
+                    items.forEach(item => {
+                        if (item.description === 'Item Not Found' || item.description === 'Unknown Product') {
+                            infCount++;
+                        }
+                    });
+
+                    const padQtyCenter = (str, len = 10) => {
+                        str = String(str || '').trim();
+                        if (str.length >= len) return str;
+                        const padLeft = Math.floor((len - str.length) / 2);
+                        return ' '.repeat(padLeft) + str + ' '.repeat(len - str.length - padLeft);
+                    };
+
+                    const now = new Date();
+                    const countDateStr = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                    const padRight = (str, len) => {
+                        str = String(str || '');
+                        return str + ' '.repeat(Math.max(0, len - str.length));
+                    };
+                    const centerText = (str, len = 97) => {
+                        str = String(str || '').trim();
+                        if (str.length >= len) return str;
+                        const padLeft = Math.floor((len - str.length) / 2);
+                        return ' '.repeat(padLeft) + str;
+                    };
+
+                    const isVarianceOnly = (mode === 'variance_only');
+                    const summaryTitle = isVarianceOnly 
+                        ? '*****   Inventory Count Summary (Variance Only)   *****' 
+                        : '*****   Inventory Count Summary (100% Completion)   *****';
+
+                    let text = '';
+                    text += centerText(`OFFICE WAREHOUSE INC - ${targetStoreCode}`) + '\r\n';
+                    text += centerText('Annual Inventory Count') + '\r\n\r\n';
+                    text += centerText(summaryTitle) + '\r\n\r\n';
+                    text += `Count Date. : ${countDateStr}\r\n\r\n`;
+
+                    // Header columns row
+                    text += padRight('Rec No', 8) + padRight('UPC', 16) + padRight('SKU', 8) + padRight('Description', 35) + padQtyCenter('Store Qty', 10) + padQtyCenter('Total Qty', 10) + padQtyCenter('Variance', 10) + '\r\n';
+                    text += '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>';
+
+                    let grandTotalMaster = 0;
+                    let grandTotalScanned = 0;
+                    let grandTotalVariance = 0;
+
+                    let rowsArr = [];
+                    items.forEach((item, index) => {
+                        const recNo = index + 1;
+                        const barcode = item.barcode || '';
+                        const sku = item.sku || '';
+                        const descr = item.description || 'Item Not Found';
+                        const mstQtyVal = item.masterQty;
+                        const qtyVal = item.totalQty;
+                        const varianceVal = qtyVal - mstQtyVal;
+
+                        const mstQtyStr = mstQtyVal.toFixed(0);
+                        const qtyStr = qtyVal.toFixed(0);
+                        const varianceStr = (varianceVal >= 0 ? '+' : '') + varianceVal.toFixed(0);
+
+                        grandTotalMaster += mstQtyVal;
+                        grandTotalScanned += qtyVal;
+                        grandTotalVariance += varianceVal;
+
+                        let cleanDescr = descr;
+                        if (cleanDescr.length > 35) {
+                            cleanDescr = cleanDescr.substring(0, 35);
+                        }
+
+                        let rowLine = padRight(recNo, 8) +
+                            padRight(barcode, 16) +
+                            padRight(sku, 8) +
+                            padRight(cleanDescr, 35) +
+                            padQtyCenter(mstQtyStr, 10) +
+                            padQtyCenter(qtyStr, 10) +
+                            padQtyCenter(varianceStr, 10) + '\r\n';
+                        rowLine += '<span style="display: block; border-bottom: 1px dashed #ddd; margin: 3px 0;"></span>';
+                        rowsArr.push(rowLine);
+                    });
+
+                    text += rowsArr.join('');
+
+                    const mstTotalStr = grandTotalMaster.toFixed(0);
+                    const scannedTotalStr = grandTotalScanned.toFixed(0);
+                    const varianceTotalStr = (grandTotalVariance >= 0 ? '+' : '') + grandTotalVariance.toFixed(0);
+
+                    const totalInfStr = `No. of INF Records Found : ${infCount}\r\n\r\n`;
+                    const grandTotalLabel = padRight(`GRAND TOTAL (${items.length} Records):`, 67);
+
+                    let footerText = '\r\n<span style="display: block; border-top: 1.5px solid #333; margin: 4px 0;"></span>' +
+                        grandTotalLabel +
+                        padQtyCenter(mstTotalStr, 10) +
+                        padQtyCenter(scannedTotalStr, 10) +
+                        padQtyCenter(varianceTotalStr, 10) + '\r\n' +
+                        '<span style="display: block; border-bottom: 1.5px solid #333; margin: 4px 0;"></span>\r\n' +
+                        totalInfStr;
+
+                    const topMarginInput = document.getElementById('print_margin_top');
+                    const leftMarginInput = document.getElementById('print_margin_left');
+                    const pageTopMargin = topMarginInput ? Math.max(5, parseInt(topMarginInput.value || 0)) : 5;
+                    const pageLeftMargin = leftMarginInput ? parseInt(leftMarginInput.value || 0) : 0;
+
+                    const htmlDoc = `
+                        <html>
+                        <head>
+                            <title>Inventory Count Summary - ${targetStoreCode}</title>
+                            <style>
+                                @page {
+                                    margin-top: ${pageTopMargin}mm;
+                                    margin-left: ${pageLeftMargin}mm;
+                                    margin-right: 0mm;
+                                    margin-bottom: 5mm;
+                                }
+                                @media print {
+                                    body { 
+                                        margin: 0; 
+                                        padding: 0; 
+                                        background: white; 
+                                        color: black; 
+                                    }
+                                    .summary-print-container {
+                                        widows: 5 !important;
+                                        orphans: 5 !important;
+                                        page-break-inside: auto;
+                                    }
+                                    .signature-footer {
+                                        page-break-before: auto !important;
+                                        page-break-inside: avoid !important;
+                                        break-inside: avoid !important;
+                                    }
+                                }
+                                body {
+                                    font-family: monospace;
+                                    white-space: pre;
+                                    font-size: 12px;
+                                    line-height: 1.12;
+                                    background: white;
+                                    color: black;
+                                    margin: 0;
+                                    padding: 0;
+                                }
+                                pre {
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: monospace;
+                                    font-size: 12px;
+                                    line-height: 1.12;
+                                    white-space: pre;
+                                }
+                                .signature-footer {
+                                    page-break-inside: avoid !important;
+                                    break-inside: avoid !important;
+                                    margin-top: 4px;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="summary-print-container">
+                                <pre>${text}${footerText}</pre>
+                            </div>
+                            <div class="signature-footer">
+                                <pre>
+        Scanned  By             Counted By                 Checked By
+
+              ____________                    ____________
+               Team Leader                     Posted By</pre>
+                            </div>
+                            \x3Cscript\x3E
+                                window.onload = function() {
+                                    window.print();
+                                }
+                            <\/script>
+                        </body>
+                        </html>
+                    `;
+
+                    // Open print window
+                    const printWin = window.open('', '', 'width=800,height=600');
+                    if (printWin) {
+                        printWin.document.open();
+                        printWin.document.write(htmlDoc);
+                        printWin.document.close();
+                    } else {
+                        // Fallback to hidden printable iframe if popups blocked
+                        let printIframe = document.getElementById('print-summary-iframe');
+                        if (!printIframe) {
+                            printIframe = document.createElement('iframe');
+                            printIframe.id = 'print-summary-iframe';
+                            printIframe.style.position = 'fixed';
+                            printIframe.style.right = '0';
+                            printIframe.style.bottom = '0';
+                            printIframe.style.width = '0';
+                            printIframe.style.height = '0';
+                            printIframe.style.border = '0';
+                            document.body.appendChild(printIframe);
+                        }
+                        const doc = printIframe.contentWindow.document;
+                        doc.open();
+                        doc.write(htmlDoc);
+                        doc.close();
+                        setTimeout(() => {
+                            try {
+                                printIframe.contentWindow.focus();
+                                printIframe.contentWindow.print();
+                            } catch (ePrI) {}
+                        }, 250);
+                    }
+
+                    showToast(`Print summary sheet sent for store ${targetStoreCode}.`, "success");
+                })
+                .catch(err => {
+                    console.error("Print summary error:", err);
+                    showCustomAlert("Failed to load summary data: " + err, "Print Error");
+                });
+        }
+
         // Re-open Finished/Closed Store Session for Admins
         async function reopenStoreSession(storeCode) {
             const ok = await showCustomConfirm(
@@ -3375,10 +3902,28 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
+        // Toggle visibility of Secret Sync Token
+        function toggleSyncTokenVisibility() {
+            const input = document.getElementById('sync_secret_token');
+            const icon = document.getElementById('sync_token_eye_icon');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) {
+                    icon.innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+                }
+            } else {
+                input.type = 'password';
+                if (icon) {
+                    icon.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+                }
+            }
+        }
+
         // Save Secret Sync Token Only
         function saveTokenOnly() {
             const token = document.getElementById('sync_secret_token').value.trim();
-            showToast("Saving Secret Sync Token...", "info");
+            showToast("Permanently saving Secret Sync Token...", "info");
 
             fetch('api.php?action=save_sync_token', {
                 method: 'POST',
@@ -3396,6 +3941,40 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 })
                 .catch(err => {
                     showToast("Failed to save token: " + err, "error");
+                });
+        }
+
+        // Clear / Empty Secret Sync Token (System Admin Only)
+        function clearTokenOnly() {
+            const tokenInput = document.getElementById('sync_secret_token');
+            if (!tokenInput.value.trim()) {
+                showToast("The Secret Sync Token is already empty.", "info");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to permanently clear / empty the Secret Sync Token?\n\nIf emptied, local and cloud synchronization will no longer require this token until a new one is set.")) {
+                return;
+            }
+
+            showToast("Clearing Secret Sync Token...", "info");
+
+            fetch('api.php?action=save_sync_token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sync_secret_token: '' })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, "success");
+                        tokenInput.value = '';
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                })
+                .catch(err => {
+                    showToast("Failed to clear token: " + err, "error");
                 });
         }
 
@@ -3419,21 +3998,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
         function savePrintConfig(event) {
             event.preventDefault();
 
-            const server = document.getElementById('db_server').value;
-            const port = document.getElementById('db_port').value;
-            const database = document.getElementById('db_database').value;
-            const username = document.getElementById('db_username').value;
-            const password = document.getElementById('db_password').value;
-            const sync_secret_token = document.getElementById('sync_secret_token').value;
-
             const print_margin_top = document.getElementById('print_margin_top').value;
             const print_margin_left = document.getElementById('print_margin_left').value;
 
-            const payload = { server, port, database, username, password, print_margin_top, print_margin_left, sync_secret_token };
+            const payload = { print_margin_top, print_margin_left };
 
             showToast("Saving print spacing configuration...", "info");
 
-            fetch('api.php?action=save_config', {
+            fetch('api.php?action=save_print_spacing', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -3888,36 +4460,164 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => console.error("Error loading users:", err));
         }
 
+        // System audit logs state & controls
+        let allAuditLogs = [];
+
+        function escapeAuditHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // Load system audit logs
         function loadAuditLogs() {
+            const refreshSvg = document.getElementById('audit-refresh-svg');
+            if (refreshSvg) {
+                refreshSvg.style.animation = 'spin 0.8s linear infinite';
+            }
+
             fetch('api.php?action=get_audit_logs')
                 .then(res => res.json())
                 .then(data => {
+                    if (refreshSvg) {
+                        refreshSvg.style.animation = 'none';
+                    }
                     if (data.status === 'success' && data.logs) {
-                        const tbody = document.getElementById('audit-logs-tbody');
-                        if (!tbody) return;
-
-                        if (data.logs.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No audit logs recorded yet.</td></tr>';
-                            return;
-                        }
-
-                        let html = '';
-                        data.logs.forEach(log => {
-                            html += `
-                                <tr style="border-bottom: 1px solid var(--card-border);">
-                                    <td style="white-space: nowrap; color: var(--text-secondary); padding: 10px 8px;">${log.timestamp}</td>
-                                    <td style="font-weight: 600; color: var(--accent-color); padding: 10px 8px;">${log.username}</td>
-                                    <td style="padding: 10px 8px;"><span class="badge" style="background: rgba(255, 255, 255, 0.05);">${log.store_code || 'GLOBAL'}</span></td>
-                                    <td style="padding: 10px 8px;"><span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #60a5fa; font-weight:700;">${log.action}</span></td>
-                                    <td style="color: var(--text-primary); font-size: 0.85rem; padding: 10px 8px;">${log.details}</td>
-                                </tr>
-                            `;
-                        });
-                        tbody.innerHTML = html;
+                        allAuditLogs = data.logs || [];
+                        filterAuditLogs();
                     }
                 })
-                .catch(err => console.error("Error loading audit logs:", err));
+                .catch(err => {
+                    if (refreshSvg) {
+                        refreshSvg.style.animation = 'none';
+                    }
+                    console.error("Error loading audit logs:", err);
+                });
+        }
+
+        function filterAuditLogs() {
+            const searchInput = (document.getElementById('audit-search-input')?.value || '').toLowerCase().trim();
+            const scopeFilter = document.getElementById('audit-scope-filter')?.value || 'ALL';
+            const actorFilter = document.getElementById('audit-actor-filter')?.value || 'ALL';
+
+            const filtered = allAuditLogs.filter(log => {
+                const username = (log.username || '').toUpperCase();
+                const isSystemActor = username === 'SYSTEM' || username.startsWith('SYSTEM') || username === 'CLOUD_SYNC' || username === 'UNKNOWN';
+
+                // Actor filter
+                if (actorFilter === 'HUMAN' && isSystemActor) return false;
+                if (actorFilter === 'SYSTEM' && !isSystemActor) return false;
+
+                // Scope filter
+                const hasStore = log.store_code && log.store_code !== 'GLOBAL' && log.store_code !== '';
+                if (scopeFilter === 'STORES' && !hasStore) return false;
+                if (scopeFilter === 'SYSTEM' && hasStore) return false;
+
+                // Search query
+                if (searchInput) {
+                    const matchUser = (log.username || '').toLowerCase().includes(searchInput);
+                    const matchStore = (log.store_code || '').toLowerCase().includes(searchInput);
+                    const matchAction = (log.action || '').toLowerCase().includes(searchInput);
+                    const matchDetails = (log.details || '').toLowerCase().includes(searchInput);
+                    const matchTime = (log.timestamp || '').toLowerCase().includes(searchInput);
+                    if (!matchUser && !matchStore && !matchAction && !matchDetails && !matchTime) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            renderAuditLogs(filtered);
+        }
+
+        function renderAuditLogs(logs) {
+            const tbody = document.getElementById('audit-logs-tbody');
+            const counter = document.getElementById('audit-log-counter');
+            if (!tbody) return;
+
+            if (counter) {
+                counter.textContent = `${logs.length} of ${allAuditLogs.length} logs`;
+            }
+
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No matching audit logs found.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                const user = (log.username || '').trim();
+                const isSystemActor = user === 'SYSTEM' || user.startsWith('SYSTEM') || user === 'CLOUD_SYNC' || user === 'UNKNOWN' || !user;
+
+                // User / Actor badge formatting: distinguish human users from automated system
+                let userHtml = '';
+                if (isSystemActor) {
+                    userHtml = `<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">⚙️ SYSTEM</span>`;
+                } else {
+                    userHtml = `<span style="font-weight: 600; color: #60a5fa; display: inline-flex; align-items: center; gap: 5px;"><span style="opacity:0.8;">👤</span> ${escapeAuditHtml(user)}</span>`;
+                }
+
+                // Scope formatting: Store sessions vs Master Catalog vs User Admin vs System-Wide
+                let scopeHtml = '';
+                const storeCode = (log.store_code || '').trim();
+                const actionUpper = (log.action || '').toUpperCase();
+                const detailsUpper = (log.details || '').toUpperCase();
+
+                if (storeCode && storeCode !== 'GLOBAL') {
+                    scopeHtml = `<span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">🏬 Store: ${escapeAuditHtml(storeCode)}</span>`;
+                } else if (actionUpper.includes('CATALOG') || actionUpper.includes('MASTERFILE') || detailsUpper.includes('UPC:') || detailsUpper.includes('SKU:')) {
+                    scopeHtml = `<span class="badge" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">📦 Master Catalog</span>`;
+                } else if (actionUpper.includes('USER') || actionUpper.includes('LOGIN') || actionUpper.includes('ACCOUNT')) {
+                    scopeHtml = `<span class="badge" style="background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">👥 User Admin</span>`;
+                } else {
+                    scopeHtml = `<span class="badge" style="background: rgba(99, 102, 241, 0.12); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; font-size: 0.78rem;">🌐 System-Wide</span>`;
+                }
+
+                // Action badge styling
+                let actionBadgeStyle = 'background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.25);';
+                if (actionUpper.includes('DELETE') || actionUpper.includes('PURGE') || actionUpper.includes('CLEAR')) {
+                    actionBadgeStyle = 'background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.25);';
+                } else if (actionUpper.includes('CLOSE') || actionUpper.includes('SUCCESS') || actionUpper.includes('APPROVE')) {
+                    actionBadgeStyle = 'background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.25);';
+                } else if (actionUpper.includes('BACKUP') || actionUpper.includes('SYNC') || actionUpper.includes('RESTORE')) {
+                    actionBadgeStyle = 'background: rgba(14, 165, 233, 0.12); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.25);';
+                }
+
+                html += `
+                    <tr style="border-bottom: 1px solid var(--card-border);">
+                        <td style="white-space: nowrap; color: var(--text-secondary); padding: 10px 8px; font-family: monospace; font-size: 0.85rem;">${escapeAuditHtml(log.timestamp)}</td>
+                        <td style="padding: 10px 8px;">${userHtml}</td>
+                        <td style="padding: 10px 8px;">${scopeHtml}</td>
+                        <td style="padding: 10px 8px;"><span class="badge" style="${actionBadgeStyle} font-weight:700; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem;">${escapeAuditHtml(log.action)}</span></td>
+                        <td style="color: var(--text-primary); font-size: 0.85rem; padding: 10px 8px; line-height: 1.4;">${escapeAuditHtml(log.details)}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function confirmClearAuditLogs() {
+            if (!confirm("Are you sure you want to permanently clear all system audit logs? This action cannot be undone.")) {
+                return;
+            }
+            fetch('api.php?action=clear_audit_logs')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message || "Audit logs cleared successfully!", "success");
+                        loadAuditLogs();
+                    } else {
+                        showToast(data.message || "Failed to clear audit logs.", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error clearing audit logs:", err);
+                    showToast("Error communicating with server.", "error");
+                });
         }
 
         // Create new user account
@@ -4220,6 +4920,37 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
     </script>
+
+    <!-- Modal for Print Summary Options (All vs Variance Only) on Dashboard -->
+    <div class="modal-overlay" id="print-summary-modal-overlay" style="z-index: 999999;">
+        <div class="modal-card"
+            style="max-width: 440px; width: 90%; text-align: center; background: #161b22; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 1.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px);">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🖨️</div>
+            <h3 class="modal-title" id="print-summary-modal-title"
+                style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                Print Store Summary
+            </h3>
+            <div id="print-summary-store-badge" style="margin-bottom: 0.75rem;"></div>
+            <p id="print-summary-modal-subtitle"
+                style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem; line-height: 1.4;">
+                Select which items to include in the count summary report:
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button type="button" class="btn btn-primary" onclick="confirmPrintSummary('all')"
+                    style="width: 100%; height: 42px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #388bfd; border-color: #388bfd; cursor: pointer; border-radius: 8px;">
+                    📋 Print All Summary
+                </button>
+                <button type="button" class="btn btn-success" onclick="confirmPrintSummary('variance_only')"
+                    style="width: 100%; height: 42px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; background: #2ea44f; border-color: #2ea44f; cursor: pointer; border-radius: 8px;">
+                    ⚠️ Print With Variance Only
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closePrintSummaryModal()"
+                    style="width: 100%; height: 38px; font-size: 0.85rem; margin-top: 4px; cursor: pointer; border-radius: 8px; background: rgba(255,255,255,0.05); color: #8b949e; border: 1px solid rgba(255,255,255,0.1);">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Global Modern Custom Dialog Modal -->
     <div class="modal-overlay" id="custom-dialog-overlay" style="z-index: 999999;">

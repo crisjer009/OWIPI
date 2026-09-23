@@ -22,8 +22,8 @@ graph TD
     
     subgraph StoreProgress ["📊 Store Inventory Progress"]
         BtnDownloadCloud["☁️ Download Store Session from Cloud (Local Only)"]
-        CardOngoing["🔵 ONGOING Store Card<br>(0-99% Scanned | ☁️ Pull Cloud | Delete)"]
-        CardFinished["🟢 FINISHED Store Card<br>(100% Closed | 🔄 Re-open Store | Delete)"]
+        CardOngoing["🔵 ONGOING Store Card<br>(0-99% Scanned | 🖨️ Print Summary | 📊 Export Excel | ☁️ Pull Cloud | Delete)"]
+        CardFinished["🟢 FINISHED Store Card<br>(100% Closed | 🖨️ Print Summary | 📊 Export Excel | 🔄 Re-open Store | Delete)"]
     end
 
     subgraph Approvals ["⚠️ Pending Cloud Sync Approvals"]
@@ -73,8 +73,8 @@ graph TD
 | | Store Completion            0% |  | Store Completion          100% |  | Store Completion          100% |        |
 | | [                            ] |  | [============================] |  | [============================] |        |
 | | 0 of 3 closed                  |  | 3 of 3 closed                  |  | 10 of 10 closed                |        |
-| | [☁️ Pull Cloud Session] [Delete]|  | [🔄 Re-open Store]    [Delete] |  | [🔄 Re-open Store]    [Delete] |        |
-| +--------------------------------+  +--------------------------------+  +--------------------------------+        |
+| | [🖨️ Print] [📊 Export] [☁️ Pull] [Del]|  | [🖨️ Print] [📊 Export] [🔄 Re-open] [Del]|  | [🖨️ Print] [📊 Export] [🔄 Re-open] [Del]|        |
++--------------------------------+  +--------------------------------+  +--------------------------------+        |
 +-------------------------------------------------------------------------------------------------------------------+
 ```
 
@@ -82,9 +82,9 @@ graph TD
 
 | Status Badge | Progress | Active Controls | Operational Meaning |
 | :---: | :---: | :---: | :--- |
-| <span style="color:#60a5fa;font-weight:700;">🔵 ONGOING</span> | `0% - 99%` | `☁️ Pull Cloud Session`<br>`Delete` | Store count is active. Scanners are scanning barcodes into open locators. |
-| <span style="color:#34d399;font-weight:700;">🟢 FINISHED</span> | `100%` | `🔄 Re-open Store`<br>`Delete` | All locators are closed. Ready for variance export and consolidation. |
-| <span style="color:#f87171;font-weight:700;">🔴 CLOSED</span> | `100%` | `🔄 Re-open Store`<br>`Delete` | Count session is archived and read-only. |
+| <span style="color:#60a5fa;font-weight:700;">🔵 ONGOING</span> | `0% - 99%` | `🖨️ Print Summary`<br>`📊 Export Excel`<br>`☁️ Pull Cloud Session`<br>`Delete` | Store count is active. Supervisors can print spot-checks and export intermediate variance. |
+| <span style="color:#34d399;font-weight:700;">🟢 FINISHED</span> | `100%` | `🖨️ Print Summary`<br>`📊 Export Excel`<br>`🔄 Re-open Store`<br>`Delete` | All locators are closed. Ready for official variance Excel export and print summary sign-off. |
+| <span style="color:#f87171;font-weight:700;">🔴 CLOSED</span> | `100%` | `🖨️ Print Summary`<br>`📊 Export Excel`<br>`🔄 Re-open Store`<br>`Delete` | Count session is archived. Admins can reprint completion summary or re-export variance. |
 
 ---
 

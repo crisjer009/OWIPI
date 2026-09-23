@@ -35,12 +35,49 @@ function loadConfig() {
 
 // Save database configuration
 function saveConfig($config) {
-    $data = array_merge(getDefaultConfig(), $config);
+    $existing = [];
+    if (file_exists(CONFIG_FILE)) {
+        $json = @file_get_contents(CONFIG_FILE);
+        $existing = json_decode($json, true);
+        if (!is_array($existing)) $existing = [];
+    }
+    $data = array_merge(getDefaultConfig(), $existing, $config);
     if (file_exists(CONFIG_FILE) && !is_writable(CONFIG_FILE)) {
         @chmod(CONFIG_FILE, 0666);
     }
     $result = @file_put_contents(CONFIG_FILE, json_encode($data, JSON_PRETTY_PRINT));
     return $result !== false;
+}
+
+// Permanently save Secret Sync Token to both file and database
+function savePersistentSyncToken($token, $user = null) {
+    $token = trim((string)$token);
+    
+    // 1. Update file db_config.json
+    $config = loadConfig();
+    $config['sync_secret_token'] = $token;
+    saveConfig($config);
+
+    // 2. Persist to database system_settings table if DB connection is available
+    try {
+        $db = new OWI_DB();
+        $db->execute("CREATE TABLE IF NOT EXISTS system_settings (
+            setting_key VARCHAR(100) PRIMARY KEY,
+            setting_value TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            updated_by VARCHAR(100) NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+        $actor = !empty($user) ? $user : ($_SESSION['username'] ?? 'sys_admin');
+        $db->execute(
+            "INSERT INTO system_settings (setting_key, setting_value, updated_by) VALUES ('sync_secret_token', ?, ?) ON DUPLICATE KEY UPDATE setting_value = ?, updated_by = ?, updated_at = NOW()",
+            [$token, $actor, $token, $actor]
+        );
+    } catch (Exception $e) {
+        // File persistence remains active if DB is offline
+    }
+
+    return true;
 }
 
 // Detect server local IP address
@@ -281,6 +318,12 @@ function isAdmin() {
     if (!isset($_SESSION['role'])) return false;
     $role = strtolower(trim($_SESSION['role']));
     return in_array($role, ['system_admin', 'sys_admin', 'admin']);
+}
+
+function isSystemAdmin() {
+    if (!isset($_SESSION['role'])) return false;
+    $role = strtolower(trim($_SESSION['role']));
+    return in_array($role, ['system_admin', 'sys_admin']);
 }
 
 function hasActiveStore() {
@@ -546,7 +589,41 @@ class OWI_DB {
         $this->execute($sqlStoresTable);
         $this->execute($sqlGlobalItemsTable);
         $this->execute($sqlAuditLogsTable);
+
+        // Create system_settings table for permanent system configurations
+        $sqlSystemSettingsTable = "
+            CREATE TABLE IF NOT EXISTS system_settings (
+                setting_key VARCHAR(100) PRIMARY KEY,
+                setting_value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                updated_by VARCHAR(100) NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+        $this->execute($sqlSystemSettingsTable);
+
+        // Keep sync_secret_token permanently synchronized between file and database
+        try {
+            $fileToken = trim($this->config['sync_secret_token'] ?? '');
+            $dbTokenRow = $this->query("SELECT setting_value FROM system_settings WHERE setting_key = 'sync_secret_token' LIMIT 1");
+            $dbToken = !empty($dbTokenRow) ? trim($dbTokenRow[0]['setting_value']) : null;
+
+            if ($dbToken !== null && $dbToken !== '' && empty($fileToken)) {
+                // Restore token from database into db_config.json
+                $this->config['sync_secret_token'] = $dbToken;
+                saveConfig($this->config);
+            } elseif (!empty($fileToken) && ($dbToken === null || $dbToken === '')) {
+                // Backup token from db_config.json into database
+                $this->execute("INSERT INTO system_settings (setting_key, setting_value, updated_by) VALUES ('sync_secret_token', ?, 'SYSTEM') ON DUPLICATE KEY UPDATE setting_value = ?", [$fileToken, $fileToken]);
+            }
+        } catch (Exception $eTokenSync) {
+        }
  
+        // Self-heal ambiguous legacy audit logs (UNKNOWN -> SYSTEM)
+        try {
+            $this->execute("UPDATE audit_logs SET username = 'SYSTEM' WHERE username = 'UNKNOWN' OR username IS NULL OR username = ''");
+        } catch (Exception $eCleanLog) {
+        }
+
         // Dynamically add synced column to stores table for existing installations
         try {
             $this->execute("ALTER TABLE stores ADD COLUMN synced TINYINT(1) NOT NULL DEFAULT 0");

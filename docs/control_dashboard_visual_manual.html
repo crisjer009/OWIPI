@@ -1189,17 +1189,22 @@
 
                         <!-- Pin 2: Sync Token Card -->
                         <div class="sim-card pin-anchor" style="display: block; width: 100%;" onclick="openModal(2, 'database')">
-                            <div class="sim-card-title">
+                            <div class="sim-card-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
                                 <span>🔒 Security & Synchronization Token</span>
+                                <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">🔒 Permanently Saved</span>
                             </div>
-                            <div style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; margin-bottom: 6px;">
-                                Secret Sync Token (Cloud & Local Authorization)
+                            <div style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                                <span>Secret Sync Token (Cloud & Local Authorization)</span>
+                                <span style="font-size: 0.72rem; color: #94a3b8; font-weight: normal;">Dual-Layer (DB + Config)</span>
                             </div>
-                            <input type="text" class="sim-input" value="e.g. my_secure_token_123" readonly style="font-family: monospace; color: #94a3b8;">
-                            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 12px; line-height: 1.4;">
-                                Define a custom secret token here. This exact same token must be configured on local hosts to allow successful data synchronization.
+                            <input type="text" class="sim-input" value="••••••••••••••••" readonly style="font-family: monospace; color: #94a3b8;">
+                            <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 10px; line-height: 1.4;">
+                                Define a custom secret token here. Permanently preserved in MySQL database &amp; config file until changed or emptied by System Admin.
                             </div>
-                            <button class="sim-btn sim-btn-config">Save Token Only</button>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="sim-btn sim-btn-config" style="margin: 0; padding: 6px 12px; font-size: 0.78rem;">💾 Save Token Permanently</button>
+                                <button class="sim-btn" style="margin: 0; padding: 6px 10px; font-size: 0.78rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171;">🗑️ Clear / Empty Token</button>
+                            </div>
                             <div class="hotspot-pin">2</div>
                         </div>
 
@@ -1397,17 +1402,17 @@
                             <span style="font-size: 0.75rem; color: #94a3b8;">Showing recent events</span>
                         </div>
                         <div class="sim-table-wrap">
-                            <div class="sim-table-row sim-table-header" style="grid-template-columns: 140px 100px 140px 1fr;">
-                                <div>TIMESTAMP</div><div>USER</div><div>ACTION</div><div>DETAILS</div>
+                            <div class="sim-table-row sim-table-header" style="grid-template-columns: 130px 110px 130px 130px 1fr;">
+                                <div>TIMESTAMP</div><div>ACTOR</div><div>TARGET SCOPE</div><div>ACTION</div><div>DETAILS</div>
                             </div>
-                            <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
-                                <div>2026-08-25 13:06</div><div>sys_admin</div><div style="color: #fbbf24;">Close All Locators</div><div>Closed all 10 remaining locators in store RME</div>
+                            <div class="sim-table-row" style="grid-template-columns: 130px 110px 130px 130px 1fr;">
+                                <div>2026-08-25 13:06</div><div><span style="color: #60a5fa;">👤 sys_admin</span></div><div><span style="color: #34d399;">🏬 Store: RME</span></div><div style="color: #fbbf24;">Close All Locators</div><div>Closed all 10 remaining locators in store RME</div>
                             </div>
-                            <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
-                                <div>2026-08-25 12:45</div><div>BETH</div><div style="color: #34d399;">Create Store</div><div>Initialized store countsheet database for LBS</div>
+                            <div class="sim-table-row" style="grid-template-columns: 130px 110px 130px 130px 1fr;">
+                                <div>2026-08-25 12:45</div><div><span style="color: #60a5fa;">👤 BETH</span></div><div><span style="color: #34d399;">🏬 Store: LBS</span></div><div style="color: #34d399;">Create Store</div><div>Initialized store countsheet database for LBS</div>
                             </div>
-                            <div class="sim-table-row" style="grid-template-columns: 140px 100px 140px 1fr;">
-                                <div>2026-08-25 11:30</div><div>MARK</div><div style="color: #60a5fa;">Sync Masterfile</div><div>Updated 4,210 items from Cloud server</div>
+                            <div class="sim-table-row" style="grid-template-columns: 130px 110px 130px 130px 1fr;">
+                                <div>2026-08-25 11:30</div><div><span style="color: #cbd5e1;">⚙️ SYSTEM</span></div><div><span style="color: #fbbf24;">📦 Master Catalog</span></div><div style="color: #60a5fa;">Sync Masterfile</div><div>Updated 4,210 items from Cloud server</div>
                             </div>
                         </div>
                         <div class="hotspot-pin">1</div>
@@ -1715,16 +1720,16 @@
                     tip: "When connecting from remote mobile devices, ensure MySQL user allows connections from <code>%</code> (wildcard host)."
                 },
                 2: {
-                    title: "Security & Synchronization Token (Sync Key)",
+                    title: "Security & Synchronization Token (Permanent Sync Key)",
                     subtitle: "Cryptographic secret handshake authorization between Local and Cloud hosts",
-                    takeaway: "Secures all multi-branch sync requests and prevents unauthorized uploads.",
-                    desc: "Defines the shared private Secret Sync Token. The exact same token must be configured on both the Local Store Server and the Central Cloud Server for synchronization to be accepted.",
+                    takeaway: "Permanently stored in database & config; strictly locked until System Admin changes or empties it.",
+                    desc: "Defines the shared private Secret Sync Token. The exact same token must be configured on both the Local Store Server and the Central Cloud Server for synchronization to be accepted. Backed by dual-layer persistence (MySQL system_settings table + db_config.json) to prevent loss during routine syncs, updates, or Git pull resets.",
                     actions: [
-                        "<strong>Custom Secret Token:</strong> Enter a strong alphanumeric passphrase.",
-                        "<strong>Cloud Authorization:</strong> Blocks unauthorized devices from pushing data.",
-                        "<strong>Save Token Only:</strong> Updates sync credentials without modifying DB connection."
+                        "<strong>Permanent Persistence:</strong> Dual-layer stored to survive general config edits, partial form saves, and routine sync execution.",
+                        "<strong>Admin Privilege Lock:</strong> Non-admin users and standard store sync operations cannot wipe or overwrite this key.",
+                        "<strong>Explicit Admin Control:</strong> Only an authorized System Administrator (sys_admin) can change or empty this token via dedicated action buttons."
                     ],
-                    tip: "Never share this token publicly. Keep the token identical across all branch inventory servers and headquarters."
+                    tip: "If changing this token on the Cloud server, make sure to distribute and update the same token on all branch local hosts to prevent synchronization refusal."
                 },
                 3: {
                     title: "Print Spacing Settings (Margin Calibration)",

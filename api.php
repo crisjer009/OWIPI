@@ -63,7 +63,7 @@ if ($action === 'create_manual_backup' || $action === 'create_backup' || $action
         sendResponse(['status' => 'error', 'message' => "Please specify a Store Code to back up."]);
     }
     $db = new OWI_DB();
-    createCloudStoreBackup($db, $storeCode);
+    createCloudStoreBackup($db, $storeCode, $_SESSION['username'] ?? 'SYSTEM');
     sendResponse([
         'status' => 'success',
         'message' => "Successfully created automatic backup snapshot for store '" . strtoupper($storeCode) . "'!"
@@ -82,8 +82,31 @@ function logAudit($action, $details, $storeCode = null, $overrideUsername = null
 {
     try {
         $db = new OWI_DB();
-        $username = !empty($overrideUsername) ? $overrideUsername : ($_SESSION['username'] ?? 'UNKNOWN');
-        $store = $storeCode ? $storeCode : ($_SESSION['store_code'] ?? null);
+
+        // 1. Resolve User / Actor: Never use 'UNKNOWN'
+        if (!empty($overrideUsername) && strtoupper(trim($overrideUsername)) !== 'UNKNOWN') {
+            $username = trim($overrideUsername);
+        } elseif (!empty($_SESSION['username']) && strtoupper(trim($_SESSION['username'])) !== 'UNKNOWN') {
+            $username = trim($_SESSION['username']);
+        } else {
+            $username = 'SYSTEM';
+        }
+
+        // 2. Resolve Store Code: prioritize explicit param, then session, then infer from details
+        $store = null;
+        if (!empty($storeCode) && strtoupper(trim($storeCode)) !== 'GLOBAL') {
+            $store = strtoupper(trim($storeCode));
+        } elseif (!empty($_SESSION['store_code']) && strtoupper(trim($_SESSION['store_code'])) !== 'GLOBAL') {
+            $store = strtoupper(trim($_SESSION['store_code']));
+        } else {
+            // Contextual extraction: check if store name is mentioned in details
+            if (preg_match("/store ['\"]?([A-Za-z0-9_-]+)['\"]?/i", $details, $m)) {
+                $candidate = strtoupper(trim($m[1]));
+                if ($candidate !== 'SESSION' && $candidate !== 'TABLES' && $candidate !== 'DATABASE' && $candidate !== 'LOGS') {
+                    $store = $candidate;
+                }
+            }
+        }
 
         $sql = "INSERT INTO audit_logs (store_code, username, action, details) VALUES (?, ?, ?, ?)";
         $db->execute($sql, [$store, $username, $action, $details]);
@@ -124,7 +147,7 @@ function ensureCloudBackupsLogTable($db)
 }
 
 // Helper function to create automatic backups on Cloud before overwriting store tables
-function createCloudStoreBackup($db, $storeCode)
+function createCloudStoreBackup($db, $storeCode, $initiatingUser = null)
 {
     $clean = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
     if (empty($clean))
@@ -261,7 +284,13 @@ function createCloudStoreBackup($db, $storeCode)
     } catch (Exception $eLog) {
     }
 
-    logAudit('Cloud Pre-Sync Backup', "Created SQL backup script for store '" . strtoupper($clean) . "' prior to cloud overwrite.");
+    $actor = (!empty($initiatingUser) && strtoupper(trim($initiatingUser)) !== 'UNKNOWN') ? trim($initiatingUser) : (!empty($_SESSION['username']) ? $_SESSION['username'] : 'SYSTEM');
+    logAudit(
+        'Cloud Pre-Sync Backup',
+        "Created SQL backup script for store '" . strtoupper($clean) . "' prior to cloud overwrite.",
+        strtoupper($clean),
+        $actor
+    );
 }
 
 // Helper function to ensure active session columns exist on store locators tables
@@ -474,6 +503,10 @@ try {
             throw new Exception("Unknown action: " . $action);
         }
 
+        if (!empty($incomingStoreCode)) {
+            $_SESSION['store_code'] = strtoupper($incomingStoreCode);
+        }
+
         // Verify store selection is active for store-dependent actions
         if (in_array($action, $storeDependentActions) && !hasActiveStore()) {
             sendResponse([
@@ -543,8 +576,11 @@ try {
             $config['print_margin_top'] = isset($input['print_margin_top']) ? (int) $input['print_margin_top'] : 0;
             $config['print_margin_left'] = isset($input['print_margin_left']) ? (int) $input['print_margin_left'] : 0;
 
-            if (isset($input['sync_secret_token'])) {
-                $config['sync_secret_token'] = trim($input['sync_secret_token']);
+            // Protect sync_secret_token: only system_admin can change it, and never erase it if empty in general config save
+            if (isSystemAdmin() && isset($input['sync_secret_token']) && trim($input['sync_secret_token']) !== '') {
+                $token = trim($input['sync_secret_token']);
+                $config['sync_secret_token'] = $token;
+                savePersistentSyncToken($token, $_SESSION['username'] ?? 'sys_admin');
             }
 
             if (saveConfig($config)) {
@@ -568,20 +604,20 @@ try {
             break;
 
         case 'save_sync_token':
+            if (!isSystemAdmin()) {
+                throw new Exception("Only System Administrators (sys_admin) can change or clear the Secret Sync Token.");
+            }
             $input = json_decode(file_get_contents('php://input'), true);
-            if (!$input) {
+            if (!is_array($input)) {
                 throw new Exception("Invalid JSON inputs.");
             }
-            $config = loadConfig();
-            $config['sync_secret_token'] = isset($input['sync_secret_token']) ? trim($input['sync_secret_token']) : '';
-            if (saveConfig($config)) {
-                sendResponse([
-                    'status' => 'success',
-                    'message' => 'Secret Sync Token saved successfully!'
-                ]);
-            } else {
-                throw new Exception("Failed to write to db_config.json on the server. Please check file permissions (run: chmod 666 db_config.json on the cloud server).");
-            }
+            $token = isset($input['sync_secret_token']) ? trim($input['sync_secret_token']) : '';
+            savePersistentSyncToken($token, $_SESSION['username'] ?? 'sys_admin');
+            logAudit('UPDATE_SYNC_TOKEN', "System Admin '{$_SESSION['username']}' updated Secret Sync Token" . (empty($token) ? " (cleared/empty)" : " (permanently saved)"), null, $_SESSION['username']);
+            sendResponse([
+                'status' => 'success',
+                'message' => empty($token) ? 'Secret Sync Token has been cleared.' : 'Secret Sync Token has been permanently saved!'
+            ]);
             break;
 
         case 'test_connection':
@@ -816,7 +852,7 @@ try {
                 unset($_SESSION['store_code']);
             }
 
-            logAudit('DELETE_STORE', "Permanently deleted store session '" . strtoupper($store) . "' and dropped all its tables.");
+            logAudit('DELETE_STORE', "Permanently deleted store session '" . strtoupper($store) . "' and dropped all its tables.", strtoupper($store));
 
             sendResponse([
                 'status' => 'success',
@@ -1338,7 +1374,7 @@ try {
             $newVariance = $totalScanned - $masterQty;
             $db->execute("UPDATE `{$store}_countsheet` SET Variance = ? WHERE (UPC = ? OR (UPC = '' AND SKU = ?)) AND SlotNo = ?", [$newVariance, $real_barcode, $sku, $slotNo]);
 
-            logAudit('Edit Scanned Item', "Updated item in {$oldDetails} -> New UPC: {$real_barcode}, New Qty: {$qty}");
+            logAudit('Edit Scanned Item', "Updated item in {$oldDetails} -> New UPC: {$real_barcode}, New Qty: {$qty}", strtoupper($store));
 
             sendResponse([
                 'status' => 'success',
@@ -1372,7 +1408,7 @@ try {
                 $slotNo = $scanCheck[0]['SlotNo'];
 
                 $db->execute("DELETE FROM `{$store}_countsheet` WHERE RecNo = ?", [$id]);
-                logAudit('Delete Scanned Item', "Deleted scan row: {$details}");
+                logAudit('Delete Scanned Item', "Deleted scan row: {$details}", strtoupper($store));
 
                 // Recalculate variance for remaining scans of this product in this slot/locator
                 $masterQty = 0.00;
@@ -1398,7 +1434,7 @@ try {
 
             $sqlTruncate = "TRUNCATE TABLE `{$store}_countsheet`";
             $db->execute($sqlTruncate);
-            logAudit('Clear Scan Logs', "Truncated countsheet table for store: {$store}");
+            logAudit('Clear Scan Logs', "Truncated countsheet table for store: {$store}", strtoupper($store));
             sendResponse([
                 'status' => 'success',
                 'message' => 'All count sheets have been cleared!'
@@ -1413,60 +1449,139 @@ try {
             }
             $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeInput));
 
-            // Verify if items table exists
-            $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
-            if (empty($tableCheck)) {
-                throw new Exception("Store items table does not exist. Please import a masterfile first.");
-            }
-
             // Verify if countsheet table exists
             $countsheetCheck = $db->query("SHOW TABLES LIKE '{$store}_countsheet'");
             if (empty($countsheetCheck)) {
-                throw new Exception("Store countsheet table does not exist.");
+                throw new Exception("Store countsheet table does not exist for store: " . strtoupper($store));
             }
 
-            // Query items with master_qty, scanned_qty, and variance matching by UPC or SKU
-            $sql = "
-                SELECT 
-                    COALESCE(NULLIF(i.UPC, ''), i.SKU, c.item_key) as upc, 
-                    COALESCE(NULLIF(i.SKU, ''), i.UPC, c.item_key) as sku, 
-                    COALESCE(NULLIF(i.Descr, ''), c.description, 'Item Not Found') as description, 
-                    COALESCE(i.Qty, 0.00) as master_qty,
-                    COALESCE(c.scanned_qty, 0.00) as scanned_qty,
-                    (COALESCE(c.scanned_qty, 0.00) - COALESCE(i.Qty, 0.00)) as variance
-                FROM `{$store}_items` i
-                LEFT JOIN (
-                    SELECT 
-                        COALESCE(NULLIF(UPC, ''), SKU) as item_key,
-                        MAX(Descr) as description,
-                        SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
-                    FROM `{$store}_countsheet`
-                    WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
-                    GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
-                ) c ON c.item_key = COALESCE(NULLIF(i.UPC, ''), i.SKU)
+            // Check if store-specific items table exists
+            $hasStoreItems = false;
+            try {
+                $tableCheck = $db->query("SHOW TABLES LIKE '{$store}_items'");
+                if (!empty($tableCheck)) {
+                    $cnt = (int) ($db->query("SELECT COUNT(*) as c FROM `{$store}_items`")[0]['c'] ?? 0);
+                    if ($cnt > 0) $hasStoreItems = true;
+                }
+            } catch (Exception $eT) {}
 
-                UNION
-
-                SELECT 
-                    c.item_key as upc, 
-                    c.item_key as sku, 
-                    c.description as description, 
-                    0.00 as master_qty,
-                    c.scanned_qty as scanned_qty,
-                    c.scanned_qty as variance
-                FROM (
+            if ($hasStoreItems) {
+                // Query items with master_qty, scanned_qty, and variance matching by UPC or SKU
+                $sql = "
                     SELECT 
-                        COALESCE(NULLIF(UPC, ''), SKU) as item_key,
-                        MAX(Descr) as description,
-                        SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
-                    FROM `{$store}_countsheet`
-                    WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
-                    GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
-                ) c
-                LEFT JOIN `{$store}_items` i ON c.item_key = COALESCE(NULLIF(i.UPC, ''), i.SKU)
-                WHERE i.UPC IS NULL AND i.SKU IS NULL
-                ORDER BY upc ASC
-            ";
+                        COALESCE(NULLIF(i.UPC, ''), i.SKU, c.item_key) as upc, 
+                        COALESCE(NULLIF(i.SKU, ''), i.UPC, c.item_key) as sku, 
+                        COALESCE(NULLIF(i.Descr, ''), c.description, 'Item Not Found') as description, 
+                        COALESCE(i.Qty, 0.00) as master_qty,
+                        COALESCE(c.scanned_qty, 0.00) as scanned_qty,
+                        (COALESCE(c.scanned_qty, 0.00) - COALESCE(i.Qty, 0.00)) as variance
+                    FROM `{$store}_items` i
+                    LEFT JOIN (
+                        SELECT 
+                            COALESCE(NULLIF(UPC, ''), SKU) as item_key,
+                            MAX(Descr) as description,
+                            SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                        FROM `{$store}_countsheet`
+                        WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
+                        GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
+                    ) c ON c.item_key = COALESCE(NULLIF(i.UPC, ''), i.SKU)
+
+                    UNION
+
+                    SELECT 
+                        c.item_key as upc, 
+                        c.item_key as sku, 
+                        c.description as description, 
+                        0.00 as master_qty,
+                        c.scanned_qty as scanned_qty,
+                        c.scanned_qty as variance
+                    FROM (
+                        SELECT 
+                            COALESCE(NULLIF(UPC, ''), SKU) as item_key,
+                            MAX(Descr) as description,
+                            SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                        FROM `{$store}_countsheet`
+                        WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
+                        GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
+                    ) c
+                    LEFT JOIN `{$store}_items` i ON c.item_key = COALESCE(NULLIF(i.UPC, ''), i.SKU)
+                    WHERE i.UPC IS NULL AND i.SKU IS NULL
+                    ORDER BY upc ASC
+                ";
+            } else {
+                // Fallback to central items table with store column
+                $hasCentralItems = false;
+                $strNo = null;
+                try {
+                    $chkItems = $db->query("SHOW TABLES LIKE 'items'");
+                    if (!empty($chkItems)) {
+                        $hasCentralItems = true;
+                        $storeLookup = $db->query("SELECT str_no FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [strtolower($store), $store]);
+                        if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                            $strNo = (int) $storeLookup[0]['str_no'];
+                        }
+                    }
+                } catch (Exception $exFb) {}
+
+                if ($hasCentralItems) {
+                    $qtyCol = ($strNo !== null) ? "COALESCE(m.`QTY_STORE_{$strNo}`, 0.00)" : "COALESCE(m.Qty, 0.00)";
+                    $sql = "
+                        SELECT 
+                            COALESCE(NULLIF(m.UPC, ''), m.SKU, c.item_key) as upc, 
+                            COALESCE(NULLIF(m.SKU, ''), m.UPC, c.item_key) as sku, 
+                            COALESCE(NULLIF(m.Descr, ''), c.description, 'Item Not Found') as description, 
+                            {$qtyCol} as master_qty,
+                            COALESCE(c.scanned_qty, 0.00) as scanned_qty,
+                            (COALESCE(c.scanned_qty, 0.00) - {$qtyCol}) as variance
+                        FROM items m
+                        LEFT JOIN (
+                            SELECT 
+                                COALESCE(NULLIF(UPC, ''), SKU) as item_key,
+                                MAX(Descr) as description,
+                                SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                            FROM `{$store}_countsheet`
+                            WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
+                            GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
+                        ) c ON c.item_key = COALESCE(NULLIF(m.UPC, ''), m.SKU)
+
+                        UNION
+
+                        SELECT 
+                            c.item_key as upc, 
+                            c.item_key as sku, 
+                            c.description as description, 
+                            0.00 as master_qty,
+                            c.scanned_qty as scanned_qty,
+                            c.scanned_qty as variance
+                        FROM (
+                            SELECT 
+                                COALESCE(NULLIF(UPC, ''), SKU) as item_key,
+                                MAX(Descr) as description,
+                                SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty 
+                            FROM `{$store}_countsheet`
+                            WHERE (UPC IS NOT NULL AND UPC != '') OR (SKU IS NOT NULL AND SKU != '')
+                            GROUP BY COALESCE(NULLIF(UPC, ''), SKU)
+                        ) c
+                        LEFT JOIN items m ON c.item_key = COALESCE(NULLIF(m.UPC, ''), m.SKU)
+                        WHERE m.UPC IS NULL AND m.SKU IS NULL
+                        ORDER BY upc ASC
+                    ";
+                } else {
+                    // Export scans directly from countsheet
+                    $sql = "
+                        SELECT 
+                            COALESCE(NULLIF(UPC, ''), SKU, 'N/A') as upc,
+                            COALESCE(NULLIF(SKU, ''), UPC, 'N/A') as sku,
+                            COALESCE(Descr, 'Item Not Found') as description,
+                            0.00 as master_qty,
+                            SUM(IF(Edited = 1, EditedQty, Qty)) as scanned_qty,
+                            SUM(IF(Edited = 1, EditedQty, Qty)) as variance
+                        FROM `{$store}_countsheet`
+                        GROUP BY COALESCE(NULLIF(UPC, ''), SKU), Descr
+                        ORDER BY upc ASC
+                    ";
+                }
+            }
 
             $rows = $db->query($sql);
 
@@ -2170,6 +2285,12 @@ try {
                 throw $e;
             }
 
+            logAudit(
+                'Import Masterfile',
+                "Imported {$importedCount} catalog items into " . (!empty($cleanStore) ? "store catalog for '" . strtoupper($cleanStore) . "'" : "master catalog"),
+                !empty($cleanStore) ? strtoupper($cleanStore) : null
+            );
+
             sendResponse([
                 'status' => 'success',
                 'message' => "Successfully imported {$importedCount} products into store catalog!"
@@ -2226,6 +2347,7 @@ try {
             $hashedPass = password_hash($password, PASSWORD_BCRYPT);
             $insertSql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
             $db->execute($insertSql, [$username, $hashedPass, $role]);
+            logAudit('Add User', "Created new user account '{$username}' with role '{$role}'");
 
             sendResponse([
                 'status' => 'success',
@@ -2269,6 +2391,7 @@ try {
 
             $deleteSql = "DELETE FROM users WHERE id = ?";
             $db->execute($deleteSql, [$userId]);
+            logAudit('Delete User', "Deleted user account '{$userToDelete['username']}' ({$userToDelete['role']})");
 
             sendResponse([
                 'status' => 'success',
@@ -2355,16 +2478,26 @@ try {
                 throw new Exception("Invalid locator ID.");
             }
             $db = new OWI_DB();
-            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_SESSION['store_code']));
+            $store = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($_SESSION['store_code'] ?? ''));
+            if (empty($store)) {
+                throw new Exception("No active store session found.");
+            }
 
             // Retrieve name for audit logging
             $locRows = $db->query("SELECT locator_name FROM `{$store}_locators` WHERE id = ?", [$id]);
             $locName = !empty($locRows) ? $locRows[0]['locator_name'] : "ID {$id}";
 
             $db->execute("DELETE FROM `{$store}_locators` WHERE id = ?", [$id]);
-            logAudit('Delete Locator', "Deleted locator '{$locName}' and all associated scans");
 
-            sendResponse(['status' => 'success', 'message' => "Locator deleted successfully!"]);
+            // Also clean up any recorded scans for this locator in countsheet
+            try {
+                $db->execute("DELETE FROM `{$store}_countsheet` WHERE TRIM(SlotNo) = TRIM(?)", [$locName]);
+            } catch (Exception $eCleanScans) {
+            }
+
+            logAudit('Delete Locator', "Deleted locator '{$locName}' and all associated scans", strtoupper($store));
+
+            sendResponse(['status' => 'success', 'message' => "Locator '$locName' deleted successfully!"]);
             break;
 
         case 'claim_locator':
@@ -2615,7 +2748,7 @@ try {
             }
 
             $db->execute("UPDATE `{$store}_locators` SET status = 'closed', synced = 0 WHERE status = 'open'");
-            logAudit('Close All Locators', "User '{$_SESSION['username']}' closed all {$openCount} remaining open locators for store '{$storeCode}'.");
+            logAudit('Close All Locators', "User '{$_SESSION['username']}' closed all {$openCount} remaining open locators for store '{$storeCode}'.", strtoupper($storeCode));
             sendResponse(['status' => 'success', 'message' => "Successfully closed {$openCount} remaining open locators!", 'closed_count' => $openCount]);
             break;
 
@@ -2635,6 +2768,30 @@ try {
             $db = new OWI_DB();
             $sql = "SELECT id, store_code, username, action, details, DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') as timestamp FROM audit_logs ORDER BY id DESC LIMIT 500";
             $logs = $db->query($sql);
+
+            // Normalize and resolve ambiguous legacy records
+            foreach ($logs as &$l) {
+                // 1. Resolve UNKNOWN / empty usernames to SYSTEM
+                if (empty($l['username']) || strtoupper(trim($l['username'])) === 'UNKNOWN') {
+                    $l['username'] = 'SYSTEM';
+                }
+
+                // 2. Resolve missing store codes if explicitly stated in details
+                if (empty($l['store_code']) || strtoupper(trim($l['store_code'])) === 'GLOBAL') {
+                    if (preg_match("/store ['\"]?([A-Za-z0-9_-]+)['\"]?/i", $l['details'], $m)) {
+                        $candidate = strtoupper(trim($m[1]));
+                        if ($candidate !== 'SESSION' && $candidate !== 'TABLES' && $candidate !== 'DATABASE' && $candidate !== 'LOGS') {
+                            $l['store_code'] = $candidate;
+                        } else {
+                            $l['store_code'] = null;
+                        }
+                    } else {
+                        $l['store_code'] = null;
+                    }
+                }
+            }
+            unset($l);
+
             sendResponse([
                 'status' => 'success',
                 'logs' => $logs
@@ -2656,8 +2813,17 @@ try {
                 throw new Exception("Invalid JSON inputs.");
             }
             $config = loadConfig();
-            $config['cloud_sync_url'] = isset($input['cloud_sync_url']) ? trim($input['cloud_sync_url']) : '';
-            $config['sync_secret_token'] = isset($input['sync_secret_token']) ? trim($input['sync_secret_token']) : '';
+            if (isset($input['cloud_sync_url'])) {
+                $config['cloud_sync_url'] = trim($input['cloud_sync_url']);
+            }
+            // Protect token: never erase with empty string from standard sync modal
+            if (isset($input['sync_secret_token']) && trim($input['sync_secret_token']) !== '') {
+                $token = trim($input['sync_secret_token']);
+                $config['sync_secret_token'] = $token;
+                if (isSystemAdmin()) {
+                    savePersistentSyncToken($token, $_SESSION['username'] ?? 'sys_admin');
+                }
+            }
 
             if (saveConfig($config)) {
                 sendResponse([
@@ -2793,7 +2959,7 @@ try {
             $payload = [
                 'secret_token' => $secretToken,
                 'store_code' => $_SESSION['store_code'],
-                'synced_by' => $_SESSION['username'] ?? 'UNKNOWN',
+                'synced_by' => (!empty($_SESSION['username']) && strtoupper(trim($_SESSION['username'])) !== 'UNKNOWN') ? $_SESSION['username'] : 'SYSTEM',
                 'store_details' => $storeDetails,
                 'locators' => $locators,
                 'scans' => $scans,
@@ -3261,7 +3427,8 @@ try {
             $db->createStoreTables($storeCode, $createdBy);
 
             // Automatically create backup on Cloud before overwriting data
-            createCloudStoreBackup($db, $storeCode);
+            $syncActor = (!empty($input['synced_by']) && strtoupper(trim($input['synced_by'])) !== 'UNKNOWN') ? trim($input['synced_by']) : 'SYSTEM';
+            createCloudStoreBackup($db, $storeCode, $syncActor);
 
             // Automatically mark store session as CLOSED (closed = 1) on Cloud server upon sync
             $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
@@ -3335,7 +3502,7 @@ try {
                 throw new Exception("Invalid sync request payload.");
             }
             $storeCode = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($input['store_code'] ?? ''));
-            $requestedBy = $input['synced_by'] ?? 'UNKNOWN';
+            $requestedBy = (!empty($input['synced_by']) && strtoupper(trim($input['synced_by'])) !== 'UNKNOWN') ? trim($input['synced_by']) : 'SYSTEM';
             $localScans = (int) ($input['local_scans_count'] ?? 0);
             $cloudScans = (int) ($input['cloud_scans_count'] ?? 0);
 
@@ -3604,7 +3771,7 @@ try {
             }
 
             $db = new OWI_DB();
-            createCloudStoreBackup($db, $storeCode);
+            createCloudStoreBackup($db, $storeCode, $_SESSION['username'] ?? 'SYSTEM');
 
             sendResponse([
                 'status' => 'success',
@@ -3789,7 +3956,7 @@ try {
             $db->createStoreTables($storeCode, $createdBy);
 
             // Automatically create backup on Cloud before overwriting data
-            createCloudStoreBackup($db, $storeCode);
+            createCloudStoreBackup($db, $storeCode, $_SESSION['username'] ?? 'SYSTEM');
 
             // Automatically mark store session as CLOSED (closed = 1) on Cloud server upon sync approval
             $db->execute("UPDATE stores SET closed = 1 WHERE LOWER(store_code) = ?", [$storeCode]);
@@ -4254,7 +4421,7 @@ function handleReceiveSync()
 
         $db = new OWI_DB();
 
-        $syncedBy = $input['synced_by'] ?? 'UNKNOWN';
+        $syncedBy = (!empty($input['synced_by']) && strtoupper(trim($input['synced_by'])) !== 'UNKNOWN') ? trim($input['synced_by']) : 'SYSTEM';
 
         // Check if store already exists on cloud and enforce Admin authorization for overwriting
         $existingStore = $db->query("SELECT id FROM stores WHERE LOWER(store_code) = ?", [$storeCode]);
@@ -4283,7 +4450,7 @@ function handleReceiveSync()
         $createdBy = $storeDetails['created_by'] ?? null;
 
         // Automatically create backup on Cloud before overwriting store tables
-        createCloudStoreBackup($db, $storeCode);
+        createCloudStoreBackup($db, $storeCode, $syncedBy);
 
         $db->createStoreTables($storeCode, $createdBy);
 
@@ -4412,8 +4579,8 @@ function handleReceiveSync()
         $incomingAuditLogs = $input['audit_logs'] ?? [];
         if (!empty($incomingAuditLogs)) {
             foreach ($incomingAuditLogs as $log) {
-                $logStore = $log['store_code'] ?? $storeCode;
-                $logUser = $log['username'] ?? 'UNKNOWN';
+                $logStore = (!empty($log['store_code']) && strtoupper(trim($log['store_code'])) !== 'GLOBAL') ? $log['store_code'] : $storeCode;
+                $logUser = (!empty($log['username']) && strtoupper(trim($log['username'])) !== 'UNKNOWN') ? $log['username'] : ($syncedBy ?: 'SYSTEM');
                 $logAction = $log['action'] ?? '';
                 $logDetails = $log['details'] ?? '';
                 $logCreatedAt = $log['created_at'] ?? date('Y-m-d H:i:s');

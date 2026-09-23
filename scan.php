@@ -728,6 +728,55 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
             outline: none !important;
         }
 
+        /* Cloud Synchronization Loading Overlay & Spinner Animation */
+        .sync-spinner-ring {
+            position: absolute;
+            inset: 0;
+            border: 4px solid rgba(56, 139, 253, 0.2);
+            border-top: 4px solid #388bfd;
+            border-right: 4px solid #58a6ff;
+            border-radius: 50%;
+            animation: syncSpin 0.9s cubic-bezier(0.4, 0.1, 0.4, 1) infinite;
+        }
+
+        @keyframes syncSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes syncPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(56, 139, 253, 0.5)); }
+            50% { transform: scale(1.12); filter: drop-shadow(0 0 16px rgba(56, 139, 253, 0.9)); }
+        }
+
+        .sync-progress-bar-inner {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, #388bfd, #58a6ff, transparent);
+            border-radius: 9999px;
+            animation: syncProgressSlide 1.5s ease-in-out infinite;
+        }
+
+        @keyframes syncProgressSlide {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .btn-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: syncSpin 0.75s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
         /* Responsive Breakpoints for all screen sizes */
         @media (max-width: 1200px) {
 
@@ -1847,7 +1896,23 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
 
     <!-- Cloud Synchronization Modal -->
     <div class="modal-overlay" id="cloud-sync-modal-overlay">
-        <div class="modal" style="max-width: 500px; width: 95%; padding: 25px;">
+        <div class="modal" style="max-width: 500px; width: 95%; padding: 25px; position: relative; overflow: hidden;">
+            <!-- Loading & Anti-Misclick Overlay during Cloud Sync -->
+            <div id="cloud-sync-loading-overlay" style="display: none; position: absolute; inset: 0; background: rgba(13, 17, 23, 0.94); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: inherit; z-index: 99; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; box-sizing: border-box;">
+                <div style="position: relative; width: 76px; height: 76px; margin-bottom: 18px; display: flex; align-items: center; justify-content: center;">
+                    <div class="sync-spinner-ring"></div>
+                    <span id="cloud-sync-anim-icon" style="font-size: 32px; animation: syncPulse 1.5s ease-in-out infinite; display: inline-block; line-height: 1;">☁️</span>
+                </div>
+                <h4 id="cloud-sync-anim-title" style="margin: 0 0 6px 0; color: #ffffff; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em;">Cloud Synchronization in Progress</h4>
+                <div id="cloud-sync-anim-subtitle" style="color: #58a6ff; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">Connecting and authenticating...</div>
+                <div style="color: #8b949e; font-size: 0.75rem; line-height: 1.45; max-width: 340px;">
+                    Please do not close or refresh this page. All controls are temporarily locked to prevent duplicate submissions or connection interruption.
+                </div>
+                <div style="width: 240px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 9999px; overflow: hidden; margin-top: 18px; position: relative;">
+                    <div class="sync-progress-bar-inner"></div>
+                </div>
+            </div>
+
             <h3 class="modal-title"
                 style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 15px;">
                 ☁️ Cloud Synchronization
@@ -1881,14 +1946,14 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 </div>
 
                 <div class="form-row" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
-                    <button type="submit" class="btn btn-secondary"
+                    <button type="submit" id="btn-save-sync-config" class="btn btn-secondary"
                         style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Save
                         Config</button>
                     <button type="button" id="btn-run-sync" onclick="runCloudSync()" class="btn btn-primary"
-                        style="width: auto; height: 38px; padding: 0 15px; margin: 0; background:#388bfd; border-color:#388bfd; font-weight:600; cursor:pointer; display: flex; align-items: center; gap: 4px;">
+                        style="width: auto; height: 38px; padding: 0 16px; margin: 0; background:#388bfd; border-color:#388bfd; font-weight:600; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <span>Start Sync</span>
                     </button>
-                    <button type="button" class="btn btn-secondary" onclick="closeCloudSyncModal()"
+                    <button type="button" id="btn-close-cloud-sync" class="btn btn-secondary" onclick="closeCloudSyncModal()"
                         style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Close</button>
                 </div>
             </form>
@@ -3475,8 +3540,15 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 })
                 .catch(err => alert("Error adding locator: " + err));
         }
-        function handleDeleteLocator(id) {
-            customConfirm("Are you sure you want to delete this locator? This will delete all scan records associated with it!", () => {
+        function handleDeleteLocator(id, name = '', scansCount = 0) {
+            let msg = "Are you sure you want to delete this locator? This will delete all scan records associated with it!";
+            if (name) {
+                msg = `Are you sure you want to delete locator "${name}"?`;
+                if (scansCount > 0) {
+                    msg += `\n\nThis locator contains ${scansCount} recorded scan(s) which will also be permanently deleted!`;
+                }
+            }
+            customConfirm(msg, () => {
                 fetch('api.php?action=delete_locator', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -3613,10 +3685,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
 
                                 if (loc.status === 'open') {
                                     statusBadge = `<span class="badge" style="background:rgba(46,164,79,0.15); color:#2ea44f; font-size:0.7rem; padding: 2px 6px; border-radius: 4px;">Open</span>`;
-                                    actionBtn = `
-                                        <button class="btn btn-sm" onclick="handleCloseLocatorName('${loc.locator_name}', false)" style="padding:4px 8px; font-size:0.7rem; background:rgba(210,153,34,0.1); color:#d29922; border:1px solid rgba(210,153,34,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">Close</button>
-                                        <button class="btn btn-sm" onclick="handleDeleteLocator(${loc.id})" style="padding:4px 8px; font-size:0.7rem; background:rgba(248,81,73,0.1); color:#f85149; border:1px solid rgba(248,81,73,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">Delete</button>
-                                    `;
+                                    actionBtn = `<button class="btn btn-sm" onclick="handleCloseLocatorName('${loc.locator_name}', false)" style="padding:4px 8px; font-size:0.7rem; background:rgba(210,153,34,0.1); color:#d29922; border:1px solid rgba(210,153,34,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">Close</button>`;
                                 } else if (loc.status === 'in_use') {
                                     statusBadge = `<span class="badge" style="background:rgba(210,153,34,0.15); color:#d29922; font-size:0.7rem; padding: 2px 6px; border-radius: 4px;">In Use</span>`;
                                     actionBtn = `<button class="btn btn-sm" onclick="handleCloseLocatorName('${loc.locator_name}', true)" style="padding:4px 8px; font-size:0.7rem; background:rgba(210,153,34,0.1); color:#d29922; border:1px solid rgba(210,153,34,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">Force Close</button>`;
@@ -3625,16 +3694,18 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                                     actionBtn = `<button class="btn btn-sm" onclick="handleApproveLocator(${loc.id}, '${loc.locator_name}')" style="padding:4px 8px; font-size:0.7rem; background:rgba(46,164,79,0.1); color:#2ea44f; border:1px solid rgba(46,164,79,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600; box-shadow:none;">Open</button>`;
                                 }
 
-                                let viewBtn = `<button class="btn btn-sm" onclick="viewLocatorScans('${loc.locator_name}')" style="padding:4px 8px; font-size:0.7rem; background:rgba(88,166,255,0.1); color:#58a6ff; border:1px solid rgba(88,166,255,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">View</button>`;
+                                const scansCount = parseInt(loc.total_scans || 0);
+                                const viewBtn = `<button class="btn btn-sm" onclick="viewLocatorScans('${loc.locator_name}')" style="padding:4px 8px; font-size:0.7rem; background:rgba(88,166,255,0.1); color:#58a6ff; border:1px solid rgba(88,166,255,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">View</button>`;
+                                const deleteBtn = `<button class="btn btn-sm" onclick="handleDeleteLocator(${loc.id}, '${loc.locator_name}', ${scansCount})" style="padding:4px 8px; font-size:0.7rem; background:rgba(248,81,73,0.1); color:#f85149; border:1px solid rgba(248,81,73,0.2); border-radius:4px; margin:0; cursor:pointer; font-weight:600;">Delete</button>`;
 
                                 html += `
                                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                                         <td style="padding: 6px; font-weight:600; color:var(--text-white); font-size:0.8rem;">
-                                            ${displayName} <span style="font-weight:normal; color:var(--text-muted); font-size:0.75rem; margin-left: 20px;">( ${parseInt(loc.total_scans || 0)} - items scanned )</span>
+                                            ${displayName} <span style="font-weight:normal; color:var(--text-muted); font-size:0.75rem; margin-left: 20px;">( ${scansCount} - items scanned )</span>
                                         </td>
                                         <td style="padding: 6px;">${statusBadge}</td>
                                         <td style="padding: 6px; color:#c9d1d9; font-size:0.8rem;">${loc.assigned_operator || '-'}</td>
-                                        <td style="padding: 6px; text-align: center; display:flex; gap:4px; justify-content:center;">${viewBtn} ${actionBtn}</td>
+                                        <td style="padding: 6px; text-align: center; display:flex; gap:4px; justify-content:center; align-items:center;">${viewBtn} ${actionBtn} ${deleteBtn}</td>
                                     </tr>
                                 `;
                             });
@@ -4956,8 +5027,11 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
             }, 4000);
         }
 
+        let isCloudSyncRunning = false;
+
         // Cloud Sync Modal functions
         function openCloudSyncModal() {
+            if (isCloudSyncRunning) return;
             document.getElementById('cloud-sync-modal-overlay').classList.add('active');
 
             // Fetch existing sync settings
@@ -4973,10 +5047,15 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         }
 
         function closeCloudSyncModal() {
+            if (isCloudSyncRunning) {
+                return; // Prevent closing or mis-clicks during active synchronization
+            }
             document.getElementById('cloud-sync-modal-overlay').classList.remove('active');
             const statusMsg = document.getElementById('sync-status-msg');
-            statusMsg.style.display = 'none';
-            statusMsg.innerText = '';
+            if (statusMsg) {
+                statusMsg.style.display = 'none';
+                statusMsg.innerText = '';
+            }
         }
 
         // Sync active store details, locators, and product catalog from the cloud
@@ -5090,6 +5169,8 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         }
 
         function runCloudSync() {
+            if (isCloudSyncRunning) return;
+
             const cloudUrl = document.getElementById('sync_cloud_url').value.trim();
             const secretToken = document.getElementById('sync_secret_token').value.trim();
 
@@ -5105,13 +5186,61 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 return;
             }
 
-            const btn = document.getElementById('btn-run-sync');
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<span>Syncing...</span>';
+            // Lock state to block mis-clicks, double clicks, and modal closes
+            isCloudSyncRunning = true;
+
+            const btnSync = document.getElementById('btn-run-sync');
+            const btnSave = document.getElementById('btn-save-sync-config');
+            const btnClose = document.getElementById('btn-close-cloud-sync');
+            const inputUrl = document.getElementById('sync_cloud_url');
+            const inputToken = document.getElementById('sync_secret_token');
+            const overlay = document.getElementById('cloud-sync-loading-overlay');
+            const animIcon = document.getElementById('cloud-sync-anim-icon');
+            const animTitle = document.getElementById('cloud-sync-anim-title');
+            const animSub = document.getElementById('cloud-sync-anim-subtitle');
+
+            const originalBtnHtml = btnSync ? btnSync.innerHTML : '<span>Start Sync</span>';
+
+            // Disable all interactive elements and show spinner on button
+            if (btnSync) {
+                btnSync.disabled = true;
+                btnSync.innerHTML = '<span class="btn-spinner"></span> <span>Syncing...</span>';
+            }
+            if (btnSave) btnSave.disabled = true;
+            if (btnClose) btnClose.disabled = true;
+            if (inputUrl) inputUrl.disabled = true;
+            if (inputToken) inputToken.disabled = true;
+
+            // Activate visual loading overlay
+            if (overlay) {
+                if (animIcon) {
+                    animIcon.textContent = '☁️';
+                    animIcon.style.animation = 'syncPulse 1.5s ease-in-out infinite';
+                }
+                if (animTitle) animTitle.textContent = 'Cloud Synchronization in Progress';
+                if (animSub) {
+                    animSub.textContent = 'Saving configuration & authenticating...';
+                    animSub.style.color = '#58a6ff';
+                }
+                overlay.style.display = 'flex';
+            }
+
             statusMsg.innerText = 'Saving configuration and starting synchronization...';
 
-            // Automatically save settings first
+            const restoreUi = () => {
+                isCloudSyncRunning = false;
+                if (btnSync) {
+                    btnSync.disabled = false;
+                    btnSync.innerHTML = originalBtnHtml;
+                }
+                if (btnSave) btnSave.disabled = false;
+                if (btnClose) btnClose.disabled = false;
+                if (inputUrl) inputUrl.disabled = false;
+                if (inputToken) inputToken.disabled = false;
+                if (overlay) overlay.style.display = 'none';
+            };
+
+            // Stage 1: Automatically save settings first
             fetch('api.php?action=save_sync_config', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -5122,32 +5251,81 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     if (saveData.status !== 'success') {
                         throw new Error(saveData.message || 'Failed to save configuration.');
                     }
+
+                    // Stage 2: Transmit store data & locators to Cloud
+                    if (animSub) {
+                        animSub.textContent = 'Transmitting store scans & locators to Cloud server...';
+                    }
+                    statusMsg.innerText = 'Transmitting store counts to Cloud server...';
+
                     // Trigger sync execution
                     return fetch('api.php?action=trigger_cloud_sync').then(res => res.json());
                 })
                 .then(data => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-
                     if (data.status === 'success') {
-                        statusMsg.style.background = 'rgba(46,164,79,0.15)';
-                        statusMsg.style.color = '#2ea44f';
-                        statusMsg.innerText = data.message;
+                        // Success state visual feedback
+                        if (overlay) {
+                            if (animIcon) {
+                                animIcon.textContent = '✅';
+                                animIcon.style.animation = 'none';
+                            }
+                            if (animTitle) animTitle.textContent = 'Synchronization Successful!';
+                            if (animSub) {
+                                animSub.textContent = data.message || 'Store data successfully synchronized with Cloud.';
+                                animSub.style.color = '#34d399';
+                            }
+                        }
 
-                        // Reload dashboard/locators to reflect status
-                        loadHostLocators();
+                        setTimeout(() => {
+                            restoreUi();
+                            statusMsg.style.background = 'rgba(46,164,79,0.15)';
+                            statusMsg.style.color = '#2ea44f';
+                            statusMsg.innerText = data.message;
+
+                            // Reload dashboard/locators to reflect status
+                            loadHostLocators();
+                        }, 1300);
                     } else {
-                        statusMsg.style.background = 'rgba(248,81,73,0.15)';
-                        statusMsg.style.color = '#f85149';
-                        statusMsg.innerText = data.message;
+                        // Rejection / Error from server
+                        if (overlay) {
+                            if (animIcon) {
+                                animIcon.textContent = '⚠️';
+                                animIcon.style.animation = 'none';
+                            }
+                            if (animTitle) animTitle.textContent = 'Synchronization Failed';
+                            if (animSub) {
+                                animSub.textContent = data.message || 'The cloud server rejected or failed the sync request.';
+                                animSub.style.color = '#f85149';
+                            }
+                        }
+
+                        setTimeout(() => {
+                            restoreUi();
+                            statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                            statusMsg.style.color = '#f85149';
+                            statusMsg.innerText = data.message;
+                        }, 1600);
                     }
                 })
                 .catch(err => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalHtml;
-                    statusMsg.style.background = 'rgba(248,81,73,0.15)';
-                    statusMsg.style.color = '#f85149';
-                    statusMsg.innerText = 'Sync failed: ' + err.message;
+                    if (overlay) {
+                        if (animIcon) {
+                            animIcon.textContent = '❌';
+                            animIcon.style.animation = 'none';
+                        }
+                        if (animTitle) animTitle.textContent = 'Network or Server Error';
+                        if (animSub) {
+                            animSub.textContent = err.message || 'Failed to communicate with cloud server.';
+                            animSub.style.color = '#f85149';
+                        }
+                    }
+
+                    setTimeout(() => {
+                        restoreUi();
+                        statusMsg.style.background = 'rgba(248,81,73,0.15)';
+                        statusMsg.style.color = '#f85149';
+                        statusMsg.innerText = 'Sync failed: ' + err.message;
+                    }, 1600);
                 });
         }
 

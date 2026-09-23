@@ -9046,4 +9046,13 @@ INSERT INTO `users` (`id`, `username`, `password`, `role`, `created_at`) VALUES
 ('9', 'operator', '$2y$10$QXA/VOJf31vm721fBv.bgu21aC74UJFaynpNM2CToznv/CQWe8V7a', 'user', '2026-07-07 13:41:13'),
 ('10', 'ALLAN', '$2y$10$gGpFAMOZ3MM1.GI6oIIYou/PkKAPeQvogNaEJktBuUvVvtTIAZWqW', 'user', '2026-07-20 15:59:15');
 
+DROP TABLE IF EXISTS `system_settings`;
+CREATE TABLE `system_settings` (
+  `setting_key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `setting_value` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_by` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;

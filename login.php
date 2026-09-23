@@ -15,8 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['server_settings_activ
         'username' => isset($_POST['db_username']) ? trim($_POST['db_username']) : 'root',
         'password' => isset($_POST['db_password']) ? $_POST['db_password'] : ''
     ];
-    saveConfig($newConfig);
-    $config = array_merge($config, $newConfig);
+    $merged = array_merge($config, $newConfig);
+    saveConfig($merged);
+    $config = $merged;
 }
 
 // Redirect mobile scanner devices automatically to scan page without forcing login
