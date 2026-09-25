@@ -477,7 +477,7 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'clear_audit_logs', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'clear_audit_logs', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'check_system_update', 'apply_system_update'];
 $userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_store_summary', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'import_cloud_products'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'get_store_summary', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
@@ -3554,11 +3554,319 @@ try {
             break;
 
         case 'version':
+            $gitCommit = null;
+            if (is_dir(__DIR__ . '/.git')) {
+                $commit = @shell_exec('git rev-parse --short HEAD 2>&1');
+                if ($commit && strlen(trim($commit)) <= 12 && !preg_match('/fatal|not a git/i', $commit)) {
+                    $gitCommit = trim($commit);
+                }
+            }
             sendResponse([
                 'status' => 'success',
-                'version' => '2.5.0-sql-script-backups',
-                'commit' => '71bd80e',
+                'version' => '2.5.1',
+                'commit' => $gitCommit ?? '5cd4477',
                 'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            break;
+
+        case 'check_system_update':
+            checkAuth(true);
+
+            $localVersion = '2.5.1';
+            $localCommit = 'unknown';
+            $isGit = is_dir(__DIR__ . '/.git');
+
+            if ($isGit) {
+                $out = @shell_exec('git rev-parse --short HEAD 2>&1');
+                if ($out && strlen(trim($out)) <= 12 && !preg_match('/fatal|not a git/i', $out)) {
+                    $localCommit = trim($out);
+                }
+            }
+
+            $config = loadConfig();
+            $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/');
+            $secretToken = trim($config['sync_secret_token'] ?? '');
+
+            // 1. Check Cloud Server
+            $cloudData = null;
+            $cloudReachable = false;
+            if (!empty($cloudUrl)) {
+                $checkUrl = rtrim($cloudUrl, '/') . '/api.php?action=version';
+                $ch = curl_init($checkUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $resp = curl_exec($ch);
+                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+
+                if ($code === 200 && $resp) {
+                    $json = json_decode($resp, true);
+                    if ($json && ($json['status'] ?? '') === 'success') {
+                        $cloudData = $json;
+                        $cloudReachable = true;
+                    }
+                }
+            }
+
+            // 2. Check GitHub Repository (Latest commit on main branch)
+            $githubData = null;
+            $githubReachable = false;
+            $ghCh = curl_init('https://api.github.com/repos/crisjer009/OWIPI/commits/main');
+            curl_setopt($ghCh, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ghCh, CURLOPT_USERAGENT, 'OWIPI-Update-Checker');
+            curl_setopt($ghCh, CURLOPT_TIMEOUT, 6);
+            curl_setopt($ghCh, CURLOPT_SSL_VERIFYPEER, false);
+            $ghResp = curl_exec($ghCh);
+            $ghCode = curl_getinfo($ghCh, CURLINFO_HTTP_CODE);
+            curl_close($ghCh);
+
+            if ($ghCode === 200 && $ghResp) {
+                $ghJson = json_decode($ghResp, true);
+                if ($ghJson && isset($ghJson['sha'])) {
+                    $githubData = [
+                        'commit' => substr($ghJson['sha'], 0, 7),
+                        'full_commit' => $ghJson['sha'],
+                        'message' => $ghJson['commit']['message'] ?? '',
+                        'date' => $ghJson['commit']['committer']['date'] ?? '',
+                        'author' => $ghJson['commit']['author']['name'] ?? ''
+                    ];
+                    $githubReachable = true;
+                }
+            }
+
+            // 3. Determine if update is available
+            $updateAvailable = false;
+            $updateSource = null;
+            $remoteCommit = null;
+            $remoteVersion = null;
+            $updateNotes = null;
+
+            if ($githubReachable && $githubData) {
+                if ($localCommit !== 'unknown' && $localCommit !== $githubData['commit']) {
+                    $updateAvailable = true;
+                    $updateSource = 'github';
+                    $remoteCommit = $githubData['commit'];
+                    $updateNotes = $githubData['message'];
+                }
+            }
+
+            if (!$updateAvailable && $cloudReachable && $cloudData) {
+                $cCommit = $cloudData['commit'] ?? '';
+                if ($cCommit && $localCommit !== 'unknown' && $cCommit !== $localCommit) {
+                    $updateAvailable = true;
+                    $updateSource = 'cloud';
+                    $remoteCommit = $cCommit;
+                    $remoteVersion = $cloudData['version'] ?? '';
+                }
+            }
+
+            sendResponse([
+                'status' => 'success',
+                'local' => [
+                    'version' => $localVersion,
+                    'commit' => $localCommit,
+                    'is_git' => $isGit
+                ],
+                'cloud' => [
+                    'url' => $cloudUrl,
+                    'reachable' => $cloudReachable,
+                    'version' => $cloudData['version'] ?? null,
+                    'commit' => $cloudData['commit'] ?? null,
+                    'timestamp' => $cloudData['timestamp'] ?? null
+                ],
+                'github' => [
+                    'reachable' => $githubReachable,
+                    'commit' => $githubData['commit'] ?? null,
+                    'message' => $githubData['message'] ?? null,
+                    'date' => $githubData['date'] ?? null
+                ],
+                'update_available' => $updateAvailable,
+                'remote_commit' => $remoteCommit,
+                'remote_version' => $remoteVersion,
+                'update_source' => $updateSource,
+                'update_notes' => $updateNotes
+            ]);
+            break;
+
+        case 'apply_system_update':
+            checkAuth(true);
+
+            $preferredSource = $rawInput['source'] ?? ($_POST['source'] ?? 'auto');
+            $isGit = is_dir(__DIR__ . '/.git');
+            $canUseGit = false;
+
+            if ($isGit) {
+                $gitVersion = @shell_exec('git --version 2>&1');
+                if ($gitVersion && strpos(strtolower($gitVersion), 'git version') !== false) {
+                    $canUseGit = true;
+                }
+            }
+
+            $configFile = __DIR__ . '/db_config.json';
+            $configBackup = file_exists($configFile) ? file_get_contents($configFile) : null;
+            $updateLog = [];
+
+            // Helper functions for directory copy and cleanup
+            if (!function_exists('owipiSafeDeleteRecursive')) {
+                function owipiSafeDeleteRecursive($dirPath) {
+                    if (!is_dir($dirPath)) return;
+                    $items = @scandir($dirPath);
+                    if ($items === false) return;
+                    foreach ($items as $item) {
+                        if ($item === '.' || $item === '..') continue;
+                        $path = $dirPath . DIRECTORY_SEPARATOR . $item;
+                        if (is_dir($path)) {
+                            owipiSafeDeleteRecursive($path);
+                        } else {
+                            @chmod($path, 0777);
+                            @unlink($path);
+                        }
+                    }
+                    @chmod($dirPath, 0777);
+                    @rmdir($dirPath);
+                }
+            }
+
+            if (!function_exists('owipiSafeCopyDirectory')) {
+                function owipiSafeCopyDirectory($src, $dst, $skipNames = ['db_config.json', '.git', 'sync_token.txt', 'php_debug.log']) {
+                    if (!is_dir($dst)) {
+                        @mkdir($dst, 0777, true);
+                    }
+                    $dir = @opendir($src);
+                    if (!$dir) return;
+                    while (false !== ($file = readdir($dir))) {
+                        if ($file === '.' || $file === '..') continue;
+                        if (in_array($file, $skipNames, true)) continue;
+
+                        $srcFile = $src . DIRECTORY_SEPARATOR . $file;
+                        $dstFile = $dst . DIRECTORY_SEPARATOR . $file;
+                        if (is_dir($srcFile)) {
+                            owipiSafeCopyDirectory($srcFile, $dstFile, $skipNames);
+                        } else {
+                            if (file_exists($dstFile)) {
+                                @chmod($dstFile, 0777);
+                                @unlink($dstFile);
+                            }
+                            @copy($srcFile, $dstFile);
+                        }
+                    }
+                    closedir($dir);
+                }
+            }
+
+            // Method 1: Git Pull
+            if ($canUseGit && ($preferredSource === 'auto' || $preferredSource === 'git')) {
+                $updateLog[] = "Initiating Git pull from cloud repository...";
+                $gitPullOutput = @shell_exec('git pull origin main 2>&1');
+                $updateLog[] = $gitPullOutput ? trim($gitPullOutput) : "Git pull executed.";
+
+                if (!file_exists($configFile) && $configBackup !== null) {
+                    file_put_contents($configFile, $configBackup);
+                }
+
+                try {
+                    $db = new OWI_DB();
+                    $db->initializeDatabase();
+                    $updateLog[] = "Database schemas and migrations verified.";
+                } catch (Exception $eDb) {
+                    $updateLog[] = "Database note: " . $eDb->getMessage();
+                }
+
+                $newCommit = @shell_exec('git rev-parse --short HEAD 2>&1');
+                logAudit('SYSTEM_UPDATE', "System updated via Git to commit " . trim($newCommit), null, $_SESSION['username'] ?? 'admin');
+
+                sendResponse([
+                    'status' => 'success',
+                    'method' => 'git',
+                    'new_commit' => trim($newCommit),
+                    'logs' => $updateLog,
+                    'message' => 'System successfully updated via Git!'
+                ]);
+                break;
+            }
+
+            // Method 2: ZIP Package Extraction
+            $config = loadConfig();
+            $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/');
+            $secretToken = trim($config['sync_secret_token'] ?? '');
+
+            $downloadUrl = "https://github.com/crisjer009/OWIPI/archive/refs/heads/main.zip";
+            if ($preferredSource === 'cloud' && !empty($cloudUrl)) {
+                $downloadUrl = rtrim($cloudUrl, '/') . '/api.php?action=download_system_zip&secret_token=' . urlencode($secretToken);
+            }
+
+            $updateLog[] = "Downloading latest package from " . ($preferredSource === 'cloud' ? "Cloud Server" : "GitHub Archive") . "...";
+
+            $ch = curl_init($downloadUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 90);
+            $zipData = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if (($httpCode !== 200 || strlen($zipData) < 2000) && $preferredSource !== 'github') {
+                $updateLog[] = "Cloud download failed. Falling back to GitHub repository archive...";
+                $ch = curl_init("https://github.com/crisjer009/OWIPI/archive/refs/heads/main.zip");
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 90);
+                $zipData = curl_exec($ch);
+                curl_close($ch);
+            }
+
+            if (!$zipData || strlen($zipData) < 2000) {
+                throw new Exception("Failed to download update package from cloud. Please verify internet connection.");
+            }
+
+            $tempZip = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'owipi_update_' . time() . '.zip';
+            $tempExtract = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'owipi_update_' . time() . '_extract';
+
+            file_put_contents($tempZip, $zipData);
+            $updateLog[] = "Package downloaded successfully (" . round(strlen($zipData) / 1024, 1) . " KB).";
+
+            $zip = new ZipArchive();
+            if ($zip->open($tempZip) !== true) {
+                @unlink($tempZip);
+                throw new Exception("Unable to extract update ZIP archive.");
+            }
+
+            if (!is_dir($tempExtract)) {
+                @mkdir($tempExtract, 0777, true);
+            }
+            $zip->extractTo($tempExtract);
+            $zip->close();
+            @unlink($tempZip);
+
+            $subFolders = glob($tempExtract . DIRECTORY_SEPARATOR . "*", GLOB_ONLYDIR);
+            $sourceDir = (!empty($subFolders) && count($subFolders) === 1) ? $subFolders[0] : $tempExtract;
+
+            $updateLog[] = "Applying updated code files to local installation...";
+            owipiSafeCopyDirectory($sourceDir, __DIR__, ['db_config.json', '.git', 'sync_token.txt', 'php_debug.log']);
+            owipiSafeDeleteRecursive($tempExtract);
+
+            if (!file_exists($configFile) && $configBackup !== null) {
+                file_put_contents($configFile, $configBackup);
+            }
+
+            try {
+                $db = new OWI_DB();
+                $db->initializeDatabase();
+                $updateLog[] = "Database schemas and migrations verified.";
+            } catch (Exception $eDb2) {
+                $updateLog[] = "Database note: " . $eDb2->getMessage();
+            }
+
+            logAudit('SYSTEM_UPDATE', "System updated via Cloud ZIP Package", null, $_SESSION['username'] ?? 'admin');
+
+            sendResponse([
+                'status' => 'success',
+                'method' => 'zip',
+                'logs' => $updateLog,
+                'message' => 'System successfully updated from cloud archive!'
             ]);
             break;
 

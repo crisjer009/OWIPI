@@ -2001,6 +2001,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             🧪 Resolution Sandbox
                         </a>
 
+                        <button onclick="openSystemUpdateModal()" class="btn btn-secondary btn-sm"
+                            style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                            ☁️ Cloud System Updates
+                        </button>
+
                         <?php if ($driverLoaded): ?>
                             <button onclick="initializeDatabase()" class="btn btn-success btn-sm"
                                 style="padding: 0.65rem 1.15rem; font-size: 0.85rem; font-weight: 600; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: 1px solid #059669; color: #ffffff; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); transition: all 0.2s ease;">
@@ -2378,6 +2383,53 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             Read-Only: Only System Administrators (<code>sys_admin</code>) are authorized to modify or clear this token.
                         </div>
                     <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Cloud System Updates & Version Management Card (Visible to System Admin and Admin) -->
+            <div class="card" style="max-width: 600px; margin-top: 2rem;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <h2 class="card-title" style="margin-bottom: 0;">
+                        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor; vertical-align: middle; margin-right: 6px; color: #38bdf8;">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+                        </svg>
+                        Cloud System Updates &amp; Pulling
+                    </h2>
+                    <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.72rem; padding: 3px 10px; border-radius: 9999px; font-weight: 600;">
+                        v2.5.1
+                    </span>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.25rem;">
+                        Check and pull updates directly from the central cloud server or repository to keep this laptop synchronized with the latest features, bug fixes, and database migrations.
+                    </p>
+
+                    <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.8rem; color: #94a3b8;">Cloud Target:</span>
+                            <span style="font-size: 0.8rem; font-family: monospace; color: #38bdf8; word-break: break-all;"><?= htmlspecialchars($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/') ?></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: #94a3b8;">Local Engine:</span>
+                            <span style="font-size: 0.8rem; font-family: monospace; color: #10b981;">
+                                <?= is_dir(__DIR__ . '/.git') ? 'Git Enabled (Instant Pull Supported)' : 'Standalone (Cloud Archive Extraction)' ?>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="system-update-card-summary" style="display: none; margin-bottom: 1.25rem; padding: 1rem; border-radius: 8px;"></div>
+
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button type="button" id="btn-card-check-update" onclick="checkForSystemUpdates(false)" class="btn btn-secondary"
+                            style="width: auto; font-size: 0.85rem; padding: 8px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                            <span>🔍</span> Check for Cloud Updates
+                        </button>
+                        <button type="button" id="btn-card-apply-update" onclick="openSystemUpdateModal()" class="btn btn-primary"
+                            style="width: auto; font-size: 0.85rem; padding: 8px 18px; cursor: pointer; display: none; align-items: center; gap: 6px; font-weight: 600; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                            <span>⬇️</span> Download &amp; Apply Update
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -4919,6 +4971,250 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     showCustomAlert("Request failed: " + err, "Network Error");
                 });
         }
+
+        // ==========================================
+        // Cloud System Update & Pulling Engine
+        // ==========================================
+        let lastCheckedUpdateData = null;
+        let isSystemUpdating = false;
+
+        function openSystemUpdateModal() {
+            const modalEl = document.getElementById('system-update-modal-overlay');
+            if (modalEl) {
+                modalEl.classList.add('active');
+                if (!lastCheckedUpdateData) {
+                    checkForSystemUpdates(true);
+                }
+            }
+        }
+
+        function closeSystemUpdateModal() {
+            if (isSystemUpdating) {
+                showToast("System update is currently in progress. Please do not close.", "warning");
+                return;
+            }
+            const modalEl = document.getElementById('system-update-modal-overlay');
+            if (modalEl) {
+                modalEl.classList.remove('active');
+            }
+        }
+
+        function checkForSystemUpdates(inModal = false) {
+            const btnCard = document.getElementById('btn-card-check-update');
+            const btnModal = document.getElementById('btn-modal-check-update');
+            const statusBox = document.getElementById('system-update-modal-status');
+            const cardBox = document.getElementById('system-update-card-summary');
+            const btnApplyModal = document.getElementById('btn-modal-apply-update');
+            const btnApplyCard = document.getElementById('btn-card-apply-update');
+
+            if (btnCard) btnCard.innerHTML = '<span>⏳</span> Checking...';
+            if (btnModal) btnModal.innerHTML = '<span>⏳</span> Checking Cloud...';
+
+            if (statusBox) {
+                statusBox.style.display = 'block';
+                statusBox.innerHTML = `
+                    <div style="display:flex; align-items:center; justify-content:center; gap:10px; color:#38bdf8; padding: 10px;">
+                        <span class="btn-spinner" style="border-color: rgba(56,189,248,0.3); border-top-color: #38bdf8;"></span>
+                        <span>Connecting to Cloud Server &amp; GitHub repository...</span>
+                    </div>
+                `;
+            }
+
+            fetch('api.php?action=check_system_update')
+                .then(res => res.json())
+                .then(data => {
+                    if (btnCard) btnCard.innerHTML = '<span>🔍</span> Check for Cloud Updates';
+                    if (btnModal) btnModal.innerHTML = '<span>🔄</span> Re-check Updates';
+
+                    if (data.status !== 'success') {
+                        const errMsg = data.message || 'Failed to check updates.';
+                        if (statusBox) {
+                            statusBox.innerHTML = `
+                                <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
+                                    ⚠️ <strong>Check Failed:</strong> ${escapeHtml(errMsg)}
+                                </div>
+                            `;
+                        }
+                        if (cardBox) {
+                            cardBox.style.display = 'block';
+                            cardBox.innerHTML = `<span style="color:#ef4444;">⚠️ Update check error: ${escapeHtml(errMsg)}</span>`;
+                        }
+                        return;
+                    }
+
+                    lastCheckedUpdateData = data;
+                    renderUpdateResults(data);
+                })
+                .catch(err => {
+                    if (btnCard) btnCard.innerHTML = '<span>🔍</span> Check for Cloud Updates';
+                    if (btnModal) btnModal.innerHTML = '<span>🔄</span> Re-check Updates';
+                    if (statusBox) {
+                        statusBox.innerHTML = `
+                            <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
+                                ⚠️ <strong>Network Error:</strong> Cloud server unreachable. Please verify internet connection.
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        function renderUpdateResults(data) {
+            const statusBox = document.getElementById('system-update-modal-status');
+            const cardBox = document.getElementById('system-update-card-summary');
+            const btnApplyModal = document.getElementById('btn-modal-apply-update');
+            const btnApplyCard = document.getElementById('btn-card-apply-update');
+
+            const localCommit = data.local?.commit || 'unknown';
+            const localVersion = data.local?.version || '2.5.1';
+            const isUpdateAvail = !!data.update_available;
+
+            let html = '';
+            if (isUpdateAvail) {
+                html = `
+                    <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 10px; padding: 1rem; text-align: left;">
+                        <div style="display:flex; align-items:center; gap:8px; color:#f59e0b; font-weight:700; font-size:0.95rem; margin-bottom:8px;">
+                            <span>🚀</span> New System Update Available!
+                        </div>
+                        <div style="font-size:0.83rem; color:#cbd5e1; line-height:1.5;">
+                            <div>• <strong>Current Local Build:</strong> <code>${localCommit}</code> (v${localVersion})</div>
+                            <div>• <strong>Cloud Available Build:</strong> <code style="color:#38bdf8;">${data.remote_commit || 'Latest'}</code></div>
+                            ${data.update_notes ? `<div style="margin-top:6px; color:#94a3b8; font-style:italic;">Commit: "${escapeHtml(data.update_notes)}"</div>` : ''}
+                        </div>
+                        <div style="margin-top:10px; font-size:0.75rem; color:#10b981;">
+                            ✓ Your local database, store scans, and db_config.json will be 100% preserved.
+                        </div>
+                    </div>
+                `;
+                if (btnApplyModal) btnApplyModal.style.display = 'inline-flex';
+                if (btnApplyCard) btnApplyCard.style.display = 'inline-flex';
+            } else {
+                html = `
+                    <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 10px; padding: 1rem; text-align: left;">
+                        <div style="display:flex; align-items:center; gap:8px; color:#10b981; font-weight:700; font-size:0.95rem; margin-bottom:6px;">
+                            <span>✅</span> System Is Up To Date!
+                        </div>
+                        <div style="font-size:0.83rem; color:#cbd5e1; line-height:1.5;">
+                            This device is running the latest codebase from the cloud repository (Commit: <code>${localCommit}</code>).
+                        </div>
+                    </div>
+                `;
+                if (btnApplyModal) btnApplyModal.style.display = 'none';
+                if (btnApplyCard) btnApplyCard.style.display = 'none';
+            }
+
+            if (statusBox) statusBox.innerHTML = html;
+            if (cardBox) {
+                cardBox.style.display = 'block';
+                cardBox.innerHTML = html;
+            }
+        }
+
+        function applySystemUpdate() {
+            if (isSystemUpdating) return;
+
+            customConfirm(
+                "Are you sure you want to download and apply the latest system update from the cloud?\\n\\n• Application code will be updated.\\n• Local database, scan history, and db_config.json will remain untouched.\\n• Database schema migrations will be applied automatically.",
+                function() {
+                    isSystemUpdating = true;
+                    openSystemUpdateModal();
+
+                    const statusBox = document.getElementById('system-update-modal-status');
+                    const btnModal = document.getElementById('btn-modal-check-update');
+                    const btnApplyModal = document.getElementById('btn-modal-apply-update');
+                    const progressLog = document.getElementById('system-update-progress-log');
+
+                    if (btnModal) btnModal.disabled = true;
+                    if (btnApplyModal) {
+                        btnApplyModal.disabled = true;
+                        btnApplyModal.innerHTML = '<span>⏳</span> Updating System...';
+                    }
+
+                    if (statusBox) {
+                        statusBox.innerHTML = `
+                            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 1rem; text-align: left;">
+                                <div style="display:flex; align-items:center; gap:10px; color:#38bdf8; font-weight:700; font-size:0.95rem; margin-bottom:8px;">
+                                    <span class="btn-spinner" style="border-color: rgba(56,189,248,0.3); border-top-color: #38bdf8;"></span>
+                                    <span>Downloading &amp; Applying Cloud Update...</span>
+                                </div>
+                                <div style="font-size:0.8rem; color:#94a3b8;">
+                                    Please keep this window open while files are synchronized.
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (progressLog) {
+                        progressLog.style.display = 'block';
+                        progressLog.innerHTML = `
+                            <div style="color:#64748b; font-size:0.75rem; font-family:monospace; margin-bottom:4px;">[1/4] Connecting to cloud repository...</div>
+                        `;
+                    }
+
+                    fetch('api.php?action=apply_system_update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ source: 'auto' })
+                    })
+                    .then(res => res.json())
+                    .then(async data => {
+                        isSystemUpdating = false;
+                        if (btnModal) btnModal.disabled = false;
+
+                        if (data.status === 'success') {
+                            if (progressLog && data.logs) {
+                                progressLog.innerHTML = data.logs.map(l => `<div style="color:#10b981; font-size:0.75rem; font-family:monospace;">✓ ${escapeHtml(l)}</div>`).join('');
+                            }
+                            if (statusBox) {
+                                statusBox.innerHTML = `
+                                    <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 1.25rem; text-align: center;">
+                                        <div style="font-size:1.75rem; margin-bottom:6px;">🎉</div>
+                                        <div style="color:#10b981; font-weight:700; font-size:1.05rem; margin-bottom:4px;">
+                                            Update Applied Successfully!
+                                        </div>
+                                        <div style="font-size:0.82rem; color:#cbd5e1; margin-bottom:12px;">
+                                            ${escapeHtml(data.message)} (Method: <strong>${escapeHtml(data.method || 'auto')}</strong>)
+                                        </div>
+                                        <button type="button" class="btn btn-primary" onclick="window.location.reload()" style="font-size:0.85rem; padding:8px 18px; margin: 0 auto; display:inline-flex;">
+                                            🔄 Refresh Dashboard
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                            if (btnApplyModal) btnApplyModal.style.display = 'none';
+                            showToast("System updated successfully! Reloading in 3 seconds...", "success");
+                            setTimeout(() => { window.location.reload(); }, 3000);
+                        } else {
+                            if (btnApplyModal) {
+                                btnApplyModal.disabled = false;
+                                btnApplyModal.innerHTML = '<span>⬇️</span> Retry Update';
+                            }
+                            if (statusBox) {
+                                statusBox.innerHTML = `
+                                    <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:12px; border-radius:8px; text-align:left;">
+                                        ❌ <strong>Update Failed:</strong> ${escapeHtml(data.message || 'Unknown error occurred')}
+                                    </div>
+                                `;
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        isSystemUpdating = false;
+                        if (btnModal) btnModal.disabled = false;
+                        if (btnApplyModal) {
+                            btnApplyModal.disabled = false;
+                            btnApplyModal.innerHTML = '<span>⬇️</span> Retry Update';
+                        }
+                        if (statusBox) {
+                            statusBox.innerHTML = `
+                                <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:12px; border-radius:8px; text-align:left;">
+                                    ❌ <strong>Network / Execution Error:</strong> ${escapeHtml(err.toString())}
+                                </div>
+                            `;
+                        }
+                    });
+                }
+            );
+        }
     </script>
 
     <!-- Modal for Print Summary Options (All vs Variance Only) on Dashboard -->
@@ -4969,6 +5265,44 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px;">Cancel</button>
                 <button type="button" class="btn btn-primary" id="custom-dialog-btn-primary"
                     style="padding: 0.6rem 1.25rem; font-size: 0.85rem; border-radius: 8px; font-weight: 600;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cloud System Updates Modal -->
+    <div class="modal-overlay" id="system-update-modal-overlay" style="z-index: 999999;">
+        <div class="modal-card"
+            style="max-width: 520px; width: 92%; text-align: center; background: #111827; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85); backdrop-filter: blur(16px);">
+            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">☁️</div>
+            <h3 class="modal-title"
+                style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 800; color: white; margin-bottom: 0.25rem;">
+                Cloud System Updates
+            </h3>
+            <p style="color: #94a3b8; font-size: 0.82rem; margin-bottom: 1.25rem; line-height: 1.4;">
+                Pull new code updates and schema migrations from the cloud directly to this local laptop.
+            </p>
+
+            <div id="system-update-modal-status" style="margin-bottom: 1.25rem;">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div id="system-update-progress-log"
+                style="display: none; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.75rem; text-align: left; max-height: 120px; overflow-y: auto; margin-bottom: 1.25rem;">
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button type="button" class="btn btn-secondary" id="btn-modal-check-update" onclick="checkForSystemUpdates(true)"
+                    style="width: auto; font-size: 0.85rem; padding: 8px 16px; cursor: pointer; border-radius: 8px;">
+                    <span>🔄</span> Check Updates
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-modal-apply-update" onclick="applySystemUpdate()"
+                    style="width: auto; font-size: 0.85rem; padding: 8px 20px; cursor: pointer; border-radius: 8px; font-weight: 600; display: none; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                    <span>⬇️</span> Download &amp; Apply Update
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeSystemUpdateModal()"
+                    style="width: auto; font-size: 0.85rem; padding: 8px 14px; cursor: pointer; border-radius: 8px; background: rgba(255,255,255,0.05); color: #8b949e; border: 1px solid rgba(255,255,255,0.1);">
+                    Close
+                </button>
             </div>
         </div>
     </div>
