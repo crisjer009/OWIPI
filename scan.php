@@ -2399,24 +2399,62 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
-                    // Adaptive scans & locators polling for Host Console
+                    // Adaptive scans & locators polling for Host Console with idle detection
                     let hostPollInterval = null;
+                    let isHostIdle = false;
+                    let hostIdleTimer = null;
+
                     const runHostPoll = () => {
-                        loadHostScans();
-                        loadHostLocators();
+                        if (!document.hidden && !isHostIdle) {
+                            loadHostScans();
+                            loadHostLocators();
+                        }
                     };
+
                     const startHostPollTimer = () => {
                         if (hostPollInterval) clearInterval(hostPollInterval);
-                        runHostPoll();
-                        const intervalMs = document.hidden ? 5000 : 1000;
-                        hostPollInterval = setInterval(runHostPoll, intervalMs);
+                        if (storeHostLockTimer) clearInterval(storeHostLockTimer);
+                        if (!document.hidden && !isHostIdle) {
+                            runHostPoll();
+                            checkStoreHostLock();
+                            hostPollInterval = setInterval(runHostPoll, 3000);
+                            storeHostLockTimer = setInterval(checkStoreHostLock, 5000);
+                        }
                     };
-                    startHostPollTimer();
-                    document.addEventListener('visibilitychange', startHostPollTimer);
 
-                    // Poll store host lock to prevent opening multiple scan.php host windows for same store
-                    checkStoreHostLock();
-                    storeHostLockTimer = setInterval(checkStoreHostLock, 5000);
+                    const stopHostPollTimer = () => {
+                        if (hostPollInterval) clearInterval(hostPollInterval);
+                        if (storeHostLockTimer) clearInterval(storeHostLockTimer);
+                        hostPollInterval = null;
+                        storeHostLockTimer = null;
+                    };
+
+                    const resetHostIdle = () => {
+                        if (isHostIdle) {
+                            isHostIdle = false;
+                            startHostPollTimer();
+                        }
+                        clearTimeout(hostIdleTimer);
+                        hostIdleTimer = setTimeout(() => {
+                            isHostIdle = true;
+                            stopHostPollTimer();
+                        }, 300000); // 5 minutes inactivity
+                    };
+
+                    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+                        window.addEventListener(evt, resetHostIdle, { passive: true });
+                    });
+
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden) {
+                            stopHostPollTimer();
+                        } else {
+                            resetHostIdle();
+                        }
+                    });
+
+                    startHostPollTimer();
+                    resetHostIdle();
                 } else {
                     // On Mobile (Scanner Mode)
                     document.body.style.overflow = 'auto';

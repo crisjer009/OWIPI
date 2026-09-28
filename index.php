@@ -3157,14 +3157,62 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             // Start automatic scan logs polling
             loadScans();
-            autoPollInterval = setInterval(loadScans, 3000);
+            
+            // Adaptive polling & Idle management to prevent server overload
+            let isUserIdle = false;
+            let idleTimer = null;
+
+            const startPolling = () => {
+                if (autoPollInterval) clearInterval(autoPollInterval);
+                if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
+                if (!document.hidden && !isUserIdle) {
+                    loadScans();
+                    checkStoreHostLock();
+                    autoPollInterval = setInterval(loadScans, 4000);
+                    storeHostLockTimerIndex = setInterval(checkStoreHostLock, 5000);
+                }
+            };
+
+            const stopPolling = () => {
+                if (autoPollInterval) clearInterval(autoPollInterval);
+                if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
+                autoPollInterval = null;
+                storeHostLockTimerIndex = null;
+            };
+
+            const resetIdleTimer = () => {
+                if (isUserIdle) {
+                    isUserIdle = false;
+                    startPolling();
+                }
+                clearTimeout(idleTimer);
+                // Pause polling after 5 minutes of total user inactivity
+                idleTimer = setTimeout(() => {
+                    isUserIdle = true;
+                    stopPolling();
+                }, 300000);
+            };
+
+            // Listen for user interactions to track active status
+            ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+                window.addEventListener(evt, resetIdleTimer, { passive: true });
+            });
+
+            // Pause polling immediately when tab is hidden or minimized
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopPolling();
+                } else {
+                    resetIdleTimer();
+                }
+            });
+
+            // Initial start
+            startPolling();
+            resetIdleTimer();
 
             // Load products list
             loadProducts();
-
-            // Heartbeat check for single store host session lock
-            checkStoreHostLock();
-            storeHostLockTimerIndex = setInterval(checkStoreHostLock, 3000);
         });
 
         // Switch Views (tabs)

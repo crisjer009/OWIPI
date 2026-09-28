@@ -764,6 +764,16 @@ class OWI_DB {
         } catch (Exception $ex) {
             // Already indexed or error
         }
+        try {
+            $this->execute("ALTER TABLE `{$cleanStore}_countsheet` ADD INDEX idx_upc (UPC)");
+        } catch (Exception $ex) {
+            // Already indexed or error
+        }
+        try {
+            $this->execute("ALTER TABLE `{$cleanStore}_countsheet` ADD INDEX idx_sku (SKU)");
+        } catch (Exception $ex) {
+            // Already indexed or error
+        }
 
         // Dynamically add synced column for existing tables
         try {

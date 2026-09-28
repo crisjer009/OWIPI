@@ -1108,8 +1108,8 @@ try {
             // Fast ETag fingerprint check to avoid redundant data transfer when no new scans exist
             $dataHash = '';
             try {
-                $fpRow = $db->query("SELECT MAX(RecNo) as max_id, COUNT(*) as cnt, SUM(IF(Edited = 1, EditedQty, Qty)) as sum_qty, MAX(IF(Edited = 1, EditedQty, Qty)) as max_qty FROM `{$store}_countsheet`");
-                $dataHash = md5(($fpRow[0]['max_id'] ?? '0') . '_' . ($fpRow[0]['cnt'] ?? '0') . '_' . ($fpRow[0]['sum_qty'] ?? '0') . '_' . ($fpRow[0]['max_qty'] ?? '0') . '_' . $location);
+                $fpRow = $db->query("SELECT MAX(RecNo) as max_id, COUNT(RecNo) as cnt, MAX(CountDate) as last_scan FROM `{$store}_countsheet`");
+                $dataHash = md5(($fpRow[0]['max_id'] ?? '0') . '_' . ($fpRow[0]['cnt'] ?? '0') . '_' . ($fpRow[0]['last_scan'] ?? '0') . '_' . $location);
                 $clientHash = $_SERVER['HTTP_IF_NONE_MATCH'] ?? ($_GET['hash'] ?? '');
                 if (!empty($clientHash) && $clientHash === $dataHash) {
                     sendResponse([
@@ -1122,7 +1122,7 @@ try {
                 $dataHash = '';
             }
 
-            // Fetch scans from dynamic store countsheet table
+            // Fetch scans from dynamic store countsheet table using indexed lookup
             $sqlScans = "
                 SELECT c.RecNo as id, c.UPC as barcode, c.Qty as original_qty, 
                        IF(c.Edited = 1, c.EditedQty, c.Qty) as quantity, 
@@ -1131,20 +1131,19 @@ try {
                        c.Descr as product_name, c.SKU as sku,
                        c.Added as added, c.Edited as edited, c.EditedQty as edited_qty,
                        c.Variance as variance,
-                       COALESCE(i.Qty, m.Qty, 0.00) as master_qty
+                       COALESCE(i.Qty, 0.00) as master_qty
                 FROM `{$store}_countsheet` c
-                LEFT JOIN `{$store}_items` i ON (i.UPC = c.UPC OR (c.UPC != '' AND i.SKU = c.UPC) OR (c.SKU != '' AND i.SKU = c.SKU))
-                LEFT JOIN `items` m ON (m.UPC = c.UPC OR (c.UPC != '' AND m.SKU = c.UPC) OR (c.SKU != '' AND m.SKU = c.SKU))
+                LEFT JOIN `{$store}_items` i ON i.UPC = c.UPC
             ";
 
             if ($location !== '') {
                 // Remove dynamic "Slot " prefix if passed from local mobile views
                 $cleanLoc = str_replace('Slot ', '', $location);
                 $sqlScans .= " WHERE TRIM(c.SlotNo) = ? OR TRIM(c.SlotNo) = ? ";
-                $sqlScans .= " ORDER BY c.RecNo DESC";
+                $sqlScans .= " ORDER BY c.RecNo DESC LIMIT 1000";
                 $scans = $db->query($sqlScans, [$location, "Slot " . $cleanLoc]);
             } else {
-                $sqlScans .= " ORDER BY c.RecNo DESC";
+                $sqlScans .= " ORDER BY c.RecNo DESC LIMIT 2000";
                 $scans = $db->query($sqlScans);
             }
 
