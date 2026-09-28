@@ -3158,14 +3158,39 @@ if ($driverLoaded && $dbStatus === 'connected') {
             // Start automatic scan logs polling
             loadScans();
             
-            // Adaptive polling & Idle management to prevent server overload
-            let isUserIdle = false;
-            let idleTimer = null;
+            // Smart Standby Mode (Auto-Pause with Wake-on-Action)
+            let isUserStandby = false;
+            let standbyTimer = null;
+            const STANDBY_TIMEOUT = 180000; // 3 minutes of inactivity
 
-            const startPolling = () => {
+            function showStandbyBanner() {
+                let banner = document.getElementById('standby-indicator-banner');
+                if (!banner) {
+                    banner = document.createElement('div');
+                    banner.id = 'standby-indicator-banner';
+                    banner.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b; box-shadow:0 0 10px #f59e0b;"></span>
+                            <span><strong>Standby Mode Active</strong> &bull; Cloud queries paused to save server resources. Move mouse, click, or scan to wake.</span>
+                        </div>
+                        <button onclick="window.wakeFromStandby()" style="background:#f59e0b; color:#0b0f19; font-weight:700; border:none; padding:5px 14px; border-radius:6px; cursor:pointer; font-size:0.8rem;">Wake Now</button>
+                    `;
+                    banner.style.cssText = "position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:rgba(17,24,39,0.96); border:1px solid rgba(245,158,11,0.6); color:#f3f4f6; padding:10px 22px; border-radius:30px; box-shadow:0 12px 35px rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; gap:20px; font-size:0.85rem; backdrop-filter:blur(8px); animation:fadeIn 0.3s ease;";
+                    document.body.appendChild(banner);
+                } else {
+                    banner.style.display = 'flex';
+                }
+            }
+
+            function hideStandbyBanner() {
+                const banner = document.getElementById('standby-indicator-banner');
+                if (banner) banner.style.display = 'none';
+            }
+
+            const startActivePolling = () => {
                 if (autoPollInterval) clearInterval(autoPollInterval);
                 if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
-                if (!document.hidden && !isUserIdle) {
+                if (!document.hidden && !isUserStandby) {
                     loadScans();
                     checkStoreHostLock();
                     autoPollInterval = setInterval(loadScans, 4000);
@@ -3173,43 +3198,44 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 }
             };
 
-            const stopPolling = () => {
+            const pauseAllPolling = () => {
                 if (autoPollInterval) clearInterval(autoPollInterval);
                 if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
                 autoPollInterval = null;
                 storeHostLockTimerIndex = null;
             };
 
-            const resetIdleTimer = () => {
-                if (isUserIdle) {
-                    isUserIdle = false;
-                    startPolling();
+            window.wakeFromStandby = () => {
+                if (isUserStandby) {
+                    isUserStandby = false;
+                    hideStandbyBanner();
+                    startActivePolling();
                 }
-                clearTimeout(idleTimer);
-                // Pause polling after 5 minutes of total user inactivity
-                idleTimer = setTimeout(() => {
-                    isUserIdle = true;
-                    stopPolling();
-                }, 300000);
+                clearTimeout(standbyTimer);
+                standbyTimer = setTimeout(() => {
+                    isUserStandby = true;
+                    pauseAllPolling();
+                    showStandbyBanner();
+                }, STANDBY_TIMEOUT);
             };
 
-            // Listen for user interactions to track active status
+            // Wake-on-action: Any mouse movement, click, typing, or touch wakes the host
             ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
-                window.addEventListener(evt, resetIdleTimer, { passive: true });
+                window.addEventListener(evt, window.wakeFromStandby, { passive: true });
             });
 
-            // Pause polling immediately when tab is hidden or minimized
+            // Pause immediately when tab is minimized or hidden
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
-                    stopPolling();
+                    pauseAllPolling();
                 } else {
-                    resetIdleTimer();
+                    window.wakeFromStandby();
                 }
             });
 
             // Initial start
-            startPolling();
-            resetIdleTimer();
+            startActivePolling();
+            window.wakeFromStandby();
 
             // Load products list
             loadProducts();

@@ -2399,13 +2399,38 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
-                    // Adaptive scans & locators polling for Host Console with idle detection
+                    // Smart Standby Mode (Auto-Pause with Wake-on-Action)
                     let hostPollInterval = null;
-                    let isHostIdle = false;
-                    let hostIdleTimer = null;
+                    let isHostStandby = false;
+                    let hostStandbyTimer = null;
+                    const HOST_STANDBY_TIMEOUT = 180000; // 3 minutes of inactivity
+
+                    function showHostStandbyBanner() {
+                        let banner = document.getElementById('host-standby-banner');
+                        if (!banner) {
+                            banner = document.createElement('div');
+                            banner.id = 'host-standby-banner';
+                            banner.innerHTML = `
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b; box-shadow:0 0 10px #f59e0b;"></span>
+                                    <span><strong>Host Standby Mode</strong> &bull; Live queries paused to save cloud resources. Move mouse, click, or scan to wake.</span>
+                                </div>
+                                <button onclick="window.wakeHostFromStandby()" style="background:#f59e0b; color:#0b0f19; font-weight:700; border:none; padding:5px 14px; border-radius:6px; cursor:pointer; font-size:0.8rem;">Wake Now</button>
+                            `;
+                            banner.style.cssText = "position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:rgba(17,24,39,0.96); border:1px solid rgba(245,158,11,0.6); color:#f3f4f6; padding:10px 22px; border-radius:30px; box-shadow:0 12px 35px rgba(0,0,0,0.6); z-index:99999; display:flex; align-items:center; gap:20px; font-size:0.85rem; backdrop-filter:blur(8px); animation:fadeIn 0.3s ease;";
+                            document.body.appendChild(banner);
+                        } else {
+                            banner.style.display = 'flex';
+                        }
+                    }
+
+                    function hideHostStandbyBanner() {
+                        const banner = document.getElementById('host-standby-banner');
+                        if (banner) banner.style.display = 'none';
+                    }
 
                     const runHostPoll = () => {
-                        if (!document.hidden && !isHostIdle) {
+                        if (!document.hidden && !isHostStandby) {
                             loadHostScans();
                             loadHostLocators();
                         }
@@ -2414,7 +2439,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     const startHostPollTimer = () => {
                         if (hostPollInterval) clearInterval(hostPollInterval);
                         if (storeHostLockTimer) clearInterval(storeHostLockTimer);
-                        if (!document.hidden && !isHostIdle) {
+                        if (!document.hidden && !isHostStandby) {
                             runHostPoll();
                             checkStoreHostLock();
                             hostPollInterval = setInterval(runHostPoll, 3000);
@@ -2429,32 +2454,34 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         storeHostLockTimer = null;
                     };
 
-                    const resetHostIdle = () => {
-                        if (isHostIdle) {
-                            isHostIdle = false;
+                    window.wakeHostFromStandby = () => {
+                        if (isHostStandby) {
+                            isHostStandby = false;
+                            hideHostStandbyBanner();
                             startHostPollTimer();
                         }
-                        clearTimeout(hostIdleTimer);
-                        hostIdleTimer = setTimeout(() => {
-                            isHostIdle = true;
+                        clearTimeout(hostStandbyTimer);
+                        hostStandbyTimer = setTimeout(() => {
+                            isHostStandby = true;
                             stopHostPollTimer();
-                        }, 300000); // 5 minutes inactivity
+                            showHostStandbyBanner();
+                        }, HOST_STANDBY_TIMEOUT);
                     };
 
                     ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
-                        window.addEventListener(evt, resetHostIdle, { passive: true });
+                        window.addEventListener(evt, window.wakeHostFromStandby, { passive: true });
                     });
 
                     document.addEventListener('visibilitychange', () => {
                         if (document.hidden) {
                             stopHostPollTimer();
                         } else {
-                            resetHostIdle();
+                            window.wakeHostFromStandby();
                         }
                     });
 
                     startHostPollTimer();
-                    resetHostIdle();
+                    window.wakeHostFromStandby();
                 } else {
                     // On Mobile (Scanner Mode)
                     document.body.style.overflow = 'auto';
