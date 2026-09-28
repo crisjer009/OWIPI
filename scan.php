@@ -2399,13 +2399,15 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         renderHostQRCode("<?= $scanUrl ?>");
                     }, 150);
 
-                    // Smart Standby Mode (Auto-Pause with Wake-on-Action)
+                    // Differentiate Local Host vs Cloud Host
+                    const isCloudHost = <?= json_encode(isCloudServer()) ?>;
                     let hostPollInterval = null;
                     let isHostStandby = false;
                     let hostStandbyTimer = null;
-                    const HOST_STANDBY_TIMEOUT = 180000; // 3 minutes of inactivity
+                    const HOST_STANDBY_TIMEOUT = 180000; // 3 minutes of inactivity (Cloud Host only)
 
                     function showHostStandbyBanner() {
+                        if (!isCloudHost) return; // Standby banner is NEVER shown on Local Host
                         let banner = document.getElementById('host-standby-banner');
                         if (!banner) {
                             banner = document.createElement('div');
@@ -2413,7 +2415,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                             banner.innerHTML = `
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b; box-shadow:0 0 10px #f59e0b;"></span>
-                                    <span><strong>Host Standby Mode</strong> &bull; Live queries paused to save cloud resources. Move mouse, click, or scan to wake.</span>
+                                    <span><strong>Cloud Host Standby Mode</strong> &bull; Live queries paused to save cloud resources. Move mouse, click, or scan to wake.</span>
                                 </div>
                                 <button onclick="window.wakeHostFromStandby()" style="background:#f59e0b; color:#0b0f19; font-weight:700; border:none; padding:5px 14px; border-radius:6px; cursor:pointer; font-size:0.8rem;">Wake Now</button>
                             `;
@@ -2430,7 +2432,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     }
 
                     const runHostPoll = () => {
-                        if (!document.hidden && !isHostStandby) {
+                        if (!document.hidden && (!isCloudHost || !isHostStandby)) {
                             loadHostScans();
                             loadHostLocators();
                         }
@@ -2439,7 +2441,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     const startHostPollTimer = () => {
                         if (hostPollInterval) clearInterval(hostPollInterval);
                         if (storeHostLockTimer) clearInterval(storeHostLockTimer);
-                        if (!document.hidden && !isHostStandby) {
+                        if (!document.hidden && (!isCloudHost || !isHostStandby)) {
                             runHostPoll();
                             checkStoreHostLock();
                             hostPollInterval = setInterval(runHostPoll, 3000);
@@ -2461,17 +2463,21 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                             startHostPollTimer();
                         }
                         clearTimeout(hostStandbyTimer);
-                        hostStandbyTimer = setTimeout(() => {
-                            isHostStandby = true;
-                            stopHostPollTimer();
-                            showHostStandbyBanner();
-                        }, HOST_STANDBY_TIMEOUT);
+                        // Inactivity standby only kicks in if running on Cloud Host
+                        if (isCloudHost) {
+                            hostStandbyTimer = setTimeout(() => {
+                                isHostStandby = true;
+                                stopHostPollTimer();
+                                showHostStandbyBanner();
+                            }, HOST_STANDBY_TIMEOUT);
+                        }
                     };
 
                     ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
                         window.addEventListener(evt, window.wakeHostFromStandby, { passive: true });
                     });
 
+                    // Pause when tab is minimized/hidden (saves battery/power), resume when tab is active
                     document.addEventListener('visibilitychange', () => {
                         if (document.hidden) {
                             stopHostPollTimer();
@@ -3303,6 +3309,9 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     const uniqueBarcodesEl = document.getElementById('metric-unique-barcodes');
 
                     if (data.status === 'success' && data.scans) {
+                        if (typeof window.wakeHostFromStandby === 'function') {
+                            window.wakeHostFromStandby();
+                        }
                         window.cachedHostScans = data.scans;
 
                         // Compute Metrics

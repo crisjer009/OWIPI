@@ -3158,12 +3158,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
             // Start automatic scan logs polling
             loadScans();
             
-            // Smart Standby Mode (Auto-Pause with Wake-on-Action)
+            // Differentiate Local Host vs Cloud Host
+            const isCloudHost = <?= json_encode(isCloudServer()) ?>;
             let isUserStandby = false;
             let standbyTimer = null;
-            const STANDBY_TIMEOUT = 180000; // 3 minutes of inactivity
+            const STANDBY_TIMEOUT = 180000; // 3 minutes of inactivity (Cloud Host only)
 
             function showStandbyBanner() {
+                if (!isCloudHost) return; // Standby banner is NEVER shown on Local Host
                 let banner = document.getElementById('standby-indicator-banner');
                 if (!banner) {
                     banner = document.createElement('div');
@@ -3171,7 +3173,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     banner.innerHTML = `
                         <div style="display:flex; align-items:center; gap:10px;">
                             <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#f59e0b; box-shadow:0 0 10px #f59e0b;"></span>
-                            <span><strong>Standby Mode Active</strong> &bull; Cloud queries paused to save server resources. Move mouse, click, or scan to wake.</span>
+                            <span><strong>Cloud Standby Mode Active</strong> &bull; Live queries paused to save cloud resources. Move mouse, click, or scan to wake.</span>
                         </div>
                         <button onclick="window.wakeFromStandby()" style="background:#f59e0b; color:#0b0f19; font-weight:700; border:none; padding:5px 14px; border-radius:6px; cursor:pointer; font-size:0.8rem;">Wake Now</button>
                     `;
@@ -3190,7 +3192,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             const startActivePolling = () => {
                 if (autoPollInterval) clearInterval(autoPollInterval);
                 if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
-                if (!document.hidden && !isUserStandby) {
+                if (!document.hidden && (!isCloudHost || !isUserStandby)) {
                     loadScans();
                     checkStoreHostLock();
                     autoPollInterval = setInterval(loadScans, 4000);
@@ -3212,11 +3214,14 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     startActivePolling();
                 }
                 clearTimeout(standbyTimer);
-                standbyTimer = setTimeout(() => {
-                    isUserStandby = true;
-                    pauseAllPolling();
-                    showStandbyBanner();
-                }, STANDBY_TIMEOUT);
+                // Inactivity standby only kicks in if running on the Cloud server
+                if (isCloudHost) {
+                    standbyTimer = setTimeout(() => {
+                        isUserStandby = true;
+                        pauseAllPolling();
+                        showStandbyBanner();
+                    }, STANDBY_TIMEOUT);
+                }
             };
 
             // Wake-on-action: Any mouse movement, click, typing, or touch wakes the host
@@ -3224,7 +3229,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 window.addEventListener(evt, window.wakeFromStandby, { passive: true });
             });
 
-            // Pause immediately when tab is minimized or hidden
+            // Pause when tab is minimized/hidden (saves battery/power), resume when tab is active
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     pauseAllPolling();
@@ -4168,6 +4173,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .then(data => {
                     const tbody = document.getElementById('scans-tbody');
                     if (data.status === 'success') {
+                        if (typeof window.wakeFromStandby === 'function' && data.scans && data.scans.length > 0) {
+                            window.wakeFromStandby();
+                        }
                         if (data.scans && data.scans.length > 0) {
                             let html = '';
                             data.scans.forEach(scan => {
