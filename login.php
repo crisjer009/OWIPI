@@ -385,7 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 style="margin-top: 6px; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.04); padding: 3px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
                 <span
                     style="width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #3b82f6;"></span>
-                Version: <span style="color: #60a5fa; font-weight: 700;">Betax</span>
+                Version: <span style="color: #60a5fa; font-weight: 700;">Beta</span>
             </div>
         </div>
 
