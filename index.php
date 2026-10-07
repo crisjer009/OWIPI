@@ -5178,6 +5178,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <div style="font-size:0.83rem; color:#cbd5e1; line-height:1.5;">
                             This device is running the latest codebase from the cloud repository (Commit: <code>${localCommit}</code>).
                         </div>
+                        <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); pt:8px; padding-top:8px;">
+                            <button type="button" onclick="applySystemUpdate()" style="background:transparent; border:1px solid rgba(255,255,255,0.2); color:#94a3b8; padding:4px 10px; border-radius:6px; font-size:0.75rem; cursor:pointer;" onmouseover="this.style.color='#fff'; this.style.borderColor='#38bdf8';" onmouseout="this.style.color='#94a3b8'; this.style.borderColor='rgba(255,255,255,0.2)';">
+                                🔄 Re-download / Force Refresh Codebase
+                            </button>
+                        </div>
                     </div>
                 `;
                 if (btnApplyModal) btnApplyModal.style.display = 'none';

@@ -3554,16 +3554,23 @@ try {
 
         case 'version':
             $gitCommit = null;
+            $versionFile = __DIR__ . '/version.json';
+            $versionData = file_exists($versionFile) ? json_decode(@file_get_contents($versionFile), true) : [];
+            $currentVersion = $versionData['version'] ?? '2.5.1';
+
             if (is_dir(__DIR__ . '/.git')) {
                 $commit = @shell_exec('git rev-parse --short HEAD 2>&1');
                 if ($commit && strlen(trim($commit)) <= 12 && !preg_match('/fatal|not a git/i', $commit)) {
                     $gitCommit = trim($commit);
                 }
             }
+            if (!$gitCommit && !empty($versionData['commit'])) {
+                $gitCommit = trim($versionData['commit']);
+            }
             sendResponse([
                 'status' => 'success',
-                'version' => '2.5.1',
-                'commit' => $gitCommit ?? '5cd4477',
+                'version' => $currentVersion,
+                'commit' => $gitCommit ?? '1a051c4',
                 'timestamp' => date('Y-m-d H:i:s')
             ]);
             break;
@@ -3579,6 +3586,18 @@ try {
                 $out = @shell_exec('git rev-parse --short HEAD 2>&1');
                 if ($out && strlen(trim($out)) <= 12 && !preg_match('/fatal|not a git/i', $out)) {
                     $localCommit = trim($out);
+                }
+            }
+
+            // Fallback to version.json for standalone / non-git deployments
+            $versionFile = __DIR__ . '/version.json';
+            if (file_exists($versionFile)) {
+                $vData = json_decode(@file_get_contents($versionFile), true);
+                if (!empty($vData['version'])) {
+                    $localVersion = trim($vData['version']);
+                }
+                if ($localCommit === 'unknown' && !empty($vData['commit'])) {
+                    $localCommit = trim($vData['commit']);
                 }
             }
 
@@ -3642,7 +3661,8 @@ try {
             $updateNotes = null;
 
             if ($githubReachable && $githubData) {
-                if ($localCommit !== 'unknown' && $localCommit !== $githubData['commit']) {
+                // If local commit is unknown or does not match remote commit, flag update available
+                if ($localCommit === 'unknown' || $localCommit !== $githubData['commit']) {
                     $updateAvailable = true;
                     $updateSource = 'github';
                     $remoteCommit = $githubData['commit'];
@@ -3652,7 +3672,7 @@ try {
 
             if (!$updateAvailable && $cloudReachable && $cloudData) {
                 $cCommit = $cloudData['commit'] ?? '';
-                if ($cCommit && $localCommit !== 'unknown' && $cCommit !== $localCommit) {
+                if ($cCommit && ($localCommit === 'unknown' || $cCommit !== $localCommit)) {
                     $updateAvailable = true;
                     $updateSource = 'cloud';
                     $remoteCommit = $cCommit;
@@ -3773,6 +3793,13 @@ try {
                 }
 
                 $newCommit = @shell_exec('git rev-parse --short HEAD 2>&1');
+                if ($newCommit && strlen(trim($newCommit)) <= 12 && !preg_match('/fatal|not a git/i', $newCommit)) {
+                    @file_put_contents(__DIR__ . '/version.json', json_encode([
+                        'version' => '2.5.1',
+                        'commit' => trim($newCommit),
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ], JSON_PRETTY_PRINT));
+                }
                 logAudit('SYSTEM_UPDATE', "System updated via Git to commit " . trim($newCommit), null, $_SESSION['username'] ?? 'admin');
 
                 sendResponse([
@@ -3859,11 +3886,16 @@ try {
                 $updateLog[] = "Database note: " . $eDb2->getMessage();
             }
 
-            logAudit('SYSTEM_UPDATE', "System updated via Cloud ZIP Package", null, $_SESSION['username'] ?? 'admin');
+            $vFile = __DIR__ . '/version.json';
+            $vData = file_exists($vFile) ? json_decode(@file_get_contents($vFile), true) : [];
+            $newCommit = $vData['commit'] ?? 'latest';
+
+            logAudit('SYSTEM_UPDATE', "System updated via Cloud ZIP Package to commit " . $newCommit, null, $_SESSION['username'] ?? 'admin');
 
             sendResponse([
                 'status' => 'success',
                 'method' => 'zip',
+                'new_commit' => $newCommit,
                 'logs' => $updateLog,
                 'message' => 'System successfully updated from cloud archive!'
             ]);
