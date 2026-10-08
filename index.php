@@ -163,6 +163,30 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 'creator' => !empty($row['creator']) ? $row['creator'] : 'System'
             ];
         }
+
+        // Prepare complete stores list for Masterfile Export & Import (including stores_id if present)
+        $masterfileStoresList = [];
+        if (!empty($storeRows)) {
+            foreach ($storeRows as $r) {
+                $sc = strtoupper(trim($r['store_code']));
+                if ($sc !== '') {
+                    $masterfileStoresList[$sc] = "Store {$sc}";
+                }
+            }
+        }
+        try {
+            $sidRows = $db->query("SELECT str_no, str_code, str_name FROM stores_id ORDER BY CAST(str_no AS UNSIGNED) ASC, str_code ASC");
+            foreach ($sidRows as $sr) {
+                $sc = strtoupper(trim($sr['str_code']));
+                $sname = trim($sr['str_name'] ?? '');
+                $sno = trim($sr['str_no'] ?? '');
+                $display = "Store {$sc}" . ($sname ? " - {$sname}" : "") . ($sno ? " (Str #{$sno})" : "");
+                if ($sc !== '') {
+                    $masterfileStoresList[$sc] = $display;
+                }
+            }
+        } catch (Exception $eSid) {
+        }
     } catch (Exception $e) {
         // Master database error
     }
@@ -2464,6 +2488,65 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     </form>
                 </div>
             <?php endif; ?>
+
+            <?php if ($isSysAdmin || $isAdmin): ?>
+                <!-- Offline Store Masterfile Export (System Admin & Admin) -->
+                <div class="card" style="max-width: 600px; margin-top: 2rem;">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <h2 class="card-title" style="margin-bottom: 0;">
+                            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor; vertical-align: middle; margin-right: 6px; color: #10b981;">
+                                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+                            </svg>
+                            Offline Store Masterfile Export
+                        </h2>
+                        <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.72rem; padding: 3px 10px; border-radius: 9999px; font-weight: 600;">
+                            Text (.txt) Format
+                        </span>
+                    </div>
+
+                    <div style="margin-top: 1rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5; margin-bottom: 1.25rem;">
+                            Generate and download a store-specific masterfile in standard tab-delimited text format (<code>.txt</code>). Transfer this file via USB flash drive to an offline warehouse laptop to manually import the product catalog without an internet connection.
+                        </p>
+
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label for="export_masterfile_store" style="font-size: 0.8rem; font-weight: 600;">Select Specific Store to Export</label>
+                            <select id="export_masterfile_store" class="form-control" style="width: 100%;">
+                                <option value="">-- Select Store to Export --</option>
+                                <?php if (!empty($masterfileStoresList)): ?>
+                                    <?php foreach ($masterfileStoresList as $sCode => $sLabel): ?>
+                                        <option value="<?= htmlspecialchars($sCode) ?>">
+                                            <?= htmlspecialchars($sLabel) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <?php foreach ($storeRows ?? [] as $stRow): ?>
+                                        <option value="<?= htmlspecialchars($stRow['store_code']) ?>">
+                                            Store <?= htmlspecialchars(strtoupper($stRow['store_code'])) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                                <option value="__GLOBAL__">Global Master Catalog (All Items / items table)</option>
+                            </select>
+                        </div>
+
+                        <button type="button" onclick="downloadStoreMasterfile()" class="btn btn-primary"
+                            style="width: 100%; font-size: 0.9rem; padding: 10px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <span>📥</span> Download Store Masterfile (.txt)
+                        </button>
+
+                        <div style="margin-top: 1rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.85rem; font-size: 0.78rem; color: #94a3b8; line-height: 1.5;">
+                            <strong style="color: #38bdf8;">💡 How to use on offline laptop:</strong>
+                            <ol style="margin: 6px 0 0 1.2rem; padding: 0;">
+                                <li>Select the store and click <strong>Download Store Masterfile (.txt)</strong>.</li>
+                                <li>Copy the downloaded <code>.txt</code> file to your USB flash drive.</li>
+                                <li>On the offline laptop, open <strong>Items Masterfile</strong> &gt; <strong>Bulk Import &amp; Sync</strong>.</li>
+                                <li>Select the store, choose the <code>.txt</code> file, and click <strong>Upload &amp; Import</strong>.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- View: Products Catalog -->
@@ -2584,6 +2667,19 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <label for="masterfile_target_store" style="font-size: 0.8rem; font-weight: 600;">Target Masterfile Database</label>
                                 <select id="masterfile_target_store" class="form-control" style="font-size: 0.85rem; width: 100%;">
                                     <option value="">Global Master Catalog (Default items table)</option>
+                                    <?php if (!empty($masterfileStoresList)): ?>
+                                        <?php foreach ($masterfileStoresList as $sCode => $sLabel): ?>
+                                            <option value="<?= htmlspecialchars($sCode) ?>">
+                                                <?= htmlspecialchars($sLabel) ?> (<?= htmlspecialchars(strtolower($sCode)) ?>_items)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php elseif (!empty($storeRows)): ?>
+                                        <?php foreach ($storeRows as $stRow): ?>
+                                            <option value="<?= htmlspecialchars($stRow['store_code']) ?>">
+                                                Store <?= htmlspecialchars(strtoupper($stRow['store_code'])) ?> (<?= htmlspecialchars(strtolower($stRow['store_code'])) ?>_items)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <div class="form-group" style="margin-bottom: 1.15rem;">
@@ -2597,7 +2693,20 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             </button>
                         </form>
                         <div
-                            style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
+                            style="margin-top: 1.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem;">
+                            <div style="font-size:0.8rem; font-weight:600; color:#cbd5e1; margin-bottom:0.35rem; display:flex; align-items:center; gap:6px;">
+                                <span>📥</span> Export for Offline Warehouse Laptop
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.75rem; line-height:1.4;">
+                                Need to take a laptop to a store with no internet? Download the selected store's masterfile in text (<code>.txt</code>) format:
+                            </div>
+                            <button type="button" onclick="downloadMasterfileFromTab()" class="btn btn-secondary"
+                                style="width:100%; border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.08); font-weight: 600; cursor: pointer; padding: 0.75rem 1rem; font-size:0.85rem;">
+                                📥 Download Selected Store Masterfile (.txt)
+                            </button>
+                        </div>
+                        <div
+                            style="margin-top: 1.25rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.25rem; text-align: center;">
                             <div style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.75rem;">
                                 Or fetch the latest catalog directly from your cloud server database.
                             </div>
@@ -4545,6 +4654,28 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     uploadBtn.innerText = originalText;
                     showToast("Import failed: " + err, "error");
                 });
+        }
+
+        // Download store masterfile in text format for offline laptop manual import
+        function downloadStoreMasterfile(storeCode = null) {
+            if (!storeCode) {
+                const sel = document.getElementById('export_masterfile_store');
+                storeCode = sel ? sel.value : '';
+            }
+            if (!storeCode) {
+                showToast("Please select a store to export.", "error");
+                return;
+            }
+            const clean = (storeCode === '__GLOBAL__') ? '' : encodeURIComponent(storeCode);
+            const label = (storeCode === '__GLOBAL__') ? 'Global Masterfile' : `Store ${storeCode}`;
+            showToast(`Generating and downloading ${label} in text format (.txt)...`, "info");
+            window.location.href = `api.php?action=download_store_masterfile&store_code=${clean}`;
+        }
+
+        function downloadMasterfileFromTab() {
+            const sel = document.getElementById('masterfile_target_store');
+            const storeCode = sel ? sel.value : '';
+            downloadStoreMasterfile(storeCode ? storeCode : '__GLOBAL__');
         }
 
         // Load Users List

@@ -477,8 +477,8 @@ function findCatalogProduct($barcode, $storeCode = null)
 }
 
 // Enforce Authentication
-$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'clear_audit_logs', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'check_system_update', 'apply_system_update'];
-$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_store_summary', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'import_cloud_products'];
+$adminActions = ['get_config', 'save_config', 'save_sync_token', 'test_connection', 'init_db', 'restore_default_db', 'clear_scans', 'add_product', 'delete_product', 'import_cloud_users', 'delete_store', 'purge_inventory_data', 'clear_audit_logs', 'backup_db', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'check_system_update', 'apply_system_update', 'download_store_masterfile', 'export_store_masterfile'];
+$userActions = ['get_diagnostics', 'submit_scan', 'get_scans', 'get_store_summary', 'get_products', 'get_product_info', 'delete_scan', 'get_stores', 'select_store', 'logout_store', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'get_print_spacing', 'save_print_spacing', 'get_users', 'add_user', 'delete_user', 'import_masterfile', 'download_store_masterfile', 'export_store_masterfile', 'get_audit_logs', 'get_sync_config', 'save_sync_config', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'get_cloud_stores', 'get_cloud_store_details', 'get_cloud_products', 'get_cloud_users', 'fetch_cloud_stores', 'import_cloud_store', 'submit_sync_request', 'get_pending_syncs', 'approve_sync_request', 'reject_sync_request', 'reopen_store', 'export_masterfile_variance', 'search_masterfile', 'get_cloud_backups', 'download_cloud_backup', 'restore_cloud_backup', 'create_manual_backup', 'version', 'clear_cloud_backups', 'heartbeat_locator', 'release_session', 'heartbeat_store_host', 'release_store_host', 'import_cloud_products'];
 
 $storeDependentActions = ['submit_scan', 'get_scans', 'get_store_summary', 'clear_scans', 'get_locators', 'add_locator', 'delete_locator', 'claim_locator', 'close_locator', 'close_all_locators', 'approve_locator', 'edit_scan', 'trigger_cloud_sync', 'get_scans_html', 'close_store', 'export_masterfile_variance', 'search_masterfile'];
 
@@ -2295,6 +2295,119 @@ try {
                 'message' => "Successfully imported {$importedCount} products into store catalog!"
             ]);
             break;
+
+        case 'download_store_masterfile':
+        case 'export_store_masterfile':
+            checkAuth(false);
+            $currentUserRole = strtolower(trim($_SESSION['role'] ?? ''));
+            if (!in_array($currentUserRole, ['system_admin', 'sys_admin', 'admin'])) {
+                throw new Exception("Unauthorized. Only administrators can export masterfile data.");
+            }
+
+            @set_time_limit(300);
+            @ini_set('memory_limit', '512M');
+
+            $storeCode = trim($_GET['store_code'] ?? ($_POST['store_code'] ?? ''));
+            if ($storeCode === '__GLOBAL__') {
+                $storeCode = '';
+            }
+            $cleanStore = preg_replace('/[^a-zA-Z0-9_]/', '', strtolower($storeCode));
+            $db = new OWI_DB();
+
+            $products = [];
+            $targetStoreNo = null;
+
+            if (!empty($cleanStore)) {
+                // 1. Try to find store number from stores_id
+                try {
+                    $storeLookup = $db->query("SELECT str_no, str_code FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [$cleanStore, $cleanStore]);
+                    if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
+                        $targetStoreNo = (int) $storeLookup[0]['str_no'];
+                    }
+                } catch (Exception $eLookup) {}
+
+                // If not in stores_id, extract numeric digits from store code (e.g. STR001 -> 1)
+                if ($targetStoreNo === null) {
+                    $numMatch = preg_replace('/[^0-9]/', '', $cleanStore);
+                    if ($numMatch !== '') {
+                        $targetStoreNo = (int) $numMatch;
+                    }
+                }
+
+                // 2. First check if store has its own table: {$cleanStore}_items with records
+                $hasStoreTable = false;
+                try {
+                    $tblCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
+                    if (!empty($tblCheck)) {
+                        $c = (int) ($db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`")[0]['count'] ?? 0);
+                        if ($c > 0) {
+                            $hasStoreTable = true;
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$cleanStore}_items` ORDER BY UPC ASC");
+                        }
+                    }
+                } catch (Exception $eTbl) {}
+
+                // 3. If no specific store table records, query global items with store quantity
+                if (!$hasStoreTable) {
+                    if ($targetStoreNo !== null && $targetStoreNo >= 1 && $targetStoreNo <= 125) {
+                        try {
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, `QTY_STORE_{$targetStoreNo}` as Qty FROM items ORDER BY UPC ASC");
+                        } catch (Exception $eStoreCol) {
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items ORDER BY UPC ASC");
+                        }
+                    } else {
+                        // Default to items catalog
+                        $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items ORDER BY UPC ASC");
+                    }
+                }
+            } else {
+                // Export global catalog
+                $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM items ORDER BY UPC ASC");
+            }
+
+            if (empty($products)) {
+                $products = [];
+            }
+
+            // Filename: MASTERFILE_STORE_<CODE>.txt or MASTERFILE_GLOBAL.txt
+            $storeUpper = !empty($cleanStore) ? strtoupper($cleanStore) : 'GLOBAL';
+            $filename = "MASTERFILE_STORE_{$storeUpper}.txt";
+
+            // Clean any existing output buffers to prevent corruption
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            header('Content-Type: text/plain; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Cache-Control: no-cache, no-store, must-revalidate');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+
+            // Header line matching import_masterfile expected layout:
+            // ALU, LOCAL_UPC, DESCRIPTION1, DESCRIPTION2, ATTR, SIZ, PRICE, AUX1, QTY
+            echo "ALU\tLOCAL_UPC\tDESCRIPTION1\tDESCRIPTION2\tATTR\tSIZ\tPRICE\tAUX1\tQTY\r\n";
+
+            foreach ($products as $row) {
+                $alu = str_replace(["\t", "\r", "\n"], ' ', trim($row['SKU'] ?? ''));
+                $upc = str_replace(["\t", "\r", "\n"], ' ', trim($row['UPC'] ?? ''));
+                $desc1 = str_replace(["\t", "\r", "\n"], ' ', trim($row['Descr'] ?? ''));
+                $desc2 = str_replace(["\t", "\r", "\n"], ' ', trim($row['Type'] ?? ''));
+                $attr = str_replace(["\t", "\r", "\n"], ' ', trim($row['Attr'] ?? ''));
+                $size = str_replace(["\t", "\r", "\n"], ' ', trim($row['Size'] ?? ''));
+                $price = is_numeric($row['Price'] ?? null) ? number_format((float)$row['Price'], 2, '.', '') : '0.00';
+                $aux1 = str_replace(["\t", "\r", "\n"], ' ', trim($row['Aux1'] ?? ''));
+                $qty = is_numeric($row['Qty'] ?? null) ? number_format((float)$row['Qty'], 2, '.', '') : '0.00';
+
+                if ($alu === '' && $upc === '') continue;
+                if ($alu === '') $alu = $upc;
+                if ($upc === '') $upc = str_pad($alu, 13, '0', STR_PAD_LEFT);
+
+                echo "{$alu}\t{$upc}\t{$desc1}\t{$desc2}\t{$attr}\t{$size}\t{$price}\t{$aux1}\t{$qty}\r\n";
+            }
+
+            logAudit('Export Masterfile', "Downloaded offline text masterfile for store '{$storeUpper}' (" . count($products) . " items)");
+            exit;
 
         case 'get_users':
             $currentRole = strtolower(trim($_SESSION['role'] ?? ''));
