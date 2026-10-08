@@ -175,12 +175,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
             }
         }
         try {
-            $sidRows = $db->query("SELECT str_no, str_code, str_name FROM stores_id ORDER BY CAST(str_no AS UNSIGNED) ASC, str_code ASC");
+            $sidRows = $db->query("SELECT str_no, str_code FROM stores_id ORDER BY CAST(str_no AS UNSIGNED) ASC, str_code ASC");
             foreach ($sidRows as $sr) {
                 $sc = strtoupper(trim($sr['str_code']));
-                $sname = trim($sr['str_name'] ?? '');
                 $sno = trim($sr['str_no'] ?? '');
-                $display = "Store {$sc}" . ($sname ? " - {$sname}" : "") . ($sno ? " (Str #{$sno})" : "");
+                $display = "Store {$sc}" . ($sno !== '' ? " (Str #{$sno})" : "");
                 if ($sc !== '') {
                     $masterfileStoresList[$sc] = $display;
                 }
@@ -2509,10 +2508,31 @@ if ($driverLoaded && $dbStatus === 'connected') {
                             Generate and download a store-specific masterfile in standard tab-delimited text format (<code>.txt</code>). Transfer this file via USB flash drive to an offline warehouse laptop to manually import the product catalog without an internet connection.
                         </p>
 
-                        <div class="form-group" style="margin-bottom: 1.25rem;">
-                            <label for="export_masterfile_store" style="font-size: 0.8rem; font-weight: 600;">Select Specific Store to Export</label>
-                            <select id="export_masterfile_store" class="form-control" style="width: 100%;">
-                                <option value="">-- Select Store to Export --</option>
+                        <div class="form-group" style="margin-bottom: 0.9rem;">
+                            <label for="export_store_input" style="font-size: 0.8rem; font-weight: 600; display:flex; justify-content:space-between; align-items:center;">
+                                <span>Search by Store Code or Number</span>
+                                <span style="font-size: 0.72rem; color: #38bdf8; font-weight: normal;">Type Code (e.g. MAV, PAS, VC, 1, 7)</span>
+                            </label>
+                            <div style="position: relative; display: flex; align-items: center;">
+                                <input type="text" id="export_store_input" class="form-control" 
+                                    placeholder="Type store code to search (e.g. MAV, PAS, 1, RME)..." 
+                                    list="stores_datalist"
+                                    oninput="handleStoreSearchInput(this.value)"
+                                    style="font-family: monospace; font-size: 0.9rem; text-transform: uppercase; padding-right: 32px;" autocomplete="off">
+                                <button type="button" onclick="clearStoreSearch()" 
+                                    style="position: absolute; right: 8px; background: none; border: none; color: #8b949e; cursor: pointer; font-size: 0.85rem; padding: 4px;" title="Clear">✕</button>
+                            </div>
+                            <datalist id="stores_datalist">
+                                <?php foreach ($masterfileStoresList as $sCode => $sLabel): ?>
+                                    <option value="<?= htmlspecialchars($sCode) ?>"><?= htmlspecialchars($sLabel) ?></option>
+                                <?php endforeach; ?>
+                            </datalist>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 1.15rem;">
+                            <label for="export_masterfile_store" style="font-size: 0.8rem; font-weight: 600;">Or Select from Complete Store List (<?= count($masterfileStoresList) ?> Stores)</label>
+                            <select id="export_masterfile_store" class="form-control" style="width: 100%;" onchange="syncStoreSelectToInput(this.value)">
+                                <option value="">-- Choose Store from List (<?= count($masterfileStoresList) ?> Stores) --</option>
                                 <?php if (!empty($masterfileStoresList)): ?>
                                     <?php foreach ($masterfileStoresList as $sCode => $sLabel): ?>
                                         <option value="<?= htmlspecialchars($sCode) ?>">
@@ -2528,6 +2548,11 @@ if ($driverLoaded && $dbStatus === 'connected') {
                                 <?php endif; ?>
                                 <option value="__GLOBAL__">Global Master Catalog (All Items / items table)</option>
                             </select>
+                        </div>
+
+                        <div id="export_store_preview_badge" style="display:none; margin-bottom: 1.15rem; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.82rem; color: #e2e8f0; align-items: center; justify-content: space-between;">
+                            <span>Target: <strong id="export_store_preview_name" style="color: #38bdf8;"></strong></span>
+                            <span style="font-size: 0.72rem; color: #94a3b8; font-family: monospace;" id="export_store_preview_file"></span>
                         </div>
 
                         <button type="button" onclick="downloadStoreMasterfile()" class="btn btn-primary"
@@ -2664,8 +2689,18 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         </div>
                         <form id="import-form" onsubmit="uploadMasterfile(event)">
                             <div class="form-group" style="margin-bottom: 1.15rem;">
-                                <label for="masterfile_target_store" style="font-size: 0.8rem; font-weight: 600;">Target Masterfile Database</label>
-                                <select id="masterfile_target_store" class="form-control" style="font-size: 0.85rem; width: 100%;">
+                                <label for="masterfile_target_store" style="font-size: 0.8rem; font-weight: 600;">Target Masterfile Database (Search or Select Store)</label>
+                                <input type="text" id="masterfile_store_search_input" class="form-control"
+                                    placeholder="Search / Type Store Code (e.g. MAV, PAS, 1)..."
+                                    list="stores_datalist_tab"
+                                    oninput="syncTabStoreSearch(this.value)"
+                                    style="font-family: monospace; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 6px;" autocomplete="off">
+                                <datalist id="stores_datalist_tab">
+                                    <?php foreach ($masterfileStoresList as $sCode => $sLabel): ?>
+                                        <option value="<?= htmlspecialchars($sCode) ?>"><?= htmlspecialchars($sLabel) ?></option>
+                                    <?php endforeach; ?>
+                                </datalist>
+                                <select id="masterfile_target_store" class="form-control" style="font-size: 0.85rem; width: 100%;" onchange="document.getElementById('masterfile_store_search_input').value = this.value;">
                                     <option value="">Global Master Catalog (Default items table)</option>
                                     <?php if (!empty($masterfileStoresList)): ?>
                                         <?php foreach ($masterfileStoresList as $sCode => $sLabel): ?>
@@ -4656,25 +4691,88 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 });
         }
 
+        // Search and sync helper functions for store masterfile export
+        function handleStoreSearchInput(val) {
+            val = (val || '').trim().toUpperCase();
+            const sel = document.getElementById('export_masterfile_store');
+            const badge = document.getElementById('export_store_preview_badge');
+            const badgeName = document.getElementById('export_store_preview_name');
+            const badgeFile = document.getElementById('export_store_preview_file');
+
+            if (sel) {
+                let matched = false;
+                for (let i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value.toUpperCase() === val) {
+                        sel.selectedIndex = i;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched && val === '') {
+                    sel.selectedIndex = 0;
+                }
+            }
+
+            if (val) {
+                if (badge) badge.style.display = 'flex';
+                if (badgeName) badgeName.innerText = `Store ${val}`;
+                if (badgeFile) badgeFile.innerText = `MASTERFILE_STORE_${val}.txt`;
+            } else {
+                if (badge) badge.style.display = 'none';
+            }
+        }
+
+        function syncStoreSelectToInput(val) {
+            const inp = document.getElementById('export_store_input');
+            if (inp) {
+                inp.value = (val === '__GLOBAL__' ? '' : val);
+            }
+            handleStoreSearchInput(val === '__GLOBAL__' ? 'GLOBAL' : val);
+        }
+
+        function clearStoreSearch() {
+            const inp = document.getElementById('export_store_input');
+            if (inp) inp.value = '';
+            const sel = document.getElementById('export_masterfile_store');
+            if (sel) sel.selectedIndex = 0;
+            const badge = document.getElementById('export_store_preview_badge');
+            if (badge) badge.style.display = 'none';
+        }
+
+        function syncTabStoreSearch(val) {
+            val = (val || '').trim().toUpperCase();
+            const sel = document.getElementById('masterfile_target_store');
+            if (sel) {
+                for (let i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value.toUpperCase() === val) {
+                        sel.selectedIndex = i;
+                        return;
+                    }
+                }
+            }
+        }
+
         // Download store masterfile in text format for offline laptop manual import
         function downloadStoreMasterfile(storeCode = null) {
             if (!storeCode) {
+                const inp = document.getElementById('export_store_input');
                 const sel = document.getElementById('export_masterfile_store');
-                storeCode = sel ? sel.value : '';
+                storeCode = (inp && inp.value.trim() !== '') ? inp.value.trim() : (sel ? sel.value : '');
             }
             if (!storeCode) {
-                showToast("Please select a store to export.", "error");
+                showToast("Please enter or select a Store Code to export.", "error");
                 return;
             }
-            const clean = (storeCode === '__GLOBAL__') ? '' : encodeURIComponent(storeCode);
-            const label = (storeCode === '__GLOBAL__') ? 'Global Masterfile' : `Store ${storeCode}`;
+            const clean = (storeCode === '__GLOBAL__' || storeCode.toUpperCase() === 'GLOBAL') ? '' : encodeURIComponent(storeCode.trim().toUpperCase());
+            const label = (clean === '') ? 'Global Masterfile' : `Store ${storeCode.trim().toUpperCase()}`;
             showToast(`Generating and downloading ${label} in text format (.txt)...`, "info");
             window.location.href = `api.php?action=download_store_masterfile&store_code=${clean}`;
         }
 
         function downloadMasterfileFromTab() {
+            const inp = document.getElementById('masterfile_store_search_input');
             const sel = document.getElementById('masterfile_target_store');
-            const storeCode = sel ? sel.value : '';
+            const storeCode = (inp && inp.value.trim() !== '') ? inp.value.trim() : (sel ? sel.value : '');
             downloadStoreMasterfile(storeCode ? storeCode : '__GLOBAL__');
         }
 

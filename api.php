@@ -2317,12 +2317,18 @@ try {
             $products = [];
             $targetStoreNo = null;
 
+            $resolvedCode = null;
             if (!empty($cleanStore)) {
-                // 1. Try to find store number from stores_id
+                // 1. Try to find store number and canonical store code from stores_id
                 try {
                     $storeLookup = $db->query("SELECT str_no, str_code FROM stores_id WHERE LOWER(str_code) = ? OR str_no = ? LIMIT 1", [$cleanStore, $cleanStore]);
-                    if (!empty($storeLookup) && is_numeric($storeLookup[0]['str_no'])) {
-                        $targetStoreNo = (int) $storeLookup[0]['str_no'];
+                    if (!empty($storeLookup)) {
+                        if (is_numeric($storeLookup[0]['str_no'])) {
+                            $targetStoreNo = (int) $storeLookup[0]['str_no'];
+                        }
+                        if (!empty($storeLookup[0]['str_code'])) {
+                            $resolvedCode = strtoupper(trim($storeLookup[0]['str_code']));
+                        }
                     }
                 } catch (Exception $eLookup) {}
 
@@ -2334,15 +2340,20 @@ try {
                     }
                 }
 
+                if (!$resolvedCode) {
+                    $resolvedCode = strtoupper($cleanStore);
+                }
+
                 // 2. First check if store has its own table: {$cleanStore}_items with records
                 $hasStoreTable = false;
                 try {
-                    $tblCheck = $db->query("SHOW TABLES LIKE '{$cleanStore}_items'");
+                    $checkName = strtolower($resolvedCode);
+                    $tblCheck = $db->query("SHOW TABLES LIKE '{$checkName}_items'");
                     if (!empty($tblCheck)) {
-                        $c = (int) ($db->query("SELECT COUNT(*) as count FROM `{$cleanStore}_items`")[0]['count'] ?? 0);
+                        $c = (int) ($db->query("SELECT COUNT(*) as count FROM `{$checkName}_items`")[0]['count'] ?? 0);
                         if ($c > 0) {
                             $hasStoreTable = true;
-                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$cleanStore}_items` ORDER BY UPC ASC");
+                            $products = $db->query("SELECT UPC, SKU, Descr, Type, Attr, Size, Price, Aux1, Qty FROM `{$checkName}_items` ORDER BY UPC ASC");
                         }
                     }
                 } catch (Exception $eTbl) {}
@@ -2370,7 +2381,7 @@ try {
             }
 
             // Filename: MASTERFILE_STORE_<CODE>.txt or MASTERFILE_GLOBAL.txt
-            $storeUpper = !empty($cleanStore) ? strtoupper($cleanStore) : 'GLOBAL';
+            $storeUpper = !empty($resolvedCode) ? $resolvedCode : (!empty($cleanStore) ? strtoupper($cleanStore) : 'GLOBAL');
             $filename = "MASTERFILE_STORE_{$storeUpper}.txt";
 
             // Clean any existing output buffers to prevent corruption
