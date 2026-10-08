@@ -2563,10 +2563,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         <div style="margin-top: 1rem; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0.85rem; font-size: 0.78rem; color: #94a3b8; line-height: 1.5;">
                             <strong style="color: #38bdf8;">💡 How to use on offline laptop:</strong>
                             <ol style="margin: 6px 0 0 1.2rem; padding: 0;">
-                                <li>Select the store and click <strong>Download Store Masterfile (.txt)</strong>.</li>
-                                <li>Copy the downloaded <code>.txt</code> file to your USB flash drive.</li>
-                                <li>On the offline laptop, open <strong>Items Masterfile</strong> &gt; <strong>Bulk Import &amp; Sync</strong>.</li>
-                                <li>Select the store, choose the <code>.txt</code> file, and click <strong>Upload &amp; Import</strong>.</li>
+                                <li>Download the <code>.txt</code> file and copy it to your USB flash drive.</li>
+                                <li><strong>Direct Upload on Host (Recommended):</strong> Log into your store on the laptop, click <strong>📁 Upload Masterfile</strong> in the top header, and select the <code>.txt</code> file.</li>
+                                <li><strong>Or via Dashboard:</strong> Go to <strong>Items Masterfile</strong> &gt; <strong>Bulk Import &amp; Sync</strong>, select the target store and file, and click <strong>Upload &amp; Import</strong>.</li>
                             </ol>
                         </div>
                     </div>
