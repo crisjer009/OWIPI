@@ -1,9 +1,12 @@
 <?php
-// Custom error handler for debugging
+@ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
+// Custom error handler for debugging - logs to file without breaking JSON outputs
 set_error_handler(function ($errno, $errstr, $errfile, $errline) {
     $msg = "[" . date('Y-m-d H:i:s') . "] Error ($errno): $errstr in $errfile on line $errline\n";
-    file_put_contents(__DIR__ . '/php_debug.log', $msg, FILE_APPEND);
-    return false;
+    @file_put_contents(__DIR__ . '/php_debug.log', $msg, FILE_APPEND);
+    return true; // Prevent PHP built-in handler from echoing HTML into JSON
 });
 
 // Custom exception handler
@@ -3730,14 +3733,18 @@ try {
             // 1. Check Cloud Server
             $cloudData = null;
             $cloudReachable = false;
+            $cloudError = null;
             if (!empty($cloudUrl)) {
                 $checkUrl = rtrim($cloudUrl, '/') . '/api.php?action=version';
                 $ch = curl_init($checkUrl);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 $resp = curl_exec($ch);
                 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $cloudError = curl_error($ch);
                 curl_close($ch);
 
                 if ($code === 200 && $resp) {
@@ -3752,13 +3759,17 @@ try {
             // 2. Check GitHub Repository (Latest commit on main branch)
             $githubData = null;
             $githubReachable = false;
+            $githubError = null;
             $ghCh = curl_init('https://api.github.com/repos/crisjer009/OWIPI/commits/main');
             curl_setopt($ghCh, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ghCh, CURLOPT_USERAGENT, 'OWIPI-Update-Checker');
             curl_setopt($ghCh, CURLOPT_TIMEOUT, 6);
+            curl_setopt($ghCh, CURLOPT_FOLLOWLOCATION, true);
             curl_setopt($ghCh, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ghCh, CURLOPT_SSL_VERIFYHOST, 0);
             $ghResp = curl_exec($ghCh);
             $ghCode = curl_getinfo($ghCh, CURLINFO_HTTP_CODE);
+            $githubError = curl_error($ghCh);
             curl_close($ghCh);
 
             if ($ghCode === 200 && $ghResp) {

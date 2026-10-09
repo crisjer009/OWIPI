@@ -5362,7 +5362,17 @@ if ($driverLoaded && $dbStatus === 'connected') {
             }
 
             fetch('api.php?action=check_system_update')
-                .then(res => res.json())
+                .then(async res => {
+                    const text = await res.text();
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch (parseErr) {
+                        console.error("Non-JSON API response:", text);
+                        throw new Error("Invalid server response: " + text.substring(0, 120));
+                    }
+                    return data;
+                })
                 .then(data => {
                     if (btnCard) btnCard.innerHTML = '<span>🔍</span> Check for Cloud Updates';
                     if (btnModal) btnModal.innerHTML = '<span>🔄</span> Re-check Updates';
@@ -5390,7 +5400,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     if (btnModal) btnModal.innerHTML = '<span>🔄</span> Re-check Updates';
                     const netErrHtml = `
                         <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
-                            ⚠️ <strong>Network Error:</strong> Cloud server unreachable. Please verify internet connection.
+                            ⚠️ <strong>Update Check Error:</strong> ${escapeHtml(err.message || 'Cloud server unreachable. Please verify internet connection.')}
                         </div>
                     `;
                     if (statusBox) statusBox.innerHTML = netErrHtml;
