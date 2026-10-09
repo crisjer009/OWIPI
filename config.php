@@ -33,16 +33,83 @@ function getSystemVersion() {
     return '2.5.3';
 }
 
-// Load database configuration
-function loadConfig() {
-    if (file_exists(CONFIG_FILE)) {
-        $json = file_get_contents(CONFIG_FILE);
-        $data = json_decode($json, true);
-        if (is_array($data)) {
-            return array_merge(getDefaultConfig(), $data);
+// Retrieve Secret Sync Token using dual-layer persistence (file -> dedicated txt -> database)
+function getPersistentSyncToken($baseConfig = null) {
+    static $resolving = false;
+    if ($resolving) return '';
+
+    // 1. Direct check in base config array if supplied
+    if (is_array($baseConfig) && !empty(trim((string)($baseConfig['sync_secret_token'] ?? '')))) {
+        return trim((string)$baseConfig['sync_secret_token']);
+    }
+
+    // 2. Fallback check in dedicated sync_token.txt
+    $tokenFile = __DIR__ . '/sync_token.txt';
+    if (file_exists($tokenFile)) {
+        $tokenFromTxt = trim((string)@file_get_contents($tokenFile));
+        if (!empty($tokenFromTxt)) {
+            return $tokenFromTxt;
         }
     }
-    return getDefaultConfig();
+
+    // 3. Fallback check in MySQL system_settings table
+    if (extension_loaded('pdo_mysql')) {
+        $resolving = true;
+        try {
+            $cfg = is_array($baseConfig) ? $baseConfig : (file_exists(CONFIG_FILE) ? json_decode(@file_get_contents(CONFIG_FILE), true) : []);
+            $server = $cfg['server'] ?? '127.0.0.1';
+            if (empty($server) || $server === 'localhost') $server = '127.0.0.1';
+            $port = !empty($cfg['port']) ? $cfg['port'] : '3306';
+            $dbName = $cfg['database'] ?? 'owi_physical_inventory';
+            $user = $cfg['username'] ?? 'root';
+            $pass = $cfg['password'] ?? '';
+
+            $pdo = new PDO("mysql:host=$server;port=$port;dbname=$dbName;charset=utf8mb4", $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT,
+                PDO::ATTR_TIMEOUT => 2
+            ]);
+            $stmt = $pdo->query("SELECT setting_value FROM system_settings WHERE setting_key = 'sync_secret_token' LIMIT 1");
+            if ($stmt) {
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!empty($row['setting_value'])) {
+                    $tokenVal = trim((string)$row['setting_value']);
+                    $resolving = false;
+                    return $tokenVal;
+                }
+            }
+        } catch (Throwable $t) {
+            // Database not reachable or table not yet created
+        }
+        $resolving = false;
+    }
+
+    return '';
+}
+
+// Load database configuration
+function loadConfig() {
+    $config = getDefaultConfig();
+    if (file_exists(CONFIG_FILE)) {
+        $json = @file_get_contents(CONFIG_FILE);
+        $data = json_decode($json, true);
+        if (is_array($data)) {
+            $config = array_merge($config, $data);
+        }
+    }
+
+    // Dual-layer fallback: if token is empty in db_config.json, retrieve from database or sync_token.txt
+    if (empty(trim((string)($config['sync_secret_token'] ?? '')))) {
+        $resolvedToken = getPersistentSyncToken($config);
+        if (!empty($resolvedToken)) {
+            $config['sync_secret_token'] = $resolvedToken;
+            // Best-effort self-heal to file if possible
+            if (is_writable(CONFIG_FILE) || !file_exists(CONFIG_FILE)) {
+                @file_put_contents(CONFIG_FILE, json_encode($config, JSON_PRETTY_PRINT));
+            }
+        }
+    }
+
+    return $config;
 }
 
 // Save database configuration
@@ -61,32 +128,63 @@ function saveConfig($config) {
     return $result !== false;
 }
 
-// Permanently save Secret Sync Token to both file and database
+// Permanently save Secret Sync Token to file, fallback txt, and database
 function savePersistentSyncToken($token, $user = null) {
     $token = trim((string)$token);
-    
+    $actor = !empty($user) ? $user : ($_SESSION['username'] ?? 'sys_admin');
+    $savedAtLeastOnce = false;
+
     // 1. Update file db_config.json
     $config = loadConfig();
     $config['sync_secret_token'] = $token;
-    saveConfig($config);
+    if (saveConfig($config)) {
+        $savedAtLeastOnce = true;
+    }
 
-    // 2. Persist to database system_settings table if DB connection is available
+    // 2. Update dedicated sync_token.txt fallback file
+    $tokenFile = __DIR__ . '/sync_token.txt';
+    if (!empty($token)) {
+        if (@file_put_contents($tokenFile, $token) !== false) {
+            @chmod($tokenFile, 0666);
+            $savedAtLeastOnce = true;
+        }
+    } else {
+        if (file_exists($tokenFile)) {
+            @file_put_contents($tokenFile, '');
+            $savedAtLeastOnce = true;
+        }
+    }
+
+    // 3. Persist to database system_settings table if DB connection is available
     try {
-        $db = new OWI_DB();
-        $db->execute("CREATE TABLE IF NOT EXISTS system_settings (
+        $server = $config['server'] ?? '127.0.0.1';
+        if (empty($server) || $server === 'localhost') $server = '127.0.0.1';
+        $port = !empty($config['port']) ? $config['port'] : '3306';
+        $dbName = $config['database'] ?? 'owi_physical_inventory';
+        $dbUser = $config['username'] ?? 'root';
+        $dbPass = $config['password'] ?? '';
+
+        $pdo = new PDO("mysql:host=$server;port=$port;dbname=$dbName;charset=utf8mb4", $dbUser, $dbPass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 3
+        ]);
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS system_settings (
             setting_key VARCHAR(100) PRIMARY KEY,
             setting_value TEXT NOT NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             updated_by VARCHAR(100) NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
-        $actor = !empty($user) ? $user : ($_SESSION['username'] ?? 'sys_admin');
-        $db->execute(
-            "INSERT INTO system_settings (setting_key, setting_value, updated_by) VALUES ('sync_secret_token', ?, ?) ON DUPLICATE KEY UPDATE setting_value = ?, updated_by = ?, updated_at = NOW()",
-            [$token, $actor, $token, $actor]
-        );
-    } catch (Exception $e) {
-        // File persistence remains active if DB is offline
+        $stmt = $pdo->prepare("INSERT INTO system_settings (setting_key, setting_value, updated_by) VALUES ('sync_secret_token', ?, ?) ON DUPLICATE KEY UPDATE setting_value = ?, updated_by = ?, updated_at = NOW()");
+        $stmt->execute([$token, $actor, $token, $actor]);
+        $savedAtLeastOnce = true;
+    } catch (Throwable $e) {
+        error_log("savePersistentSyncToken DB error: " . $e->getMessage());
+    }
+
+    if (!$savedAtLeastOnce) {
+        throw new Exception("Unable to save Secret Sync Token: Both file storage (db_config.json) and MySQL database (system_settings) failed. Please verify MySQL connection and file write permissions.");
     }
 
     return true;

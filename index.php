@@ -53,6 +53,14 @@ if ($driverLoaded) {
         $db = new OWI_DB();
         $db->connect(true);
         $dbStatus = 'connected';
+        if (empty(trim((string)($config['sync_secret_token'] ?? '')))) {
+            try {
+                $dbTokenRow = $db->query("SELECT setting_value FROM system_settings WHERE setting_key = 'sync_secret_token' LIMIT 1");
+                if (!empty($dbTokenRow[0]['setting_value'])) {
+                    $config['sync_secret_token'] = trim((string)$dbTokenRow[0]['setting_value']);
+                }
+            } catch (Exception $eToken) {}
+        }
     } catch (Exception $e) {
         $dbStatus = 'error';
         $dbError = $e->getMessage();
@@ -3398,10 +3406,25 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
             // Load products list
             loadProducts();
+
+            // Restore active view on page reload or direct hash link
+            const hashView = window.location.hash ? window.location.hash.replace('#', '') : '';
+            const storedView = sessionStorage.getItem('activeView');
+            const targetInitialView = hashView || storedView;
+            if (targetInitialView && targetInitialView !== 'dashboard' && document.getElementById('view-' + targetInitialView)) {
+                switchView(targetInitialView);
+            }
         });
 
         // Switch Views (tabs)
         function switchView(viewId, element) {
+            try {
+                sessionStorage.setItem('activeView', viewId);
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState(null, '', '#' + viewId);
+                }
+            } catch (e) {}
+
             // Hide all views
             document.querySelectorAll('.view-content').forEach(view => {
                 view.classList.remove('active');
@@ -4205,9 +4228,28 @@ if ($driverLoaded && $dbStatus === 'connected') {
             }
         }
 
+        // Update Security & Synchronization Token badge in-place
+        function updateSyncTokenBadge(token) {
+            const badge = document.getElementById('sync_token_badge');
+            if (!badge) return;
+            const hasToken = token && token.trim().length > 0;
+            if (hasToken) {
+                badge.style.background = 'rgba(16, 185, 129, 0.15)';
+                badge.style.color = '#10b981';
+                badge.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+                badge.innerHTML = '<svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Permanently Saved';
+            } else {
+                badge.style.background = 'rgba(245, 158, 11, 0.15)';
+                badge.style.color = '#f59e0b';
+                badge.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+                badge.innerHTML = '<svg viewBox="0 0 24 24" style="width: 12px; height: 12px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Empty / Not Set';
+            }
+        }
+
         // Save Secret Sync Token Only
         function saveTokenOnly() {
-            const token = document.getElementById('sync_secret_token').value.trim();
+            const tokenInput = document.getElementById('sync_secret_token');
+            const token = tokenInput ? tokenInput.value.trim() : '';
             showToast("Permanently saving Secret Sync Token...", "info");
 
             fetch('api.php?action=save_sync_token', {
@@ -4219,9 +4261,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .then(data => {
                     if (data.status === 'success') {
                         showToast(data.message, "success");
-                        setTimeout(() => window.location.reload(), 1000);
+                        updateSyncTokenBadge(token);
+                        try {
+                            sessionStorage.setItem('activeView', 'database');
+                            if (window.history && window.history.replaceState) {
+                                window.history.replaceState(null, '', '#database');
+                            }
+                        } catch(e) {}
                     } else {
-                        showToast(data.message, "error");
+                        showToast(data.message || "Failed to save token", "error");
                     }
                 })
                 .catch(err => {
@@ -4232,7 +4280,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
         // Clear / Empty Secret Sync Token (System Admin Only)
         function clearTokenOnly() {
             const tokenInput = document.getElementById('sync_secret_token');
-            if (!tokenInput.value.trim()) {
+            if (!tokenInput || !tokenInput.value.trim()) {
                 showToast("The Secret Sync Token is already empty.", "info");
                 return;
             }
@@ -4253,9 +4301,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     if (data.status === 'success') {
                         showToast(data.message, "success");
                         tokenInput.value = '';
-                        setTimeout(() => window.location.reload(), 1000);
+                        updateSyncTokenBadge('');
+                        try {
+                            sessionStorage.setItem('activeView', 'database');
+                            if (window.history && window.history.replaceState) {
+                                window.history.replaceState(null, '', '#database');
+                            }
+                        } catch(e) {}
                     } else {
-                        showToast(data.message, "error");
+                        showToast(data.message || "Failed to clear token", "error");
                     }
                 })
                 .catch(err => {
