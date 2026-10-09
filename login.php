@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $attemptCloudSync = function () use ($db) {
                 try {
                     $config = loadConfig();
-                    $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/');
+                    $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://phyinv.officewarehouse.com.ph/OWIPI/');
                     $secretToken = trim($config['sync_secret_token'] ?? '');
                     if (empty($cloudUrl))
                         return false;
@@ -178,6 +178,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
     <link rel="alternate icon" type="image/png" href="assets/favicon.png">
     <link rel="shortcut icon" href="favicon.ico">
+    <!-- PWA Web App Manifest & Mobile Capability -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b0f19">
     <!-- Local Offline Fonts (100% Instant Offline Load) -->
     <link rel="stylesheet" href="assets/fonts/fonts.css">
     <style>
@@ -464,6 +470,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 
+    <script src="js/single-tab-manager.js"></script>
     <script>
         function toggleSettings() {
             const body = document.getElementById('settings-body');

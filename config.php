@@ -14,7 +14,7 @@ function getDefaultConfig() {
         'database' => 'owi_physical_inventory', // Main master database
         'username' => 'root',
         'password' => '',
-        'cloud_sync_url' => 'https://pginv.officewarehouse.com.ph/OWIPI/',
+        'cloud_sync_url' => 'https://phyinv.officewarehouse.com.ph/OWIPI/',
         'sync_secret_token' => '',
         'print_margin_top' => 0,
         'print_margin_left' => 10,

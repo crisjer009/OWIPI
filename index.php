@@ -2431,7 +2431,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                     <div style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 1rem; margin-bottom: 1.25rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span style="font-size: 0.8rem; color: #94a3b8;">Cloud Target:</span>
-                            <span style="font-size: 0.8rem; font-family: monospace; color: #38bdf8; word-break: break-all;"><?= htmlspecialchars($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/') ?></span>
+                            <span style="font-size: 0.8rem; font-family: monospace; color: #38bdf8; word-break: break-all;"><?= htmlspecialchars($config['cloud_sync_url'] ?? 'https://phyinv.officewarehouse.com.ph/OWIPI/') ?></span>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.8rem; color: #94a3b8;">Local Engine:</span>

@@ -195,7 +195,7 @@ $step = $_GET['step'] ?? 'form';
             <form action="install.php?step=run" method="POST" onsubmit="handleInstallerSubmit(event)">
                 <div class="form-group">
                     <label>Cloud Server URL</label>
-                    <input type="url" name="cloud_url" value="<?= htmlspecialchars($defaultCloudUrl) ?>" placeholder="e.g. https://pginv.officewarehouse.com.ph/OWIPI" required class="form-control">
+                    <input type="url" name="cloud_url" value="<?= htmlspecialchars($defaultCloudUrl) ?>" placeholder="e.g. https://phyinv.officewarehouse.com.ph/OWIPI" required class="form-control">
                 </div>
                 
 

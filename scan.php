@@ -740,13 +740,27 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         }
 
         @keyframes syncSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes syncPulse {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(56, 139, 253, 0.5)); }
-            50% { transform: scale(1.12); filter: drop-shadow(0 0 16px rgba(56, 139, 253, 0.9)); }
+
+            0%,
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 4px rgba(56, 139, 253, 0.5));
+            }
+
+            50% {
+                transform: scale(1.12);
+                filter: drop-shadow(0 0 16px rgba(56, 139, 253, 0.9));
+            }
         }
 
         .sync-progress-bar-inner {
@@ -761,8 +775,13 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         }
 
         @keyframes syncProgressSlide {
-            0% { left: -100%; }
-            100% { left: 100%; }
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 100%;
+            }
         }
 
         .btn-spinner {
@@ -1094,11 +1113,19 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         </div>
 
         <!-- Fullscreen Loading Overlay for Store Activation -->
-        <div id="activation-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.96); backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: white;">
-            <div style="text-align: center; max-width: 400px; padding: 2.5rem; background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-                <div class="spinner" style="border: 4px solid rgba(59, 130, 246, 0.1); border-top: 4px solid #3b82f6; width: 48px; height: 48px; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem auto;"></div>
-                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.3rem; color: #fff; font-weight: 700; font-family: 'Outfit', sans-serif;">Activating Store Session...</h3>
-                <p style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5; font-family: 'Outfit', sans-serif;">Preparing database tables, loading locators, and initializing your workspace. Please wait...</p>
+        <div id="activation-loading-overlay"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 25, 0.96); backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; color: white;">
+            <div
+                style="text-align: center; max-width: 400px; padding: 2.5rem; background: #111827; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                <div class="spinner"
+                    style="border: 4px solid rgba(59, 130, 246, 0.1); border-top: 4px solid #3b82f6; width: 48px; height: 48px; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1.5rem auto;">
+                </div>
+                <h3
+                    style="margin: 0 0 0.5rem 0; font-size: 1.3rem; color: #fff; font-weight: 700; font-family: 'Outfit', sans-serif;">
+                    Activating Store Session...</h3>
+                <p
+                    style="font-size: 0.85rem; color: #9ca3af; margin: 0; line-height: 1.5; font-family: 'Outfit', sans-serif;">
+                    Preparing database tables, loading locators, and initializing your workspace. Please wait...</p>
             </div>
         </div>
 
@@ -1231,7 +1258,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
             $currentUserRole = strtolower(trim($_SESSION['role'] ?? ''));
             $isSysAdmin = in_array($currentUserRole, ['system_admin', 'sys_admin']);
             $isAllanUser = ($loggedInUsername === 'allan');
-            
+
             if (!$isMobileScanner && ($isSysAdmin || $isAllanUser)):
                 ?>
                 <a href="sandbox.php?page=scan.php" class="btn"
@@ -1414,11 +1441,13 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
         <div class="card">
             <div class="card-title">Manual Barcode / Description Input</div>
             <form onsubmit="handleManualSubmit(event)" style="display:flex; gap:8px;">
-                <input type="text" id="manual-barcode" class="form-control" placeholder="Type Barcode or Description..." required
-                    style="flex-grow:1;" autocomplete="off" oninput="searchManualBarcodeItem()">
+                <input type="text" id="manual-barcode" class="form-control" placeholder="Type Barcode or Description..."
+                    required style="flex-grow:1;" autocomplete="off" oninput="searchManualBarcodeItem()">
                 <button type="submit" class="btn btn-secondary" style="width:70px; height:38px;">Send</button>
             </form>
-            <div id="manual-barcode-search-results" style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: #161b22; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 6px; padding: 6px;"></div>
+            <div id="manual-barcode-search-results"
+                style="display: none; margin-top: 8px; max-height: 200px; overflow-y: auto; background: #161b22; border: 1px solid rgba(88, 166, 255, 0.4); border-radius: 6px; padding: 6px;">
+            </div>
         </div>
 
         <!-- Mobile scan log history -->
@@ -1840,7 +1869,8 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
 
             <div class="form-group" style="margin-bottom: 12px;">
                 <label
-                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU, SKU, UPC or Description</label>
+                    style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; text-transform: uppercase;">ALU,
+                    SKU, UPC or Description</label>
                 <input type="text" id="add-manual-scan-barcode" class="form-control"
                     placeholder="Enter ALU, SKU, UPC or Description..." required
                     style="width: 100%; height: 36px; box-sizing: border-box;"
@@ -1852,7 +1882,8 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 style="background:rgba(255,255,255,0.03); border-radius:6px; padding:10px; margin-bottom:12px; font-size:0.8rem; border:1px dashed var(--card-border);">
                 <strong style="color:var(--text-white); display:block; margin-bottom:2px;"
                     id="add-manual-scan-prod-name">Item Preview</strong>
-                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU, UPC or Description to check
+                <span id="add-manual-scan-prod-desc" style="color:var(--text-muted);">Enter ALU, SKU, UPC or Description
+                    to check
                     catalog...</span>
             </div>
 
@@ -1898,17 +1929,26 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
     <div class="modal-overlay" id="cloud-sync-modal-overlay">
         <div class="modal" style="max-width: 500px; width: 95%; padding: 25px; position: relative; overflow: hidden;">
             <!-- Loading & Anti-Misclick Overlay during Cloud Sync -->
-            <div id="cloud-sync-loading-overlay" style="display: none; position: absolute; inset: 0; background: rgba(13, 17, 23, 0.94); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: inherit; z-index: 99; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; box-sizing: border-box;">
-                <div style="position: relative; width: 76px; height: 76px; margin-bottom: 18px; display: flex; align-items: center; justify-content: center;">
+            <div id="cloud-sync-loading-overlay"
+                style="display: none; position: absolute; inset: 0; background: rgba(13, 17, 23, 0.94); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-radius: inherit; z-index: 99; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; box-sizing: border-box;">
+                <div
+                    style="position: relative; width: 76px; height: 76px; margin-bottom: 18px; display: flex; align-items: center; justify-content: center;">
                     <div class="sync-spinner-ring"></div>
-                    <span id="cloud-sync-anim-icon" style="font-size: 32px; animation: syncPulse 1.5s ease-in-out infinite; display: inline-block; line-height: 1;">☁️</span>
+                    <span id="cloud-sync-anim-icon"
+                        style="font-size: 32px; animation: syncPulse 1.5s ease-in-out infinite; display: inline-block; line-height: 1;">☁️</span>
                 </div>
-                <h4 id="cloud-sync-anim-title" style="margin: 0 0 6px 0; color: #ffffff; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em;">Cloud Synchronization in Progress</h4>
-                <div id="cloud-sync-anim-subtitle" style="color: #58a6ff; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">Connecting and authenticating...</div>
+                <h4 id="cloud-sync-anim-title"
+                    style="margin: 0 0 6px 0; color: #ffffff; font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em;">
+                    Cloud Synchronization in Progress</h4>
+                <div id="cloud-sync-anim-subtitle"
+                    style="color: #58a6ff; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">Connecting and
+                    authenticating...</div>
                 <div style="color: #8b949e; font-size: 0.75rem; line-height: 1.45; max-width: 340px;">
-                    Please do not close or refresh this page. All controls are temporarily locked to prevent duplicate submissions or connection interruption.
+                    Please do not close or refresh this page. All controls are temporarily locked to prevent duplicate
+                    submissions or connection interruption.
                 </div>
-                <div style="width: 240px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 9999px; overflow: hidden; margin-top: 18px; position: relative;">
+                <div
+                    style="width: 240px; height: 5px; background: rgba(255,255,255,0.08); border-radius: 9999px; overflow: hidden; margin-top: 18px; position: relative;">
                     <div class="sync-progress-bar-inner"></div>
                 </div>
             </div>
@@ -1924,11 +1964,11 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         style="color:var(--text-white); font-weight:600; font-size:0.85rem; display:block; margin-bottom:6px;">Cloud
                         Server API URL</label>
                     <input type="url" id="sync_cloud_url" class="form-control"
-                        placeholder="https://pginv.officewarehouse.com.ph/OWIPI/"
+                        placeholder="https://phyinv.officewarehouse.com.ph/OWIPI/"
                         style="width:100%; box-sizing:border-box;" required>
                     <span style="font-size:0.7rem; color:var(--text-muted); display:block; margin-top:4px;">The full URL
                         of your cloud server instance, e.g.
-                        <code>https://pginv.officewarehouse.com.ph/OWIPI/</code></span>
+                        <code>https://phyinv.officewarehouse.com.ph/OWIPI/</code></span>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
@@ -1953,7 +1993,8 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         style="width: auto; height: 38px; padding: 0 16px; margin: 0; background:#388bfd; border-color:#388bfd; font-weight:600; cursor:pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <span>Start Sync</span>
                     </button>
-                    <button type="button" id="btn-close-cloud-sync" class="btn btn-secondary" onclick="closeCloudSyncModal()"
+                    <button type="button" id="btn-close-cloud-sync" class="btn btn-secondary"
+                        onclick="closeCloudSyncModal()"
                         style="width: auto; height: 38px; padding: 0 15px; margin: 0; cursor:pointer;">Close</button>
                 </div>
             </form>
@@ -2017,6 +2058,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
     <!-- Scan beep synthesizer & Html5Qrcode & QRCode Generator -->
     <script src="js/html5-qrcode.min.js"></script>
     <script src="js/qrcode.min.js"></script>
+    <script src="js/single-tab-manager.js"></script>
     <script>
         function showCustomConfirm(message, title = "Confirm Action", confirmText = "Confirm", cancelText = "Cancel") {
             return new Promise((resolve) => {
@@ -4215,8 +4257,8 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 }
             }
 
-            const targetUrl = (mode === 'variance_only') 
-                ? 'api.php?action=get_scans' 
+            const targetUrl = (mode === 'variance_only')
+                ? 'api.php?action=get_scans'
                 : 'api.php?action=get_store_summary&mode=all';
 
             fetch(targetUrl)
@@ -4311,8 +4353,8 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     };
 
                     const isVarianceOnly = (mode === 'variance_only');
-                    const summaryTitle = isVarianceOnly 
-                        ? '*****   Inventory Count Summary (Variance Only)   *****' 
+                    const summaryTitle = isVarianceOnly
+                        ? '*****   Inventory Count Summary (Variance Only)   *****'
                         : '*****   Inventory Count Summary (100% Completion)   *****';
 
                     let text = '';
@@ -4486,7 +4528,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                             try {
                                 printIframe.contentWindow.focus();
                                 printIframe.contentWindow.print();
-                            } catch (ePrI) {}
+                            } catch (ePrI) { }
                         }, 250);
                     }
 
@@ -4751,11 +4793,11 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         const scans = data.scans.filter(scan => scan.location.toLowerCase() === locatorName.toLowerCase());
                         window.currentLocatorScans = scans;
                         const tbody = document.getElementById('view-scans-tbody');
- 
+
                         if (scans.length > 0) {
                             // Sort scans in chronological ASC order by RecNo matching print sheet order
                             scans.sort((a, b) => parseInt(a.id) - parseInt(b.id));
- 
+
                             let html = '';
                             scans.forEach((scan, index) => {
                                 const displayBarcode = (scan.barcode && scan.barcode.trim() !== '') ? scan.barcode : (scan.sku || 'N/A');
@@ -5113,7 +5155,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
-                        document.getElementById('sync_cloud_url').value = data.cloud_sync_url || 'https://pginv.officewarehouse.com.ph/OWIPI/';
+                        document.getElementById('sync_cloud_url').value = data.cloud_sync_url || 'https://phyinv.officewarehouse.com.ph/OWIPI/';
                         document.getElementById('sync_secret_token').value = data.sync_secret_token || '';
                     }
                 })

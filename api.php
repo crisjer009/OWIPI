@@ -2925,7 +2925,7 @@ try {
             $config = loadConfig();
             sendResponse([
                 'status' => 'success',
-                'cloud_sync_url' => $config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/',
+                'cloud_sync_url' => $config['cloud_sync_url'] ?? 'https://phyinv.officewarehouse.com.ph/OWIPI/',
                 'sync_secret_token' => $config['sync_secret_token'] ?? ''
             ]);
             break;
@@ -3184,7 +3184,7 @@ try {
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
             if (empty($cloudUrl)) {
-                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
+                $cloudUrl = 'https://phyinv.officewarehouse.com.ph/OWIPI/';
             }
             $secretToken = trim($config['sync_secret_token'] ?? '');
 
@@ -3226,7 +3226,7 @@ try {
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
             if (empty($cloudUrl)) {
-                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
+                $cloudUrl = 'https://phyinv.officewarehouse.com.ph/OWIPI/';
             }
             $secretToken = trim($config['sync_secret_token'] ?? '');
 
@@ -3416,7 +3416,7 @@ try {
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
             if (empty($cloudUrl)) {
-                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
+                $cloudUrl = 'https://phyinv.officewarehouse.com.ph/OWIPI/';
             }
             $secretToken = trim($config['sync_secret_token'] ?? '');
 
@@ -3726,7 +3726,7 @@ try {
             }
 
             $config = loadConfig();
-            $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/');
+            $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://phyinv.officewarehouse.com.ph/OWIPI/');
             $secretToken = trim($config['sync_secret_token'] ?? '');
 
             // 1. Check Cloud Server
@@ -3938,7 +3938,7 @@ try {
 
             // Method 2: ZIP Package Extraction
             $config = loadConfig();
-            $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://pginv.officewarehouse.com.ph/OWIPI/');
+            $cloudUrl = trim($config['cloud_sync_url'] ?? 'https://phyinv.officewarehouse.com.ph/OWIPI/');
             $secretToken = trim($config['sync_secret_token'] ?? '');
 
             $downloadUrl = "https://github.com/crisjer009/OWIPI/archive/refs/heads/main.zip";
@@ -4720,7 +4720,7 @@ try {
             $config = loadConfig();
             $cloudUrl = trim($config['cloud_sync_url'] ?? '');
             if (empty($cloudUrl)) {
-                $cloudUrl = 'https://pginv.officewarehouse.com.ph/OWIPI/';
+                $cloudUrl = 'https://phyinv.officewarehouse.com.ph/OWIPI/';
             }
             $secretToken = trim($config['sync_secret_token'] ?? '');
 

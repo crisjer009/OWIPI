@@ -374,7 +374,7 @@ namespace CasioScannerApp
         // Load configuration from local text file
         private void LoadConfig()
         {
-            txtHost.Text = "http://pginv.officewarehouse.com.ph/OWIPI";
+            txtHost.Text = "https://phyinv.officewarehouse.com.ph/OWIPI";
             try
             {
                 if (File.Exists(configPath))
