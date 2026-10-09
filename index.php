@@ -28,6 +28,7 @@ $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $scriptDir = rtrim($scriptDir, '/');
 $scanUrl = $protocol . $systemHost . $scriptDir . "/scan.php?autologin=" . ($_SESSION['user_id'] ?? '') . "&store=" . ($_SESSION['store_code'] ?? '') . "&user=" . urlencode($_SESSION['username'] ?? '') . "&from_qr=1";
 $config = loadConfig();
+$systemVersion = getSystemVersion();
 
 // Pre-fetch active non-closed stores for instant store selection on load
 $existingStoresList = [];
@@ -2419,7 +2420,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                         Cloud System Updates &amp; Pulling
                     </h2>
                     <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.72rem; padding: 3px 10px; border-radius: 9999px; font-weight: 600;">
-                        v2.5.1
+                        v<?= htmlspecialchars($systemVersion) ?>
                     </span>
                 </div>
 
@@ -5399,7 +5400,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
             const btnApplyCard = document.getElementById('btn-card-apply-update');
 
             const localCommit = data.local?.commit || 'unknown';
-            const localVersion = data.local?.version || '2.5.1';
+            const localVersion = data.local?.version || '<?= htmlspecialchars($systemVersion) ?>';
             const isUpdateAvail = !!data.update_available;
 
             let html = '';

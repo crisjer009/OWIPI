@@ -21,6 +21,18 @@ function getDefaultConfig() {
     ];
 }
 
+// Get current system version from version.json
+function getSystemVersion() {
+    $versionFile = __DIR__ . '/version.json';
+    if (file_exists($versionFile)) {
+        $data = json_decode(@file_get_contents($versionFile), true);
+        if (!empty($data['version'])) {
+            return trim($data['version']);
+        }
+    }
+    return '2.5.3';
+}
+
 // Load database configuration
 function loadConfig() {
     if (file_exists(CONFIG_FILE)) {

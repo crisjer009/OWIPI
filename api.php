@@ -3678,9 +3678,7 @@ try {
 
         case 'version':
             $gitCommit = null;
-            $versionFile = __DIR__ . '/version.json';
-            $versionData = file_exists($versionFile) ? json_decode(@file_get_contents($versionFile), true) : [];
-            $currentVersion = $versionData['version'] ?? '2.5.1';
+            $currentVersion = getSystemVersion();
 
             if (is_dir(__DIR__ . '/.git')) {
                 $commit = @shell_exec('git rev-parse --short HEAD 2>&1');
@@ -3702,7 +3700,7 @@ try {
         case 'check_system_update':
             checkAuth(true);
 
-            $localVersion = '2.5.1';
+            $localVersion = getSystemVersion();
             $localCommit = 'unknown';
             $isGit = is_dir(__DIR__ . '/.git');
 
@@ -3919,7 +3917,7 @@ try {
                 $newCommit = @shell_exec('git rev-parse --short HEAD 2>&1');
                 if ($newCommit && strlen(trim($newCommit)) <= 12 && !preg_match('/fatal|not a git/i', $newCommit)) {
                     @file_put_contents(__DIR__ . '/version.json', json_encode([
-                        'version' => '2.5.1',
+                        'version' => getSystemVersion(),
                         'commit' => trim($newCommit),
                         'updated_at' => date('Y-m-d H:i:s')
                     ], JSON_PRETTY_PRINT));
