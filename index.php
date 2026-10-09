@@ -5345,14 +5345,20 @@ if ($driverLoaded && $dbStatus === 'connected') {
             if (btnCard) btnCard.innerHTML = '<span>⏳</span> Checking...';
             if (btnModal) btnModal.innerHTML = '<span>⏳</span> Checking Cloud...';
 
+            const checkingHtml = `
+                <div style="display:flex; align-items:center; justify-content:center; gap:10px; color:#38bdf8; padding: 10px;">
+                    <span class="btn-spinner" style="border-color: rgba(56,189,248,0.3); border-top-color: #38bdf8;"></span>
+                    <span>Connecting to Cloud Server &amp; GitHub repository...</span>
+                </div>
+            `;
+
             if (statusBox) {
                 statusBox.style.display = 'block';
-                statusBox.innerHTML = `
-                    <div style="display:flex; align-items:center; justify-content:center; gap:10px; color:#38bdf8; padding: 10px;">
-                        <span class="btn-spinner" style="border-color: rgba(56,189,248,0.3); border-top-color: #38bdf8;"></span>
-                        <span>Connecting to Cloud Server &amp; GitHub repository...</span>
-                    </div>
-                `;
+                statusBox.innerHTML = checkingHtml;
+            }
+            if (cardBox) {
+                cardBox.style.display = 'block';
+                cardBox.innerHTML = checkingHtml;
             }
 
             fetch('api.php?action=check_system_update')
@@ -5363,16 +5369,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
 
                     if (data.status !== 'success') {
                         const errMsg = data.message || 'Failed to check updates.';
-                        if (statusBox) {
-                            statusBox.innerHTML = `
-                                <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
-                                    ⚠️ <strong>Check Failed:</strong> ${escapeHtml(errMsg)}
-                                </div>
-                            `;
-                        }
+                        const errHtml = `
+                            <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
+                                ⚠️ <strong>Check Failed:</strong> ${escapeHtml(errMsg)}
+                            </div>
+                        `;
+                        if (statusBox) statusBox.innerHTML = errHtml;
                         if (cardBox) {
                             cardBox.style.display = 'block';
-                            cardBox.innerHTML = `<span style="color:#ef4444;">⚠️ Update check error: ${escapeHtml(errMsg)}</span>`;
+                            cardBox.innerHTML = errHtml;
                         }
                         return;
                     }
@@ -5383,12 +5388,15 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .catch(err => {
                     if (btnCard) btnCard.innerHTML = '<span>🔍</span> Check for Cloud Updates';
                     if (btnModal) btnModal.innerHTML = '<span>🔄</span> Re-check Updates';
-                    if (statusBox) {
-                        statusBox.innerHTML = `
-                            <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
-                                ⚠️ <strong>Network Error:</strong> Cloud server unreachable. Please verify internet connection.
-                            </div>
-                        `;
+                    const netErrHtml = `
+                        <div style="color:#ef4444; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); padding:10px; border-radius:8px; text-align:left;">
+                            ⚠️ <strong>Network Error:</strong> Cloud server unreachable. Please verify internet connection.
+                        </div>
+                    `;
+                    if (statusBox) statusBox.innerHTML = netErrHtml;
+                    if (cardBox) {
+                        cardBox.style.display = 'block';
+                        cardBox.innerHTML = netErrHtml;
                     }
                 });
         }
