@@ -2474,20 +2474,34 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                     }
 
                     const runHostPoll = () => {
-                        if (!document.hidden && (!isCloudHost || !isHostStandby)) {
+                        if (!document.hidden) {
                             loadHostScans();
-                            loadHostLocators();
+                            if (!isHostStandby) {
+                                loadHostLocators();
+                            }
                         }
                     };
 
                     const startHostPollTimer = () => {
                         if (hostPollInterval) clearInterval(hostPollInterval);
                         if (storeHostLockTimer) clearInterval(storeHostLockTimer);
-                        if (!document.hidden && (!isCloudHost || !isHostStandby)) {
+                        if (!document.hidden) {
                             runHostPoll();
                             checkStoreHostLock();
                             hostPollInterval = setInterval(runHostPoll, 3000);
                             storeHostLockTimer = setInterval(checkStoreHostLock, 5000);
+                        }
+                    };
+
+                    const enterHostStandby = () => {
+                        isHostStandby = true;
+                        if (hostPollInterval) clearInterval(hostPollInterval);
+                        if (storeHostLockTimer) clearInterval(storeHostLockTimer);
+                        showHostStandbyBanner();
+
+                        // Keep background poll active so incoming mobile scans wake the host immediately
+                        if (!document.hidden) {
+                            hostPollInterval = setInterval(runHostPoll, 3000);
                         }
                     };
 
@@ -2508,9 +2522,7 @@ if ((empty($_SESSION['store_code']) || $isClosedStore) && !empty($openStoresList
                         // Inactivity standby only kicks in if running on Cloud Host
                         if (isCloudHost) {
                             hostStandbyTimer = setTimeout(() => {
-                                isHostStandby = true;
-                                stopHostPollTimer();
-                                showHostStandbyBanner();
+                                enterHostStandby();
                             }, HOST_STANDBY_TIMEOUT);
                         }
                     };

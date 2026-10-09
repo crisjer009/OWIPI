@@ -3335,11 +3335,23 @@ if ($driverLoaded && $dbStatus === 'connected') {
             const startActivePolling = () => {
                 if (autoPollInterval) clearInterval(autoPollInterval);
                 if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
-                if (!document.hidden && (!isCloudHost || !isUserStandby)) {
+                if (!document.hidden) {
                     loadScans();
                     checkStoreHostLock();
                     autoPollInterval = setInterval(loadScans, 4000);
                     storeHostLockTimerIndex = setInterval(checkStoreHostLock, 5000);
+                }
+            };
+
+            const enterStandby = () => {
+                isUserStandby = true;
+                if (autoPollInterval) clearInterval(autoPollInterval);
+                if (storeHostLockTimerIndex) clearInterval(storeHostLockTimerIndex);
+                showStandbyBanner();
+
+                // Keep background polling active so incoming mobile scans wake the host immediately
+                if (!document.hidden) {
+                    autoPollInterval = setInterval(loadScans, 4000);
                 }
             };
 
@@ -3360,9 +3372,7 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 // Inactivity standby only kicks in if running on the Cloud server
                 if (isCloudHost) {
                     standbyTimer = setTimeout(() => {
-                        isUserStandby = true;
-                        pauseAllPolling();
-                        showStandbyBanner();
+                        enterStandby();
                     }, STANDBY_TIMEOUT);
                 }
             };
@@ -4308,6 +4318,9 @@ if ($driverLoaded && $dbStatus === 'connected') {
         }
 
         // Load Scan Log
+        let lastKnownMaxScanId = null;
+        let lastKnownScanCount = null;
+
         function loadScans() {
             const tbody = document.getElementById('scans-tbody');
             if (!tbody) return;
@@ -4316,10 +4329,21 @@ if ($driverLoaded && $dbStatus === 'connected') {
                 .then(data => {
                     const tbody = document.getElementById('scans-tbody');
                     if (data.status === 'success') {
-                        if (typeof window.wakeFromStandby === 'function' && data.scans && data.scans.length > 0) {
-                            window.wakeFromStandby();
+                        const scans = data.scans || [];
+                        const currentMaxId = scans.length > 0 ? Math.max(...scans.map(s => parseInt(s.id) || 0)) : 0;
+                        const currentCount = scans.length;
+
+                        // If a new scan arrives while in standby, wake the host immediately!
+                        if (lastKnownMaxScanId !== null) {
+                            const hasNewScans = (currentMaxId > lastKnownMaxScanId) || (currentCount !== lastKnownScanCount);
+                            if (hasNewScans && typeof window.wakeFromStandby === 'function') {
+                                window.wakeFromStandby();
+                            }
                         }
-                        if (data.scans && data.scans.length > 0) {
+                        lastKnownMaxScanId = currentMaxId;
+                        lastKnownScanCount = currentCount;
+
+                        if (scans.length > 0) {
                             let html = '';
                             data.scans.forEach(scan => {
                                 const prodName = scan.product_name ? scan.product_name : '<span style="color:var(--text-secondary);font-style:italic;">Catalog Item Not Found</span>';
